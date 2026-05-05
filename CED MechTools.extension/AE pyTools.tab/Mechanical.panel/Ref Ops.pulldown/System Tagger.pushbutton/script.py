@@ -3,11 +3,10 @@ __title__ = "System Tagger"
 __doc__ = "Place system ID tags on refrigerated cases from a pasted SYS NO. list."
 
 import re
-import time
 
 from Autodesk.Revit.DB.ExtensibleStorage import AccessLevel
 from Autodesk.Revit.DB.ExtensibleStorage import Entity, Schema, SchemaBuilder
-from Autodesk.Revit.UI.Selection import ObjectType
+from Autodesk.Revit.UI.Selection import ISelectionFilter, ObjectType
 from System import Guid, String, Int32
 from pyrevit import revit, DB, forms, script
 
@@ -18,6 +17,32 @@ uidoc = revit.uidoc
 ORANGE_RGB = (255, 128, 0)
 RESUME_SCHEMA_GUID = Guid("5f1a3c2e-9e4c-4e42-9f26-9c8f8f5c6f14")
 RESUME_SCHEMA_NAME = "CED_SystemTagger_Resume"
+
+ACTION_MODE_TAG_AND_MARK = "Tag + Identity Mark"
+ACTION_MODE_MARK_ONLY = "Identity Mark only"
+ACTION_MODE_TAG_ONLY = "Tag only"
+
+
+class _MechEquipmentSelectionFilter(ISelectionFilter):
+    def AllowElement(self, elem):  # noqa: N802
+        if elem is None:
+            return False
+        try:
+            cat = elem.Category
+        except Exception:
+            return False
+        if cat is None:
+            return False
+        try:
+            return cat.Id.IntegerValue == int(DB.BuiltInCategory.OST_MechanicalEquipment)
+        except Exception:
+            return False
+
+    def AllowReference(self, reference, position):  # noqa: N802
+        return False
+
+
+_MECH_FILTER = _MechEquipmentSelectionFilter()
 
 
 def _rgb(r, g, b):
@@ -257,6 +282,9 @@ def _pick_tag_type():
     tag_types = _collect_tag_types()
     if not tag_types:
         return None
+
+    label_to_type = {}
+    default_label = None
     for tag_type in tag_types:
         try:
             fam_name = tag_type.get_Parameter(DB.BuiltInParameter.SYMBOL_FAMILY_NAME_PARAM).AsString() or ""
@@ -266,9 +294,17 @@ def _pick_tag_type():
             type_name = tag_type.get_Parameter(DB.BuiltInParameter.SYMBOL_NAME_PARAM).AsString() or ""
         except Exception:
             type_name = ""
+        label = _tag_type_label(tag_type)
         if fam_name == "M_Mechanical Eqmt Tag" and type_name == "Identity":
-            return tag_type
-    options = [_tag_type_label(t) for t in tag_types]
+            label = "(default) " + label
+            default_label = label
+        label_to_type[label] = tag_type
+
+    options = sorted(label_to_type.keys())
+    if default_label and default_label in options:
+        options.remove(default_label)
+        options.insert(0, default_label)
+
     picked = forms.SelectFromList.show(
         options,
         multiselect=False,
@@ -276,11 +312,17 @@ def _pick_tag_type():
     )
     if not picked:
         return None
-    try:
-        idx = options.index(picked)
-    except Exception:
+    return label_to_type.get(picked)
+
+
+def _prompt_action_mode():
+    choice = forms.CommandSwitchWindow.show(
+        [ACTION_MODE_TAG_AND_MARK, ACTION_MODE_MARK_ONLY, ACTION_MODE_TAG_ONLY],
+        message="What should the System Tagger do for each picked element?",
+    )
+    if not choice:
         return None
-    return tag_types[idx]
+    return choice
 
 
 def _parse_system_ids(raw_text):
@@ -303,20 +345,20 @@ def _toggle_pick_cases(system_id, view, ogs):
     selected_ids = []
     selected_set = set()
     preview_ids = []
-    last_preview_time = 0.0
     preview_group = DB.TransactionGroup(doc, "System Tagger - Preview Highlights")
     preview_group.Start()
 
     try:
         while True:
             with forms.WarningBar(
-                title="System ID {}: pick refrigerated cases (ESC to finish)".format(system_id)
+                title="System ID {}: pick Mechanical Equipment (ESC to finish)".format(system_id)
             ):
                 while True:
                     try:
                         ref = uidoc.Selection.PickObject(
                             ObjectType.Element,
-                            "Pick case (click again to unselect). ESC when done."
+                            _MECH_FILTER,
+                            "Pick Mechanical Equipment (click again to unselect). ESC when done."
                         )
                     except Exception:
                         break
@@ -331,10 +373,7 @@ def _toggle_pick_cases(system_id, view, ogs):
                         selected_set.add(elem_int)
                         selected_ids.append(elem_int)
 
-                    now = time.time()
-                    if now - last_preview_time >= 1.0:
-                        preview_ids = _update_preview_highlights(view, ogs, selected_ids, preview_ids)
-                        last_preview_time = now
+                    preview_ids = _update_preview_highlights(view, ogs, selected_ids, preview_ids)
 
             choice = forms.CommandSwitchWindow.show(
                 ["Done", "Pick More", "Pause"],
@@ -444,9 +483,15 @@ def main():
     if active_view.IsTemplate:
         forms.alert("Active view is a template. Open a working view first.", exitscript=True)
 
-    tag_type = _pick_tag_type()
-    if not tag_type:
-        forms.alert("No tag type available in this project.", exitscript=True)
+    action_mode = _prompt_action_mode()
+    if not action_mode:
+        script.exit()
+
+    tag_type = None
+    if action_mode != ACTION_MODE_MARK_ONLY:
+        tag_type = _pick_tag_type()
+        if tag_type is None:
+            forms.alert("No tag type selected.", exitscript=True)
 
     resume_path, resume_index = _load_resume_state()
     system_ids = None
@@ -484,12 +529,20 @@ def main():
 
     highlight_ogs = _build_highlight_ogs()
 
+    if action_mode == ACTION_MODE_MARK_ONLY:
+        action_text = "Identity Mark will be set on each picked element (no tag will be placed)."
+    elif action_mode == ACTION_MODE_TAG_ONLY:
+        action_text = "A tag will be placed on each picked element (Identity Mark will not be changed)."
+    else:
+        action_text = "Identity Mark will be set and a tag placed on each picked element."
+
     forms.alert(
-        "Select refrigerated cases for each System ID.\n"
-        "- Click a case again to unselect.\n"
+        "Select Mechanical Equipment for each System ID.\n"
+        "- Click an element again to unselect.\n"
         "- Press ESC when done selecting, then click Done.\n"
         "- Click Pause to save progress and exit.\n"
-        "The script will advance to the next System ID."
+        "The script will advance to the next System ID.\n\n"
+        + action_text
     )
 
     for idx in range(start_index, len(system_ids)):
@@ -502,8 +555,10 @@ def main():
             labels = _build_labels(system_id, picked_ids)
             with revit.Transaction("System Tagger - Place Labels {}".format(system_id)):
                 _apply_highlights(active_view, picked_ids, highlight_ogs)
-                _apply_identity_mark(picked_ids, labels)
-                _place_tags(picked_ids, labels, active_view, tag_type)
+                if action_mode != ACTION_MODE_TAG_ONLY:
+                    _apply_identity_mark(picked_ids, labels)
+                if action_mode != ACTION_MODE_MARK_ONLY and tag_type is not None:
+                    _place_tags(picked_ids, labels, active_view, tag_type)
                 _clear_highlights_in_tx(active_view, picked_ids)
             _save_resume_state(raw_text, idx + 1)
         except Exception:

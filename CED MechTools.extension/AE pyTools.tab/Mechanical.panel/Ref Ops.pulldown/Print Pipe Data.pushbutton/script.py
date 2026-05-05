@@ -1074,7 +1074,38 @@ def _order_ids_from_topology_segments(topo_segments, allowed_ids=None):
 
     return ordered
 
-def _rows_from_totals(pipe_segments, ordered_ids=None):
+def _element_ids_by_system_id(identity_by_pipe_id, pipe_segments):
+    by_sid = {}
+
+    for pid, identity in (identity_by_pipe_id or {}).items():
+        try:
+            pid_int = int(pid)
+        except Exception:
+            continue
+        if pid_int <= 0:
+            continue
+        sid = _safe_text(identity) or "<Unassigned ID>"
+        by_sid.setdefault(sid, set()).add(pid_int)
+
+    for seg in (pipe_segments or []):
+        sid = _safe_text(getattr(seg, "identity_mark", None)) or "<Unassigned ID>"
+        try:
+            seg_pid = int(getattr(seg, "source_element_id", None))
+        except Exception:
+            seg_pid = None
+        if seg_pid is not None and seg_pid > 0:
+            by_sid.setdefault(sid, set()).add(seg_pid)
+
+    return by_sid
+
+
+def _format_element_ids(ids):
+    if not ids:
+        return ""
+    return ", ".join(str(pid) for pid in sorted(ids))
+
+
+def _rows_from_totals(pipe_segments, ordered_ids=None, element_ids_by_sid=None):
     vertical = SumVerticalPipeLengthPerID(pipe_segments)
     horizontal = SumHorizontalPipeLengthPerID(pipe_segments)
     evap = SumEvaporationCapacityPerID(pipe_segments)
@@ -1099,9 +1130,12 @@ def _rows_from_totals(pipe_segments, ordered_ids=None):
             return 0.0
         return float(math.ceil(v))
 
+    id_lookup = element_ids_by_sid or {}
+
     rows = []
     for sid in ordered_keys:
         rows.append({
+            "Element IDs": _format_element_ids(id_lookup.get(sid)),
             "System ID": sid,
             "Vertical Length Total": _threshold(vertical.get(sid, 0.0)),
             "Horizontal Length Total": _threshold(horizontal.get(sid, 0.0)),
@@ -1143,6 +1177,7 @@ def _write_excel_xlsx(path, rows):
         cells = _get(worksheet, "Cells")
 
         headers = [
+            "Element IDs",
             "System ID",
             "Vertical Length Total",
             "Horizontal Length Total",
@@ -1154,12 +1189,14 @@ def _write_excel_xlsx(path, rows):
 
         for row_idx, row in enumerate(rows, 2):
             cell = _call(cells, "Item", row_idx, 1)
-            _set(cell, "Value2", row.get("System ID", ""))
+            _set(cell, "Value2", row.get("Element IDs", ""))
             cell = _call(cells, "Item", row_idx, 2)
-            _set(cell, "Value2", _safe_float(row.get("Vertical Length Total", 0.0), 0.0))
+            _set(cell, "Value2", row.get("System ID", ""))
             cell = _call(cells, "Item", row_idx, 3)
-            _set(cell, "Value2", _safe_float(row.get("Horizontal Length Total", 0.0), 0.0))
+            _set(cell, "Value2", _safe_float(row.get("Vertical Length Total", 0.0), 0.0))
             cell = _call(cells, "Item", row_idx, 4)
+            _set(cell, "Value2", _safe_float(row.get("Horizontal Length Total", 0.0), 0.0))
+            cell = _call(cells, "Item", row_idx, 5)
             _set(cell, "Value2", _safe_float(row.get("Evaporation Capacity Total", 0.0), 0.0))
 
         _call(_get(worksheet, "Columns"), "AutoFit")
@@ -1186,6 +1223,7 @@ def _write_excel_xlsx(path, rows):
 
 def _write_csv(path, rows):
     headers = [
+        "Element IDs",
         "System ID",
         "Vertical Length Total",
         "Horizontal Length Total",
@@ -1196,6 +1234,7 @@ def _write_csv(path, rows):
         writer.writeheader()
         for row in rows:
             writer.writerow({
+                "Element IDs": row.get("Element IDs", ""),
                 "System ID": row.get("System ID", ""),
                 "Vertical Length Total": "{:.6f}".format(_safe_float(row.get("Vertical Length Total", 0.0), 0.0)),
                 "Horizontal Length Total": "{:.6f}".format(_safe_float(row.get("Horizontal Length Total", 0.0), 0.0)),
@@ -1257,7 +1296,13 @@ def main():
 
     _ = PrintPipeSegmentTotalsPerID(pipe_segments, ordered_ids=ordered_ids)
 
-    rows = _rows_from_totals(pipe_segments, ordered_ids=ordered_ids)
+    element_ids_by_sid = _element_ids_by_system_id(identity_by_pipe_id, pipe_segments)
+
+    rows = _rows_from_totals(
+        pipe_segments,
+        ordered_ids=ordered_ids,
+        element_ids_by_sid=element_ids_by_sid,
+    )
     if not rows:
         forms.alert("No pipe totals were generated.", title=__title__, exitscript=True)
 
