@@ -17,6 +17,7 @@ uidoc = revit.uidoc
 ORANGE_RGB = (255, 128, 0)
 RESUME_SCHEMA_GUID = Guid("5f1a3c2e-9e4c-4e42-9f26-9c8f8f5c6f14")
 RESUME_SCHEMA_NAME = "CED_SystemTagger_Resume"
+RESUME_DATA_STORAGE_NAME = "CED_SystemTagger_Resume"
 
 ACTION_MODE_TAG_AND_MARK = "Tag + Identity Mark"
 ACTION_MODE_MARK_ONLY = "Identity Mark only"
@@ -49,18 +50,35 @@ def _rgb(r, g, b):
     return DB.Color(bytearray([r])[0], bytearray([g])[0], bytearray([b])[0])
 
 
-def _load_resume_state():
-    if doc is None:
-        return None, None
+def _get_resume_schema():
+    schema = Schema.Lookup(RESUME_SCHEMA_GUID)
+    if schema is not None:
+        return schema
+    sb = SchemaBuilder(RESUME_SCHEMA_GUID)
+    sb.SetSchemaName(RESUME_SCHEMA_NAME)
+    sb.SetReadAccessLevel(AccessLevel.Public)
+    sb.SetWriteAccessLevel(AccessLevel.Public)
+    sb.AddSimpleField("ExcelPath", String)
+    sb.AddSimpleField("Index", Int32)
+    return sb.Finish()
+
+
+def _build_resume_entity(path, idx):
     schema = _get_resume_schema()
-    proj_info = doc.ProjectInformation
-    if proj_info is None:
-        return None, None
+    entity = Entity(schema)
     try:
-        entity = proj_info.GetEntity(schema)
+        entity.Set[String](schema.GetField("ExcelPath"), path or "")
     except Exception:
-        return None, None
-    if not entity or not entity.IsValid():
+        pass
+    try:
+        entity.Set[Int32](schema.GetField("Index"), int(idx))
+    except Exception:
+        pass
+    return entity
+
+
+def _read_entity_values(entity, schema):
+    if entity is None or not entity.IsValid():
         return None, None
     try:
         path = entity.Get[String](schema.GetField("ExcelPath"))
@@ -75,41 +93,138 @@ def _load_resume_state():
     return path or None, idx
 
 
-def _save_resume_state(path, idx):
+def _find_resume_storage():
     if doc is None:
-        return
+        return None
+    schema = _get_resume_schema()
+    try:
+        collector = DB.FilteredElementCollector(doc).OfClass(DB.ExtensibleStorage.DataStorage)
+    except Exception:
+        return None
+    for ds in collector:
+        try:
+            entity = ds.GetEntity(schema)
+        except Exception:
+            entity = None
+        if entity and entity.IsValid():
+            return ds
+    return None
+
+
+def _project_info_resume_entity():
+    if doc is None:
+        return None
     schema = _get_resume_schema()
     proj_info = doc.ProjectInformation
     if proj_info is None:
+        return None
+    try:
+        entity = proj_info.GetEntity(schema)
+    except Exception:
+        return None
+    if not entity or not entity.IsValid():
+        return None
+    return entity
+
+
+def _migrate_from_project_info_if_needed():
+    """One-time migration: if ProjectInformation has the legacy schema entity and
+    no DataStorage entity exists yet, copy it across and wipe the old one.
+    All in a single transaction. Returns True if a migration write occurred."""
+    if doc is None:
+        return False
+    schema = _get_resume_schema()
+
+    # If a DataStorage already holds the entity, nothing to do.
+    if _find_resume_storage() is not None:
+        return False
+
+    legacy = _project_info_resume_entity()
+    if legacy is None:
+        return False
+
+    path, idx = _read_entity_values(legacy, schema)
+    proj_info = doc.ProjectInformation
+    if proj_info is None:
+        return False
+
+    with revit.Transaction("System Tagger - Migrate Resume State"):
+        ds = DB.ExtensibleStorage.DataStorage.Create(doc)
+        try:
+            ds.Name = RESUME_DATA_STORAGE_NAME
+        except Exception:
+            pass
+        ds.SetEntity(_build_resume_entity(path, idx if idx is not None else -1))
+        try:
+            proj_info.DeleteEntity(schema)
+        except Exception:
+            # Best-effort: leave a tombstone so future loads ignore it.
+            try:
+                proj_info.SetEntity(_build_resume_entity("", -1))
+            except Exception:
+                pass
+    logger.info(
+        "System Tagger: migrated resume state from ProjectInformation to DataStorage."
+    )
+    return True
+
+
+def _ensure_resume_storage():
+    """Get or create the DataStorage element. Creation requires its own transaction."""
+    ds = _find_resume_storage()
+    if ds is not None:
+        return ds
+    with revit.Transaction("System Tagger - Create Resume Storage"):
+        ds = DB.ExtensibleStorage.DataStorage.Create(doc)
+        try:
+            ds.Name = RESUME_DATA_STORAGE_NAME
+        except Exception:
+            pass
+        ds.SetEntity(_build_resume_entity("", -1))
+    return ds
+
+
+def _load_resume_state():
+    if doc is None:
+        return None, None
+    schema = _get_resume_schema()
+    ds = _find_resume_storage()
+    if ds is None:
+        return None, None
+    try:
+        entity = ds.GetEntity(schema)
+    except Exception:
+        return None, None
+    return _read_entity_values(entity, schema)
+
+
+def _save_resume_state(path, idx):
+    """Save resume state in its own transaction. Use at startup / for one-shot writes."""
+    if doc is None:
         return
-    entity = Entity(schema)
-    try:
-        entity.Set[String](schema.GetField("ExcelPath"), path or "")
-    except Exception:
-        pass
-    try:
-        entity.Set[Int32](schema.GetField("Index"), int(idx))
-    except Exception:
-        pass
+    ds = _ensure_resume_storage()
+    if ds is None:
+        return
+    entity = _build_resume_entity(path, idx)
     with revit.Transaction("System Tagger - Save Resume State"):
-        proj_info.SetEntity(entity)
+        ds.SetEntity(entity)
+
+
+def _save_resume_state_no_tx(path, idx):
+    """Save resume state inside an already-open transaction. The DataStorage element
+    must already exist (call _ensure_resume_storage() once before the picking loop)."""
+    if doc is None:
+        return
+    ds = _find_resume_storage()
+    if ds is None:
+        # Fall back to opening our own tx so we don't silently drop state.
+        _save_resume_state(path, idx)
+        return
+    ds.SetEntity(_build_resume_entity(path, idx))
 
 
 def _clear_resume_state():
     _save_resume_state("", -1)
-
-
-def _get_resume_schema():
-    schema = Schema.Lookup(RESUME_SCHEMA_GUID)
-    if schema is not None:
-        return schema
-    sb = SchemaBuilder(RESUME_SCHEMA_GUID)
-    sb.SetSchemaName(RESUME_SCHEMA_NAME)
-    sb.SetReadAccessLevel(AccessLevel.Public)
-    sb.SetWriteAccessLevel(AccessLevel.Public)
-    sb.AddSimpleField("ExcelPath", String)
-    sb.AddSimpleField("Index", Int32)
-    return sb.Finish()
 
 
 def _get_solid_fill_pattern_id():
@@ -493,6 +608,9 @@ def main():
         if tag_type is None:
             forms.alert("No tag type selected.", exitscript=True)
 
+    # One-time migration from legacy ProjectInformation storage to DataStorage.
+    _migrate_from_project_info_if_needed()
+
     resume_path, resume_index = _load_resume_state()
     system_ids = None
     start_index = 0
@@ -545,9 +663,12 @@ def main():
         + action_text
     )
 
+    # One-shot save of starting index. Also ensures the DataStorage element exists
+    # so subsequent saves can ride inside the placement transaction (no extra tx).
+    _save_resume_state(raw_text, start_index)
+
     for idx in range(start_index, len(system_ids)):
         system_id = system_ids[idx]
-        _save_resume_state(raw_text, idx)
         status, picked_ids = _toggle_pick_cases(system_id, active_view, highlight_ogs)
         if status == "cancel":
             return
@@ -560,7 +681,7 @@ def main():
                 if action_mode != ACTION_MODE_MARK_ONLY and tag_type is not None:
                     _place_tags(picked_ids, labels, active_view, tag_type)
                 _clear_highlights_in_tx(active_view, picked_ids)
-            _save_resume_state(raw_text, idx + 1)
+                _save_resume_state_no_tx(raw_text, idx + 1)
         except Exception:
             raise
         if status == "pause":
