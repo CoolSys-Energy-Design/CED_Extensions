@@ -581,29 +581,106 @@ class AnnotationPlacementResult(object):
         return sum(self.placed_count_by_kind.values())
 
 
-def _apply_parameters(elem, params_dict):
+def _find_parameter(elem, name):
+    """Find a parameter by display name with a Parameters-walk fallback.
+
+    ``LookupParameter`` is the first try (fastest). It reliably finds
+    shared and family parameters by display name, but **misses many
+    built-in parameters** (e.g. the keynote ``KEY_VALUE``) — that's
+    the documented reason a placed keynote tag stays at 'XX' even
+    when the captured ``parameters`` dict has the right value. The
+    fallback walk iterates ``elem.Parameters`` and matches on
+    ``Definition.Name``, which catches both built-in and shared
+    parameters in one pass. Slower (linear scan) but bulletproof.
+    """
+    try:
+        p = elem.LookupParameter(name)
+    except Exception:
+        p = None
+    if p is not None:
+        return p
+    try:
+        for param in elem.Parameters:
+            if param is None:
+                continue
+            try:
+                d = param.Definition
+            except Exception:
+                d = None
+            if d is None:
+                continue
+            try:
+                if d.Name == name:
+                    return param
+            except Exception:
+                continue
+    except Exception:
+        pass
+    return None
+
+
+def _apply_parameters(elem, params_dict, warnings=None):
     """Stamp captured annotation parameters back onto a placed element.
 
     Routes each parameter through ``placement._set_param_value`` so
     unit-bearing values (VA, ft, deg, etc.) survive the round-trip:
     ``SetValueString`` parses the YAML value in the parameter's
     *display* units instead of treating it as raw internal units.
+
+    ``warnings`` (optional) collects per-parameter diagnostic strings
+    when something doesn't apply — passed through from
+    ``execute_placement`` so the user sees exactly which parameters
+    failed (e.g. "Parameter 'Key Name_CED' not found on the placed
+    keynote — did you place the right family?").
     """
     if elem is None or not params_dict:
         return
     # Lazy import so annotation_placement can still load if placement
     # has a hot-reload issue.
     import placement as _placement
+
+    elem_label = "{}".format(type(elem).__name__)
+    try:
+        eid = getattr(elem, "Id", None)
+        if eid is not None:
+            elem_label = "{} (id {})".format(
+                elem_label,
+                getattr(eid, "Value", None)
+                or getattr(eid, "IntegerValue", None),
+            )
+    except Exception:
+        pass
+
     for name, value in params_dict.items():
-        if name is None or value is None or value == "":
+        if name is None:
             continue
-        try:
-            p = elem.LookupParameter(name)
-        except Exception:
+        if value is None or value == "":
+            # An empty stored value usually means the user never
+            # filled it in; skipping leaves the parameter at its
+            # type/family default (which is correct for blank inputs).
             continue
-        if p is None or p.IsReadOnly:
+        p = _find_parameter(elem, name)
+        if p is None:
+            if warnings is not None:
+                warnings.append(
+                    "Parameter {!r} not found on placed {} — "
+                    "value {!r} skipped.".format(name, elem_label, value)
+                )
             continue
-        _placement._set_param_value(p, value)
+        if p.IsReadOnly:
+            if warnings is not None:
+                warnings.append(
+                    "Parameter {!r} is read-only on {} — "
+                    "value {!r} skipped.".format(name, elem_label, value)
+                )
+            continue
+        ok = _placement._set_param_value(p, value)
+        if not ok and warnings is not None:
+            warnings.append(
+                "Failed to write parameter {!r} = {!r} on {}.".format(
+                    name, value, elem_label,
+                )
+            )
 
 
 def execute_placement(doc, view, candidates):
@@ -635,6 +712,10 @@ def execute_placement(doc, view, candidates):
                     )
                 )
             continue
-        _apply_parameters(placed, c.annotation.get("parameters") or {})
+        _apply_parameters(
+            placed,
+            c.annotation.get("parameters") or {},
+            warnings=result.warnings,
+        )
         result.placed_count_by_kind[kind] = result.placed_count_by_kind.get(kind, 0) + 1
     return result

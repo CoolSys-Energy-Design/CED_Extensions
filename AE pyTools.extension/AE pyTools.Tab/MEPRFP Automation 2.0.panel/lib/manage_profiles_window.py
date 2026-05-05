@@ -35,6 +35,7 @@ import profile_model
 import truth_groups
 import merge_workflow
 import wpf_dialogs
+import revit_symbol_index as _sym_index
 
 
 _XAML_PATH = os.path.join(
@@ -57,10 +58,38 @@ class _ProfileItem(object):
 
 
 class _ParamRow(object):
+    """Two-column key/value row for the parameter DataGrid.
+
+    Plain instance attributes (``self.Name = name``) are exposed by
+    pythonnet 3 as read-only properties through the CLR TypeDescriptor
+    layer that WPF binding uses. The cell looks editable but the
+    user's typed value never lands back on the row, so existing YAML
+    values appear correctly on first read and then lock — edits seem
+    to take effect visually but the next ``_read_param_grid`` writes
+    back the original. Explicit ``@property`` + ``@setter`` pairs make
+    the property writable through reflection, so DataGrid TwoWay
+    bindings round-trip cleanly.
+    """
 
     def __init__(self, name="", value=""):
-        self.Name = name
-        self.Value = value
+        self._name = "" if name is None else str(name)
+        self._value = "" if value is None else str(value)
+
+    @property
+    def Name(self):
+        return self._name
+
+    @Name.setter
+    def Name(self, value):
+        self._name = "" if value is None else str(value)
+
+    @property
+    def Value(self):
+        return self._value
+
+    @Value.setter
+    def Value(self, value):
+        self._value = "" if value is None else str(value)
 
 
 def _coerce_float(text, default=0.0):

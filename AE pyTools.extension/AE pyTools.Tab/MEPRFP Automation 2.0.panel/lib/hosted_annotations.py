@@ -158,25 +158,71 @@ def annotation_rotation_deg(elem):
 def collect_element_parameters(elem):
     """Return ``{name: value_string}`` for every parameter on ``elem``.
 
-    Empty / no-value parameters (e.g. ``CKT_*`` before circuiting)
-    appear with an empty-string value so they show up in the editor —
-    the user wants to see the full parameter set, not just the
-    populated ones.
+    Walks **both** instance-level and type-level parameters in that
+    priority order — instance wins on name conflict. Capturing the
+    type level is required for typical keynote / tag families where
+    the user-visible value (e.g. ``Key Name_CED`` on a
+    ``GA_Keynote Symbol_CED`` family) lives on the type, not the
+    instance. Without the type pass those values were silently
+    dropped at capture time, the captured profile's annotations had
+    an empty ``parameters`` dict, and the placed keynotes ended up
+    with the family default ("XX") because the apply step had
+    nothing to write.
+
+    Empty / no-value parameters appear with an empty-string value so
+    the editor still surfaces the full parameter set — the user
+    wants to see every slot they could fill in.
     """
     out = {}
     if elem is None:
         return out
+
+    # Instance parameters first (these win on conflict).
+    _walk_parameters_into(elem, out)
+
+    # Type parameters next — fills in any name that wasn't already
+    # captured at the instance level. Covers keynote families whose
+    # key text / description live on the FamilySymbol.
+    try:
+        type_id = elem.GetTypeId()
+    except Exception:
+        type_id = None
+    if type_id is not None:
+        try:
+            tid_int = (
+                getattr(type_id, "Value", None)
+                or getattr(type_id, "IntegerValue", None)
+            )
+        except Exception:
+            tid_int = None
+        if tid_int is not None and int(tid_int) > 0:
+            try:
+                type_elem = elem.Document.GetElement(type_id)
+            except Exception:
+                type_elem = None
+            if type_elem is not None:
+                _walk_parameters_into(type_elem, out)
+
+    return out
+
+
+def _walk_parameters_into(elem, out):
+    """Iterate ``elem.Parameters`` and record ``name -> value_string``
+    into ``out``. Existing keys in ``out`` are preserved so the caller
+    can call this multiple times in priority order (instance first,
+    then type) without overwriting earlier values."""
     try:
         params_iter = elem.Parameters
     except Exception:
-        return out
+        return
     for p in params_iter:
         if p is None:
             continue
         try:
-            name = p.Definition.Name
+            d = p.Definition
+            name = d.Name if d is not None else None
         except Exception:
-            continue
+            name = None
         if not name or name in out:
             continue
         value = None
@@ -190,7 +236,6 @@ def collect_element_parameters(elem):
             except Exception:
                 value = None
         out[name] = "" if value is None else str(value)
-    return out
 
 
 # ---------------------------------------------------------------------

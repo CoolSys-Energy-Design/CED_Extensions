@@ -208,12 +208,21 @@ class _OffsetRow(object):
 class _AnnotationRow(object):
     """One ``led.annotations[*]`` entry."""
 
-    def __init__(self, data, ann_label_options_net=None, ann_label_lookup=None):
+    def __init__(self, data, ann_label_options_net=None, ann_label_lookup=None,
+                 doc=None):
         self._data = data
         self.KindOptions = _ANNOTATION_KIND_OPTIONS_NET
         # Annotation Family:Type dropdown: shared CLR list across all rows.
         self.AnnLabelOptions = ann_label_options_net or _make_clr_string_list(())
         self._ann_label_lookup = ann_label_lookup or {}
+        # Doc reference so the Label setter can pull symbol-default
+        # parameter values when the user picks a known Family:Type.
+        # Without this, annotations created in the editor start with
+        # an empty ``parameters`` dict and the placed instances show
+        # default content (keynotes display 'XX' etc.). When set, the
+        # setter mirrors what ``Auto-fill from family`` does for LED
+        # parameters but inline on Family:Type selection.
+        self._doc = doc
 
     @property
     def Kind(self):
@@ -250,9 +259,19 @@ class _AnnotationRow(object):
         # a free-text label so user-typed annotations still survive.
         info = self._ann_label_lookup.get(new_label)
         if info:
+            old_label = self._data.get("label") or ""
             self._data["family_name"] = info.get("family_name") or ""
             self._data["type_name"] = info.get("type_name") or ""
             self._data["label"] = new_label
+            # Auto-populate the annotation's parameters from the
+            # chosen family — only when (a) we have a doc to query,
+            # (b) the parameters dict is currently empty (don't blow
+            # away user-typed values), and (c) the label actually
+            # changed (not a no-op set).
+            if self._doc is not None and new_label != old_label:
+                params = self._data.setdefault("parameters", {})
+                if not params:
+                    self._auto_populate_parameters(new_label)
         elif " : " in new_label:
             family, type_name = new_label.split(" : ", 1)
             self._data["family_name"] = family.strip()
@@ -262,6 +281,36 @@ class _AnnotationRow(object):
             self._data["family_name"] = ""
             self._data["type_name"] = ""
             self._data["label"] = new_label
+
+    def _auto_populate_parameters(self, label):
+        """Pull defaults from the chosen Family:Type's symbol and seed
+        the annotation's ``parameters`` dict.
+
+        Mirrors what the LED Parameters tab does on ``Auto-fill from
+        family`` — symbol + any-instance values, written into the
+        in-memory dict so downstream YAML save + Place Element
+        Annotations see real values instead of an empty mapping
+        (which is the root cause of keynotes placing as 'XX').
+        """
+        if self._doc is None or not label:
+            return
+        try:
+            symbol = _sym_index.find_symbol_by_label(self._doc, label)
+        except Exception:
+            symbol = None
+        if symbol is None:
+            return
+        try:
+            defaults = _sym_index.symbol_parameter_defaults(self._doc, symbol)
+        except Exception:
+            defaults = {}
+        params = self._data.setdefault("parameters", {})
+        for name, value in defaults.items():
+            # Don't overwrite anything already set; ``params`` is
+            # empty at first call but defensive in case of re-entry.
+            if name in params:
+                continue
+            params[name] = value
 
     def _offset_dict(self):
         # Annotation offsets are a single dict, not a list.
@@ -602,6 +651,7 @@ class SpaceLedDetailsController(object):
                     a,
                     ann_label_options_net=self._ann_label_options_net,
                     ann_label_lookup=self._ann_label_lookup,
+                    doc=self._doc,
                 ))
 
     # ----- parameter actions ---------------------------------------
@@ -696,6 +746,7 @@ class SpaceLedDetailsController(object):
             new,
             ann_label_options_net=self._ann_label_options_net,
             ann_label_lookup=self._ann_label_lookup,
+            doc=self._doc,
         ))
         self.ann_grid.SelectedItem = self._ann_rows[self._ann_rows.Count - 1]
 
