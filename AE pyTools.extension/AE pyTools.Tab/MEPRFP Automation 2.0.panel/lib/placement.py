@@ -930,9 +930,28 @@ def _resolve_family_symbol(doc, family_name, type_name, allow_type_substitution=
     return None, "type_missing", available_types
 
 
-def _resolve_group_type(doc, group_name):
+def _resolve_group_type(doc, group_name, group_index=None):
     """Returns ``(group_type_or_None, status)`` where status is
-    ``'exact'``, ``'normalized'``, or ``'missing'``."""
+    ``'exact'``, ``'normalized'``, or ``'missing'``.
+
+    ``group_index`` is the optional pre-built doc cache produced by
+    ``build_group_type_index``. Pass it for any call inside a hot
+    placement loop to avoid an O(N*M) FilteredElementCollector pass
+    per LED. When omitted, this function falls back to the live
+    collector — so single one-off lookups still work.
+    """
+    if not group_name:
+        return None, "missing"
+
+    if group_index is not None:
+        gt = group_index["by_name"].get(group_name)
+        if gt is not None:
+            return gt, "exact"
+        gt = group_index["by_norm"].get(normalize_name(group_name))
+        if gt is not None:
+            return gt, "normalized"
+        return None, "missing"
+
     target_norm = normalize_name(group_name)
     normalized_hit = None
     for gt in FilteredElementCollector(doc).OfClass(GroupType):
@@ -943,6 +962,35 @@ def _resolve_group_type(doc, group_name):
     if normalized_hit is not None:
         return normalized_hit, "normalized"
     return None, "missing"
+
+
+def build_group_type_index(doc):
+    """Walk every ``GroupType`` once and return a cache for fast lookups.
+
+    Used by the placement loop so each LED's group-vs-family decision
+    is O(1) instead of O(group-count) per LED. Both model and detail
+    groups arrive on the same collector; ``doc.Create.PlaceGroup``
+    fails fast if you hand it a detail group, so we don't pre-filter —
+    the family-fallback path catches it.
+    """
+    by_name = {}
+    by_norm = {}
+    if doc is None:
+        return {"by_name": by_name, "by_norm": by_norm}
+    try:
+        collector = FilteredElementCollector(doc).OfClass(GroupType)
+    except Exception:
+        return {"by_name": by_name, "by_norm": by_norm}
+    for gt in collector:
+        try:
+            name = gt.Name
+        except Exception:
+            continue
+        if not name:
+            continue
+        by_name.setdefault(name, gt)
+        by_norm.setdefault(normalize_name(name), gt)
+    return {"by_name": by_name, "by_norm": by_norm}
 
 
 def _split_label(label):
@@ -957,7 +1005,7 @@ def _split_label(label):
 
 
 def _place_fixture(doc, led, anchor_world_pt, anchor_rotation_deg, level_id,
-                   allow_type_substitution=False):
+                   allow_type_substitution=False, group_index=None):
     """Place one LED at the resolved world point.
 
     Returns ``(placed_elem_or_None, status, info)`` where ``status`` is
@@ -966,6 +1014,18 @@ def _place_fixture(doc, led, anchor_world_pt, anchor_rotation_deg, level_id,
     ``'no_label'``, or ``'create_failed'``. ``info`` is a dict with
     extra context (available_types, requested_family, requested_type,
     requested_group) used by the caller to build warnings.
+
+    Group-vs-family resolution: the YAML ``is_group`` flag is
+    unreliable (V5 capture flagged real model groups as
+    ``is_group: false`` for some entries), so we ALSO try a model-
+    group lookup whenever the label looks group-shaped — i.e. the
+    family-name half equals the type-name half (`"X : X"`). That's
+    the canonical pattern when a Group is serialized as a label.
+    Group lookup uses the ``family_name`` half (groups are named
+    ``"X"`` not ``"X : X"`` in Revit's GroupType collection).
+    Successful group placement returns immediately; otherwise we
+    fall through to the family-symbol path so a misclassified LED
+    still lands.
     """
     label = led.get("label") or ""
     is_group = bool(led.get("is_group"))
@@ -981,28 +1041,60 @@ def _place_fixture(doc, led, anchor_world_pt, anchor_rotation_deg, level_id,
     )
     target_pt = XYZ(target_pt_t[0], target_pt_t[1], target_pt_t[2])
 
-    if is_group:
-        group_type, gstatus = _resolve_group_type(doc, label)
-        if group_type is not None:
-            group = doc.Create.PlaceGroup(target_pt, group_type)
-            if abs(target_rot_deg) > geometry.Tolerances.ROTATION_DEG:
-                try:
-                    from Autodesk.Revit.DB import ElementTransformUtils, Line
-                    axis = Line.CreateBound(target_pt, XYZ(target_pt.X, target_pt.Y, target_pt.Z + 1.0))
-                    ElementTransformUtils.RotateElement(
-                        doc, group.Id, axis, math.radians(target_rot_deg)
-                    )
-                except Exception:
-                    pass
-            return group, gstatus, {"requested_group": label}
-        # Group lookup failed. If the label looks like a Family : Type
-        # marker, fall through to the family-symbol path — the legacy
-        # data set ``is_group: true`` indiscriminately, so we can't trust
-        # that flag alone.
-        if " : " not in label:
-            return None, "group_missing", {"requested_group": label}
-
     family_name, type_name = _split_label(label)
+
+    # "Looks like a group" heuristic: a label captured from a Revit
+    # Group is serialized as "<group name> : <group name>" because
+    # groups have no real "type" axis. Catches cases where the YAML
+    # ``is_group`` flag is wrong (e.g. P_-prefixed model groups in V5
+    # that captured as ``is_group: false``). The P_ prefix is the
+    # project-wide naming convention for model groups, so we treat any
+    # P_-prefixed label as group-shaped regardless of the family/type
+    # split.
+    looks_like_group = bool(
+        family_name and (
+            (type_name and family_name == type_name)
+            or family_name.startswith("P_")
+            or label.startswith("P_")
+        )
+    )
+
+    if is_group or looks_like_group:
+        # Always look up by the family-name half — groups are named
+        # ``"X"`` in the GroupType collection, not ``"X : X"``.
+        group_type, gstatus = _resolve_group_type(
+            doc, family_name or label, group_index=group_index,
+        )
+        if group_type is not None:
+            try:
+                group = doc.Create.PlaceGroup(target_pt, group_type)
+            except Exception:
+                # Detail group, or some other PlaceGroup-rejecting
+                # type — fall through to family path so a real family
+                # with the same name (rare) still gets a shot.
+                group = None
+            if group is not None:
+                if abs(target_rot_deg) > geometry.Tolerances.ROTATION_DEG:
+                    try:
+                        from Autodesk.Revit.DB import ElementTransformUtils, Line
+                        axis = Line.CreateBound(
+                            target_pt,
+                            XYZ(target_pt.X, target_pt.Y, target_pt.Z + 1.0),
+                        )
+                        ElementTransformUtils.RotateElement(
+                            doc, group.Id, axis, math.radians(target_rot_deg),
+                        )
+                    except Exception:
+                        pass
+                return group, gstatus, {"requested_group": family_name or label}
+        # Group lookup failed (or PlaceGroup rejected). If the YAML
+        # explicitly said is_group AND we have nothing else to try,
+        # surface a clean group_missing — otherwise the label might
+        # legitimately be a family with family==type (rare but
+        # possible) so we fall through.
+        if is_group and not looks_like_group and " : " not in label:
+            return None, "group_missing", {"requested_group": family_name or label}
+
     if not family_name:
         return None, "no_label", {}
     symbol, status, available_types = _resolve_family_symbol(
@@ -1311,6 +1403,10 @@ def execute_placement(doc, matches, options=None):
     failure_keys = {}
     substitution_keys = {}
 
+    # Build the GroupType cache once per run so the group-vs-family
+    # decision inside _place_fixture is O(1) per LED.
+    group_index = build_group_type_index(doc)
+
     for m in kept:
         anchor = m.target.world_pt
         anchor_rot = m.target.rotation_deg
@@ -1323,6 +1419,7 @@ def execute_placement(doc, matches, options=None):
                 placed, status, info = _place_fixture(
                     doc, led, anchor, anchor_rot, options.default_level_id,
                     allow_type_substitution=options.allow_type_substitution,
+                    group_index=group_index,
                 )
                 led_id = led.get("id") or "?"
                 led_label = led.get("label") or "?"
