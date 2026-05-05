@@ -1,0 +1,6 @@
+title: "Import\nSpace Config"
+tooltip: |
+  Pick a YAML file containing space_buckets and / or space_profiles
+  and replace those two keys in the active project's payload. Equipment
+  data and existing project-local classifications are preserved.
+is_beta: false

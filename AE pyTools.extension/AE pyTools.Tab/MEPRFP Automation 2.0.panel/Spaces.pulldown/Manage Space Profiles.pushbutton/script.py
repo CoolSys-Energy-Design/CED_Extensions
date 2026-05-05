@@ -23,9 +23,61 @@ import manage_space_profiles_window
 TITLE = "Manage Space Profiles (MEPRFP 2.0)"
 
 
+def _profile_save_summary(profile_data):
+    """Diagnostic — describe what's about to be saved.
+
+    Lists every space_profile with its bucket_id and a per-LED summary
+    of placement-rule.kind, so we can see in the output panel whether
+    the in-memory dict actually carries the user's bucket and anchor
+    selections.
+    """
+    profiles = profile_data.get("space_profiles") or []
+    if not profiles:
+        return "(no space_profiles in payload)"
+    lines = []
+    for p in profiles:
+        if not isinstance(p, dict):
+            continue
+        pid = p.get("id") or "?"
+        name = p.get("name") or "?"
+        bucket = p.get("bucket_id") or "(none)"
+        led_kinds = []
+        for s in p.get("linked_sets") or ():
+            if not isinstance(s, dict):
+                continue
+            for led in s.get("linked_element_definitions") or ():
+                if not isinstance(led, dict):
+                    continue
+                rule = led.get("placement_rule") or {}
+                led_kinds.append(rule.get("kind") or "?")
+        lines.append("- `{}` *{}* bucket=`{}` kinds=`{}`".format(
+            pid, name, bucket, led_kinds,
+        ))
+    return "\n".join(lines)
+
+
 def _save_dirty_edits(doc, profile_data, output, action):
-    with revit.Transaction(action, doc=doc):
-        active_yaml.save_active_data(doc, profile_data, action=action)
+    summary = _profile_save_summary(profile_data)
+    output.print_md(
+        "**Saving space-profile edits**\n\n"
+        "Snapshot of the in-memory payload about to be persisted:\n\n"
+        "{}\n".format(summary)
+    )
+    try:
+        with revit.Transaction(action, doc=doc):
+            active_yaml.save_active_data(doc, profile_data, action=action)
+    except Exception as exc:
+        output.print_md(
+            "**Save FAILED**\n\n"
+            "- Action: `{}`\n"
+            "- Error type: `{}`\n"
+            "- Error: {}\n\n"
+            "Your edits are still in memory in this Revit session — try Save "
+            "again from the editor before closing the project. If the same "
+            "error repeats, paste the message above so we can diagnose."
+            .format(action, type(exc).__name__, exc)
+        )
+        raise
     output.print_md("**Space-profile edits saved.**")
 
 

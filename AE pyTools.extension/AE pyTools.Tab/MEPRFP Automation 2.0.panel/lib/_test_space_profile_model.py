@@ -16,9 +16,18 @@ from space_profile_model import (
     SpaceLED,
     PlacementRule,
     PLACEMENT_KINDS,
-    KIND_CENTER, KIND_NE, KIND_DOOR_RELATIVE, KIND_N, KIND_E,
-    EDGE_KINDS, CORNER_KINDS,
+    KIND_CENTER,
+    KIND_DOOR_RELATIVE,
+    KIND_WALL_OPPOSITE_DOOR,
+    KIND_WALL_RIGHT_OF_DOOR,
+    KIND_WALL_LEFT_OF_DOOR,
+    KIND_CORNER_FURTHEST_FROM_DOOR,
+    KIND_CORNER_CLOSEST_TO_DOOR,
+    DOOR_DEPENDENT_KINDS,
+    WALL_KINDS,
+    CORNER_KINDS,
     is_valid_placement_kind,
+    is_door_dependent,
     wrap_profiles,
     find_profile_by_id,
     profiles_for_bucket,
@@ -43,16 +52,25 @@ def _check(label, cond, detail=""):
 # ---------------------------------------------------------------------
 
 def test_placement_kinds_inventory():
-    print("\n[placement] kind inventory")
-    _check("count", len(PLACEMENT_KINDS) == 10)
+    print("\n[placement] kind inventory (door-anchored vocabulary)")
+    _check("count", len(PLACEMENT_KINDS) == 7)
     _check("center in set", KIND_CENTER in PLACEMENT_KINDS)
     _check("door_relative in set", KIND_DOOR_RELATIVE in PLACEMENT_KINDS)
-    _check("EDGE_KINDS == 4", len(EDGE_KINDS) == 4)
-    _check("CORNER_KINDS == 4", len(CORNER_KINDS) == 4)
-    _check("EDGE/CORNER disjoint", not (EDGE_KINDS & CORNER_KINDS))
-    _check("validate ok", is_valid_placement_kind(KIND_NE))
+    _check("WALL_KINDS == 3", len(WALL_KINDS) == 3)
+    _check("CORNER_KINDS == 2", len(CORNER_KINDS) == 2)
+    _check("WALL/CORNER disjoint", not (WALL_KINDS & CORNER_KINDS))
+    _check("center NOT door-dependent",
+           is_door_dependent(KIND_CENTER) is False)
+    _check("wall_opposite_door IS door-dependent",
+           is_door_dependent(KIND_WALL_OPPOSITE_DOOR) is True)
+    _check("corner_closest_to_door IS door-dependent",
+           is_door_dependent(KIND_CORNER_CLOSEST_TO_DOOR) is True)
+    _check("validate ok",
+           is_valid_placement_kind(KIND_WALL_OPPOSITE_DOOR))
     _check("validate bad",
            is_valid_placement_kind("up_and_to_the_left") is False)
+    _check("legacy 'ne' rejected",
+           is_valid_placement_kind("ne") is False)
 
 
 def test_placement_rule_defaults():
@@ -69,11 +87,11 @@ def test_placement_rule_setters_round_trip():
     print("\n[placement] setters round-trip")
     d = {}
     rule = PlacementRule(d)
-    rule.kind = KIND_NE
+    rule.kind = KIND_CORNER_FURTHEST_FROM_DOOR
     rule.inset_inches = 18
     rule.door_offset_x_inches = 12
     rule.door_offset_y_inches = -6
-    _check("dict kind", d.get("kind") == KIND_NE)
+    _check("dict kind", d.get("kind") == KIND_CORNER_FURTHEST_FROM_DOOR)
     _check("dict inset", d.get("inset_inches") == 18.0)
     door = d.get("door_offset_inches") or {}
     _check("dict door.x", door.get("x") == 12.0)

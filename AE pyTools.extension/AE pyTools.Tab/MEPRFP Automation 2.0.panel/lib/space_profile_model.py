@@ -59,32 +59,65 @@ from profile_model import (  # noqa: F401  -- re-export for callers
 
 # ---------------------------------------------------------------------
 # Placement-rule kinds
+#
+# Cardinal kinds (n / s / e / w / ne / nw / se / sw) were dropped:
+# project-north has no useful relationship to where the door of a
+# space happens to land, so "north wall" was never a stable reference.
+# The new vocabulary is door-anchored — every kind except ``center``
+# resolves its geometry from the user-selected reference door of the
+# space, so "wall opposite the door" and "corner furthest from the
+# door" stay meaningful regardless of how the space is rotated.
 # ---------------------------------------------------------------------
 
 KIND_CENTER = "center"
-KIND_N = "n"
-KIND_S = "s"
-KIND_E = "e"
-KIND_W = "w"
-KIND_NE = "ne"
-KIND_NW = "nw"
-KIND_SE = "se"
-KIND_SW = "sw"
 KIND_DOOR_RELATIVE = "door_relative"
+KIND_WALL_OPPOSITE_DOOR = "wall_opposite_door"
+KIND_WALL_RIGHT_OF_DOOR = "wall_right_of_door"
+KIND_WALL_LEFT_OF_DOOR = "wall_left_of_door"
+KIND_CORNER_FURTHEST_FROM_DOOR = "corner_furthest_from_door"
+KIND_CORNER_CLOSEST_TO_DOOR = "corner_closest_to_door"
 
 PLACEMENT_KINDS = (
     KIND_CENTER,
-    KIND_N, KIND_S, KIND_E, KIND_W,
-    KIND_NE, KIND_NW, KIND_SE, KIND_SW,
     KIND_DOOR_RELATIVE,
+    KIND_WALL_OPPOSITE_DOOR,
+    KIND_WALL_RIGHT_OF_DOOR,
+    KIND_WALL_LEFT_OF_DOOR,
+    KIND_CORNER_FURTHEST_FROM_DOOR,
+    KIND_CORNER_CLOSEST_TO_DOOR,
 )
 
-EDGE_KINDS = frozenset({KIND_N, KIND_S, KIND_E, KIND_W})
-CORNER_KINDS = frozenset({KIND_NE, KIND_NW, KIND_SE, KIND_SW})
+# Every kind that needs a reference door to resolve. The placement
+# workflow uses this set to decide whether a Space needs a door
+# picker prompt.
+DOOR_DEPENDENT_KINDS = frozenset({
+    KIND_DOOR_RELATIVE,
+    KIND_WALL_OPPOSITE_DOOR,
+    KIND_WALL_RIGHT_OF_DOOR,
+    KIND_WALL_LEFT_OF_DOOR,
+    KIND_CORNER_FURTHEST_FROM_DOOR,
+    KIND_CORNER_CLOSEST_TO_DOOR,
+})
+
+WALL_KINDS = frozenset({
+    KIND_WALL_OPPOSITE_DOOR,
+    KIND_WALL_RIGHT_OF_DOOR,
+    KIND_WALL_LEFT_OF_DOOR,
+})
+
+CORNER_KINDS = frozenset({
+    KIND_CORNER_FURTHEST_FROM_DOOR,
+    KIND_CORNER_CLOSEST_TO_DOOR,
+})
 
 
 def is_valid_placement_kind(kind):
     return kind in PLACEMENT_KINDS
+
+
+def is_door_dependent(kind):
+    """True when the kind requires a reference door to resolve."""
+    return kind in DOOR_DEPENDENT_KINDS
 
 
 # ---------------------------------------------------------------------

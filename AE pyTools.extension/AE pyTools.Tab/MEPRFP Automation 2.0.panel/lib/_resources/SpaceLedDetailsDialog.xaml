@@ -29,6 +29,9 @@
           </TextBlock>
           <DockPanel Grid.Row="1" Margin="0,0,0,6">
             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
+              <Button x:Name="ParamAutoFillButton" Content="Auto-fill from family"
+                      Width="160" Margin="0,0,12,0"
+                      ToolTip="Add a blank row for every parameter the LED's chosen Family:Type exposes. Existing rows are preserved."/>
               <Button x:Name="ParamAddButton" Content="Add" Width="80" Margin="0,0,4,0"/>
               <Button x:Name="ParamDeleteButton" Content="Delete" Width="80"/>
             </StackPanel>
@@ -134,21 +137,23 @@
               <DataGridTemplateColumn Header="Kind" MinWidth="100" Width="0.9*">
                 <DataGridTemplateColumn.CellTemplate>
                   <DataTemplate>
-                    <ComboBox SelectedValue="{Binding Kind, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                              ItemsSource="{Binding KindOptions}"
+                    <ComboBox x:Name="AnnKindCombo"
+                              SelectedValue="{Binding Kind, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                               IsEditable="False"/>
                   </DataTemplate>
                 </DataGridTemplateColumn.CellTemplate>
               </DataGridTemplateColumn>
-              <DataGridTextColumn Header="Label / Tag Type"
-                                  Binding="{Binding Label, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                                  MinWidth="180" Width="1.6*"/>
-              <DataGridTextColumn Header="Family"
-                                  Binding="{Binding FamilyName, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                                  MinWidth="140" Width="1.2*"/>
-              <DataGridTextColumn Header="Type"
-                                  Binding="{Binding TypeName, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                                  MinWidth="120" Width="1*"/>
+              <DataGridTemplateColumn Header="Family : Type" MinWidth="240" Width="2.6*">
+                <DataGridTemplateColumn.CellTemplate>
+                  <DataTemplate>
+                    <ComboBox x:Name="AnnLabelCombo"
+                              IsEditable="True"
+                              IsTextSearchEnabled="True"
+                              StaysOpenOnEdit="True"
+                              Text="{Binding Label, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"/>
+                  </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+              </DataGridTemplateColumn>
               <DataGridTextColumn Header="X (in)"
                                   Binding="{Binding OffsetXText, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
                                   MinWidth="70" Width="0.7*"/>

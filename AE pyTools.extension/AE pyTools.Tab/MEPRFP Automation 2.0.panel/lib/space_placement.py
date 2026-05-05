@@ -35,9 +35,14 @@ import math
 
 from space_profile_model import (
     PlacementRule,
-    KIND_CENTER, KIND_N, KIND_S, KIND_E, KIND_W,
-    KIND_NE, KIND_NW, KIND_SE, KIND_SW,
+    KIND_CENTER,
     KIND_DOOR_RELATIVE,
+    KIND_WALL_OPPOSITE_DOOR,
+    KIND_WALL_RIGHT_OF_DOOR,
+    KIND_WALL_LEFT_OF_DOOR,
+    KIND_CORNER_FURTHEST_FROM_DOOR,
+    KIND_CORNER_CLOSEST_TO_DOOR,
+    DOOR_DEPENDENT_KINDS,
 )
 
 
@@ -114,12 +119,20 @@ class SpaceGeometry(object):
 # Anchor computation (pure logic)
 # ---------------------------------------------------------------------
 
-def anchor_points(rule, geom):
+def anchor_points(rule, geom, door_anchor=None):
     """Return ``[(x, y, z), ...]`` anchor points for ``rule`` in ``geom``.
 
-    For non-door kinds returns a single-point list.
-    For ``door_relative``: returns one anchor per door in
-    ``geom.door_anchors`` — empty list when the space has none.
+    All non-``center`` kinds depend on a reference door. Pass it in
+    via ``door_anchor`` (the ``(origin_xy, inward_xy)`` tuple). When
+    omitted, the first entry of ``geom.door_anchors`` is used —
+    convenient for unit tests and for spaces with exactly one door.
+
+    Returns an empty list when:
+
+      * ``rule`` / ``geom`` / ``geom.bbox`` is missing.
+      * The kind is door-dependent and no door is available
+        (caller's cue to emit a comment-only plan).
+      * The kind isn't one of the recognised values.
     """
     if rule is None or geom is None or geom.bbox is None:
         return []
@@ -132,59 +145,135 @@ def anchor_points(rule, geom):
     if kind == KIND_CENTER:
         return [(geom.x_center, geom.y_center, z)]
 
-    if kind in (KIND_N, KIND_S, KIND_E, KIND_W):
-        return [_edge_point(kind, rule, geom, z)]
-
-    if kind in (KIND_NE, KIND_NW, KIND_SE, KIND_SW):
-        return [_corner_point(kind, rule, geom, z)]
+    # Resolve the reference door. Caller-supplied wins; otherwise
+    # fall back to the first door in geom.
+    door = door_anchor
+    if door is None and geom.door_anchors:
+        door = geom.door_anchors[0]
+    if door is None:
+        return []
 
     if kind == KIND_DOOR_RELATIVE:
-        return _door_relative_points(rule, geom, z)
+        return [_door_relative_point(rule, door, z)]
 
-    # Unknown kind: don't crash placement — return empty so the
-    # placement engine skips this LED and reports it.
+    if kind in (
+        KIND_WALL_OPPOSITE_DOOR,
+        KIND_WALL_RIGHT_OF_DOOR,
+        KIND_WALL_LEFT_OF_DOOR,
+    ):
+        return [_wall_relative_point(kind, rule, geom, door, z)]
+
+    if kind in (
+        KIND_CORNER_FURTHEST_FROM_DOOR,
+        KIND_CORNER_CLOSEST_TO_DOOR,
+    ):
+        return [_corner_relative_point(kind, rule, geom, door, z)]
+
     return []
 
 
-def _edge_point(kind, rule, geom, z):
-    inset = _in_to_ft(rule.inset_inches)
-    if kind == KIND_N:
-        return (geom.x_center, geom.y_max - inset, z)
-    if kind == KIND_S:
-        return (geom.x_center, geom.y_min + inset, z)
-    if kind == KIND_E:
-        return (geom.x_max - inset, geom.y_center, z)
-    if kind == KIND_W:
-        return (geom.x_min + inset, geom.y_center, z)
-    return (geom.x_center, geom.y_center, z)  # unreachable
-
-
-def _corner_point(kind, rule, geom, z):
-    inset = _in_to_ft(rule.inset_inches)
-    if kind == KIND_NE:
-        return (geom.x_max - inset, geom.y_max - inset, z)
-    if kind == KIND_NW:
-        return (geom.x_min + inset, geom.y_max - inset, z)
-    if kind == KIND_SE:
-        return (geom.x_max - inset, geom.y_min + inset, z)
-    if kind == KIND_SW:
-        return (geom.x_min + inset, geom.y_min + inset, z)
-    return (geom.x_center, geom.y_center, z)  # unreachable
-
-
-def _door_relative_points(rule, geom, z):
-    out = []
+def _door_relative_point(rule, door_anchor, z):
+    """Single point at the door, optionally offset along the door's
+    inward (door_offset_x) and sideways (door_offset_y) axes."""
     door_x = _in_to_ft(rule.door_offset_x_inches)
     door_y = _in_to_ft(rule.door_offset_y_inches)
-    for origin_xy, inward_xy in geom.door_anchors or ():
-        ox, oy = float(origin_xy[0]), float(origin_xy[1])
-        nx, ny = _normalize_xy(inward_xy)
-        # Sideways = inward rotated 90° CCW: (-ny, nx).
-        sx, sy = -ny, nx
-        x = ox + door_x * nx + door_y * sx
-        y = oy + door_x * ny + door_y * sy
-        out.append((x, y, z))
-    return out
+    origin_xy, inward_xy = door_anchor
+    ox, oy = float(origin_xy[0]), float(origin_xy[1])
+    nx, ny = _normalize_xy(inward_xy)
+    # Sideways = inward rotated 90° CCW: (-ny, nx).
+    sx, sy = -ny, nx
+    x = ox + door_x * nx + door_y * sx
+    y = oy + door_x * ny + door_y * sy
+    return (x, y, z)
+
+
+def _wall_relative_point(kind, rule, geom, door_anchor, z):
+    """Anchor at the midpoint of the wall identified relative to the
+    door (opposite / right / left), inset toward the room interior
+    by ``rule.inset_inches``.
+
+    "Right" / "left" are taken from the perspective of someone
+    standing in the doorway facing into the room (i.e. along the
+    door's inward normal). 90° clockwise from inward is "right".
+    """
+    inset = _in_to_ft(rule.inset_inches)
+    _door_xy, inward_xy = door_anchor
+    nx, ny = _normalize_xy(inward_xy)
+    xmin = geom.x_min
+    xmax = geom.x_max
+    ymin = geom.y_min
+    ymax = geom.y_max
+    cx = geom.x_center
+    cy = geom.y_center
+
+    # Pick which bbox edge is nearest each cardinal of the door's
+    # frame. ``axis`` is which world axis the inward normal aligns
+    # most strongly with.
+    if abs(nx) > abs(ny):
+        # Door wall is on the X axis (east or west).
+        if nx > 0:
+            # Door on west wall (inward = +X). Right (90° CW from +X) = -Y.
+            opposite = (xmax - inset, cy, z)
+            right = (cx, ymin + inset, z)
+            left = (cx, ymax - inset, z)
+        else:
+            # Door on east wall (inward = -X). Right (90° CW from -X) = +Y.
+            opposite = (xmin + inset, cy, z)
+            right = (cx, ymax - inset, z)
+            left = (cx, ymin + inset, z)
+    else:
+        if ny > 0:
+            # Door on south wall (inward = +Y). Right (90° CW from +Y) = +X.
+            opposite = (cx, ymax - inset, z)
+            right = (xmax - inset, cy, z)
+            left = (xmin + inset, cy, z)
+        else:
+            # Door on north wall (inward = -Y). Right (90° CW from -Y) = -X.
+            opposite = (cx, ymin + inset, z)
+            right = (xmin + inset, cy, z)
+            left = (xmax - inset, cy, z)
+
+    if kind == KIND_WALL_OPPOSITE_DOOR:
+        return opposite
+    if kind == KIND_WALL_RIGHT_OF_DOOR:
+        return right
+    if kind == KIND_WALL_LEFT_OF_DOOR:
+        return left
+    return (cx, cy, z)  # unreachable
+
+
+def _corner_relative_point(kind, rule, geom, door_anchor, z):
+    """Anchor at the bbox corner that's closest to / furthest from
+    the door, inset diagonally toward the room interior."""
+    inset = _in_to_ft(rule.inset_inches)
+    (door_x, door_y), _inward = door_anchor
+    xmin = geom.x_min
+    xmax = geom.x_max
+    ymin = geom.y_min
+    ymax = geom.y_max
+    cx = geom.x_center
+    cy = geom.y_center
+
+    corners = [
+        (xmin, ymin),
+        (xmin, ymax),
+        (xmax, ymin),
+        (xmax, ymax),
+    ]
+
+    def _dist_sq(c):
+        return (c[0] - door_x) ** 2 + (c[1] - door_y) ** 2
+
+    if kind == KIND_CORNER_CLOSEST_TO_DOOR:
+        target = min(corners, key=_dist_sq)
+    else:  # KIND_CORNER_FURTHEST_FROM_DOOR
+        target = max(corners, key=_dist_sq)
+
+    # Inset diagonally toward the room center.
+    tx, ty = target
+    tx += inset if tx < cx else -inset
+    ty += inset if ty < cy else -inset
+    return (tx, ty, z)
 
 
 def _normalize_xy(vec):
@@ -201,16 +290,16 @@ def _normalize_xy(vec):
 # Multi-LED expansion
 # ---------------------------------------------------------------------
 
-def expand_led_placements(led, geom):
+def expand_led_placements(led, geom, door_anchor=None):
     """Return ``[(x, y, z, rotation_deg), ...]`` for one LED in one space.
 
     Multiplies the rule's anchor set against the LED's per-instance
-    ``offsets`` list. A door-relative LED with 3 doors and 2 offsets
-    yields 6 placements; a center LED with 0 offsets yields 1
-    placement at the bare anchor.
+    ``offsets`` list. ``door_anchor`` is the user-chosen reference
+    door for door-dependent kinds; defaults to the first door of
+    ``geom`` when omitted.
     """
     rule = led.placement_rule
-    anchors = anchor_points(rule, geom)
+    anchors = anchor_points(rule, geom, door_anchor=door_anchor)
     if not anchors:
         return []
 
@@ -244,13 +333,17 @@ try:
     from Autodesk.Revit.DB import (
         BuiltInCategory,
         FilteredElementCollector,
+        RevitLinkInstance,
         SpatialElementBoundaryOptions,
+        XYZ,
     )
     _HAS_REVIT = True
 except Exception:  # pragma: no cover -- only true outside Revit
     BuiltInCategory = None
     FilteredElementCollector = None
+    RevitLinkInstance = None
     SpatialElementBoundaryOptions = None
+    XYZ = None
     _HAS_REVIT = False
 
 
@@ -369,10 +462,20 @@ def _space_floor_z(doc, space):
 def _space_door_anchors(doc, space):
     """Return ``[(origin_xy, inward_normal_xy), ...]`` for doors at this space.
 
-    Walks the bounding walls reported by ``GetBoundarySegments`` and
-    pulls every Door hosted in those walls, filtering to doors whose
-    location point is on the bounding loop (so doors hosted in a wall
-    that just *touches* this space at a corner are excluded).
+    Two-tier search:
+
+      1. Doors *hosted* by walls that ``GetBoundarySegments`` reports
+         as bounding this Space. Cheapest path; works for projects
+         where architecture lives in the host doc.
+      2. Doors in any *linked* Revit instance whose location, after
+         transforming through the link's ``GetTotalTransform()``,
+         falls within ~1 ft of one of the Space's boundary curves.
+         Required when architecture is in a linked model — the
+         host wall id check fails because the door's host wall lives
+         in the link's id namespace, not this doc's.
+
+    Both tiers are unioned. Duplicates (same physical door appearing
+    in host + a link) are deduplicated by location proximity.
     """
     try:
         opts = SpatialElementBoundaryOptions()
@@ -383,55 +486,171 @@ def _space_door_anchors(doc, space):
         return []
 
     wall_ids = set()
+    boundary_curves = []
     for loop in loops:
         for seg in loop:
             try:
                 wid = seg.ElementId
             except Exception:
                 wid = None
-            if wid is None:
-                continue
-            wid_int = _element_id_int(wid)
-            if wid_int is not None:
-                wall_ids.add(wid_int)
-
-    if not wall_ids:
-        return []
-
-    # Collect all door instances and filter by Host id.
-    doors = (
-        FilteredElementCollector(doc)
-        .OfCategory(BuiltInCategory.OST_Doors)
-        .WhereElementIsNotElementType()
-    )
+            if wid is not None:
+                wid_int = _element_id_int(wid)
+                # InvalidElementId reports as -1; ignore it.
+                if wid_int is not None and wid_int > 0:
+                    wall_ids.add(wid_int)
+            try:
+                curve = seg.GetCurve()
+            except Exception:
+                curve = None
+            if curve is not None:
+                boundary_curves.append(curve)
 
     out = []
-    for door in doors:
-        host = getattr(door, "Host", None)
-        if host is None:
-            continue
-        host_id = _element_id_int(getattr(host, "Id", None))
-        if host_id not in wall_ids:
-            continue
 
+    # ----- Tier 1: host doors hosted in our boundary walls ----------
+    if wall_ids:
         try:
-            loc = door.Location
-            pt = getattr(loc, "Point", None)
+            host_doors = (
+                FilteredElementCollector(doc)
+                .OfCategory(BuiltInCategory.OST_Doors)
+                .WhereElementIsNotElementType()
+            )
         except Exception:
-            pt = None
-        if pt is None:
-            continue
-        origin_xy = (float(pt.X), float(pt.Y))
+            host_doors = []
+        for door in host_doors:
+            host = getattr(door, "Host", None)
+            if host is None:
+                continue
+            host_id = _element_id_int(getattr(host, "Id", None))
+            if host_id not in wall_ids:
+                continue
+            anchor = door_to_anchor(door, transform=None)
+            if anchor is not None:
+                out.append(anchor)
 
-        # The door's facing orientation tells us which side it opens
-        # toward (typically OUT of the room it serves). Flipping it
-        # gives an inward-pointing normal.
+    # ----- Tier 2: linked doors near the space's boundary -----------
+    if boundary_curves and RevitLinkInstance is not None:
         try:
-            facing = door.FacingOrientation
+            link_collector = FilteredElementCollector(doc).OfClass(RevitLinkInstance)
+            link_instances = list(link_collector)
         except Exception:
-            facing = None
-        if facing is None:
-            continue
-        inward = (-float(facing.X), -float(facing.Y))
-        out.append((origin_xy, inward))
+            link_instances = []
+        for link in link_instances:
+            try:
+                link_doc = link.GetLinkDocument()
+            except Exception:
+                link_doc = None
+            if link_doc is None:
+                continue
+            try:
+                transform = link.GetTotalTransform()
+            except Exception:
+                transform = None
+            try:
+                linked_doors = (
+                    FilteredElementCollector(link_doc)
+                    .OfCategory(BuiltInCategory.OST_Doors)
+                    .WhereElementIsNotElementType()
+                )
+            except Exception:
+                continue
+            for door in linked_doors:
+                anchor = door_to_anchor(door, transform=transform)
+                if anchor is None:
+                    continue
+                origin_xy = anchor[0]
+                if not _point_near_any_curve(origin_xy, boundary_curves, tol=1.0):
+                    continue
+                if _origin_already_seen(origin_xy, out, tol=0.1):
+                    continue
+                out.append(anchor)
+
     return out
+
+
+def door_to_anchor(door, transform=None):
+    """Return ``(origin_xy, inward_xy)`` for a single Door element.
+
+    ``transform`` is the link's total transform when the door lives
+    in a linked doc; ``None`` for host doors. Returns ``None`` when
+    the door has no Location.Point or no FacingOrientation.
+
+    Public so the pre-placement door-picker (which calls
+    ``Selection.PickObject``) can resolve the picked Reference to
+    the same anchor tuple shape the workflow expects.
+    """
+    try:
+        loc = door.Location
+        pt = getattr(loc, "Point", None)
+    except Exception:
+        pt = None
+    if pt is None:
+        return None
+    try:
+        facing = door.FacingOrientation
+    except Exception:
+        facing = None
+    if facing is None:
+        return None
+    if transform is not None:
+        try:
+            pt = transform.OfPoint(pt)
+        except Exception:
+            pass
+        try:
+            facing = transform.OfVector(facing)
+        except Exception:
+            pass
+    origin_xy = (float(pt.X), float(pt.Y))
+    inward = (-float(facing.X), -float(facing.Y))
+    return (origin_xy, inward)
+
+
+def _point_near_any_curve(point_xy, curves, tol=1.0):
+    """True if ``point_xy`` (X, Y in feet) is within ``tol`` ft of
+    the closest point on any of ``curves`` (boundary segments)."""
+    if not curves or XYZ is None:
+        return False
+    px, py = point_xy
+    for curve in curves:
+        try:
+            # Use the curve's start Z so Curve.Project doesn't
+            # disqualify a coplanar test point on the Z axis.
+            start = curve.Evaluate(0.0, True)
+            test = XYZ(px, py, start.Z if start is not None else 0.0)
+        except Exception:
+            continue
+        try:
+            res = curve.Project(test)
+        except Exception:
+            res = None
+        if res is None:
+            continue
+        try:
+            cp = res.XYZPoint
+        except Exception:
+            cp = None
+        if cp is None:
+            continue
+        dx = cp.X - px
+        dy = cp.Y - py
+        if (dx * dx + dy * dy) <= (tol * tol):
+            return True
+    return False
+
+
+def _origin_already_seen(point_xy, anchors, tol=0.1):
+    """True if any existing anchor's origin is within ``tol`` ft of
+    ``point_xy`` — used to dedupe host vs linked sightings of the
+    same physical door."""
+    px, py = point_xy
+    for (origin_xy, _inward) in anchors or ():
+        try:
+            ox, oy = origin_xy
+        except Exception:
+            continue
+        dx = ox - px
+        dy = oy - py
+        if (dx * dx + dy * dy) <= (tol * tol):
+            return True
+    return False

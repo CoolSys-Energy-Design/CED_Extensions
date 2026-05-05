@@ -78,6 +78,16 @@ def apply_plans(doc, plans, action="Place Space Elements (MEPRFP 2.0)"):
 
 
 def _apply_one(doc, plan, result):
+    # Informational plans (e.g. door-relative LED in a doorless
+    # space) carry a comment and no world point. Surface them as
+    # "no_anchor" failures so the preview row's Status column shows
+    # the reason without trying to actually create anything.
+    if not getattr(plan, "is_placeable", True) or plan.world_pt is None:
+        result.failed.append((plan, "no_anchor", {
+            "comment": getattr(plan, "comment", "") or "",
+        }))
+        return
+
     label = plan.label or ""
     family_name, type_name = _placement._split_label(label)
     if not family_name:

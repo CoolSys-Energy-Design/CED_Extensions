@@ -19,6 +19,7 @@ from pyrevit import revit, script
 import forms_compat as forms
 import active_yaml
 import place_space_elements_window
+import space_door_picker
 
 TITLE = "Place Space Elements (MEPRFP 2.0)"
 
@@ -27,6 +28,7 @@ def main():
     output = script.get_output()
     output.close_others()
     doc = revit.doc
+    uidoc = revit.uidoc
     if doc is None:
         forms.alert("No active document.", title=TITLE)
         return
@@ -40,7 +42,41 @@ def main():
         )
         return
 
-    place_space_elements_window.show_modal(doc=doc, profile_data=profile_data)
+    # Selection.PickObject can't run while a modal WPF window is up,
+    # so we ask the user to click reference doors NOW (before opening
+    # the placement preview) for any space that has more than one
+    # door AND at least one door-dependent LED. The chosen anchors
+    # ride into the placement run via ``door_choices``. The output
+    # panel gets a per-space breakdown so when the prompt doesn't
+    # appear (zero detected doors, etc.) the reason is visible.
+    try:
+        door_choices = space_door_picker.pre_pick_doors(
+            uidoc, doc, profile_data, output=output,
+        )
+    except TypeError as exc:
+        # Stale cached module without the new ``output`` kwarg —
+        # CPython engine hasn't picked up the latest source. Fall back
+        # so the placement still works, but warn so the user knows
+        # they're missing the diagnostic output until Revit restarts.
+        if "output" in str(exc):
+            output.print_md(
+                "**Note:** pyRevit's CPython engine has a stale "
+                "cached version of `space_door_picker` (no `output` "
+                "kwarg). Falling back to no-diagnostics mode for "
+                "this run. **Restart Revit** to pick up the latest "
+                "version and see the per-space pick analysis."
+            )
+            door_choices = space_door_picker.pre_pick_doors(
+                uidoc, doc, profile_data,
+            )
+        else:
+            raise
+
+    place_space_elements_window.show_modal(
+        doc=doc,
+        profile_data=profile_data,
+        door_choices=door_choices,
+    )
 
 
 if __name__ == "__main__":

@@ -24,16 +24,20 @@
       <TextBlock x:Name="SummaryLabel" Foreground="Gray"
                  VerticalAlignment="Center"/>
       <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
+        <Button x:Name="SelectAllButton" Content="Select all" Width="100" Margin="0,0,4,0"/>
+        <Button x:Name="SelectNoneButton" Content="Select none" Width="100" Margin="0,0,12,0"/>
         <Button x:Name="RefreshButton" Content="Refresh" Width="120"
                 ToolTip="Re-collect every plan from the active YAML and saved classifications."/>
       </StackPanel>
     </DockPanel>
 
+    <!-- Note: ``IsReadOnly`` is omitted on the DataGrid so the
+         per-row Select checkbox is editable. The text columns are
+         each marked IsReadOnly individually. -->
     <DataGrid Grid.Row="2" x:Name="PreviewGrid"
               AutoGenerateColumns="False"
               CanUserAddRows="False"
               CanUserDeleteRows="False"
-              IsReadOnly="True"
               HeadersVisibility="Column"
               GridLinesVisibility="Horizontal"
               SelectionMode="Extended"
@@ -44,33 +48,59 @@
               ColumnWidth="*"
               RowHeight="22">
       <DataGrid.Columns>
+        <DataGridTemplateColumn Header="" MinWidth="40" Width="40">
+          <DataGridTemplateColumn.CellTemplate>
+            <DataTemplate>
+              <CheckBox x:Name="SelectCheckBox"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"/>
+            </DataTemplate>
+          </DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
         <DataGridTextColumn Header="Space"
                             Binding="{Binding SpaceLabel}"
+                            IsReadOnly="True"
                             MinWidth="180" Width="1.6*"/>
+        <DataGridTextColumn Header="Bucket"
+                            Binding="{Binding BucketLabel}"
+                            IsReadOnly="True"
+                            MinWidth="160" Width="1.4*"/>
         <DataGridTextColumn Header="Profile"
                             Binding="{Binding ProfileLabel}"
+                            IsReadOnly="True"
                             MinWidth="160" Width="1.4*"/>
         <DataGridTextColumn Header="LED Label (Family : Type)"
                             Binding="{Binding Label}"
+                            IsReadOnly="True"
                             MinWidth="220" Width="2*"/>
         <DataGridTextColumn Header="Anchor"
                             Binding="{Binding KindLabel}"
-                            MinWidth="120" Width="0.9*"/>
+                            IsReadOnly="True"
+                            MinWidth="100" Width="0.8*"/>
         <DataGridTextColumn Header="X (ft)"
                             Binding="{Binding XText}"
+                            IsReadOnly="True"
                             MinWidth="80" Width="0.6*"/>
         <DataGridTextColumn Header="Y (ft)"
                             Binding="{Binding YText}"
+                            IsReadOnly="True"
                             MinWidth="80" Width="0.6*"/>
         <DataGridTextColumn Header="Z (ft)"
                             Binding="{Binding ZText}"
+                            IsReadOnly="True"
                             MinWidth="80" Width="0.6*"/>
         <DataGridTextColumn Header="Rot (deg)"
                             Binding="{Binding RotText}"
+                            IsReadOnly="True"
                             MinWidth="80" Width="0.6*"/>
         <DataGridTextColumn Header="Status"
                             Binding="{Binding Status}"
+                            IsReadOnly="True"
                             MinWidth="120" Width="1.0*"/>
+        <DataGridTextColumn Header="Comments"
+                            Binding="{Binding Comment}"
+                            IsReadOnly="True"
+                            MinWidth="200" Width="2.0*"/>
       </DataGrid.Columns>
     </DataGrid>
 
@@ -78,8 +108,8 @@
       <TextBlock DockPanel.Dock="Left" x:Name="StatusLabel"
                  VerticalAlignment="Center" Foreground="Gray"/>
       <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
-        <Button x:Name="PlaceButton" Content="Place all" Width="140" Margin="0,0,8,0"
-                ToolTip="Create every previewed family instance inside one Revit transaction."/>
+        <Button x:Name="PlaceButton" Content="Place selected" Width="140" Margin="0,0,8,0"
+                ToolTip="Create the ticked rows' family instances inside one Revit transaction. Untick rows you don't want this run."/>
         <Button x:Name="CloseButton" Content="Close" Width="100" IsCancel="True"/>
       </StackPanel>
     </DockPanel>

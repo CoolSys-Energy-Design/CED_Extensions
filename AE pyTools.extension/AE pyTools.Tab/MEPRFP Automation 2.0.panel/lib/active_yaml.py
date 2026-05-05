@@ -198,6 +198,137 @@ def save_classifications(doc, classifications):
     )
 
 
+# ---------------------------------------------------------------------
+# Spaces config Import / Export
+#
+# *Templates only.* Per-project ``classifications`` are deliberately
+# excluded from the exported file so a config moves between projects
+# without dragging one project's space-to-bucket assignments into
+# another.
+# ---------------------------------------------------------------------
+
+def import_space_config_file(doc, source_path):
+    """Read a Spaces-config YAML and merge its ``space_buckets`` and
+    ``space_profiles`` into the active payload.
+
+    Replaces (does NOT additively merge) the two top-level keys so an
+    import gives you exactly the file's templates. ``equipment_definitions``
+    and any other top-level keys in the active payload are preserved.
+
+    Blank-file path: an empty file (or a file containing only
+    ``schema_version``) imports cleanly as empty lists. This lets a
+    user open a fresh project against a stub YAML and then build up
+    buckets / profiles via Manage Space Buckets and Manage Space
+    Profiles in Revit.
+
+    Returns a summary dict::
+
+        {
+          "source_path": str,
+          "input_schema_version": int,
+          "stored_schema_version": int,
+          "buckets_imported": int,
+          "profiles_imported": int,
+          "buckets_replaced": int,
+          "profiles_replaced": int,
+          "blank": bool,
+        }
+
+    Raises:
+        ``yaml_io.YamlError``               on parse failure
+        ``schema.SchemaVersionError``       on schema-version check
+        ``schema_migrations.MigrationError``on migration failure
+        ``IOError`` / ``OSError``           on read failure
+        ``ValueError``                      if the YAML root isn't a mapping
+    """
+    raw_text = _read_text_file(source_path)
+    is_blank = not raw_text.strip()
+
+    if is_blank:
+        incoming = {
+            "schema_version": _schema.INTERNAL_VERSION,
+            "space_buckets": [],
+            "space_profiles": [],
+        }
+        input_version = _schema.INTERNAL_VERSION
+    else:
+        incoming = yaml_io.parse(raw_text)
+        if not isinstance(incoming, dict):
+            raise ValueError("YAML root must be a mapping.")
+        input_version = _schema.validate_schema_versions(
+            incoming, allow_empty=False,
+        )
+        incoming = _migrations.migrate_to_internal(
+            incoming, source_version=input_version,
+        )
+
+    new_buckets = list(incoming.get("space_buckets") or [])
+    new_profiles = list(incoming.get("space_profiles") or [])
+
+    active = load_active_data(doc) or {}
+    old_buckets = list(active.get("space_buckets") or [])
+    old_profiles = list(active.get("space_profiles") or [])
+
+    active["schema_version"] = _schema.INTERNAL_VERSION
+    active["space_buckets"] = new_buckets
+    active["space_profiles"] = new_profiles
+
+    with revit.Transaction("Import Space Config (MEPRFP 2.0)", doc=doc):
+        save_active_data(doc, active, action="Import space config")
+
+    return {
+        "source_path": source_path,
+        "input_schema_version": input_version,
+        "stored_schema_version": _schema.INTERNAL_VERSION,
+        "buckets_imported": len(new_buckets),
+        "profiles_imported": len(new_profiles),
+        "buckets_replaced": len(old_buckets),
+        "profiles_replaced": len(old_profiles),
+        "blank": is_blank,
+    }
+
+
+def export_space_config_file(doc, save_path):
+    """Write a Spaces-config YAML containing only ``space_buckets`` and
+    ``space_profiles`` (and the document's ``schema_version`` marker).
+
+    Returns a summary dict::
+
+        {
+          "save_path": str,
+          "byte_count": int,
+          "schema_version": int,
+          "buckets_exported": int,
+          "profiles_exported": int,
+        }
+    """
+    active = load_active_data(doc) or {}
+    buckets = list(active.get("space_buckets") or [])
+    profiles = list(active.get("space_profiles") or [])
+
+    if not buckets and not profiles:
+        raise storage.StorageError(
+            "No space_buckets or space_profiles in this project. "
+            "Use Manage Space Buckets / Manage Space Profiles to define some first."
+        )
+
+    payload = {
+        "schema_version": _schema.INTERNAL_VERSION,
+        "space_buckets": buckets,
+        "space_profiles": profiles,
+    }
+    text = yaml_io.dump(payload)
+    _write_text_file(save_path, text)
+
+    return {
+        "save_path": save_path,
+        "byte_count": len(text),
+        "schema_version": _schema.INTERNAL_VERSION,
+        "buckets_exported": len(buckets),
+        "profiles_exported": len(profiles),
+    }
+
+
 def export_yaml_file(doc, save_path):
     """Read the active payload from storage and write it to ``save_path``.
 

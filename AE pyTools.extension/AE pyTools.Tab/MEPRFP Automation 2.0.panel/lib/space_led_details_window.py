@@ -27,12 +27,29 @@ import clr  # noqa: F401
 clr.AddReference("PresentationFramework")
 clr.AddReference("WindowsBase")
 
-from System import Object as _NetObject  # noqa: E402
+from System import (  # noqa: E402
+    Object as _NetObject,
+    String as _NetString,
+)
 from System.Collections.ObjectModel import ObservableCollection  # noqa: E402
 from System.Windows import RoutedEventHandler  # noqa: E402
-from System.Windows.Controls import Button as _WpfButton  # noqa: E402
 
 import wpf as _wpf  # noqa: E402
+import revit_symbol_index as _sym_index  # noqa: E402
+
+
+def _make_clr_string_list(py_iter):
+    """Wrap a Python iterable of strings in an ``ObservableCollection``
+    so WPF ItemsSource bindings have something to enumerate.
+
+    Plain CLR ``List<String>`` returned through Python reflection has
+    been observed to surface as empty in the binding target;
+    ObservableCollection is the codebase-proven choice for ItemsSource.
+    """
+    out = ObservableCollection[_NetObject]()
+    for s in py_iter or ():
+        out.Add(_NetString(str(s)))
+    return out
 
 
 _RESOURCES = os.path.join(
@@ -44,6 +61,7 @@ _KV_XAML = os.path.join(_RESOURCES, "KeyValueDialog.xaml")
 
 
 _ANNOTATION_KINDS = ("tag", "keynote", "text_note")
+_ANNOTATION_KIND_OPTIONS_NET = _make_clr_string_list(_ANNOTATION_KINDS)
 
 
 # ---------------------------------------------------------------------
@@ -51,11 +69,34 @@ _ANNOTATION_KINDS = ("tag", "keynote", "text_note")
 # ---------------------------------------------------------------------
 
 class _ParamRow(object):
-    """Two-column key/value row backed by a host dict."""
+    """Two-column key/value row.
+
+    Plain instance attributes don't survive pythonnet 3's TwoWay
+    binding write-back — the cell looks editable but the user's
+    typed value is silently dropped because TypeDescriptor exposes
+    the attribute as read-only. Explicit ``@property`` + ``@setter``
+    pairs make the property writable through reflection.
+    """
 
     def __init__(self, name="", value=""):
-        self.Name = "" if name is None else str(name)
-        self.Value = "" if value is None else _coerce_to_text(value)
+        self._name = "" if name is None else str(name)
+        self._value = "" if value is None else _coerce_to_text(value)
+
+    @property
+    def Name(self):
+        return self._name
+
+    @Name.setter
+    def Name(self, value):
+        self._name = "" if value is None else str(value)
+
+    @property
+    def Value(self):
+        return self._value
+
+    @Value.setter
+    def Value(self, value):
+        self._value = "" if value is None else str(value)
 
 
 def _coerce_to_text(value):
@@ -167,9 +208,12 @@ class _OffsetRow(object):
 class _AnnotationRow(object):
     """One ``led.annotations[*]`` entry."""
 
-    def __init__(self, data):
+    def __init__(self, data, ann_label_options_net=None, ann_label_lookup=None):
         self._data = data
-        self.KindOptions = list(_ANNOTATION_KINDS)
+        self.KindOptions = _ANNOTATION_KIND_OPTIONS_NET
+        # Annotation Family:Type dropdown: shared CLR list across all rows.
+        self.AnnLabelOptions = ann_label_options_net or _make_clr_string_list(())
+        self._ann_label_lookup = ann_label_lookup or {}
 
     @property
     def Kind(self):
@@ -177,32 +221,47 @@ class _AnnotationRow(object):
 
     @Kind.setter
     def Kind(self, value):
-        if value in _ANNOTATION_KINDS:
-            self._data["kind"] = value
+        # Coerce to Python str so the membership check against
+        # _ANNOTATION_KINDS (Python tuple of str) works even when
+        # WPF writes back a CLR System.String.
+        new_kind = str(value or "").strip()
+        if new_kind in _ANNOTATION_KINDS:
+            self._data["kind"] = new_kind
 
     @property
     def Label(self):
+        # Display the Family:Type as the Label so the same combo
+        # drives both the visible cell and the underlying YAML.
+        family = self._data.get("family_name") or ""
+        type_name = self._data.get("type_name") or ""
+        if family and type_name:
+            return "{} : {}".format(family, type_name)
+        # Fall back to a free-text label that's been hand-entered for
+        # data that pre-dates the Family:Type pattern.
         return self._data.get("label") or ""
 
     @Label.setter
     def Label(self, value):
-        self._data["label"] = (value or "").strip()
-
-    @property
-    def FamilyName(self):
-        return self._data.get("family_name") or ""
-
-    @FamilyName.setter
-    def FamilyName(self, value):
-        self._data["family_name"] = (value or "").strip()
-
-    @property
-    def TypeName(self):
-        return self._data.get("type_name") or ""
-
-    @TypeName.setter
-    def TypeName(self, value):
-        self._data["type_name"] = (value or "").strip()
+        # Coerce to Python str so the lookup dict (keyed by Python
+        # strings) hashes correctly.
+        new_label = str(value or "").strip()
+        # If the entered text matches a known Family:Type, decompose
+        # it into the YAML's structured fields. Otherwise persist as
+        # a free-text label so user-typed annotations still survive.
+        info = self._ann_label_lookup.get(new_label)
+        if info:
+            self._data["family_name"] = info.get("family_name") or ""
+            self._data["type_name"] = info.get("type_name") or ""
+            self._data["label"] = new_label
+        elif " : " in new_label:
+            family, type_name = new_label.split(" : ", 1)
+            self._data["family_name"] = family.strip()
+            self._data["type_name"] = type_name.strip()
+            self._data["label"] = new_label
+        else:
+            self._data["family_name"] = ""
+            self._data["type_name"] = ""
+            self._data["label"] = new_label
 
     def _offset_dict(self):
         # Annotation offsets are a single dict, not a list.
@@ -253,10 +312,20 @@ class _AnnotationRow(object):
 # ---------------------------------------------------------------------
 
 class KeyValueDialog(object):
-    """Modal: edit a flat string -> string dict."""
+    """Modal: edit a flat string -> string dict.
 
-    def __init__(self, params_dict, header="Edit Parameters"):
+    ``doc`` + ``label`` enable the "Auto-fill from family" button —
+    the sub-dialog can resolve the given Family:Type label to a
+    FamilySymbol and seed parameter rows from its current values
+    (same logic the LED Parameters tab uses). When either is missing
+    the auto-fill button is disabled.
+    """
+
+    def __init__(self, params_dict, header="Edit Parameters",
+                 doc=None, label=None):
         self._params = params_dict if isinstance(params_dict, dict) else {}
+        self._doc = doc
+        self._autofill_label = label or ""
         self.window = _wpf.load_xaml(_KV_XAML)
         self._rows = ObservableCollection[_NetObject]()
         self._committed = False
@@ -264,6 +333,7 @@ class KeyValueDialog(object):
         f = self.window.FindName
         self.header_label = f("HeaderLabel")
         self.grid = f("ParamGrid")
+        self.autofill_btn = f("AutoFillButton")
         self.add_btn = f("AddRowButton")
         self.del_btn = f("DeleteRowButton")
         self.ok_btn = f("OkButton")
@@ -275,14 +345,38 @@ class KeyValueDialog(object):
         for k, v in self._params.items():
             self._rows.Add(_ParamRow(k, v))
 
+        self._h_autofill = RoutedEventHandler(lambda s, e: self._on_autofill())
         self._h_add = RoutedEventHandler(lambda s, e: self._on_add())
         self._h_del = RoutedEventHandler(lambda s, e: self._on_delete())
         self._h_ok = RoutedEventHandler(lambda s, e: self._on_ok())
         self._h_cancel = RoutedEventHandler(lambda s, e: self._on_cancel())
+        self.autofill_btn.Click += self._h_autofill
         self.add_btn.Click += self._h_add
         self.del_btn.Click += self._h_del
         self.ok_btn.Click += self._h_ok
         self.cancel_btn.Click += self._h_cancel
+
+        if self._doc is None or not self._autofill_label:
+            self.autofill_btn.IsEnabled = False
+
+    def _on_autofill(self):
+        if self._doc is None or not self._autofill_label:
+            return
+        symbol = _sym_index.find_symbol_by_label(
+            self._doc, self._autofill_label,
+        )
+        if symbol is None:
+            return
+        existing = set()
+        for row in self._rows:
+            n = (getattr(row, "Name", "") or "").strip()
+            if n:
+                existing.add(n)
+        defaults = _sym_index.symbol_parameter_defaults(self._doc, symbol)
+        for name in sorted(defaults.keys(), key=lambda s: s.lower()):
+            if name in existing:
+                continue
+            self._rows.Add(_ParamRow(name, defaults[name]))
 
     def _on_add(self):
         self._rows.Add(_ParamRow("", ""))
@@ -339,13 +433,33 @@ class SpaceLedDetailsController(object):
 
     Mutates the passed-in LED dict in place. Parent caller (Manage
     Space Profiles) decides whether to persist to YAML.
+
+    ``doc`` powers the parameter auto-fill button (resolves the LED's
+    Family:Type to a FamilySymbol, lists its parameter names) and the
+    annotation Label dropdown (lists every loaded annotation
+    Family:Type). Both are no-ops when ``doc`` is None.
     """
 
-    def __init__(self, led_dict, header=""):
+    def __init__(self, led_dict, header="", doc=None, led_label=None):
         self._led = led_dict if isinstance(led_dict, dict) else {}
         # Take a deep snapshot so Cancel can fully restore.
         self._snapshot = copy.deepcopy(self._led)
         self._committed = False
+        self._doc = doc
+        self._led_label_for_autofill = led_label or self._led.get("label") or ""
+
+        # Build the annotation Family:Type index once. Shared across
+        # all annotation rows.
+        self._ann_label_options_net = _make_clr_string_list(())
+        self._ann_label_lookup = {}
+        if doc is not None:
+            try:
+                labels, lookup = _sym_index.build_annotation_symbol_index(doc)
+                self._ann_label_options_net = _make_clr_string_list(labels)
+                self._ann_label_lookup = lookup
+            except Exception:
+                self._ann_label_options_net = _make_clr_string_list(())
+                self._ann_label_lookup = {}
 
         self.window = _wpf.load_xaml(_DETAILS_XAML)
         self._param_rows = ObservableCollection[_NetObject]()
@@ -375,6 +489,7 @@ class SpaceLedDetailsController(object):
         self.param_grid = f("ParamGrid")
         self.param_add_btn = f("ParamAddButton")
         self.param_del_btn = f("ParamDeleteButton")
+        self.param_autofill_btn = f("ParamAutoFillButton")
         self.param_grid.ItemsSource = self._param_rows
 
         # Offsets tab
@@ -401,6 +516,13 @@ class SpaceLedDetailsController(object):
 
         self.param_add_btn.Click += self._h_param_add
         self.param_del_btn.Click += self._h_param_del
+        self._h_param_autofill = RoutedEventHandler(
+            lambda s, e: self._safe(self._on_param_autofill, "param-autofill")
+        )
+        self.param_autofill_btn.Click += self._h_param_autofill
+        # Disable the auto-fill button when we have no doc to query.
+        if self._doc is None or not self._led_label_for_autofill:
+            self.param_autofill_btn.IsEnabled = False
         self.offset_add_btn.Click += self._h_offset_add
         self.offset_del_btn.Click += self._h_offset_del
         self.ann_add_btn.Click += self._h_ann_add
@@ -408,13 +530,20 @@ class SpaceLedDetailsController(object):
         self.ok_btn.Click += self._h_ok
         self.cancel_btn.Click += self._h_cancel
 
-        # Bubbled Click handler for the per-row "Params..." button on
-        # annotation rows. The button's Tag is bound to the
-        # _AnnotationRow; non-row clicks have no tag and are ignored.
-        self._h_row_click = RoutedEventHandler(
-            lambda s, e: self._safe_with(s, e, self._on_row_button_click, "row-click")
+        # Per-row wiring (combined): Click on Params... button +
+        # ItemsSource on the per-row ComboBoxes, in a single Loaded
+        # handler. Doing them separately interferes (the combo
+        # ItemsSource pass invalidates the button Click attach).
+        self._row_handles = _wpf.attach_per_row_handlers(
+            self.ann_grid,
+            on_button_click=lambda btn, e, item: self._safe(
+                lambda: self._on_ann_params_clicked(item), "row-click",
+            ),
+            items_per_combo_name={
+                "AnnKindCombo": _ANNOTATION_KIND_OPTIONS_NET,
+                "AnnLabelCombo": self._ann_label_options_net,
+            },
         )
-        self.window.AddHandler(_WpfButton.ClickEvent, self._h_row_click)
 
     def _safe(self, fn, label):
         try:
@@ -469,7 +598,11 @@ class SpaceLedDetailsController(object):
             if isinstance(a, dict):
                 a.setdefault("kind", "tag")
                 a.setdefault("id", _new_id("ANN"))
-                self._ann_rows.Add(_AnnotationRow(a))
+                self._ann_rows.Add(_AnnotationRow(
+                    a,
+                    ann_label_options_net=self._ann_label_options_net,
+                    ann_label_lookup=self._ann_label_lookup,
+                ))
 
     # ----- parameter actions ---------------------------------------
 
@@ -481,6 +614,46 @@ class SpaceLedDetailsController(object):
         sel = self.param_grid.SelectedItem
         if isinstance(sel, _ParamRow):
             self._param_rows.Remove(sel)
+
+    def _on_param_autofill(self):
+        """Pull every parameter name visible on the LED's chosen
+        Family:Type and add a blank row for each one not already
+        present. Existing rows (with values the user typed) are
+        preserved untouched.
+        """
+        label = self._led_label_for_autofill or ""
+        if not label or self._doc is None:
+            self._set_status("No Family:Type set on this LED — can't auto-fill.")
+            return
+
+        symbol = _sym_index.find_symbol_by_label(self._doc, label)
+        if symbol is None:
+            self._set_status(
+                "Couldn't find loaded family for {!r}. Load it first.".format(label)
+            )
+            return
+
+        existing = set()
+        for row in self._param_rows:
+            n = (getattr(row, "Name", "") or "").strip()
+            if n:
+                existing.add(n)
+
+        defaults = _sym_index.symbol_parameter_defaults(self._doc, symbol)
+        added = 0
+        # Sort case-insensitively so the rows come in alphabetically,
+        # matching the way the previous (names-only) auto-fill ordered
+        # them.
+        for name in sorted(defaults.keys(), key=lambda s: s.lower()):
+            if name in existing:
+                continue
+            self._param_rows.Add(_ParamRow(name, defaults[name]))
+            added += 1
+        self._set_status(
+            "Auto-fill from '{}': added {} parameter row(s) with current values.".format(
+                label, added,
+            )
+        )
 
     # ----- offset actions ------------------------------------------
 
@@ -519,7 +692,11 @@ class SpaceLedDetailsController(object):
         }
         anns = self._led.setdefault("annotations", [])
         anns.append(new)
-        self._ann_rows.Add(_AnnotationRow(new))
+        self._ann_rows.Add(_AnnotationRow(
+            new,
+            ann_label_options_net=self._ann_label_options_net,
+            ann_label_lookup=self._ann_label_lookup,
+        ))
         self.ann_grid.SelectedItem = self._ann_rows[self._ann_rows.Count - 1]
 
     def _on_ann_delete(self):
@@ -532,28 +709,37 @@ class SpaceLedDetailsController(object):
             pass
         self._ann_rows.Remove(sel)
 
-    def _on_row_button_click(self, sender, e):
-        # Bubbled Click. e.Source = clicked Button (when it raised the event).
-        source = getattr(e, "Source", None) or getattr(e, "OriginalSource", None)
-        tag = getattr(source, "Tag", None) if source is not None else None
-        if not isinstance(tag, _AnnotationRow):
+    def _on_ann_params_clicked(self, row):
+        # Click handler attached directly to each per-row button by
+        # ``wpf.attach_per_row_handlers``. ``row`` is the button's
+        # DataContext (the _AnnotationRow).
+        if not isinstance(row, _AnnotationRow):
             return
-        row = tag
         params = row._data.setdefault("parameters", {})
         if not isinstance(params, dict):
             params = {}
             row._data["parameters"] = params
+        # Forward the annotation's Family:Type label so the sub-dialog
+        # can offer "Auto-fill from family" for tags / keynote symbols.
+        # Keynotes (typically family "GA_Keynote Symbol_CED") resolve
+        # here exactly like any other tag — they're just FamilySymbols.
+        ann_label = row.Label or ""
         dialog = KeyValueDialog(
             params,
             header="Annotation parameters: {} [{}]".format(
-                row._data.get("label") or row._data.get("type_name") or "(no label)",
+                ann_label or row._data.get("type_name") or "(no label)",
                 row._data.get("kind") or "?",
             ),
+            doc=self._doc,
+            label=ann_label,
         )
         dialog.show_modal(owner=self.window)
-        # Force the grid to redraw in case the user added a Notes-like
-        # parameter that may shift display elsewhere.
-        self.ann_grid.Items.Refresh()
+        # Intentionally NOT calling self.ann_grid.Items.Refresh() —
+        # the parameters dict isn't visible in any annotation grid
+        # column, and forcing a refresh rebuilds row containers
+        # without firing Loaded, which clobbers our programmatically
+        # set ItemsSource on the Kind / Label combos and leaves them
+        # blank.
 
     # ----- OK / Cancel ---------------------------------------------
 
@@ -617,7 +803,16 @@ def _new_id(prefix):
     return "{}-{}".format(prefix, uuid.uuid4().hex[:8].upper())
 
 
-def show_modal(led_dict, header="", owner=None):
-    """Open the Details dialog for ``led_dict``. Returns True on OK."""
-    controller = SpaceLedDetailsController(led_dict=led_dict, header=header)
+def show_modal(led_dict, header="", owner=None, doc=None, led_label=None):
+    """Open the Details dialog for ``led_dict``. Returns True on OK.
+
+    ``doc`` enables the parameter auto-fill button and the annotation
+    Family:Type dropdown. ``led_label`` is the LED's "Family : Type"
+    label (used as the auto-fill source); falls back to
+    ``led_dict['label']`` when omitted.
+    """
+    controller = SpaceLedDetailsController(
+        led_dict=led_dict, header=header,
+        doc=doc, led_label=led_label,
+    )
     return controller.show_modal(owner=owner)

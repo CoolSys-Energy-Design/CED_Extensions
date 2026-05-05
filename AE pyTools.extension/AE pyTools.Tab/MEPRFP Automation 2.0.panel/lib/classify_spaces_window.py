@@ -26,7 +26,6 @@ from System import Object as _NetObject  # noqa: E402
 from System.Collections.ObjectModel import ObservableCollection  # noqa: E402
 from System.Windows import RoutedEventHandler  # noqa: E402
 from System.Windows.Controls import (  # noqa: E402
-    Button as _WpfButton,
     SelectionChangedEventHandler,
 )
 
@@ -160,14 +159,17 @@ class _BucketPickerDialog(object):
         self.header_label.Text = header or "Buckets for: {}".format(space_label)
 
         assigned_set = set(assigned_ids or [])
-        self._items = []
+        # WPF ItemsSource needs a CLR IEnumerable; pythonnet does NOT
+        # auto-coerce a plain Python list. Use ObservableCollection so
+        # binding + change notification both work.
+        self._items = ObservableCollection[_NetObject]()
         for bucket in all_buckets:
             label = bucket.name or "(unnamed)"
             kws = ", ".join(bucket.classification_keywords) or "no keywords"
             tooltip = "id={}  |  keywords: {}".format(
                 bucket.id or "?", kws
             )
-            self._items.append(_BucketCheckRow(
+            self._items.Add(_BucketCheckRow(
                 bucket_id=bucket.id,
                 label=label,
                 tooltip=tooltip,
@@ -267,9 +269,6 @@ class ClassifySpacesController(object):
         self._h_close = RoutedEventHandler(
             lambda s, e: self.window.Close()
         )
-        self._h_edit_row = RoutedEventHandler(
-            lambda s, e: self._safe_with(s, e, self._on_edit_row, "edit-row")
-        )
         self._h_client = RoutedEventHandler(
             lambda s, e: self._safe(self._on_client_changed, "client-changed")
         )
@@ -285,12 +284,15 @@ class ClassifySpacesController(object):
         self.client_combo.SelectionChanged += self._h_client_sc
 
         # Per-row Edit... buttons live inside the DataGrid's
-        # DataTemplate, so we can't grab them by name. Register a
-        # bubbling Click handler on the window itself: every Button
-        # click bubbles up here, and ``_on_edit_row`` filters by Tag
-        # so unrelated clicks (Save / Refresh / Close / etc) are
-        # ignored cheaply.
-        self.window.AddHandler(_WpfButton.ClickEvent, self._h_edit_row)
+        # DataTemplate. The DataGrid's selection/edit machinery makes
+        # bubbled ``Button.ClickEvent`` unreliable, so we attach Click
+        # handlers directly to each Button as the row materialises.
+        self._row_button_handles = _wpf.attach_per_row_button_handler(
+            self.spaces_grid,
+            on_click=lambda btn, e, item: self._safe(
+                lambda: self._on_edit_row_clicked(item), "edit-row",
+            ),
+        )
 
     def _safe(self, fn, label):
         try:
@@ -409,18 +411,14 @@ class ClassifySpacesController(object):
 
     # ----- per-row Edit... -----------------------------------------
 
-    def _on_edit_row(self, sender, e):
-        # Bubbled Button.Click. ``e.Source`` is normally the Button
-        # itself (Button.OnClick raises the event with Source=this).
-        # The per-row Edit... button's Tag is bound to the SpaceRow,
-        # so this filter implicitly ignores Save / Refresh / Close,
-        # which carry no row tag.
-        source = getattr(e, "Source", None) or getattr(e, "OriginalSource", None)
-        tag = getattr(source, "Tag", None) if source is not None else None
-        if not isinstance(tag, _SpaceRow):
+    def _on_edit_row_clicked(self, row):
+        # Click handler attached directly to each per-row button by
+        # ``wpf.attach_per_row_button_handler`` — ``row`` is the
+        # button's DataContext (the _SpaceRow). Defensive: if the
+        # DataContext got swapped to something else we ignore.
+        if not isinstance(row, _SpaceRow):
             return
 
-        row = tag
         space = row.space
         space_label = "{} {}".format(space.number, space.name).strip() or "(unnamed space)"
         header = "Edit buckets for: {}".format(space_label)

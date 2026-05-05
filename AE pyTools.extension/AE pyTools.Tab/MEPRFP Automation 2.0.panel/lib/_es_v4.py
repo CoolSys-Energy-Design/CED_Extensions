@@ -25,9 +25,11 @@ import clr  # noqa: F401  -- required before importing Autodesk.Revit.DB
 
 from Autodesk.Revit.DB import (  # noqa: E402
     Document as _RevitDocument,  # noqa: F401  (re-exported for type hints)
+    FilteredElementCollector,
 )
 from Autodesk.Revit.DB.ExtensibleStorage import (  # noqa: E402
     AccessLevel,
+    DataStorage,
     Entity,
     Schema,
     SchemaBuilder,
@@ -289,8 +291,83 @@ def build_entity(schema, string_map=None, bool_map=None, int_map=None,
 
 
 # ---------------------------------------------------------------------
-# Project-info helpers
+# DataStorage host helpers
+#
+# Custom Extensible Storage entities live on dedicated ``DataStorage``
+# elements rather than ``ProjectInformation``. ``DataStorage`` is the
+# Revit-recommended host for tool-owned data: it doesn't surface in the
+# Manage Project Information dialog, can be hidden from view filters,
+# and survives ProjectInformation edits cleanly.
+#
+# Convention: one ``DataStorage`` element per schema, named after the
+# schema (the name is purely cosmetic for debugging — lookups go by
+# schema GUID via ``GetEntity``).
 # ---------------------------------------------------------------------
+
+def _find_data_storage(doc, schema):
+    """Return the DataStorage element holding our schema, or None."""
+    if doc is None or schema is None:
+        return None
+    for ds in FilteredElementCollector(doc).OfClass(DataStorage):
+        try:
+            entity = ds.GetEntity(schema)
+        except Exception:
+            entity = None
+        if entity is not None and entity.IsValid():
+            return ds
+    return None
+
+
+def get_entity(doc, schema):
+    """Return the stored entity from its DataStorage host, or None."""
+    ds = _find_data_storage(doc, schema)
+    if ds is None:
+        return None
+    entity = ds.GetEntity(schema)
+    if entity is None or not entity.IsValid():
+        return None
+    return entity
+
+
+def set_entity(doc, entity, ds_name=None):
+    """Persist the entity onto its DataStorage host. Caller manages txn.
+
+    Finds the existing DataStorage that already holds an entity of this
+    schema and overwrites it; if none exists, creates a fresh one and
+    names it ``ds_name`` (defaults to the schema name).
+    """
+    schema = entity.Schema
+    ds = _find_data_storage(doc, schema)
+    if ds is None:
+        ds = DataStorage.Create(doc)
+        try:
+            ds.Name = ds_name or schema.SchemaName
+        except Exception:
+            pass
+    ds.SetEntity(entity)
+
+
+def delete_entity(doc, schema):
+    """Delete the DataStorage element that holds this schema's entity.
+
+    Removing the DataStorage removes the entity in one shot. No-op if
+    the project has no DataStorage with this schema.
+    """
+    ds = _find_data_storage(doc, schema)
+    if ds is None:
+        return
+    doc.Delete(ds.Id)
+
+
+# ---------------------------------------------------------------------
+# Legacy-only ProjectInformation accessor (read-only)
+# ---------------------------------------------------------------------
+#
+# v1 of the 2.0 panel stored its entity on ``ProjectInformation``.
+# The migration story (read-old-fallback, write-new) needs a way to
+# fetch that legacy entity even though we no longer write there.
+# Keep this helper here so legacy readers don't have to import
+# ProjectInformation directly.
 
 def project_info_or_raise(doc):
     pi = doc.ProjectInformation
@@ -299,21 +376,18 @@ def project_info_or_raise(doc):
     return pi
 
 
-def get_entity(doc, schema):
-    """Return the stored entity on ProjectInformation, or None."""
-    pi = project_info_or_raise(doc)
-    entity = pi.GetEntity(schema)
+def get_legacy_project_info_entity(doc, schema):
+    """Read an entity from ProjectInformation (v1 legacy host). None if
+    absent. Never used for writes."""
+    if doc is None or schema is None:
+        return None
+    pi = doc.ProjectInformation
+    if pi is None:
+        return None
+    try:
+        entity = pi.GetEntity(schema)
+    except Exception:
+        return None
     if entity is None or not entity.IsValid():
         return None
     return entity
-
-
-def set_entity(doc, entity):
-    """Persist the entity on ProjectInformation. Caller manages txn."""
-    pi = project_info_or_raise(doc)
-    pi.SetEntity(entity)
-
-
-def delete_entity(doc, schema):
-    pi = project_info_or_raise(doc)
-    pi.DeleteEntity(schema)

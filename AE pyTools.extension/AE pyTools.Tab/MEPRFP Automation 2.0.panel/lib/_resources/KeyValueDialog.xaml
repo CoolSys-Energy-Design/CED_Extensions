@@ -16,6 +16,9 @@
 
     <DockPanel Grid.Row="1" Margin="0,0,0,6">
       <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
+        <Button x:Name="AutoFillButton" Content="Auto-fill from family"
+                Width="160" Margin="0,0,12,0"
+                ToolTip="Add a row for every parameter the chosen Family:Type exposes, seeded with its current value. Existing rows are preserved."/>
         <Button x:Name="AddRowButton" Content="Add" Width="80" Margin="0,0,4,0"/>
         <Button x:Name="DeleteRowButton" Content="Delete" Width="80"/>
       </StackPanel>

@@ -37,10 +37,11 @@ class SpacePlacementPlan(object):
         "label", "set_id",
         "world_pt", "rotation_deg",
         "warnings",
+        "comment",
     )
 
     def __init__(self, space, geom, profile, led, label, set_id,
-                 world_pt, rotation_deg, warnings=None):
+                 world_pt, rotation_deg, warnings=None, comment=""):
         self.space = space
         self.geom = geom
         self.profile = profile
@@ -50,6 +51,18 @@ class SpacePlacementPlan(object):
         self.world_pt = tuple(world_pt) if world_pt else None
         self.rotation_deg = float(rotation_deg or 0.0)
         self.warnings = list(warnings or [])
+        # Comment shown in the placement window's Comments column.
+        # Non-empty when the plan is informational only — e.g. a
+        # door-relative LED in a doorless space — which means
+        # ``world_pt`` is None and the apply step skips it.
+        self.comment = comment or ""
+
+    @property
+    def is_placeable(self):
+        """True only when this plan has a real anchor point. Comment-
+        only / informational plans (no door, unknown rule kind, etc.)
+        return False here so the apply step skips them."""
+        return self.world_pt is not None
 
     @property
     def space_element_id(self):
@@ -74,13 +87,38 @@ class SpacePlacementPlan(object):
 # ---------------------------------------------------------------------
 
 class SpacePlacementRun(object):
-    """One end-to-end pass. UI calls ``collect`` then ``apply``."""
+    """One end-to-end pass. UI calls ``collect`` then ``apply``.
 
-    def __init__(self, doc, profile_data=None):
+    For door-dependent placement kinds the UI supplies a *door
+    picker* — a callable ``picker(space, door_anchors) ->
+    (origin_xy, inward_xy) | None`` that returns the chosen anchor
+    tuple, or ``None`` to fall back to the first door. The default
+    picker is a no-op (returns None), which gives sane preview
+    defaults; the typical caller pre-populates ``door_choices``
+    via ``Selection.PickObject`` before opening the placement UI.
+
+    ``door_choices`` is a ``{space_element_id: anchor_tuple}`` cache
+    so the user only has to choose once per space per session.
+    """
+
+    def __init__(self, doc, profile_data=None,
+                 door_picker=None, door_choices=None):
         self.doc = doc
         self.profile_data = profile_data or {}
         self.plans = []
         self.warnings = []
+        # ``picker`` is invoked at most once per space per ``collect``
+        # run, only when the space has multiple doors AND at least
+        # one of its LEDs is door-dependent. Default no-op picker
+        # returns None, falling back to the first door for any
+        # ambiguous space — preview-friendly default when nothing
+        # has been pre-picked.
+        self._door_picker = door_picker or (lambda space, doors: None)
+        self.door_choices = dict(door_choices or {})
+        # Spaces touched in the latest collect() that needed (and
+        # potentially still need) a door choice. Useful for the UI to
+        # display "N spaces have multiple doors" diagnostics.
+        self.spaces_with_multiple_doors = []
 
         self._buckets = _buckets.wrap_buckets(
             self.profile_data.get("space_buckets") or []
@@ -95,6 +133,7 @@ class SpacePlacementRun(object):
         """Walk the doc and build every placement plan."""
         self.plans = []
         self.warnings = []
+        self.spaces_with_multiple_doors = []
 
         # 1. enumerate classified spaces
         spaces = _space_workflow.collect_spaces(self.doc)
@@ -160,21 +199,53 @@ class SpacePlacementRun(object):
                 )
                 continue
 
-            # 4. expand every LED in every matching profile
+            # 4. resolve which door this space uses for door-dependent
+            # placement kinds. Only call the picker when the space has
+            # MORE than one door AND at least one of its LEDs needs a
+            # door reference.
+            chosen_door = self._resolve_door_for_space(space, geom, matching)
+
+            # 5. expand every LED in every matching profile
             for profile in matching:
                 for linked_set in profile.linked_sets:
                     set_id = linked_set.id or ""
                     for led in linked_set.leds:
-                        placements = _placement.expand_led_placements(led, geom)
+                        placements = _placement.expand_led_placements(
+                            led, geom, door_anchor=chosen_door,
+                        )
                         if not placements:
-                            # Door-relative LED in a doorless space, or
-                            # an unknown placement kind — note it once.
+                            # Empty result — make a comment-only plan
+                            # so the user sees the LED in the preview
+                            # with a note explaining why it can't be
+                            # placed. Apply step skips these (their
+                            # ``is_placeable`` is False).
                             kind = led.placement_rule.kind
+                            if kind == _profile_model.KIND_DOOR_RELATIVE:
+                                comment = (
+                                    "Door-relative placement: no host or "
+                                    "linked door found at this space."
+                                )
+                            else:
+                                comment = (
+                                    "No anchor points computed (rule kind: "
+                                    "{!r}).".format(kind)
+                                )
                             self.warnings.append(
-                                "Space '{}': LED {!r} ({}) yielded no placements.".format(
-                                    space.name, led.label, kind
+                                "Space '{}': LED {!r} ({}) -- {}".format(
+                                    space.name, led.label, kind, comment,
                                 )
                             )
+                            self.plans.append(SpacePlacementPlan(
+                                space=space,
+                                geom=geom,
+                                profile=profile,
+                                led=led,
+                                label=led.label or "",
+                                set_id=set_id,
+                                world_pt=None,
+                                rotation_deg=0.0,
+                                comment=comment,
+                            ))
                             continue
                         for x, y, z, rot in placements:
                             self.plans.append(SpacePlacementPlan(
@@ -192,12 +263,73 @@ class SpacePlacementRun(object):
 
     # ----- apply -----------------------------------------------------
 
-    def apply(self):
+    def _profile_uses_door_dependent_led(self, matching_profiles):
+        """True if any LED across the matching profiles needs a door."""
+        for profile in matching_profiles:
+            for linked_set in profile.linked_sets:
+                for led in linked_set.leds:
+                    if _profile_model.is_door_dependent(led.placement_rule.kind):
+                        return True
+        return False
+
+    def _resolve_door_for_space(self, space, geom, matching_profiles):
+        """Pick the reference door for this space, prompting the user
+        when there's more than one option AND at least one LED needs
+        a door. Result is cached in ``self.door_choices`` keyed by
+        space element id so repeated collect() runs don't re-prompt.
+
+        Returns the chosen ``(origin_xy, inward_xy)`` tuple, or
+        ``None`` when no doors are present (caller emits comment-only
+        plans for door-dependent LEDs).
+        """
+        doors = list(geom.door_anchors or [])
+        if not doors:
+            return None
+        if len(doors) == 1:
+            return doors[0]
+
+        # Multi-door space — track for UI diagnostics.
+        if space.element_id not in [
+            s.element_id for s, _doors in self.spaces_with_multiple_doors
+        ]:
+            self.spaces_with_multiple_doors.append((space, doors))
+
+        # If no LED in this space needs a door, the choice doesn't
+        # matter; default to the first one without prompting.
+        if not self._profile_uses_door_dependent_led(matching_profiles):
+            return doors[0]
+
+        # Cached choice from a prior session OR from the pre-pick
+        # step in the calling script (Selection.PickObject before the
+        # modal opened).
+        cached = self.door_choices.get(space.element_id)
+        if cached is not None:
+            return cached
+
+        # Ask the picker. Convention: returns an anchor tuple
+        # ``(origin_xy, inward_xy)`` or None to fall back.
+        try:
+            chosen = self._door_picker(space, doors)
+        except Exception as exc:
+            self.warnings.append(
+                "Door picker failed for '{}' (id {}): {}. "
+                "Defaulting to first door.".format(
+                    space.name, space.element_id, exc,
+                )
+            )
+            chosen = None
+        if chosen is None:
+            chosen = doors[0]
+        self.door_choices[space.element_id] = chosen
+        return chosen
+
+    def apply(self, plans=None):
         """Execute placement on Revit's main thread.
 
-        Routed through ``space_apply`` so the Revit-API side stays in
-        one place (and so this orchestrator can stay testable in the
-        pure-logic layer up to ``collect``).
+        ``plans`` lets the UI hand in a filtered subset (e.g. only
+        rows the user ticked); when omitted, every plan from the
+        last ``collect()`` is applied.
         """
         import space_apply
-        return space_apply.apply_plans(self.doc, self.plans)
+        target = plans if plans is not None else self.plans
+        return space_apply.apply_plans(self.doc, target)

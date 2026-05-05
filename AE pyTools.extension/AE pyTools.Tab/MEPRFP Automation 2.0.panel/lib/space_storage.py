@@ -7,8 +7,8 @@ shared YAML payload alongside ``equipment_definitions`` — they are the
 exportable, reusable configuration. Per-project *classifications*
 (which Space element belongs to which bucket) are project state, not
 template, and therefore live in this separate Extensible Storage entity
-on ``ProjectInformation`` so an export of the YAML doesn't drag one
-project's space assignments into another.
+on a dedicated ``DataStorage`` element so an export of the YAML doesn't
+drag one project's space assignments into another.
 
 Layout (v4 — current). Same 4-map shape as ``storage.py`` so both
 stores share machinery. The classification list is JSON-encoded into
@@ -136,9 +136,9 @@ def _read_legacy_v1(doc):
     schema = _legacy_v1_schema()
     if schema is None:
         return None
-    pi = _es_v4.project_info_or_raise(doc)
-    entity = pi.GetEntity(schema)
-    if entity is None or not entity.IsValid():
+    # v1 stored its entity on ProjectInformation, not DataStorage.
+    entity = _es_v4.get_legacy_project_info_entity(doc, schema)
+    if entity is None:
         return None
     return {
         "store_version": int(entity.Get[Int32](LEGACY_V1_FIELD_STORE_VERSION) or 0),
@@ -152,7 +152,8 @@ def _read_legacy_v1(doc):
 # ---------------------------------------------------------------------
 
 def write_payload(doc, json_text, last_modified_utc):
-    """Persist a JSON-encoded classification list. Caller manages txn."""
+    """Persist a JSON-encoded classification list onto a DataStorage
+    element. Caller manages txn."""
     schema = get_or_create_schema()
     entity = _es_v4.build_entity(
         schema,
@@ -164,20 +165,23 @@ def write_payload(doc, json_text, last_modified_utc):
             KEY_STORE_VERSION: STORE_LAYOUT_VERSION,
         },
     )
-    _es_v4.set_entity(doc, entity)
+    _es_v4.set_entity(doc, entity, ds_name=SCHEMA_NAME)
 
 
 def clear_payload(doc):
-    """Delete the v4 classifications entity. Caller manages the txn.
+    """Delete the v4 classifications DataStorage element. Caller
+    manages the txn.
 
-    The legacy v1 entity (if present) is left untouched. Use
-    ``clear_legacy_v1_payload`` to remove it explicitly.
+    The legacy v1 entity on ``ProjectInformation`` (if present) is
+    left untouched. Use ``clear_legacy_v1_payload`` to remove it.
     """
     schema = get_or_create_schema()
     _es_v4.delete_entity(doc, schema)
 
 
 def clear_legacy_v1_payload(doc):
+    """Delete the legacy v1 entity off ProjectInformation. No-op
+    if no v1 entity exists in this project."""
     schema = _legacy_v1_schema()
     if schema is None:
         return
@@ -254,6 +258,4 @@ def has_legacy_v1_entity(doc):
     schema = _legacy_v1_schema()
     if schema is None:
         return False
-    pi = _es_v4.project_info_or_raise(doc)
-    entity = pi.GetEntity(schema)
-    return entity is not None and entity.IsValid()
+    return _es_v4.get_legacy_project_info_entity(doc, schema) is not None

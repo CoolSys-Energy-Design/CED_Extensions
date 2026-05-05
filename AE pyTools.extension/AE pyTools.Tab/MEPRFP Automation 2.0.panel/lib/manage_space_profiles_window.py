@@ -19,6 +19,7 @@ inside its own Revit transaction (mirroring Manage Profiles).
 
 import copy
 import os
+import re
 import uuid
 
 import clr  # noqa: F401
@@ -26,17 +27,17 @@ import clr  # noqa: F401
 clr.AddReference("PresentationFramework")
 clr.AddReference("WindowsBase")
 
-from System import Object as _NetObject  # noqa: E402
+from System import Object as _NetObject, String as _NetString  # noqa: E402
 from System.Collections.ObjectModel import ObservableCollection  # noqa: E402
 from System.Windows import RoutedEventHandler  # noqa: E402
 from System.Windows.Controls import (  # noqa: E402
-    Button as _WpfButton,
     SelectionChangedEventHandler,
 )
 
 import wpf as _wpf  # noqa: E402
 import space_profile_model as _profile_model  # noqa: E402
 import space_led_details_window as _led_details  # noqa: E402
+import revit_symbol_index as _sym_index  # noqa: E402
 
 
 _XAML_PATH = os.path.join(
@@ -66,15 +67,46 @@ class _ProfileItem(object):
 
 
 class _BucketComboItem(object):
-    """ItemsSource entry for the bucket ComboBox."""
+    """ItemsSource entry for the bucket ComboBox.
+
+    Uses ``@property`` on Id / Display so pythonnet 3 exposes them
+    properly to WPF reflection. Plain instance attributes have been
+    observed to be invisible to ``DisplayMemberPath`` /
+    ``SelectedValuePath`` lookups under pythonnet — properties sidestep
+    that.
+    """
 
     def __init__(self, bucket_dict):
-        self.Id = bucket_dict.get("id") or ""
+        self._id = bucket_dict.get("id") or ""
         name = bucket_dict.get("name") or "(unnamed)"
-        self.Display = "{}  ({})".format(name, self.Id or "??")
+        self._display = "{}  ({})".format(name, self._id or "??")
+
+    @property
+    def Id(self):
+        return self._id
+
+    @property
+    def Display(self):
+        return self._display
 
 
-_KIND_OPTIONS = list(_profile_model.PLACEMENT_KINDS)
+def _make_clr_string_list(py_iter):
+    """Wrap a Python iterable of strings in an ``ObservableCollection``.
+
+    WPF ``ItemsSource`` bindings need a CLR ``IEnumerable`` AND need
+    to read a stable item count when the binding evaluates; in
+    practice ``ObservableCollection`` is what works reliably under
+    pythonnet (a plain CLR ``List<String>`` returned through Python
+    reflection has been observed to surface as empty in the binding
+    target).
+    """
+    out = ObservableCollection[_NetObject]()
+    for s in py_iter or ():
+        out.Add(_NetString(str(s)))
+    return out
+
+
+_KIND_OPTIONS_NET = _make_clr_string_list(_profile_model.PLACEMENT_KINDS)
 
 
 class _LedRow(object):
@@ -85,10 +117,16 @@ class _LedRow(object):
     re-syncs to YAML in ``flush_to_yaml``.
     """
 
-    def __init__(self, led_dict, set_dict):
+    def __init__(self, led_dict, set_dict, label_options_net=None,
+                 label_lookup=None):
         self._led = led_dict
         self._set = set_dict
-        self.KindOptions = _KIND_OPTIONS
+        # CLR-typed options collections so WPF can iterate them.
+        self.KindOptions = _KIND_OPTIONS_NET
+        self.LabelOptions = label_options_net or _make_clr_string_list(())
+        # Pure-Python lookup so setters can resolve a chosen label
+        # back to its category / family name without re-querying Revit.
+        self._label_lookup = label_lookup or {}
 
     # Set name (binds to set_dict, shared across rows from the same set)
 
@@ -99,13 +137,16 @@ class _LedRow(object):
     @SetName.setter
     def SetName(self, value):
         # Empty set name OK; controller normalises on save.
-        self._set["name"] = (value or "").strip()
+        # Coerce CLR System.String -> Python str so the YAML
+        # serializer round-trips cleanly.
+        self._set["name"] = str(value or "").strip()
 
     # LED display fields
 
     @property
     def LedId(self):
-        return self._led.get("id") or ""
+        v = self._led.get("id")
+        return "" if v is None else str(v)
 
     @property
     def Label(self):
@@ -113,7 +154,24 @@ class _LedRow(object):
 
     @Label.setter
     def Label(self, value):
-        self._led["label"] = (value or "").strip()
+        # Coerce CLR System.String -> Python str so the dict lookup
+        # below hashes correctly. Pythonnet wraps CLR strings in a
+        # type whose hash differs from str.__hash__, and a wrapped
+        # key never matches a plain-str key in a Python dict.
+        new_label = str(value or "").strip()
+        self._led["label"] = new_label
+        # Auto-fill Category and (if blank) the linked-set name from
+        # the chosen Family:Type. The user can still override either
+        # later — these are convenience defaults.
+        info = self._label_lookup.get(new_label)
+        if info:
+            cat = info.get("category_name") or ""
+            if cat:
+                self._led["category"] = cat
+            family = info.get("family_name") or ""
+            current_set_name = (self._set.get("name") or "").strip()
+            if family and not current_set_name:
+                self._set["name"] = family
 
     @property
     def Category(self):
@@ -121,7 +179,7 @@ class _LedRow(object):
 
     @Category.setter
     def Category(self, value):
-        self._led["category"] = (value or "").strip()
+        self._led["category"] = str(value or "").strip()
 
     # Placement-rule fields
 
@@ -138,8 +196,12 @@ class _LedRow(object):
 
     @Kind.setter
     def Kind(self, value):
-        if value in _profile_model.PLACEMENT_KINDS:
-            self._rule()["kind"] = value
+        # Coerce CLR System.String -> Python str so the membership
+        # check against PLACEMENT_KINDS (a tuple of plain Python
+        # strings) works.
+        new_kind = str(value or "").strip()
+        if new_kind in _profile_model.PLACEMENT_KINDS:
+            self._rule()["kind"] = new_kind
 
     @property
     def InsetText(self):
@@ -217,8 +279,80 @@ def _coerce_float(text, default=None):
 
 
 def _new_id(prefix):
-    """Short stable id; not user-visible-critical so a uuid suffix is fine."""
+    """Short stable id for profiles and linked-sets — uuid suffix is fine
+    since neither leaks into Element_Linker on placed instances."""
     return "{}-{}".format(prefix, uuid.uuid4().hex[:8].upper())
+
+
+_LED_ID_START = 10001
+
+
+_PROFILE_ID_PREFIX = "SP-"
+_PROFILE_ID_START = 10001
+_PROFILE_ID_RE = re.compile(
+    r"^" + re.escape(_PROFILE_ID_PREFIX) + r"(\d+)$"
+)
+
+
+def _next_profile_id(profile_data):
+    """Return the next sequential profile id, formatted ``SP-NNNNN``.
+
+    Same scheme as ``_next_led_id``: walk every existing
+    ``space_profiles[*].id``, match the ``SP-NNNNN`` pattern, return
+    ``SP-`` + ``max + 1``. Falls back to ``SP-10001`` when no
+    matching ids exist (e.g. the first profile in a project, or a
+    project that only has legacy uuid-style ids — those don't match
+    the pattern and are ignored by this counter).
+    """
+    max_id = _PROFILE_ID_START - 1
+    for profile in (profile_data or {}).get("space_profiles") or ():
+        if not isinstance(profile, dict):
+            continue
+        raw = profile.get("id") or ""
+        m = _PROFILE_ID_RE.match(str(raw))
+        if not m:
+            continue
+        try:
+            n = int(m.group(1))
+        except ValueError:
+            continue
+        if n > max_id:
+            max_id = n
+    return "{}{}".format(_PROFILE_ID_PREFIX, max_id + 1)
+
+
+def _next_led_id(profile_data):
+    """Return the next sequential LED id across the whole YAML.
+
+    LED ids are integers starting at 10001 and incrementing by one
+    per LED, regardless of which profile the LED belongs to. Walks
+    every existing LED, finds the largest int id, and returns ``+ 1``;
+    falls back to ``_LED_ID_START`` if no integer ids exist (e.g.
+    legacy uuid ids from earlier 2.0 builds — those stay as strings
+    and are ignored by this counter).
+
+    This function is called for every new-LED operation, so the
+    counter survives across editor sessions: open the editor, add
+    LEDs (10001, 10002), close, reopen, add more (10003, 10004).
+    """
+    max_id = _LED_ID_START - 1
+    for profile in (profile_data or {}).get("space_profiles") or ():
+        if not isinstance(profile, dict):
+            continue
+        for s in profile.get("linked_sets") or ():
+            if not isinstance(s, dict):
+                continue
+            for led in s.get("linked_element_definitions") or ():
+                if not isinstance(led, dict):
+                    continue
+                raw = led.get("id")
+                try:
+                    n = int(raw)
+                except (ValueError, TypeError):
+                    continue
+                if n > max_id:
+                    max_id = n
+    return max_id + 1
 
 
 # ---------------------------------------------------------------------
@@ -238,6 +372,22 @@ class ManageSpaceProfilesController(object):
         self._led_rows = ObservableCollection[_NetObject]()
         self._buckets = []  # [_BucketComboItem, ...]
         self._loading = False  # guards re-entrancy in field setters
+
+        # Walk the doc once for every loaded model FamilySymbol so the
+        # LED grid's Label column can offer a "Family : Type" dropdown
+        # instead of free text. Cheap-ish (one collector pass).
+        self._label_options_net = _make_clr_string_list(())
+        self._label_lookup = {}
+        if doc is not None:
+            try:
+                labels, lookup = _sym_index.build_model_symbol_index(doc)
+                self._label_options_net = _make_clr_string_list(labels)
+                self._label_lookup = lookup
+            except Exception as exc:
+                # Non-fatal — without the index the cell falls back to
+                # an empty dropdown and the user has to type the label.
+                self._label_options_net = _make_clr_string_list(())
+                self._label_lookup = {}
 
         self._lookup_controls()
         self._wire_events()
@@ -312,13 +462,36 @@ class ManageSpaceProfilesController(object):
         self.name_box.LostFocus += self._h_name_lost
         self.bucket_combo.SelectionChanged += self._h_bucket_change
 
-        # Bubbled Click handler for the per-row "Details..." button on
-        # the LED grid. Tag filtering ensures non-row buttons (Save,
-        # Close, etc.) are ignored cheaply.
-        self._h_details_click = RoutedEventHandler(
-            lambda s, e: self._safe_with(s, e, self._on_details_click, "led-details")
+        # Per-row wiring (combined, single Loaded handler):
+        #   * Click handlers attached directly to the per-row Details...
+        #     button (DataGrid swallows the bubbled Click otherwise).
+        #   * ItemsSource set programmatically on per-row ComboBoxes
+        #     (the XAML binding doesn't populate under pythonnet).
+        #
+        # Doing both in one Loaded handler avoids ordering interference
+        # we hit when wiring them via separate handlers — the second
+        # handler's visual-tree mutations were detaching the first
+        # handler's Click registration.
+        self._row_handles = _wpf.attach_per_row_handlers(
+            self.led_grid,
+            on_button_click=lambda btn, e, item: self._safe(
+                lambda: self._on_details_clicked(item), "led-details",
+            ),
+            items_per_combo_name={
+                "AnchorCombo": _KIND_OPTIONS_NET,
+                "LabelCombo": self._label_options_net,
+            },
         )
-        self.window.AddHandler(_WpfButton.ClickEvent, self._h_details_click)
+
+        # CellEditEnding refresh: when the user picks a Family:Type
+        # the Label setter mutates Category in the row's underlying
+        # dict, but WPF doesn't refresh the (read-only) Category cell
+        # without a hint. Firing Items.Refresh here is cheap and only
+        # runs when an edit actually finishes.
+        self._h_cell_edit_ending = lambda s, e: self._safe(
+            self._on_cell_edit_ending, "cell-edit-ending",
+        )
+        self.led_grid.CellEditEnding += self._h_cell_edit_ending
 
     def _safe(self, fn, label):
         try:
@@ -370,10 +543,12 @@ class ManageSpaceProfilesController(object):
         return getattr(item, "data", None)
 
     def _populate_bucket_combo(self):
-        self._buckets = []
+        # WPF ItemsSource needs a CLR IEnumerable; pythonnet does NOT
+        # auto-coerce a plain Python list. Use ObservableCollection.
+        self._buckets = ObservableCollection[_NetObject]()
         for b in (self.profile_data.get("space_buckets") or ()):
             if isinstance(b, dict):
-                self._buckets.append(_BucketComboItem(b))
+                self._buckets.Add(_BucketComboItem(b))
         self.bucket_combo.ItemsSource = self._buckets
 
     # ----- profile selection ---------------------------------------
@@ -387,7 +562,7 @@ class ManageSpaceProfilesController(object):
             if profile_dict is None:
                 self.detail_header.Text = "Select a profile..."
                 self.name_box.Text = ""
-                self.bucket_combo.SelectedValue = None
+                self.bucket_combo.SelectedItem = None
                 self._led_rows.Clear()
                 self.led_summary_label.Text = ""
                 self._set_enabled(False)
@@ -397,7 +572,22 @@ class ManageSpaceProfilesController(object):
             name = profile_dict.get("name") or "(unnamed)"
             self.detail_header.Text = "Profile: {}  [{}]".format(name, pid)
             self.name_box.Text = name
-            self.bucket_combo.SelectedValue = profile_dict.get("bucket_id") or ""
+            # Set SelectedItem directly by finding the matching
+            # _BucketComboItem. Avoids relying on SelectedValuePath
+            # which has been observed to fail under pythonnet 3 when
+            # the items are Python objects exposing CLR-visible
+            # properties only via @property.
+            target_id = (profile_dict.get("bucket_id") or "").strip()
+            target_item = None
+            if target_id:
+                for it in self._buckets:
+                    try:
+                        if (it.Id or "") == target_id:
+                            target_item = it
+                            break
+                    except Exception:
+                        continue
+            self.bucket_combo.SelectedItem = target_item
             self._reload_led_rows(profile_dict)
         finally:
             self._loading = False
@@ -435,14 +625,25 @@ class ManageSpaceProfilesController(object):
         prof = self._selected_profile_dict()
         if prof is None:
             return
-        new_bucket = self.bucket_combo.SelectedValue
-        if new_bucket is None:
-            new_bucket = ""
+        # Read the chosen bucket via SelectedItem (the _BucketComboItem
+        # itself), then pull its .Id directly. Avoids SelectedValue +
+        # SelectedValuePath which doesn't reliably resolve a Python
+        # attribute path under pythonnet 3.
+        sel_item = self.bucket_combo.SelectedItem
+        new_bucket = ""
+        if sel_item is not None:
+            try:
+                new_bucket = str(getattr(sel_item, "Id", "") or "")
+            except Exception:
+                new_bucket = ""
+        new_bucket = new_bucket.strip()
         if new_bucket != (prof.get("bucket_id") or ""):
             prof["bucket_id"] = new_bucket or None
             self.dirty = True
             self._refresh_profile_row(prof)
-            self._set_status("Updated bucket.")
+            self._set_status(
+                "Updated bucket -> {}.".format(new_bucket or "(none)")
+            )
 
     def _refresh_profile_row(self, prof_dict):
         # Force the ListBox to redraw the affected row (DisplayName changed).
@@ -457,7 +658,7 @@ class ManageSpaceProfilesController(object):
 
     def _on_new_profile(self):
         new = {
-            "id": _new_id("SP"),
+            "id": _next_profile_id(self.profile_data),
             "name": "New Space Profile",
             "bucket_id": None,
             "linked_sets": [],
@@ -472,8 +673,12 @@ class ManageSpaceProfilesController(object):
         if prof is None:
             return
         clone = copy.deepcopy(prof)
-        clone["id"] = _new_id("SP")
         clone["name"] = "{} (copy)".format(prof.get("name") or "Profile")
+        # Append the clone first so ``_next_profile_id`` and
+        # ``_next_led_id`` see it in the search universe — this avoids
+        # accidentally re-using the source profile's id.
+        self._profiles().append(clone)
+        clone["id"] = _next_profile_id(self.profile_data)
         # Reassign LED IDs so duplicates don't share LED ids with the
         # original — otherwise saved Element_Linker payloads on placed
         # elements would point at the same id in two profiles.
@@ -483,8 +688,7 @@ class ManageSpaceProfilesController(object):
             s["id"] = _new_id("SET")
             for led in s.get("linked_element_definitions") or ():
                 if isinstance(led, dict):
-                    led["id"] = _new_id("LED")
-        self._profiles().append(clone)
+                    led["id"] = _next_led_id(self.profile_data)
         self.dirty = True
         self._reload_profile_list(select_id=clone["id"])
         self._set_status("Profile duplicated.")
@@ -512,9 +716,17 @@ class ManageSpaceProfilesController(object):
                 continue
             for led in (s.setdefault("linked_element_definitions", []) or ()):
                 if isinstance(led, dict):
-                    led.setdefault("id", _new_id("LED"))
-                    self._led_rows.Add(_LedRow(led, s))
+                    if led.get("id") in (None, ""):
+                        led["id"] = _next_led_id(self.profile_data)
+                    self._led_rows.Add(self._make_led_row(led, s))
         self._refresh_led_summary()
+
+    def _make_led_row(self, led_dict, set_dict):
+        return _LedRow(
+            led_dict, set_dict,
+            label_options_net=self._label_options_net,
+            label_lookup=self._label_lookup,
+        )
 
     def _refresh_led_summary(self):
         n_rows = self._led_rows.Count
@@ -550,7 +762,7 @@ class ManageSpaceProfilesController(object):
                 sets.append(target_set)
 
         new_led = {
-            "id": _new_id("LED"),
+            "id": _next_led_id(self.profile_data),
             "label": "",
             "category": "",
             "placement_rule": {
@@ -563,23 +775,41 @@ class ManageSpaceProfilesController(object):
             leds = []
             target_set["linked_element_definitions"] = leds
         leds.append(new_led)
-        self._led_rows.Add(_LedRow(new_led, target_set))
+        self._led_rows.Add(self._make_led_row(new_led, target_set))
         self._refresh_led_summary()
         self.dirty = True
         self._set_status("Added LED to set '{}'.".format(target_set.get("name") or ""))
 
-    def _on_details_click(self, sender, e):
-        # Bubbled Button.Click — Tag is bound to the _LedRow if the
-        # clicked button is the per-row "Details..." button.
-        source = getattr(e, "Source", None) or getattr(e, "OriginalSource", None)
-        tag = getattr(source, "Tag", None) if source is not None else None
-        if not isinstance(tag, _LedRow):
+    def _on_cell_edit_ending(self):
+        # The Label setter side-effects Category (and the linked-set
+        # name when blank). WPF only re-reads the cells that were
+        # directly edited, so we nudge the grid to redraw the whole
+        # row. Defer one tick — the binding write-back has not yet
+        # landed when CellEditEnding fires synchronously.
+        try:
+            from System.Windows.Threading import DispatcherPriority
+            self.led_grid.Dispatcher.BeginInvoke(
+                DispatcherPriority.Background,
+                lambda: self.led_grid.Items.Refresh(),
+            )
+        except Exception:
+            try:
+                self.led_grid.Items.Refresh()
+            except Exception:
+                pass
+
+    def _on_details_clicked(self, row):
+        # Click handler attached directly to each per-row button by
+        # ``wpf.attach_per_row_button_handler``. ``row`` is the
+        # button's DataContext (the _LedRow).
+        if not isinstance(row, _LedRow):
             return
-        row = tag
         led_label = row.Label or row.LedId or "(unnamed LED)"
         header = "Edit LED: {} [{}]".format(led_label, row.LedId or "?")
         ok = _led_details.show_modal(
             led_dict=row._led, header=header, owner=self.window,
+            doc=self.doc,
+            led_label=row.Label,
         )
         if ok:
             self.dirty = True
