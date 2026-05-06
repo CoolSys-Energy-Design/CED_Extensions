@@ -237,6 +237,56 @@ def _get_bbox_center(elem):
     return (bbox.Min + bbox.Max) * 0.5
 
 
+def _resolve_space_point(elem, target_doc=None):
+    """Try every reasonable way to get a placement XYZ for a Space/Room.
+
+    For host spaces, leave target_doc as None (uses the active host view as a
+    secondary bbox source). For linked spaces, pass the link's document; this
+    skips the active-view fallback to avoid mixing link/host coordinate frames.
+    The returned point is in target_doc coordinates; callers placing into the
+    host must transform with the link's transform.
+
+    Order:
+      1. bbox(None)                     - view-independent, own-doc coords.
+      2. (host only) bbox(activeView)   - secondary attempt for some host
+         spaces. Skipped when target_doc is set because the active view belongs
+         to the host doc and would return host coords that callers would then
+         double-transform.
+      3. Location.Point                 - own-doc coords for any placed Space/Room.
+
+    Returns None when all three fail. In practice that means the space is
+    genuinely unplaced (or in a state where Revit can't materialize geometry),
+    in which case no per-view fallback would help either - so we don't waste
+    time iterating views. The picker surfaces these as [no location].
+    """
+    # Step 1: bbox(None) - safe for both host and linked.
+    bbox = None
+    try:
+        bbox = elem.get_BoundingBox(None)
+    except Exception:
+        bbox = None
+    if bbox is not None:
+        try:
+            return (bbox.Min + bbox.Max) * 0.5
+        except Exception:
+            pass
+
+    # Step 2: bbox(activeView) - host only, to avoid host/link coord mixing.
+    if target_doc is None:
+        try:
+            bbox = elem.get_BoundingBox(revit.active_view)
+        except Exception:
+            bbox = None
+        if bbox is not None:
+            try:
+                return (bbox.Min + bbox.Max) * 0.5
+            except Exception:
+                pass
+
+    # Step 3: Location.Point - own-doc coords, safe for both.
+    return _get_location_point(elem)
+
+
 def _find_spatial_element(doc, point):
     if not point:
         return None
@@ -336,12 +386,13 @@ def _collect_host_spaces():
             number = _space_number(space)
             if not name and not number:
                 continue
-            point = _get_bbox_center(space) or _get_location_point(space)
+            point = _resolve_space_point(space)
             spaces.append({
                 "element": space,
                 "name": name,
                 "number": number,
                 "point": point,
+                "unplaced": point is None,
                 "source": "Host",
                 "link": None,
                 "link_doc": None,
@@ -369,7 +420,7 @@ def _collect_linked_spaces():
                 number = _space_number(space)
                 if not name and not number:
                     continue
-                point = _get_bbox_center(space) or _get_location_point(space)
+                point = _resolve_space_point(space, target_doc=link_doc)
                 host_point = transform.OfPoint(point) if point else None
                 level_name = None
                 try:
@@ -387,6 +438,7 @@ def _collect_linked_spaces():
                     "name": name,
                     "number": number,
                     "point": host_point,
+                    "unplaced": host_point is None,
                     "source": "Linked",
                     "link": link,
                     "link_doc": link_doc,
@@ -399,6 +451,132 @@ def _collect_linked_spaces():
 
 def _collect_all_spaces():
     return _collect_linked_spaces() + _collect_host_spaces()
+
+
+def _collect_linked_spaces_from_instance(link):
+    """Collect Spaces / Rooms from a single RevitLinkInstance. Mirrors
+    _collect_linked_spaces() but scoped to one link, which is what we want
+    when the user has explicitly chosen a link as the mapping source."""
+    spaces = []
+    if link is None:
+        return spaces
+    link_doc = link.GetLinkDocument()
+    if link_doc is None:
+        return spaces
+    transform = link.GetTransform()
+    link_name = getattr(link, "Name", None) or "Link {}".format(link.Id.IntegerValue)
+    categories = [DB.BuiltInCategory.OST_MEPSpaces, DB.BuiltInCategory.OST_Rooms]
+    for cat in categories:
+        elements = DB.FilteredElementCollector(link_doc).OfCategory(cat).WhereElementIsNotElementType()
+        for space in elements:
+            name = _space_name(space)
+            number = _space_number(space)
+            if not name and not number:
+                continue
+            point = _resolve_space_point(space, target_doc=link_doc)
+            host_point = transform.OfPoint(point) if point else None
+            level_name = None
+            try:
+                level = getattr(space, "Level", None)
+                if level is not None:
+                    level_name = level.Name
+                elif space.LevelId and space.LevelId != DB.ElementId.InvalidElementId:
+                    level_elem = link_doc.GetElement(space.LevelId)
+                    level_name = level_elem.Name if level_elem else None
+            except Exception:
+                level_name = None
+            space_key = "{}:{}".format(link.Id.IntegerValue, space.Id.IntegerValue)
+            spaces.append({
+                "element": space,
+                "name": name,
+                "number": number,
+                "point": host_point,
+                "unplaced": host_point is None,
+                "source": "Linked",
+                "link": link,
+                "link_doc": link_doc,
+                "link_name": link_name,
+                "key": space_key,
+                "level_name": level_name,
+            })
+    return spaces
+
+
+def _pick_space_source():
+    """Prompt the user to pick where the mapping picker should pull spaces from:
+    either the host model or one specific RevitLinkInstance.
+
+    Returns:
+      ("host", None)                - user picked the host model
+      ("linked", link_instance)     - user picked a specific link
+      None                          - user cancelled
+    """
+    label_to_choice = {}
+    options = []
+
+    host_label = "Host model (this project)"
+    label_to_choice[host_label] = ("host", None)
+    options.append(host_label)
+
+    link_entries = []
+    for link in DB.FilteredElementCollector(doc).OfClass(DB.RevitLinkInstance):
+        link_doc = link.GetLinkDocument()
+        if link_doc is None:
+            continue
+        link_name = getattr(link, "Name", None) or "Link {}".format(link.Id.IntegerValue)
+        try:
+            doc_title = link_doc.Title or ""
+        except Exception:
+            doc_title = ""
+        label = link_name
+        if doc_title and doc_title.lower() not in label.lower():
+            label = "{}  ({})".format(link_name, doc_title)
+        link_entries.append((label, link))
+
+    link_entries.sort(key=lambda e: e[0].lower())
+
+    # Prefer a link whose name suggests it's the architectural model.
+    default_link_label = None
+    for label, link in link_entries:
+        if "arch" in label.lower():
+            default_link_label = label
+            break
+
+    for label, link in link_entries:
+        display = label
+        if default_link_label and label == default_link_label:
+            display = "(default) " + label
+        label_to_choice[display] = ("linked", link)
+        options.append(display)
+
+    # Pin the default to the top.
+    if default_link_label:
+        marked = "(default) " + default_link_label
+        if marked in options:
+            options.remove(marked)
+            options.insert(0, marked)
+
+    if len(options) == 1:
+        # Only host model is available; auto-pick to save a click.
+        return label_to_choice[options[0]]
+
+    picked = forms.SelectFromList.show(
+        options,
+        title="Select Source for Spaces / Rooms",
+        button_name="Use this source",
+        multiselect=False,
+    )
+    if not picked:
+        return None
+    return label_to_choice.get(picked)
+
+
+def _collect_spaces_from_source(source_kind, link_instance):
+    if source_kind == "host":
+        return _collect_host_spaces()
+    if source_kind == "linked":
+        return _collect_linked_spaces_from_instance(link_instance)
+    return []
 
 
 def _space_keys(space):
@@ -419,10 +597,11 @@ def _space_display(space):
     if name and number:
         label = "{} ({})".format(name, number)
     source = space.get("source") or "Host"
+    suffix = " [no location]" if space.get("unplaced") else ""
     if source == "Linked":
         link_name = space.get("link_name") or "Link"
-        return "{} [Linked: {}]".format(label, link_name)
-    return "{} [Host]".format(label)
+        return "{} [Linked: {}]{}".format(label, link_name, suffix)
+    return "{} [Host]{}".format(label, suffix)
 
 
 def _prompt_space_mapping(descriptions, spaces):
@@ -531,6 +710,25 @@ def _collect_mech_symbols():
     return symbols
 
 
+def _matches_required_mfr(symbol):
+    if not REQUIRED_MANUFACTURER:
+        return True
+    mfr_u = REQUIRED_MANUFACTURER.upper()
+    try:
+        fam_name = query.get_name(symbol.Family) or ""
+    except Exception:
+        fam_name = ""
+    try:
+        type_name = query.get_name(symbol) or ""
+    except Exception:
+        type_name = ""
+    return mfr_u in fam_name.upper() or mfr_u in type_name.upper()
+
+
+def _filter_required_mfr_symbols(symbols):
+    return [s for s in symbols if _matches_required_mfr(s)]
+
+
 def _collect_symbols_by_space(spaces):
     symbol_map = {}
     space_key_lookup = {}
@@ -575,11 +773,25 @@ def _collect_symbols_by_space(spaces):
 
 
 def _best_symbol_match(model, symbols):
+    """Return (best_symbol, score, top_candidates).
+
+    best_symbol is the symbol with the highest display_score among candidates
+    that passed the manufacturer filter, or None if the candidate pool is
+    empty. The score returned is the display_score (max of match_score and
+    text_similarity) so the caller can compare against MODEL_MATCH_THRESHOLD
+    to label the placement as a confident `match` (>= threshold) versus a
+    best-effort `fallback` (< threshold) - but the symbol is always returned
+    when at least one KRACK candidate exists, never gated by the threshold.
+
+    top_candidates is the same list of (display_score, label) sorted
+    descending, capped at 5 entries.
+    """
     if not model:
-        return None, 0.0
+        return None, 0.0, []
     keys = _model_keys(model)
     best_symbol = None
-    best_score = 0.0
+    best_score = -1.0  # so the first valid candidate always wins, even at 0.0
+    candidates = []
     for symbol in symbols:
         try:
             fam_name = query.get_name(symbol.Family)
@@ -595,47 +807,210 @@ def _best_symbol_match(model, symbols):
                 continue
         label = "{} : {}".format(fam_name, type_name)
         label_key = _norm_model_key(label)
-        score = 0.0
+        match_score = 0.0
         if keys:
             if any(k and k in label_key for k in keys):
-                score = 1.0
+                match_score = 1.0
         else:
-            score = max(
+            match_score = max(
                 _text_similarity(model, label),
                 _text_similarity(model, type_name),
             )
-        if score > best_score:
-            best_score = score
+        text_score = max(
+            _text_similarity(model, label),
+            _text_similarity(model, type_name),
+        )
+        display_score = match_score if match_score > text_score else text_score
+        candidates.append((display_score, label))
+        if display_score > best_score:
+            best_score = display_score
             best_symbol = symbol
-    return best_symbol, best_score
+    candidates.sort(key=lambda c: -c[0])
+    if best_symbol is None:
+        return None, 0.0, candidates[:5]
+    return best_symbol, max(best_score, 0.0), candidates[:5]
+
+
+def _level_belongs_to_host(level):
+    if level is None:
+        return False
+    try:
+        lev_doc = level.Document
+    except Exception:
+        return False
+    if lev_doc is None:
+        return False
+    try:
+        if lev_doc.Equals(doc):
+            return True
+    except Exception:
+        pass
+    try:
+        return lev_doc.PathName == doc.PathName
+    except Exception:
+        return False
 
 
 def _resolve_level(space):
-    level_name = None
+    """Return a Level element that belongs to the host document.
+
+    Critical: doc.Create.NewFamilyInstance refuses a level from any other
+    document (including a linked one), so this function must never return a
+    link-doc level.
+
+    Strategy:
+      1. Match a host-doc level by name (works for both host and linked
+         spaces - the linked space's level_name is captured during collection).
+      2. For host spaces: trust the space's own .Level / .LevelId (already
+         host-doc). Skip this for linked spaces.
+      3. Match a host-doc level by elevation closest to the placement point's
+         Z (linked spaces have already had their point transformed to host
+         coords, so this is apples-to-apples).
+      4. Active view's GenLevel.
+      5. First host-doc level as a last resort.
+    """
     if isinstance(space, dict):
         level_name = space.get("level_name")
         space_elem = space.get("element")
+        is_linked = (space.get("source") or "Host") == "Linked"
+        host_point = space.get("point")
     else:
+        level_name = None
         space_elem = space
+        is_linked = False
+        host_point = None
 
+    host_levels = list(DB.FilteredElementCollector(doc).OfClass(DB.Level))
+
+    # 1. Name match against host levels.
     if level_name:
-        for lvl in DB.FilteredElementCollector(doc).OfClass(DB.Level):
+        for lvl in host_levels:
             if lvl.Name == level_name:
                 return lvl
 
-    level = getattr(space_elem, "Level", None)
-    if level:
-        return level
+    # 2. Host space's own level (linked spaces would return a link-doc level
+    #    here, which would crash NewFamilyInstance - so skip for linked).
+    if not is_linked and space_elem is not None:
+        level = getattr(space_elem, "Level", None)
+        if _level_belongs_to_host(level):
+            return level
+        try:
+            lid = getattr(space_elem, "LevelId", None)
+            if lid is not None and lid != DB.ElementId.InvalidElementId:
+                lev = doc.GetElement(lid)
+                if _level_belongs_to_host(lev):
+                    return lev
+        except Exception:
+            pass
+
+    # 3. Closest host level by elevation to the placement point Z.
+    if host_point is not None and host_levels:
+        try:
+            target_z = float(host_point.Z)
+            return min(host_levels, key=lambda l: abs(float(l.Elevation) - target_z))
+        except Exception:
+            pass
+
+    # 4. Active view's GenLevel.
     try:
-        if space_elem.LevelId and space_elem.LevelId != DB.ElementId.InvalidElementId:
-            return doc.GetElement(space_elem.LevelId)
+        view = revit.active_view
+        gen_level = getattr(view, "GenLevel", None)
+        if _level_belongs_to_host(gen_level):
+            return gen_level
     except Exception:
         pass
-    view = revit.active_view
-    if hasattr(view, "GenLevel") and view.GenLevel:
-        return view.GenLevel
+
+    # 5. First host level.
+    return host_levels[0] if host_levels else None
+
+
+def _format_level_elevation(level):
+    try:
+        elev = float(level.Elevation)
+    except Exception:
+        return "?"
+    sign = "-" if elev < 0 else ""
+    elev_abs = abs(elev)
+    ft = int(elev_abs)
+    inches = int(round((elev_abs - ft) * 12.0))
+    if inches == 12:
+        ft += 1
+        inches = 0
+    return "{}{}'-{}\"".format(sign, ft, inches)
+
+
+_DEFAULT_LEVEL_TIERS = [
+    # Tier 1: an exact-ish "Level 1" / "L1".
+    [
+        r"^\s*level\s*0*1\s*$",
+        r"^\s*l\s*0*1\s*$",
+    ],
+    # Tier 2: "Level 1" appearing as a token, or names that start with "01 ...".
+    [
+        r"\blevel\s*0*1\b",
+        r"^\s*0*1\b",
+    ],
+    # Tier 3: ground/first-floor terms.
+    [
+        r"\bground\s*(floor)?\b",
+        r"\bfirst\s*floor\b",
+        r"\b1st\s*floor\b",
+    ],
+]
+
+
+def _find_default_level(levels):
+    """Best-effort guess at which host level is 'Level 1' by name pattern.
+
+    Falls back to the lowest-elevation level when no name matches."""
+    if not levels:
+        return None
+    sorted_levels = sorted(levels, key=lambda l: l.Elevation)
+    for tier in _DEFAULT_LEVEL_TIERS:
+        compiled = [re.compile(p, re.IGNORECASE) for p in tier]
+        for lvl in sorted_levels:
+            name = lvl.Name or ""
+            for pat in compiled:
+                if pat.search(name):
+                    return lvl
+    return sorted_levels[0]
+
+
+def _pick_host_level():
+    """Prompt the user to pick a host-doc level. Defaults the selection to a
+    'Level 1'-ish level if any exists, otherwise the lowest-elevation level."""
     levels = list(DB.FilteredElementCollector(doc).OfClass(DB.Level))
-    return levels[0] if levels else None
+    if not levels:
+        return None
+
+    sorted_levels = sorted(levels, key=lambda l: l.Elevation)
+    default = _find_default_level(sorted_levels)
+
+    label_to_level = {}
+    options = []
+    default_label = None
+    for lvl in sorted_levels:
+        label = "{}  ({})".format(lvl.Name or "<Unnamed>", _format_level_elevation(lvl))
+        if default is not None and lvl.Id.IntegerValue == default.Id.IntegerValue:
+            label = "(default) " + label
+            default_label = label
+        label_to_level[label] = lvl
+        options.append(label)
+
+    # Pin the default to the top of the list.
+    if default_label and default_label in options:
+        options.remove(default_label)
+        options.insert(0, default_label)
+
+    picked = forms.SelectFromList.show(
+        options,
+        title="Select Level for Coil Placement",
+        button_name="Use this level",
+        multiselect=False,
+    )
+    if not picked:
+        return None
+    return label_to_level.get(picked)
 
 
 def _parse_models(raw):
@@ -717,14 +1092,24 @@ def _load_excel_rows(path):
     return _load_circuit_schedule_rows(path)
 
 
-def _build_placements(rows, spaces, symbol_by_space, all_symbols):
+def _build_placements(rows, spaces, symbol_by_space, all_symbols, chosen_level=None):
     placements = []
     warnings = []
     match_info = []
+    model_attempts = []
     stats = {
+        "rows_total": len(rows or []),
         "skipped_non_mfr": 0,
         "skipped_missing_mfr": 0,
-        "skipped_no_model_match": 0,
+        "skipped_no_count": 0,
+        "skipped_no_desc": 0,
+        "skipped_no_space": 0,
+        "skipped_no_point": 0,
+        "skipped_no_symbols": 0,
+        "skipped_no_candidates": 0,
+        "placements_match": 0,
+        "placements_fallback": 0,
+        "rows_processed": 0,
     }
     desc_order = []
     desc_seen = set()
@@ -758,13 +1143,16 @@ def _build_placements(rows, spaces, symbol_by_space, all_symbols):
             continue
 
         if count <= 0:
+            stats["skipped_no_count"] += 1
             continue
         if not desc:
+            stats["skipped_no_desc"] += 1
             warnings.append("Row {}: missing description.".format(idx_label))
             continue
 
         space = mapping.get(desc)
         if space is None:
+            stats["skipped_no_space"] += 1
             warnings.append("Row {}: no space selected for '{}'.".format(idx_label, desc))
             continue
         score = 0.0
@@ -782,8 +1170,13 @@ def _build_placements(rows, spaces, symbol_by_space, all_symbols):
         models = _expand_models(_parse_models(models_raw), count)
         base_point = space.get("point")
         if not base_point:
+            stats["skipped_no_point"] += 1
             warnings.append(
-                "Row {}: no placement point for space '{}'".format(
+                "Row {}: chosen space '{}' has no usable 3D location after trying "
+                "bbox(None), bbox(activeView), Location.Point, and bbox in every "
+                "plan/3D view. Likely an unplaced Room, a phase mismatch, or the "
+                "space lives in a linked file. Spaces in this state are now flagged "
+                "'[no location]' in the picker so you can pick a different one.".format(
                     idx_label, space.get("name") or space.get("number")
                 )
             )
@@ -792,6 +1185,7 @@ def _build_placements(rows, spaces, symbol_by_space, all_symbols):
         space_key = space.get("key") or space["element"].Id.IntegerValue
         symbols = list(symbol_by_space.get(space_key, [])) or list(all_symbols)
         if not symbols:
+            stats["skipped_no_symbols"] += 1
             warnings.append(
                 "Row {}: no mechanical equipment types available for '{}'".format(
                     idx_label, space.get("name") or space.get("number")
@@ -799,14 +1193,31 @@ def _build_placements(rows, spaces, symbol_by_space, all_symbols):
             )
             continue
 
-        level = _resolve_level(space)
+        stats["rows_processed"] += 1
+        # Use the user-picked host level if provided. Falls back to the legacy
+        # heuristic resolver for callers that don't pass one.
+        level = chosen_level if chosen_level is not None else _resolve_level(space)
         for offset_idx, model in enumerate(models):
-            symbol, sym_score = _best_symbol_match(model, symbols)
-            if not symbol or sym_score < MODEL_MATCH_THRESHOLD:
-                stats["skipped_no_model_match"] += 1
+            symbol, sym_score, top_candidates = _best_symbol_match(model, symbols)
+            attempt = {
+                "row": idx_label,
+                "desc": desc,
+                "space": space.get("name") or space.get("number"),
+                "model": model or "",
+                "best_label": "",
+                "score": sym_score,
+                "candidates": list(top_candidates or []),
+                "placed": False,
+                "reason": "",
+            }
+            if symbol is None:
+                # No KRACK candidates at all - nothing we can place.
+                stats["skipped_no_candidates"] += 1
+                attempt["reason"] = "no candidate symbols available"
+                model_attempts.append(attempt)
                 warnings.append(
-                    "Row {}: no close family type match for model '{}' in '{}' (score {:.2f}).".format(
-                        idx_label, model or "", space.get("name") or space.get("number"), sym_score
+                    "Row {}: no candidate family types available for model '{}' in '{}'.".format(
+                        idx_label, model or "", space.get("name") or space.get("number")
                     )
                 )
                 continue
@@ -820,6 +1231,27 @@ def _build_placements(rows, spaces, symbol_by_space, all_symbols):
                 typ_name = query.get_name(symbol)
             except Exception:
                 typ_name = ""
+            attempt["best_label"] = "{} : {}".format(fam_name, typ_name)
+            attempt["placed"] = True
+            if sym_score >= MODEL_MATCH_THRESHOLD:
+                attempt["reason"] = "match"
+                stats["placements_match"] += 1
+            else:
+                attempt["reason"] = "fallback (top candidate, score {:.2f} < {:.2f})".format(
+                    sym_score, MODEL_MATCH_THRESHOLD
+                )
+                stats["placements_fallback"] += 1
+                warnings.append(
+                    "Row {}: model '{}' had no confident match in '{}' - placing top candidate '{} : {}' (score {:.2f}). Verify the type is correct.".format(
+                        idx_label,
+                        model or "",
+                        space.get("name") or space.get("number"),
+                        fam_name,
+                        typ_name,
+                        sym_score,
+                    )
+                )
+            model_attempts.append(attempt)
             placements.append({
                 "symbol": symbol,
                 "point": base_point,
@@ -833,8 +1265,9 @@ def _build_placements(rows, spaces, symbol_by_space, all_symbols):
                 "score": sym_score,
                 "desc": desc,
                 "space_score": score,
+                "fallback": sym_score < MODEL_MATCH_THRESHOLD,
             })
-    return placements, warnings, stats, match_info
+    return placements, warnings, stats, match_info, model_attempts
 
 
 def _place_instances(placements):
@@ -852,13 +1285,26 @@ def _place_instances(placements):
             except Exception:
                 pass
 
+            # Defensive: NewFamilyInstance refuses a level from any other doc
+            # (a linked-doc level slipping through here is what produced the
+            # "level does not exist in the given document" error). If the
+            # resolved level isn't from the host doc, drop it.
+            level = item.get("level")
+            if level is not None and not _level_belongs_to_host(level):
+                logger.warning(
+                    "Discarding non-host-doc level for {}; placing without explicit level.".format(
+                        item.get("model") or symbol.Name
+                    )
+                )
+                level = None
+
             inst = None
             try:
-                if item["level"] is not None:
+                if level is not None:
                     inst = doc.Create.NewFamilyInstance(
                         item["point"],
                         symbol,
-                        item["level"],
+                        level,
                         DB.Structure.StructuralType.NonStructural,
                     )
                 else:
@@ -905,37 +1351,128 @@ def main():
     if not rows:
         forms.alert("No readable rows found on '{}'.".format(SHEET_NAME), exitscript=True)
 
-    spaces = _collect_host_spaces()
+    space_source = _pick_space_source()
+    if space_source is None:
+        forms.alert("No source selected. Cancelled.", exitscript=True)
+    source_kind, source_link = space_source
+
+    spaces = _collect_spaces_from_source(source_kind, source_link)
     if not spaces:
-        forms.alert("No Spaces or Rooms found in this model.", exitscript=True)
+        if source_kind == "linked":
+            link_label = (
+                getattr(source_link, "Name", None)
+                or "Link {}".format(source_link.Id.IntegerValue)
+            )
+            forms.alert(
+                "No Spaces or Rooms found in the selected link '{}'.".format(link_label),
+                exitscript=True,
+            )
+        else:
+            forms.alert(
+                "No Spaces or Rooms found in the host model.",
+                exitscript=True,
+            )
 
     symbol_by_space = _collect_symbols_by_space(spaces)
     all_symbols = _collect_mech_symbols()
     if not all_symbols:
         forms.alert("No Mechanical Equipment family types found in this model.", exitscript=True)
 
-    placements, warnings, stats, match_info = _build_placements(rows, spaces, symbol_by_space, all_symbols)
-    if not placements:
-        forms.alert("No valid coil placements were generated.", exitscript=True)
+    mfr_symbols = _filter_required_mfr_symbols(all_symbols)
 
-    placed_ids, failures = _place_instances(placements)
+    chosen_level = _pick_host_level()
+    if chosen_level is None:
+        forms.alert("No level selected. Cancelled.", exitscript=True)
 
-    if placed_ids:
-        revit.get_selection().set_to(placed_ids)
+    placements, warnings, stats, match_info, model_attempts = _build_placements(
+        rows, spaces, symbol_by_space, all_symbols, chosen_level=chosen_level
+    )
+
+    placed_ids = []
+    failures = []
+    if placements:
+        placed_ids, failures = _place_instances(placements)
+        if placed_ids:
+            revit.get_selection().set_to(placed_ids)
 
     output = script.get_output()
     output.close_others()
     output.print_md("### Place all Coils")
-    output.print_md("Placed {} coil(s).".format(len(placed_ids)))
 
-    if stats.get("skipped_non_mfr") or stats.get("skipped_missing_mfr"):
+    if placements:
+        output.print_md("Placed **{}** coil(s).".format(len(placed_ids)))
+    else:
         output.print_md(
-            "Skipped {} row(s) (manufacturer not {}), {} row(s) (missing manufacturer).".format(
-                stats.get("skipped_non_mfr", 0),
-                REQUIRED_MANUFACTURER,
-                stats.get("skipped_missing_mfr", 0),
-            )
+            "**No coils were placed.** See diagnostic details below to determine why."
         )
+
+    # Excel + symbol summary so failures have hard numbers up front.
+    output.print_md("#### Inputs")
+    output.print_md("- Excel file: `{}`".format(path))
+    output.print_md(
+        "- Excel rows read from sheet '{}': **{}**".format(SHEET_NAME, stats.get("rows_total", 0))
+    )
+    if source_kind == "linked":
+        link_label = (
+            getattr(source_link, "Name", None)
+            or "Link {}".format(source_link.Id.IntegerValue)
+        )
+        source_label = "linked model '{}'".format(link_label)
+    else:
+        source_label = "host model"
+    unplaced_count = sum(1 for s in spaces if s.get("unplaced"))
+    output.print_md(
+        "- Spaces / Rooms source: **{}** ({} space(s); {} flagged `[no location]`)".format(
+            source_label, len(spaces), unplaced_count
+        )
+    )
+    output.print_md(
+        "- Mechanical Equipment family types in project: **{}** total, **{}** matching '{}' (case-insensitive)".format(
+            len(all_symbols),
+            len(mfr_symbols),
+            REQUIRED_MANUFACTURER,
+        )
+    )
+    if not mfr_symbols:
+        output.print_md(
+            "  - **No '{0}' families are loaded in this project.** Load at least one '{0}' "
+            "Mechanical Equipment family before running this tool.".format(REQUIRED_MANUFACTURER)
+        )
+    output.print_md(
+        "- Placement level: **{}** ({})".format(
+            chosen_level.Name if chosen_level is not None else "<none>",
+            _format_level_elevation(chosen_level) if chosen_level is not None else "?",
+        )
+    )
+
+    output.print_md("#### Row Skip Counts")
+    output.print_md("- Rows processed (passed all filters): **{}**".format(stats.get("rows_processed", 0)))
+    output.print_md(
+        "- Skipped because manufacturer != '{}': {}".format(
+            REQUIRED_MANUFACTURER, stats.get("skipped_non_mfr", 0)
+        )
+    )
+    output.print_md("- Skipped because manufacturer column was blank: {}".format(stats.get("skipped_missing_mfr", 0)))
+    output.print_md("- Skipped because Coil Count <= 0: {}".format(stats.get("skipped_no_count", 0)))
+    output.print_md("- Skipped because Description was blank: {}".format(stats.get("skipped_no_desc", 0)))
+    output.print_md("- Skipped because no space was selected for the Description: {}".format(stats.get("skipped_no_space", 0)))
+    output.print_md("- Skipped because the chosen space had no placement point: {}".format(stats.get("skipped_no_point", 0)))
+    output.print_md("- Skipped because no Mechanical Equipment types were available: {}".format(stats.get("skipped_no_symbols", 0)))
+    output.print_md("- Skipped because no candidate family types existed (no '{}' families loaded): {}".format(
+        REQUIRED_MANUFACTURER, stats.get("skipped_no_candidates", 0)
+    ))
+
+    output.print_md("#### Placement Quality")
+    output.print_md(
+        "- Confident matches (score >= {:.2f}): **{}**".format(
+            MODEL_MATCH_THRESHOLD, stats.get("placements_match", 0)
+        )
+    )
+    output.print_md(
+        "- Fallback placements (top candidate, score < {:.2f}): **{}** - review the Model # Match Attempts list to verify correctness.".format(
+            MODEL_MATCH_THRESHOLD, stats.get("placements_fallback", 0)
+        )
+    )
 
     space_map = {}
     for p in placements:
@@ -972,6 +1509,46 @@ def main():
                 )
             )
 
+    if model_attempts:
+        output.print_md("#### Model # Match Attempts")
+        for attempt in model_attempts:
+            reason = (attempt.get("reason") or "").lower()
+            if not attempt.get("placed"):
+                status = "MISS"
+            elif "fallback" in reason:
+                status = "FALLBACK"
+            else:
+                status = "PLACED"
+            best_label = attempt.get("best_label") or "(none)"
+            output.print_md(
+                "- Row {} [{}] '{}': model `{}` → `{}` (score {:.2f}) — **{}** ({})".format(
+                    attempt.get("row"),
+                    attempt.get("space") or "?",
+                    attempt.get("desc") or "",
+                    attempt.get("model") or "",
+                    best_label,
+                    attempt.get("score", 0.0),
+                    status,
+                    attempt.get("reason") or "",
+                )
+            )
+            if not attempt.get("placed"):
+                cands = attempt.get("candidates") or []
+                if cands:
+                    output.print_md("    Top candidates considered:")
+                    for cand_score, cand_label in cands:
+                        output.print_md(
+                            "      - `{}` (similarity {:.2f})".format(cand_label, cand_score)
+                        )
+                elif not mfr_symbols:
+                    output.print_md(
+                        "    No '{}' family types loaded in the project, so no candidates exist.".format(
+                            REQUIRED_MANUFACTURER
+                        )
+                    )
+                else:
+                    output.print_md("    No candidates were considered for this model.")
+
     if warnings:
         output.print_md("#### Warnings")
         for message in warnings:
@@ -981,6 +1558,14 @@ def main():
         output.print_md("#### Placement Failures")
         for message in failures:
             output.print_md("- {}".format(message))
+
+    if not placements:
+        forms.alert(
+            "No valid coil placements were generated.\n\n"
+            "Open the script output panel for a full diagnostic report "
+            "(rows read, manufacturer matches, symbols available, model match attempts).",
+            title="Place all Coils",
+        )
 
 
 if __name__ == "__main__":
