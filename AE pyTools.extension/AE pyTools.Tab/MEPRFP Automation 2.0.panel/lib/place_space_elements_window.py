@@ -152,6 +152,11 @@ class PlaceSpaceElementsController(object):
     def __init__(self, doc, profile_data=None, door_choices=None):
         self.doc = doc
         self.profile_data = profile_data or {}
+        # Populated by ``_on_place`` so the calling pushbutton script
+        # can read ``result.warnings`` after the modal closes and
+        # surface them to the pyRevit output panel.
+        self.last_result = None
+        self.committed = False
 
         self.window = _wpf.load_xaml(_XAML_PATH)
         self._rows = ObservableCollection[_NetObject]()
@@ -308,6 +313,11 @@ class PlaceSpaceElementsController(object):
         finally:
             self.place_btn.IsEnabled = True
             self.refresh_btn.IsEnabled = True
+        # Stash the result on the controller so the calling script can
+        # surface ``result.warnings`` (parameter write failures, etc.)
+        # to the output panel after the modal closes.
+        self.last_result = result
+        self.committed = True
         # Map plan -> row for status writeback.
         plan_to_row = {id(r.plan): r for r in self._rows}
         for plan, _elem in result.placed:

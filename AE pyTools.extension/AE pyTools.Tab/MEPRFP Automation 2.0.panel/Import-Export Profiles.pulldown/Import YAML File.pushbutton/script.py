@@ -92,15 +92,25 @@ def main():
         version_line = "`{}` (migrated from `{}`)".format(
             result["stored_schema_version"], result["input_schema_version"]
         )
+    preserved = result.get("preserved_space_keys") or []
+    preserved_line = ""
+    if preserved:
+        preserved_line = (
+            "- Preserved from active payload: `{}` "
+            "(imported file did not carry these — use Import Space Config "
+            "to replace them).\n".format(", ".join(preserved))
+        )
     output.print_md(
         "**Import succeeded{}**\n\n"
         "- Source: `{}`\n"
         "- Schema version: {}\n"
-        "- Stored bytes: `{}`\n".format(
+        "- Stored bytes: `{}`\n"
+        "{}".format(
             note,
             result["source_path"],
             version_line,
             result["byte_count"],
+            preserved_line,
         )
     )
 

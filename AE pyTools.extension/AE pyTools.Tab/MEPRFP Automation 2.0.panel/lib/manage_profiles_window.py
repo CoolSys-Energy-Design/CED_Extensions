@@ -57,6 +57,9 @@ class _ProfileItem(object):
         )
 
 
+_SENTINEL = object()
+
+
 class _ParamRow(object):
     """Two-column key/value row for the parameter DataGrid.
 
@@ -69,11 +72,26 @@ class _ParamRow(object):
     back the original. Explicit ``@property`` + ``@setter`` pairs make
     the property writable through reflection, so DataGrid TwoWay
     bindings round-trip cleanly.
+
+    ``original_raw`` holds the YAML value as-loaded — either a scalar
+    or a parent/sibling directive dict (``{'parent_parameter': ...}``
+    / ``{'sibling_parameter': ...}``). The grid only ever shows / edits
+    the string display of that value; ``effective_value()`` returns
+    the original raw object when the user didn't touch the cell, so
+    saving doesn't silently flatten a directive dict into its string
+    repr.
     """
 
-    def __init__(self, name="", value=""):
+    def __init__(self, name="", value="", original_raw=_SENTINEL):
         self._name = "" if name is None else str(name)
         self._value = "" if value is None else str(value)
+        # When original_raw is omitted, the display string IS the raw
+        # value (back-compat with callers that don't pass it).
+        if original_raw is _SENTINEL:
+            self._original_raw = self._value
+        else:
+            self._original_raw = original_raw
+        self._original_display = self._value
 
     @property
     def Name(self):
@@ -91,12 +109,46 @@ class _ParamRow(object):
     def Value(self, value):
         self._value = "" if value is None else str(value)
 
+    def effective_value(self):
+        """Resolve the value to persist back into the params dict.
+
+        If the displayed string is byte-identical to the original
+        display, the user didn't touch the cell — return the raw
+        original (preserves directive dicts). Otherwise the user
+        edited the string, so honour that as a static override.
+        """
+        if self._value == self._original_display:
+            return self._original_raw
+        return self._value
+
 
 def _coerce_float(text, default=0.0):
     try:
         return float(str(text).strip())
     except (ValueError, TypeError):
         return default
+
+
+def _format_param_display(value):
+    """Render a parameter value for the editor grid.
+
+    Static values (str / int / float / bool) round-trip via ``str``.
+    Parent / sibling directive dicts get a friendly ``BYPARENT(...)``
+    or ``BYSIBLING(...)`` rendering so users can spot them at a glance
+    instead of staring at a raw Python dict literal. The displayed
+    string is paired with the raw value on the row so an untouched
+    cell saves back as the original directive dict, not the string."""
+    if value is None:
+        return ""
+    if isinstance(value, dict):
+        if "parent_parameter" in value:
+            return "BYPARENT({})".format(value.get("parent_parameter") or "")
+        if "sibling_parameter" in value:
+            return "BYSIBLING({})".format(value.get("sibling_parameter") or "")
+        # Some other dict shape — fall back to the literal so the user
+        # can see what's there.
+        return str(value)
+    return str(value)
 
 
 class ManageProfilesController(object):
@@ -425,7 +477,11 @@ class ManageProfilesController(object):
     def _populate_param_grid(self, params_dict):
         rows = ObservableCollection[_NetObject]()
         for k, v in (params_dict or {}).items():
-            rows.Add(_ParamRow(str(k), "" if v is None else str(v)))
+            rows.Add(_ParamRow(
+                str(k),
+                _format_param_display(v),
+                original_raw=v,
+            ))
         self.parameter_grid.ItemsSource = rows
 
     def _populate_offset_inputs(self, offset_dict):
@@ -968,13 +1024,22 @@ class ManageProfilesController(object):
         self._set_status("Saved aliases (in memory) — Save changes to commit")
 
     def _read_param_grid(self):
-        """Read parameter rows from the grid into a fresh ``{name: value}`` dict."""
+        """Read parameter rows from the grid into a fresh ``{name: value}`` dict.
+
+        Rows that the user didn't touch return their original raw value
+        via ``_ParamRow.effective_value()`` — that's how parent/sibling
+        directive dicts survive a Save selected pass without being
+        flattened to their ``str(dict)`` representation.
+        """
         out = {}
         for row in (self.parameter_grid.ItemsSource or []):
             key = (getattr(row, "Name", "") or "").strip()
             if not key:
                 continue
-            out[key] = getattr(row, "Value", "")
+            if hasattr(row, "effective_value"):
+                out[key] = row.effective_value()
+            else:
+                out[key] = getattr(row, "Value", "")
         return out
 
     def _read_offset_inputs(self):

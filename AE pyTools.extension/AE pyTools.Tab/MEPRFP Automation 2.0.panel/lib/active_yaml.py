@@ -76,8 +76,21 @@ def save_active_data(doc, data, action="MEPRFP 2.0 edit"):
     )
 
 
+_SPACE_TEMPLATE_KEYS = ("space_buckets", "space_profiles")
+
+
 def import_yaml_file(doc, source_path):
     """Read ``source_path``, validate, migrate to v100, and persist.
+
+    Equipment definitions and space templates share one Extensible
+    Storage payload (only per-project space *classifications* live in a
+    separate DataStorage). To stop an equipment-only YAML from wiping
+    a project's space templates and vice versa, this import replaces
+    only the keys that are actually present in the incoming file —
+    ``space_buckets`` and ``space_profiles`` carry over from the active
+    payload when the imported file doesn't mention them. The dedicated
+    Import / Export Space Config buttons remain the explicit channel
+    for changing the space templates.
 
     Returns a dict with summary fields::
 
@@ -87,6 +100,8 @@ def import_yaml_file(doc, source_path):
             "stored_schema_version": int,   # always INTERNAL_VERSION
             "byte_count": int,
             "blank": bool,
+            "preserved_space_keys": [str, ...],  # keys carried over from
+                                                 # the active payload
         }
 
     Raises:
@@ -105,15 +120,27 @@ def import_yaml_file(doc, source_path):
             "schema_version": _schema.INTERNAL_VERSION,
             "equipment_definitions": [],
         }
-        canonical = yaml_io.dump(data)
         input_version = _schema.INTERNAL_VERSION
         stored_version = _schema.INTERNAL_VERSION
     else:
         data = yaml_io.parse(raw_text)
         input_version = _schema.validate_schema_versions(data, allow_empty=False)
         data = _migrations.migrate_to_internal(data, source_version=input_version)
-        canonical = yaml_io.dump(data)
         stored_version = _schema.INTERNAL_VERSION
+
+    # Carry over space templates from the active payload when the
+    # incoming file doesn't carry them. Importing equipment YAML must
+    # not wipe a project's Spaces configuration. An incoming file that
+    # explicitly contains ``space_buckets`` / ``space_profiles`` (even
+    # as an empty list) is treated as an authoritative override.
+    active = load_active_data(doc) or {}
+    preserved = []
+    for key in _SPACE_TEMPLATE_KEYS:
+        if key not in data and key in active:
+            data[key] = active[key]
+            preserved.append(key)
+
+    canonical = yaml_io.dump(data)
 
     with revit.Transaction("Import YAML File (MEPRFP 2.0)", doc=doc):
         storage.write_payload(
@@ -130,6 +157,7 @@ def import_yaml_file(doc, source_path):
         "stored_schema_version": stored_version,
         "byte_count": len(canonical),
         "blank": is_blank,
+        "preserved_space_keys": preserved,
     }
 
 

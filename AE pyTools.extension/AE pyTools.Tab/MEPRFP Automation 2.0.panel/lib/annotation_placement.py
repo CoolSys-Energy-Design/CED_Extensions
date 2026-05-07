@@ -712,10 +712,26 @@ def execute_placement(doc, view, candidates):
                     )
                 )
             continue
-        _apply_parameters(
-            placed,
-            c.annotation.get("parameters") or {},
-            warnings=result.warnings,
-        )
+        # Stamp captured ``parameters`` only on annotation kinds where
+        # the placed element actually carries those parameters. The
+        # captured dict is the SOURCE FAMILY's parameter set (lifted
+        # from the host fixture during capture), so:
+        #
+        #   * IndependentTag — displays values from the tagged element
+        #     automatically; trying to write source-fixture parameters
+        #     onto the tag instance just generates ~30 "not found" /
+        #     "read-only" warnings per tag.
+        #   * TextNote — renders ``annotation.text`` directly; same
+        #     story, the parameter set doesn't apply.
+        #   * Keynote symbol — carries real ``Keynote Value`` /
+        #     ``Keynote Description`` parameters that legitimately
+        #     come from the captured payload (preserved through the
+        #     V4 -> V5.1 migration). Keep the stamp here.
+        if kind == KIND_KEYNOTE:
+            _apply_parameters(
+                placed,
+                c.annotation.get("parameters") or {},
+                warnings=result.warnings,
+            )
         result.placed_count_by_kind[kind] = result.placed_count_by_kind.get(kind, 0) + 1
     return result

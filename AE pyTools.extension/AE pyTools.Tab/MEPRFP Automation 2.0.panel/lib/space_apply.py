@@ -18,6 +18,7 @@ import math
 import clr  # noqa: F401
 
 from Autodesk.Revit.DB import (  # noqa: E402
+    BuiltInParameter,
     ElementId,
     ElementTransformUtils,
     Line,
@@ -112,25 +113,29 @@ def _apply_one(doc, plan, result):
     level_id = _level_id_for_space(plan)
     level = doc.GetElement(ElementId(int(level_id))) if level_id else None
 
+    # Match the equipment-side ``placement._place_fixture`` byte-for-
+    # byte: 3-arg NewFamilyInstance, then rotate, then write the FULL
+    # captured params dict (including "Elevation from Level"). The
+    # parameter-write path is what actually moves the instance to its
+    # captured elevation on level-based families — NewFamilyInstance
+    # itself frequently clamps to ``level.Elevation +
+    # Default_Elevation``, but ``_set_param_value`` (with the feet-
+    # inches fallback parser) lands the captured value via the
+    # parameter system and Revit recomputes the geometry from the
+    # parameter. This is why equipment placements end up at the right
+    # height: not because NewFamilyInstance honoured target_pt.Z, but
+    # because the subsequent parameter write does the heavy lifting.
+    led_params = plan.led.parameters if plan.led is not None else None
+
     try:
-        if level is not None:
-            inst = doc.Create.NewFamilyInstance(
-                target_pt, symbol, level, StructuralType.NonStructural,
-            )
-        else:
-            inst = doc.Create.NewFamilyInstance(
-                target_pt, symbol, StructuralType.NonStructural,
-            )
-    except Exception:
-        try:
-            inst = doc.Create.NewFamilyInstance(
-                target_pt, symbol, StructuralType.NonStructural,
-            )
-        except Exception as exc:
-            result.failed.append(
-                (plan, "create_failed", {"message": str(exc), **info})
-            )
-            return
+        inst = doc.Create.NewFamilyInstance(
+            target_pt, symbol, StructuralType.NonStructural,
+        )
+    except Exception as exc:
+        result.failed.append(
+            (plan, "create_failed", {"message": str(exc), **info})
+        )
+        return
 
     if inst is None:
         result.failed.append((plan, "create_failed", info))
@@ -149,17 +154,152 @@ def _apply_one(doc, plan, result):
         except Exception:
             pass  # non-fatal; element is still placed
 
-    # Write LED-captured parameters.
-    led_params = plan.led.parameters if plan.led is not None else None
+    # ---------------------------------------------------------------
+    # DIAGNOSTIC: dump everything we know about the elevation pipeline
+    # right before _apply_static_parameters runs, then again after.
+    # If the parameter still doesn't take, this surfaces exactly where
+    # the disconnect is: missing from params dict, write returned
+    # False, write returned True but readback is wrong, etc.
+    # ---------------------------------------------------------------
+    try:
+        led_data = plan.led._data if plan.led is not None else {}
+        offsets_raw = led_data.get("offsets") or []
+        offset0_z = ""
+        if offsets_raw and isinstance(offsets_raw[0], dict):
+            offset0_z = offsets_raw[0].get("z_inches", "")
+        params_raw = led_data.get("parameters") or {}
+        elev_in_dict = params_raw.get("Elevation from Level", "<missing>")
+
+        # What's the parameter on the placed instance look like BEFORE
+        # we write?
+        pre_elev_str = "?"
+        pre_elev_double = "?"
+        try:
+            ep = inst.LookupParameter("Elevation from Level")
+            if ep is not None:
+                try:
+                    pre_elev_str = ep.AsValueString() or "<empty>"
+                except Exception:
+                    pre_elev_str = "<no AsValueString>"
+                try:
+                    pre_elev_double = "{:.4f}".format(ep.AsDouble())
+                except Exception:
+                    pass
+                pre_elev_str += " (storage={}, readonly={})".format(
+                    getattr(ep.StorageType, "ToString", lambda: "?")(),
+                    ep.IsReadOnly,
+                )
+            else:
+                pre_elev_str = "<param not on instance>"
+        except Exception as exc:
+            pre_elev_str = "<lookup error: {}>".format(exc)
+
+        result.warnings.append(
+            "[diag/pre] LED {} | offset[0].z_inches={!r} | "
+            "params['Elevation from Level']={!r} | "
+            "instance.Elevation from Level (pre-write)={} "
+            "AsDouble(pre)={}".format(
+                plan.led_id or "?",
+                offset0_z, elev_in_dict,
+                pre_elev_str, pre_elev_double,
+            )
+        )
+    except Exception:
+        pass
+
+    # Write LED-captured parameters straight through, byte-for-byte
+    # like the equipment-side ``execute_placement`` does at
+    # ``placement.py:_apply_static_parameters(placed,
+    # led.get("parameters"))``.
     if isinstance(led_params, dict) and led_params:
         try:
-            _placement._apply_static_parameters(inst, led_params)
+            _placement._apply_static_parameters(
+                inst, led_params, warnings=result.warnings,
+            )
         except Exception as exc:
             result.warnings.append(
                 "Parameter write failed for ElementId {}: {}".format(
                     inst.Id, exc
                 )
             )
+
+    # Also try writing the parameter directly here, two ways, with
+    # explicit return-value capture, so we can see exactly what each
+    # API call returns. If _apply_static_parameters' SetValueString
+    # silently fails, this redundant attempt will tell us.
+    try:
+        z_inches_val = 0.0
+        if offsets_raw and isinstance(offsets_raw[0], dict):
+            try:
+                z_inches_val = float(offsets_raw[0].get("z_inches") or 0.0)
+            except Exception:
+                z_inches_val = 0.0
+        elev_ft = float(z_inches_val) / 12.0
+        ep = inst.LookupParameter("Elevation from Level")
+        svs_result = "<no param>"
+        set_result = "<no param>"
+        bip_set_result = "<no param>"
+        if ep is not None and not ep.IsReadOnly:
+            try:
+                feet_int = int(elev_ft)
+                inches_part = (elev_ft - feet_int) * 12
+                if abs(inches_part - round(inches_part)) < 1e-6:
+                    inches_str = '{}"'.format(int(round(inches_part)))
+                else:
+                    inches_str = '{:g}"'.format(inches_part)
+                ftin = "{}' - {}".format(feet_int, inches_str)
+                svs_result = repr(ep.SetValueString(ftin))
+            except Exception as exc:
+                svs_result = "<exception: {}>".format(exc)
+            try:
+                set_result = repr(ep.Set(float(elev_ft)))
+            except Exception as exc:
+                set_result = "<exception: {}>".format(exc)
+        # Try the BuiltIn slot too
+        try:
+            bip_param = inst.get_Parameter(
+                BuiltInParameter.INSTANCE_FREE_HOST_OFFSET_PARAM,
+            )
+            if bip_param is not None and not bip_param.IsReadOnly:
+                bip_set_result = repr(bip_param.Set(float(elev_ft)))
+            elif bip_param is None:
+                bip_set_result = "<INSTANCE_FREE_HOST_OFFSET_PARAM None>"
+            else:
+                bip_set_result = "<INSTANCE_FREE_HOST_OFFSET_PARAM read-only>"
+        except Exception as exc:
+            bip_set_result = "<exception: {}>".format(exc)
+        # Read back
+        post_elev_str = "?"
+        post_elev_double = "?"
+        try:
+            ep2 = inst.LookupParameter("Elevation from Level")
+            if ep2 is not None:
+                try:
+                    post_elev_str = ep2.AsValueString() or "<empty>"
+                except Exception:
+                    pass
+                try:
+                    post_elev_double = "{:.4f}".format(ep2.AsDouble())
+                except Exception:
+                    pass
+        except Exception:
+            pass
+        result.warnings.append(
+            "[diag/post] LED {} | elev_ft={:.4f} | "
+            "SetValueString={} | Set(double)={} | "
+            "BuiltIn.Set(double)={} | "
+            "Elevation from Level (post)={} AsDouble(post)={}".format(
+                plan.led_id or "?",
+                elev_ft, svs_result, set_result, bip_set_result,
+                post_elev_str, post_elev_double,
+            )
+        )
+    except Exception as exc:
+        result.warnings.append(
+            "[diag/post] LED {} | exception: {}".format(
+                plan.led_id or "?", exc,
+            )
+        )
 
     # Stamp Element_Linker with full Spaces lineage.
     try:

@@ -116,6 +116,74 @@ def build_annotation_symbol_index(doc):
     )
 
 
+KEYNOTE_FAMILY_NAME = "GA_Keynote Symbol_CED"
+
+
+def build_tag_symbol_index(doc):
+    """Annotation FamilySymbols *excluding* the GA_Keynote Symbol_CED
+    family. Used by the Spaces LED editor's Family:Type dropdown when
+    the row's kind is ``tag``: keynotes and text notes have their own
+    dedicated indexes, so the tag picker shouldn't surface them."""
+    def _is_tag_like(sym):
+        if _category_type(sym) != CategoryType.Annotation:
+            return False
+        family = getattr(sym, "Family", None)
+        family_name = getattr(family, "Name", "") if family is not None else ""
+        return family_name != KEYNOTE_FAMILY_NAME
+    return _build_index(doc, _is_tag_like)
+
+
+def build_keynote_symbol_index(doc):
+    """Only types of the keynote family ``GA_Keynote Symbol_CED``.
+
+    Used by the Spaces LED editor's Family:Type dropdown when the row's
+    kind is ``keynote`` — locks the user into picking a real keynote
+    type so the placement engine's ``_place_keynote`` (which expects a
+    GenericAnnotation symbol) always gets a valid family/type pair."""
+    def _is_keynote_family(sym):
+        family = getattr(sym, "Family", None)
+        family_name = getattr(family, "Name", "") if family is not None else ""
+        return family_name == KEYNOTE_FAMILY_NAME
+    return _build_index(doc, _is_keynote_family)
+
+
+def build_text_note_type_index(doc):
+    """Sorted TextNoteType names (just the type name, no Family prefix).
+
+    TextNoteType is a separate Revit class — it doesn't show up under
+    ``FamilySymbol``, so the regular annotation index never includes
+    them. Used by the Spaces LED editor's Family:Type dropdown when
+    the row's kind is ``text_note``. Returned shape mirrors
+    ``_build_index`` for caller consistency: ``(labels, lookup)``
+    where each label is the TextNoteType's ``Name`` and the lookup
+    maps that name to ``{family_name: "", type_name: <name>, ...}``.
+    Empty ``family_name`` is intentional — text notes have no family
+    in the FamilySymbol sense; the label is the type name alone.
+    """
+    if doc is None:
+        return [], {}
+    try:
+        from Autodesk.Revit.DB import TextNoteType
+    except Exception:
+        return [], {}
+    lookup = {}
+    for tnt in FilteredElementCollector(doc).OfClass(TextNoteType):
+        try:
+            name = tnt.Name or ""
+        except Exception:
+            continue
+        if not name or name in lookup:
+            continue
+        lookup[name] = {
+            "family_name": "",
+            "type_name": name,
+            "category_name": "Text Notes",
+            "symbol_id": _id_int(tnt.Id),
+        }
+    labels = sorted(lookup.keys(), key=lambda s: s.lower())
+    return labels, lookup
+
+
 def find_symbol_by_label(doc, label):
     """Resolve a ``"Family : Type"`` label back to a ``FamilySymbol`` element.
 

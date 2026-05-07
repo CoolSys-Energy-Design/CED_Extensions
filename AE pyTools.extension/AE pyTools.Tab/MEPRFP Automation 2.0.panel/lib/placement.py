@@ -1203,6 +1203,12 @@ def _param_str(params, name):
 # placed element's identity. Skipped during _apply_static_parameters so
 # we don't try to overwrite Revit's own ElementId / Level / Position
 # from the YAML capture.
+#
+# ``Mark`` is here because it's a per-instance unique identifier — copying
+# it from the captured source onto every placement guarantees Revit's
+# "Elements have duplicate Mark values" warning (the source instance, any
+# Legend Component referencing the same family, and every new placement
+# would all collide on the same Mark).
 _STAMP_ONLY_PARAM_KEYS = frozenset({
     "Element_Linker",
     "Element_Linker Parameter",
@@ -1222,21 +1228,69 @@ _STAMP_ONLY_PARAM_KEYS = frozenset({
     "ElementId",
     "Element ID",
     "Element Id",
+    "Mark",
 })
 
 
-def _apply_static_parameters(elem, params_dict):
+def _find_parameter(elem, name):
+    """Find a parameter by display name with a ``Parameters``-walk fallback.
+
+    ``LookupParameter`` is the cheap path — fast and covers shared /
+    family parameters reliably — but it **misses many built-in
+    parameters** (e.g. ``INSTANCE_FREE_HOST_OFFSET_PARAM`` shown to
+    the user as "Elevation from Level"). Without the fallback, captured
+    LED values for built-in parameters silently never apply at
+    placement time.
+
+    The fallback walks ``elem.Parameters`` and matches on
+    ``Definition.Name`` — slower but bulletproof. Mirrors the equivalent
+    helper in ``annotation_placement._find_parameter``.
+    """
+    try:
+        p = elem.LookupParameter(name)
+    except Exception:
+        p = None
+    if p is not None:
+        return p
+    try:
+        for param in elem.Parameters:
+            if param is None:
+                continue
+            try:
+                d = param.Definition
+            except Exception:
+                d = None
+            if d is None:
+                continue
+            try:
+                if d.Name == name:
+                    return param
+            except Exception:
+                continue
+    except Exception:
+        pass
+    return None
+
+
+def _apply_static_parameters(elem, params_dict, warnings=None):
     """Write LED-captured static parameters onto the placed instance.
 
     Mirrors the legacy ``PlaceElementsEngine._apply_parameters``: walks
     the YAML LED's ``parameters`` dict and sets each entry on the new
-    element via ``LookupParameter`` + a storage-type aware ``Set``.
-    Skips:
+    element via ``_find_parameter`` (LookupParameter + Parameters-walk
+    fallback) + a storage-type aware ``Set``. Skips:
 
       * Element_Linker bookkeeping keys (those are owned by ``_write_linker``).
       * Parameters whose value is a directive dict (``BYPARENT(...)`` /
         ``BYSIBLING(...)``) — those resolve at audit time, not now.
-      * Read-only parameters and missing parameters (no warning, just skip).
+      * Read-only parameters and missing parameters.
+
+    ``warnings`` (optional) collects per-parameter diagnostic strings
+    when something doesn't apply, so callers can surface to the user
+    why a captured "Elevation from Level" / "Mark" / etc. didn't land
+    on the placed instance. Read-only and built-in skips are recorded
+    only when ``warnings`` is non-None — silent otherwise (matches the
+    historical contract for callers that don't want noise).
 
     Returns ``(written, skipped)`` counts for callers that want to log.
     """
@@ -1244,6 +1298,31 @@ def _apply_static_parameters(elem, params_dict):
         return 0, 0
     written = 0
     skipped = 0
+
+    def _elem_label():
+        try:
+            eid = getattr(elem, "Id", None)
+            if eid is not None:
+                return "{} (id {})".format(
+                    type(elem).__name__,
+                    getattr(eid, "Value", None)
+                    or getattr(eid, "IntegerValue", None),
+                )
+        except Exception:
+            pass
+        return type(elem).__name__
+
+    def _fmt_val(v):
+        # Quote with double-quotes around the raw string so feet-inches
+        # values render as ``"3' - 8""`` instead of Python's
+        # repr-escaped ``'3\' - 8"'`` form. Users were reading the
+        # backslash as data corruption — purely a display artifact.
+        if v is None:
+            return '""'
+        if isinstance(v, (int, float)):
+            return str(v)
+        return '"{}"'.format(v)
+
     for name, value in params_dict.items():
         if not name or name in _STAMP_ONLY_PARAM_KEYS:
             skipped += 1
@@ -1252,16 +1331,27 @@ def _apply_static_parameters(elem, params_dict):
             # parent / sibling directive — defer to audit-time wiring
             skipped += 1
             continue
-        try:
-            param = elem.LookupParameter(name)
-        except Exception:
-            param = None
+        param = _find_parameter(elem, name)
         if param is None:
             skipped += 1
+            if warnings is not None:
+                warnings.append(
+                    "Parameter '{}' not found on placed {} — value {} skipped. "
+                    "(Likely a TYPE parameter on the family symbol — instance "
+                    "writes don't see those.)".format(
+                        name, _elem_label(), _fmt_val(value),
+                    )
+                )
             continue
         try:
             if param.IsReadOnly:
                 skipped += 1
+                if warnings is not None:
+                    warnings.append(
+                        "Parameter '{}' is read-only on {} — value {} skipped.".format(
+                            name, _elem_label(), _fmt_val(value),
+                        )
+                    )
                 continue
         except Exception:
             skipped += 1
@@ -1274,7 +1364,95 @@ def _apply_static_parameters(elem, params_dict):
             written += 1
         else:
             skipped += 1
+            if warnings is not None:
+                warnings.append(
+                    "Failed to write parameter '{}' = {} on {}. (Family-side "
+                    "association: the instance parameter is driven by a type/"
+                    "global parameter, so per-instance writes are silently "
+                    "rejected even when IsReadOnly returns False. Set the "
+                    "matching TYPE parameter on the FamilySymbol instead — or "
+                    "break the association in the family editor.)".format(
+                        name, _fmt_val(value), _elem_label(),
+                    )
+                )
     return written, skipped
+
+
+def _parse_feet_inches(text):
+    """Parse a feet-inches display string (``3' - 8"``, ``1'-6"``,
+    ``0' - 4 1/2"``, ``8"``, ``3'``, ``1.5``) into a float in feet,
+    Revit's internal length unit. Returns ``None`` on parse failure.
+
+    Used as a fallback when ``SetValueString`` declines a length-style
+    YAML value — pythonnet 3 has been observed to reject the standard
+    Revit-formatted feet-inches string in some Revit 2026 builds even
+    though the same string round-trips through the Properties palette.
+    """
+    if text is None:
+        return None
+    s = str(text).strip()
+    if not s:
+        return None
+    # Plain decimal feet (or unitless number)
+    try:
+        return float(s)
+    except ValueError:
+        pass
+
+    feet_part = ""
+    inch_part = s
+    if "'" in s:
+        feet_part, _, inch_part = s.partition("'")
+
+    try:
+        feet = float(feet_part.strip()) if feet_part.strip() else 0.0
+    except ValueError:
+        return None
+
+    inch_part = inch_part.strip().lstrip("-").strip()
+    if inch_part.endswith('"'):
+        inch_part = inch_part[:-1].strip()
+
+    inches = 0.0
+    if inch_part:
+        parts = inch_part.split()
+        try:
+            if len(parts) == 1:
+                token = parts[0]
+                if "/" in token:
+                    num, _, denom = token.partition("/")
+                    inches = float(num) / float(denom)
+                else:
+                    inches = float(token)
+            elif len(parts) == 2:
+                whole = float(parts[0])
+                num, _, denom = parts[1].partition("/")
+                inches = whole + (float(num) / float(denom))
+            else:
+                return None
+        except (ValueError, ZeroDivisionError):
+            return None
+
+    return feet + inches / 12.0
+
+
+def _parse_yes_no(text):
+    """Parse a Yes/No / True/False / 1/0 display string into 1 or 0.
+
+    Used as an Integer-storage fallback for boolean Revit parameters
+    (``Rotate Symbol Label_CED``, ``Show Symbol Labels_CED``, etc.)
+    captured as ``"Yes"`` / ``"No"`` strings — ``SetValueString`` on
+    those parameters routinely returns ``False`` because the parser
+    expects ``1`` / ``0`` instead.
+    """
+    if text is None:
+        return None
+    s = str(text).strip().lower()
+    if s in ("yes", "y", "true", "1"):
+        return 1
+    if s in ("no", "n", "false", "0"):
+        return 0
+    return None
 
 
 def _set_param_value(param, value):
@@ -1288,8 +1466,16 @@ def _set_param_value(param, value):
     parameter's display units and converts to internal storage on the
     Revit side.
 
-    Falls back to ``Set(...)`` if ``SetValueString`` rejects the
-    string — e.g. unitless integer parameters or string params.
+    Three-stage fallback when SetValueString declines:
+
+      1. Raw ``Set(float|int)`` — works for unitless numerics.
+      2. Feet-inches parser (Double only) — covers length values like
+         ``"3' - 8\""`` that pythonnet 3 has been observed to reject
+         through SetValueString in Revit 2026.
+      3. Yes/No parser (Integer only) — covers boolean parameters
+         captured as ``"Yes"`` / ``"No"`` strings.
+
+    Returns ``False`` only when every stage fails.
     """
     try:
         storage = param.StorageType.ToString()
@@ -1317,17 +1503,36 @@ def _set_param_value(param, value):
                 return True
         except Exception:
             pass
-        # Fallback: raw Set with the right CLR type. This path is
-        # right for unitless ints / doubles or when the param doesn't
-        # support SetValueString (rare).
+        # Stage 1: raw numeric Set with the right CLR type. Right for
+        # unitless ints / doubles or when the param doesn't support
+        # SetValueString (rare).
         try:
             if storage == "Integer":
                 return bool(param.Set(int(float(raw))))
             return bool(param.Set(float(raw)))
         except (TypeError, ValueError):
-            return False
+            pass
         except Exception:
-            return False
+            pass
+        # Stage 2: feet-inches → feet (Double only). Revit's internal
+        # length unit is feet; once we parse to a float, raw Set
+        # bypasses the SetValueString picky parser entirely.
+        if storage == "Double":
+            feet = _parse_feet_inches(raw_str)
+            if feet is not None:
+                try:
+                    return bool(param.Set(float(feet)))
+                except Exception:
+                    pass
+        # Stage 3: Yes/No → 1/0 (Integer only).
+        if storage == "Integer":
+            yn = _parse_yes_no(raw_str)
+            if yn is not None:
+                try:
+                    return bool(param.Set(int(yn)))
+                except Exception:
+                    pass
+        return False
 
     # ElementId or unknown — last-resort string set.
     try:

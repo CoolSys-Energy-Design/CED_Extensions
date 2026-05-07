@@ -153,6 +153,18 @@ def anchor_points(rule, geom, door_anchor=None):
     if door is None:
         return []
 
+    # Normalise the door's inward direction so it always points INTO
+    # the space. ``door_to_anchor`` derives ``inward`` by negating
+    # ``FacingOrientation``, but that heuristic only holds when the
+    # door family was placed with its facing pointing out of the room.
+    # Doors placed flipped (or families authored with the opposite
+    # convention) come through here with ``inward`` pointing away from
+    # the space center, which mirrors every wall- and corner-relative
+    # anchor onto the wrong side. The dot-product check is geometry-
+    # truthful — flip when the recorded inward and the actual toward-
+    # center direction disagree.
+    door = _orient_door_inward(door, (geom.x_center, geom.y_center))
+
     if kind == KIND_DOOR_RELATIVE:
         return [_door_relative_point(rule, door, z)]
 
@@ -284,6 +296,33 @@ def _normalize_xy(vec):
     if length < 1e-9:
         return (1.0, 0.0)
     return (vx / length, vy / length)
+
+
+def _orient_door_inward(door_anchor, center_xy):
+    """Return ``door_anchor`` with ``inward`` flipped if it points away
+    from ``center_xy``.
+
+    Used by ``anchor_points`` to make door-relative geometry insensitive
+    to which side the door's family was placed on. A zero or near-zero
+    dot product (door at the centroid, or inward perpendicular to the
+    toward-center direction) leaves the original orientation alone —
+    we can't tell which side is "in" in that degenerate case, so we
+    don't guess.
+    """
+    if door_anchor is None or center_xy is None:
+        return door_anchor
+    try:
+        origin_xy, inward_xy = door_anchor
+        ox, oy = float(origin_xy[0]), float(origin_xy[1])
+        ix, iy = float(inward_xy[0]), float(inward_xy[1])
+        cx, cy = float(center_xy[0]), float(center_xy[1])
+    except (TypeError, ValueError, IndexError):
+        return door_anchor
+    vx = cx - ox
+    vy = cy - oy
+    if (ix * vx + iy * vy) < 0.0:
+        return ((ox, oy), (-ix, -iy))
+    return door_anchor
 
 
 # ---------------------------------------------------------------------

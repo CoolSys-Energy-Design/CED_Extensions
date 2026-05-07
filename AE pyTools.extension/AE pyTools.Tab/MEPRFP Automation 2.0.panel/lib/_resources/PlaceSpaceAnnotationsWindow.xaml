@@ -77,14 +77,20 @@
       </DataGrid.Columns>
     </DataGrid>
 
-    <DockPanel Grid.Row="3" Margin="0,12,0,0">
-      <TextBlock DockPanel.Dock="Left" x:Name="StatusLabel"
-                 VerticalAlignment="Center" Foreground="Gray"/>
-      <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
+    <Grid Grid.Row="3" Margin="0,12,0,0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="Auto"/>
+      </Grid.ColumnDefinitions>
+      <TextBlock Grid.Column="0" x:Name="StatusLabel"
+                 VerticalAlignment="Center" Foreground="Gray"
+                 TextWrapping="Wrap"
+                 Margin="0,0,12,0"/>
+      <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
         <Button x:Name="PlaceButton" Content="Place all" Width="140" Margin="0,0,8,0"
                 ToolTip="Place every previewed annotation in one transaction."/>
         <Button x:Name="CloseButton" Content="Close" Width="100" IsCancel="True"/>
       </StackPanel>
-    </DockPanel>
+    </Grid>
   </Grid>
 </Window>

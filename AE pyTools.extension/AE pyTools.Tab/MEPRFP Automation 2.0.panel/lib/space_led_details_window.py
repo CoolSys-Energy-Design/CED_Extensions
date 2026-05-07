@@ -206,15 +206,30 @@ class _OffsetRow(object):
 # ---------------------------------------------------------------------
 
 class _AnnotationRow(object):
-    """One ``led.annotations[*]`` entry."""
+    """One ``led.annotations[*]`` entry.
 
-    def __init__(self, data, ann_label_options_net=None, ann_label_lookup=None,
+    The Family:Type dropdown is *kind-aware* — the option list shifts
+    based on the row's current ``Kind``:
+
+      * ``tag``       — annotation FamilySymbols (excluding the
+                        keynote family).
+      * ``keynote``   — only types of family ``GA_Keynote Symbol_CED``.
+      * ``text_note`` — TextNoteType names (no Family prefix; the
+                        ``Label`` getter renders just the type name).
+
+    The per-row dynamic list is plumbed via ``options_by_kind``
+    (a ``{kind: CLR_list}`` map) and ``lookups_by_kind`` (the
+    parallel ``{kind: {label: info_dict}}`` for free-text resolution).
+    The dialog controller builds these once and shares them across
+    every row.
+    """
+
+    def __init__(self, data, options_by_kind=None, lookups_by_kind=None,
                  doc=None):
         self._data = data
         self.KindOptions = _ANNOTATION_KIND_OPTIONS_NET
-        # Annotation Family:Type dropdown: shared CLR list across all rows.
-        self.AnnLabelOptions = ann_label_options_net or _make_clr_string_list(())
-        self._ann_label_lookup = ann_label_lookup or {}
+        self._options_by_kind = options_by_kind or {}
+        self._lookups_by_kind = lookups_by_kind or {}
         # Doc reference so the Label setter can pull symbol-default
         # parameter values when the user picks a known Family:Type.
         # Without this, annotations created in the editor start with
@@ -237,10 +252,23 @@ class _AnnotationRow(object):
         if new_kind in _ANNOTATION_KINDS:
             self._data["kind"] = new_kind
 
+    def options_for_current_kind(self):
+        """Return the CLR list of valid Family:Type options for this
+        row's current ``Kind``. Used by the per-row resolver passed
+        to ``attach_per_row_handlers``."""
+        return self._options_by_kind.get(self.Kind) or _make_clr_string_list(())
+
     @property
     def Label(self):
-        # Display the Family:Type as the Label so the same combo
-        # drives both the visible cell and the underlying YAML.
+        # text_note rows show the TextNoteType name in the Family:Type
+        # cell — text notes have no FamilySymbol, so a "family : type"
+        # composite would be misleading. The actual text *content*
+        # stays in the schema's ``label`` field (set during capture)
+        # and is editable via the per-row Params... button alongside
+        # the rest of the annotation parameters.
+        kind = self._data.get("kind") or "tag"
+        if kind == "text_note":
+            return self._data.get("type_name") or ""
         family = self._data.get("family_name") or ""
         type_name = self._data.get("type_name") or ""
         if family and type_name:
@@ -254,25 +282,40 @@ class _AnnotationRow(object):
         # Coerce to Python str so the lookup dict (keyed by Python
         # strings) hashes correctly.
         new_label = str(value or "").strip()
-        # If the entered text matches a known Family:Type, decompose
-        # it into the YAML's structured fields. Otherwise persist as
-        # a free-text label so user-typed annotations still survive.
-        info = self._ann_label_lookup.get(new_label)
+        kind = self._data.get("kind") or "tag"
+        lookup = self._lookups_by_kind.get(kind) or {}
+
+        # Match against the kind's own index first.
+        info = lookup.get(new_label)
         if info:
             old_label = self._data.get("label") or ""
             self._data["family_name"] = info.get("family_name") or ""
             self._data["type_name"] = info.get("type_name") or ""
-            self._data["label"] = new_label
+            # For text_note rows, keep ``label`` as the captured text
+            # content; only family/type change with this combo. For
+            # tag / keynote, ``label`` mirrors the Family:Type display.
+            if kind != "text_note":
+                self._data["label"] = new_label
             # Auto-populate the annotation's parameters from the
             # chosen family — only when (a) we have a doc to query,
             # (b) the parameters dict is currently empty (don't blow
             # away user-typed values), and (c) the label actually
-            # changed (not a no-op set).
-            if self._doc is not None and new_label != old_label:
+            # changed (not a no-op set). Skipped for text_note since
+            # TextNoteType has no FamilySymbol parameter set.
+            if (kind in ("tag", "keynote") and self._doc is not None
+                    and new_label != old_label):
                 params = self._data.setdefault("parameters", {})
                 if not params:
                     self._auto_populate_parameters(new_label)
-        elif " : " in new_label:
+            return
+
+        # Free-text fallback paths.
+        if kind == "text_note":
+            # Whole input is the TextNoteType name.
+            self._data["family_name"] = ""
+            self._data["type_name"] = new_label
+            return
+        if " : " in new_label:
             family, type_name = new_label.split(" : ", 1)
             self._data["family_name"] = family.strip()
             self._data["type_name"] = type_name.strip()
@@ -497,18 +540,32 @@ class SpaceLedDetailsController(object):
         self._doc = doc
         self._led_label_for_autofill = led_label or self._led.get("label") or ""
 
-        # Build the annotation Family:Type index once. Shared across
-        # all annotation rows.
-        self._ann_label_options_net = _make_clr_string_list(())
-        self._ann_label_lookup = {}
+        # Build per-kind Family:Type indexes. Each kind gets its own
+        # CLR list + lookup, shared across all annotation rows. The
+        # row-level resolver picks the right list based on the row's
+        # current Kind, and re-resolves on Kind selection change.
+        self._ann_options_by_kind = {
+            "tag": _make_clr_string_list(()),
+            "keynote": _make_clr_string_list(()),
+            "text_note": _make_clr_string_list(()),
+        }
+        self._ann_lookups_by_kind = {
+            "tag": {},
+            "keynote": {},
+            "text_note": {},
+        }
         if doc is not None:
-            try:
-                labels, lookup = _sym_index.build_annotation_symbol_index(doc)
-                self._ann_label_options_net = _make_clr_string_list(labels)
-                self._ann_label_lookup = lookup
-            except Exception:
-                self._ann_label_options_net = _make_clr_string_list(())
-                self._ann_label_lookup = {}
+            for kind, builder in (
+                ("tag", _sym_index.build_tag_symbol_index),
+                ("keynote", _sym_index.build_keynote_symbol_index),
+                ("text_note", _sym_index.build_text_note_type_index),
+            ):
+                try:
+                    labels, lookup = builder(doc)
+                except Exception:
+                    labels, lookup = [], {}
+                self._ann_options_by_kind[kind] = _make_clr_string_list(labels)
+                self._ann_lookups_by_kind[kind] = lookup
 
         self.window = _wpf.load_xaml(_DETAILS_XAML)
         self._param_rows = ObservableCollection[_NetObject]()
@@ -583,6 +640,12 @@ class SpaceLedDetailsController(object):
         # ItemsSource on the per-row ComboBoxes, in a single Loaded
         # handler. Doing them separately interferes (the combo
         # ItemsSource pass invalidates the button Click attach).
+        # The Kind combo always shows the same three kinds. The
+        # Label combo varies per row based on Kind — resolved by
+        # ``_resolve_ann_combo_items`` against the row's current
+        # state. ``attach_per_row_handlers`` also subscribes to
+        # SelectionChanged on every combo in each row so changing
+        # Kind triggers a re-resolution of the Label combo's items.
         self._row_handles = _wpf.attach_per_row_handlers(
             self.ann_grid,
             on_button_click=lambda btn, e, item: self._safe(
@@ -590,9 +653,24 @@ class SpaceLedDetailsController(object):
             ),
             items_per_combo_name={
                 "AnnKindCombo": _ANNOTATION_KIND_OPTIONS_NET,
-                "AnnLabelCombo": self._ann_label_options_net,
             },
+            combo_item_resolver=self._resolve_ann_combo_items,
         )
+
+    def _resolve_ann_combo_items(self, combo_name, row_item):
+        """Per-row ItemsSource resolver passed to ``attach_per_row_handlers``.
+
+        ``AnnLabelCombo`` (the Family:Type cell) gets a kind-aware
+        list — annotation symbols when the row's Kind is ``tag``,
+        keynote symbols only when ``keynote``, TextNoteType names
+        when ``text_note``. Other combos return ``None`` so the
+        helper falls back to the static ``items_per_combo_name`` map.
+        """
+        if combo_name != "AnnLabelCombo":
+            return None
+        if not isinstance(row_item, _AnnotationRow):
+            return None
+        return row_item.options_for_current_kind()
 
     def _safe(self, fn, label):
         try:
@@ -649,8 +727,8 @@ class SpaceLedDetailsController(object):
                 a.setdefault("id", _new_id("ANN"))
                 self._ann_rows.Add(_AnnotationRow(
                     a,
-                    ann_label_options_net=self._ann_label_options_net,
-                    ann_label_lookup=self._ann_label_lookup,
+                    options_by_kind=self._ann_options_by_kind,
+                    lookups_by_kind=self._ann_lookups_by_kind,
                     doc=self._doc,
                 ))
 
@@ -744,8 +822,8 @@ class SpaceLedDetailsController(object):
         anns.append(new)
         self._ann_rows.Add(_AnnotationRow(
             new,
-            ann_label_options_net=self._ann_label_options_net,
-            ann_label_lookup=self._ann_label_lookup,
+            options_by_kind=self._ann_options_by_kind,
+            lookups_by_kind=self._ann_lookups_by_kind,
             doc=self._doc,
         ))
         self.ann_grid.SelectedItem = self._ann_rows[self._ann_rows.Count - 1]
@@ -775,16 +853,57 @@ class SpaceLedDetailsController(object):
         # Keynotes (typically family "GA_Keynote Symbol_CED") resolve
         # here exactly like any other tag — they're just FamilySymbols.
         ann_label = row.Label or ""
+        kind = row._data.get("kind") or "tag"
+
+        # Text notes carry their content in a top-level ``text`` field
+        # (not in ``parameters``). The placement engine reads it from
+        # there when creating the TextNote. Splice a ``Text`` row into
+        # the combined dict the dialog edits, then on commit pull it
+        # back out and write to the annotation's top-level ``text``.
+        is_text_note = (kind == "text_note")
+        if is_text_note:
+            # Existing data may have come from an older capture where
+            # the content was stored in ``label`` (per
+            # hosted_annotations.annotation_descriptor). Prefer
+            # top-level ``text``; fall back to ``label`` for legacy
+            # entries so users see their existing content prepopulated
+            # rather than a blank cell.
+            existing_text = (
+                row._data.get("text")
+                or row._data.get("label")
+                or ""
+            )
+            combined = {"Text": existing_text}
+            for k, v in params.items():
+                if k == "Text":
+                    # Avoid the collision — the params-dict version is
+                    # ignored in favour of the top-level field.
+                    continue
+                combined[k] = v
+            dialog_data = combined
+        else:
+            dialog_data = params
+
         dialog = KeyValueDialog(
-            params,
+            dialog_data,
             header="Annotation parameters: {} [{}]".format(
                 ann_label or row._data.get("type_name") or "(no label)",
-                row._data.get("kind") or "?",
+                kind,
             ),
             doc=self._doc,
             label=ann_label,
         )
-        dialog.show_modal(owner=self.window)
+        committed = dialog.show_modal(owner=self.window)
+
+        if is_text_note and committed:
+            # Split the combined dict back: ``Text`` -> top-level field,
+            # everything else stays in ``parameters``.
+            text_value = combined.pop("Text", "")
+            if text_value is None:
+                text_value = ""
+            row._data["text"] = str(text_value)
+            params.clear()
+            params.update(combined)
         # Intentionally NOT calling self.ann_grid.Items.Refresh() —
         # the parameters dict isn't visible in any annotation grid
         # column, and forcing a refresh rebuilds row containers
@@ -820,12 +939,99 @@ class SpaceLedDetailsController(object):
         # and any reorder if we ever add it).
         self._led["offsets"] = [r._data for r in self._offset_rows]
 
+        # Keep ``Elevation from Level`` (parameter) and ``offsets[0]
+        # .z_inches`` (geometric offset) in lockstep. Both represent
+        # the fixture's height above the space's level — having two
+        # sources of truth for the same value lets them drift, with
+        # the user editing one and being surprised the other "wins"
+        # at placement / audit time. The parameter is the user-facing
+        # control (it's how engineers think about elevation), so when
+        # it changes, propagate the change into the offset's z_inches.
+        # We also feed the parameter back from the offset when the
+        # parameter is missing/blank — so authors who only set z_inches
+        # still get a parameter value that reads correctly in the
+        # Parameters tab on next open.
+        self._reconcile_elevation_from_level(params_out)
+
         # Annotations same — mutated in place via setters, just rebuild
         # the list from current rows.
         self._led["annotations"] = [r._data for r in self._ann_rows]
 
         self._committed = True
         self.window.Close()
+
+    def _reconcile_elevation_from_level(self, params_out):
+        """Keep ``params['Elevation from Level']`` in lockstep with
+        ``offsets[0].z_inches``, derived from the offset value.
+
+        Equipment-side LEDs carry "Elevation from Level" inside their
+        ``parameters`` dict (captured from the source instance), and
+        placement writes it back via ``_apply_static_parameters`` ->
+        ``SetValueString``. Spaces don't capture, so we have to
+        synthesize the parameter value from the user-edited
+        ``z_inches`` so the placement code path can be byte-for-byte
+        identical to equipment.
+
+        Authoritative direction: offset -> parameter. Whatever
+        ``z_inches`` holds becomes the parameter's display string. If
+        the user typed something different in the Parameters tab and
+        ``z_inches`` is non-zero, ``z_inches`` wins (the Offsets tab
+        is the source of truth, like equipment). If ``z_inches`` is
+        zero AND the user typed a value into the Parameters tab,
+        migrate that value into ``z_inches`` first so the dialog
+        round-trips cleanly.
+        """
+        if not isinstance(params_out, dict):
+            return
+        offsets = self._led.setdefault("offsets", [])
+        if not isinstance(offsets, list):
+            offsets = []
+            self._led["offsets"] = offsets
+
+        # Read current values.
+        z_inches_val = 0.0
+        if offsets and isinstance(offsets[0], dict):
+            try:
+                z_inches_val = float(offsets[0].get("z_inches") or 0.0)
+            except (TypeError, ValueError):
+                z_inches_val = 0.0
+        param_value = params_out.get("Elevation from Level")
+
+        # If z_inches is zero but the parameter has a value, migrate
+        # the parameter value into z_inches so the offset reflects it.
+        if abs(z_inches_val) < 1e-6 and param_value not in (None, ""):
+            try:
+                import placement as _placement
+                feet = _placement._parse_feet_inches(param_value)
+            except Exception:
+                feet = None
+            if feet is not None:
+                z_inches_val = float(feet) * 12.0
+                if not offsets or not isinstance(offsets[0], dict):
+                    offsets.insert(0, {
+                        "x_inches": 0.0,
+                        "y_inches": 0.0,
+                        "z_inches": z_inches_val,
+                        "rotation_deg": 0.0,
+                    })
+                else:
+                    offsets[0]["z_inches"] = z_inches_val
+
+        # Write the canonical "Elevation from Level" value into params
+        # from z_inches, formatted as a Revit feet-inches string. This
+        # is what placement (``_apply_static_parameters`` ->
+        # ``SetValueString``) writes onto the placed instance —
+        # mirroring exactly how equipment-side captured values land.
+        feet = int(z_inches_val // 12) if z_inches_val >= 0 else -int(-z_inches_val // 12)
+        inches = z_inches_val - feet * 12
+        if abs(inches - round(inches)) < 1e-6:
+            inches_str = '{}"'.format(int(round(inches)))
+        else:
+            inches_str = '{:g}"'.format(inches)
+        params_out["Elevation from Level"] = "{}' - {}".format(
+            feet, inches_str,
+        )
+        self._led["parameters"] = params_out
 
     def _on_cancel(self):
         # Restore the snapshot fully — every nested dict / list.

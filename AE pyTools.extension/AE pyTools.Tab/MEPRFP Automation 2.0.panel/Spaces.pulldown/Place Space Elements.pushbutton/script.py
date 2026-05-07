@@ -72,11 +72,31 @@ def main():
         else:
             raise
 
-    place_space_elements_window.show_modal(
+    controller = place_space_elements_window.show_modal(
         doc=doc,
         profile_data=profile_data,
         door_choices=door_choices,
     )
+
+    # Surface the placement result + any warnings (parameter writes
+    # that didn't apply, exceptions during placement, etc.) so the
+    # user can see WHY a captured "Elevation from Level" / "Mark"
+    # / etc. didn't land on the placed instance.
+    result = getattr(controller, "last_result", None)
+    if controller is not None and getattr(controller, "committed", False) and result is not None:
+        output.print_md(
+            "**Place Space Elements complete**\n\n"
+            "- Placed: `{}`\n"
+            "- Failed: `{}`\n"
+            "- Warnings: `{}`\n".format(
+                result.n_placed, result.n_failed, len(result.warnings),
+            )
+        )
+        if result.warnings:
+            output.print_md(
+                "\n**Warnings:**\n\n"
+                + "\n".join("- {}".format(w) for w in result.warnings)
+            )
 
 
 if __name__ == "__main__":

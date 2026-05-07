@@ -174,7 +174,7 @@ class PlaceSpaceAnnotationsController(object):
             return
 
         skip_dupes = bool(self.skip_dupes_check.IsChecked)
-        candidates = _saw.collect_space_candidates(
+        candidates, diag = _saw.collect_space_candidates(
             self.doc, self.view, self.profile_data,
             kinds=kinds,
             skip_duplicates=skip_dupes,
@@ -187,10 +187,23 @@ class PlaceSpaceAnnotationsController(object):
         self.summary_label.Text = "{} candidate(s); {} flagged as already-placed".format(
             n_total, n_skipped,
         )
-        self._set_status(
-            "Ready. Click 'Place all' to commit." if n_total
-            else "No space-based fixtures with annotations in this view."
-        )
+        if n_total:
+            n_rebound = diag.get("rebound_by_label", 0)
+            if n_rebound:
+                self._set_status(
+                    "Ready. Click 'Place all' to commit. ({} fixture(s) "
+                    "matched by family:type label because their stamped "
+                    "LED ID is orphaned — re-place from the Spaces side "
+                    "to refresh the Element_Linker if you want a clean "
+                    "lineage.)".format(n_rebound)
+                )
+            else:
+                self._set_status("Ready. Click 'Place all' to commit.")
+        else:
+            self._set_status(
+                _saw.explain_empty_candidates(diag)
+                or "No space-based fixtures with annotations in this view."
+            )
 
     def _on_place(self):
         if not self._rows.Count:

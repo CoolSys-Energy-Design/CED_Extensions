@@ -44,7 +44,8 @@ def load_xaml(xaml_path_or_text):
 
 def attach_per_row_handlers(data_grid, on_button_click=None,
                             items_per_combo_name=None,
-                            checkboxes_per_name=None):
+                            checkboxes_per_name=None,
+                            combo_item_resolver=None):
     """Combined per-row wiring done in one Loaded handler:
 
       * Click handlers on per-row Buttons.
@@ -63,10 +64,33 @@ def attach_per_row_handlers(data_grid, on_button_click=None,
     ``_PreviewRow.Selected`` ``@property`` + ``@setter`` pair).
     Pass any of these as ``None`` to skip.
 
+    ``combo_item_resolver(combo_name, row_item) -> CLR_list_or_None``
+    enables *per-row, kind-aware* ItemsSource. When provided, the
+    resolver is called for every combo in the row and its result
+    overrides ``items_per_combo_name`` for that combo. Returning
+    ``None`` falls back to the static map.
+
+    The resolver fires twice:
+
+      * Once at row-load, against the row's saved state, so the combo
+        opens with the right list on first click.
+      * Again on each ``DropDownOpened`` event — the user clicked
+        the dropdown arrow; we re-resolve at that moment so changes
+        the user just made to a controlling combo (e.g. Kind) are
+        reflected before the popup materializes.
+
+    ``SelectionChanged`` is intentionally NOT used as the live trigger
+    even though it would feel more responsive: that subscription
+    accumulates under DataGrid row recycling and re-enters mid-binding,
+    which has crashed Revit + pythonnet under WPF. ``DropDownOpened``
+    fires only when the user actively opens a dropdown — no feedback
+    loop, no typing interference.
+
     Doing all three in one Loaded handler avoids ordering interference
     we hit when wiring them via separate handlers.
     """
     import clr  # noqa: F401
+    from System import EventHandler
     from System.Windows import RoutedEventHandler
     from System.Windows.Controls import (
         Button as _Button,
@@ -77,6 +101,41 @@ def attach_per_row_handlers(data_grid, on_button_click=None,
 
     items_per_combo_name = items_per_combo_name or {}
     checkboxes_per_name = checkboxes_per_name or {}
+
+    # Single stable handler shared across all rows. Re-resolving on
+    # DropDownOpened is safe — the user has clicked the arrow, we're
+    # not mid-binding, mid-typing, or mid-selection. We always read
+    # row state from ``sender.DataContext`` so the closure doesn't
+    # capture per-row data (no stale references under DataGrid row
+    # recycling). Detach + attach in the row-load pass keeps
+    # subscriptions deduped even if Loaded fires repeatedly on the
+    # same combo control as virtualized rows are reused.
+    def _on_dropdown_opened(sender, _e):
+        if combo_item_resolver is None:
+            return
+        try:
+            name = sender.Name or ""
+            row_item = sender.DataContext
+        except Exception:
+            return
+        try:
+            source = combo_item_resolver(name, row_item)
+        except Exception:
+            return
+        if source is None:
+            return
+        try:
+            current = sender.ItemsSource
+        except Exception:
+            current = None
+        if current is source:
+            return
+        try:
+            sender.ItemsSource = source
+        except Exception:
+            pass
+
+    _dropdown_handler = EventHandler(_on_dropdown_opened)
 
     # Properties whose bindings we re-target after ItemsSource is
     # set. Each cell's SelectedValue / Text / SelectedItem binding
@@ -237,25 +296,56 @@ def attach_per_row_handlers(data_grid, on_button_click=None,
         # ItemsSource assignment (template realisation etc.) happens
         # before we attach Click handlers — that way Click attachment
         # lands on the final, stable Button visuals.
-        if items_per_combo_name:
-            for combo in combos:
+        #
+        # Two-pass model:
+        #   1. ROW LOAD — resolve once against the row's saved state
+        #      so the combo opens with the right list on first click.
+        #   2. DROPDOWN OPEN — re-resolve the moment the user clicks
+        #      the dropdown arrow, picking up any in-dialog edits to
+        #      controlling combos (e.g. Kind) before the popup
+        #      materializes. We use ``DropDownOpened`` rather than
+        #      SelectionChanged because the latter accumulates under
+        #      DataGrid row recycling and re-enters mid-binding —
+        #      that combination crashed Revit + pythonnet repeatedly.
+        row_item = getattr(row, "DataContext", None)
+        for combo in combos:
+            try:
+                name = combo.Name or ""
+            except Exception:
+                name = ""
+            source = None
+            if combo_item_resolver is not None:
                 try:
-                    name = combo.Name or ""
+                    source = combo_item_resolver(name, row_item)
                 except Exception:
-                    name = ""
+                    source = None
+            if source is None and items_per_combo_name:
                 source = items_per_combo_name.get(name)
-                if source is None:
-                    continue
+            if source is not None:
                 try:
                     combo.ItemsSource = source
                 except Exception:
                     pass
-                # Re-evaluate any bindings on the combo (Selected*,
-                # Text). The XAML binding fired at row-template-load
-                # time when ItemsSource was still empty, so the saved
-                # value couldn't resolve to an item; now that items
-                # are present, push the source value back through.
+                # Re-evaluate any bindings on the combo (Selected*, Text).
+                # The XAML binding fired at row-template-load time when
+                # ItemsSource was still empty, so the saved value couldn't
+                # resolve to an item; now that items are present, push
+                # the source value back through.
                 _resync_combo_bindings(combo)
+
+            # Subscribe DropDownOpened for live re-resolution on user
+            # action. Detach-then-attach so virtualized row reuse
+            # doesn't accumulate duplicate subscriptions on the same
+            # control. Only meaningful when a resolver is in play.
+            if combo_item_resolver is not None:
+                try:
+                    combo.DropDownOpened -= _dropdown_handler
+                except Exception:
+                    pass
+                try:
+                    combo.DropDownOpened += _dropdown_handler
+                except Exception:
+                    pass
 
         if on_button_click is not None:
             for btn in buttons:
