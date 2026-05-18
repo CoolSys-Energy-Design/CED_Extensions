@@ -4,7 +4,7 @@ The Placement dialog controller.
 
 The dialog is a single window with three sections:
 
-    1. Source (radio): Linked Revit model / CSV / DWG link
+    1. Source (radio): Host model / Linked Revit model / CSV
        + a source-specific picker (combo or file browse)
 
     2. Filters (two list boxes): category multi-select + profile-name
@@ -106,7 +106,6 @@ class PlacementController(object):
         self.src_host_radio = f("SrcHostRadio")
         self.src_linked_radio = f("SrcLinkedRevitRadio")
         self.src_csv_radio = f("SrcCsvRadio")
-        self.src_dwg_radio = f("SrcDwgRadio")
         self.src_label = f("SrcLabel")
         self.src_combo = f("SrcCombo")
         self.src_browse_btn = f("SrcBrowseButton")
@@ -158,8 +157,6 @@ class PlacementController(object):
             "src=linked", lambda s, e: self._switch_source("linked_revit"))
         self._h_src_csv = self._make_delegate(
             "src=csv", lambda s, e: self._switch_source("csv"))
-        self._h_src_dwg = self._make_delegate(
-            "src=dwg", lambda s, e: self._switch_source("dwg"))
         self._h_browse = self._make_delegate(
             "browse", lambda s, e: self._on_browse_clicked(s, e))
         self._h_match = self._make_delegate(
@@ -176,7 +173,6 @@ class PlacementController(object):
         self.src_host_radio.Checked += self._h_src_host
         self.src_linked_radio.Checked += self._h_src_linked
         self.src_csv_radio.Checked += self._h_src_csv
-        self.src_dwg_radio.Checked += self._h_src_dwg
         self.src_browse_btn.Click += self._h_browse
         self.match_btn.Click += self._h_match
         self.check_all_btn.Click += self._h_check_all
@@ -193,7 +189,7 @@ class PlacementController(object):
     # ---- source handling -------------------------------------------
 
     def _switch_source(self, kind):
-        """``kind`` in ('host_model', 'linked_revit', 'csv', 'dwg')."""
+        """``kind`` in ('host_model', 'linked_revit', 'csv')."""
         self._source_kind = kind
         self.src_combo.Items.Clear()
         if kind == "host_model":
@@ -222,22 +218,6 @@ class PlacementController(object):
                 self.src_combo.Items.Add(
                     _SourceItem(self._csv_path, "csv", self._csv_path)
                 )
-                self.src_combo.SelectedIndex = 0
-        elif kind == "dwg":
-            self.src_label.Text = "DWG link:"
-            self.src_browse_btn.Visibility = Visibility.Collapsed
-            self.src_combo.IsEnabled = True
-            for inst in placement.collect_dwg_link_instances(self.doc):
-                category = inst.Category.Name if inst.Category else ""
-                try:
-                    name = inst.LookupParameter("Name")
-                    label = name.AsString() if name else "(import)"
-                except Exception:
-                    label = "(import)"
-                self.src_combo.Items.Add(_SourceItem(
-                    "{} — {}".format(label, category), "dwg", inst
-                ))
-            if self.src_combo.Items.Count > 0:
                 self.src_combo.SelectedIndex = 0
         # Clear preview when source changes.
         self._clear_match_rows()
@@ -388,12 +368,6 @@ class PlacementController(object):
             except placement.CsvParseError as exc:
                 self._set_status(str(exc))
                 return
-            mode = placement.MATCH_CAD_ALIASES
-        elif self._source_kind == "dwg":
-            if source_value is None:
-                self._set_status("Pick a DWG link")
-                return
-            targets = placement.find_targets_in_dwg_link(source_value)
             mode = placement.MATCH_CAD_ALIASES
 
         profiles = self._filtered_profiles()

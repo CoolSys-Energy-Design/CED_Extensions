@@ -42,8 +42,6 @@
                        Margin="0,0,16,0" GroupName="Source"/>
           <RadioButton x:Name="SrcCsvRadio" Content="CSV (rebased coordinates)"
                        Margin="0,0,16,0" GroupName="Source"/>
-          <RadioButton x:Name="SrcDwgRadio" Content="DWG link (best-effort)"
-                       Margin="0,0,16,0" GroupName="Source"/>
         </StackPanel>
         <Grid Margin="0,8,0,0">
           <Grid.ColumnDefinitions>
