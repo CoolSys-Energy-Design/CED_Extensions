@@ -5,3 +5,8 @@
 # Windows reserved device name - cannot be committed
 /nul
 nul
+
+# Python bytecode / caches - never track build artifacts
+*.pyc
+*.pyo
+__pycache__/
