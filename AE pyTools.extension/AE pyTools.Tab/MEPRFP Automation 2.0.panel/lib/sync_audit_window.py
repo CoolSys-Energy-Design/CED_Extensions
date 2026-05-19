@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-Tree-view UI for the synced-relationship audit (option C).
+Tree-view UI for the synced-relationship audit.
 
-Hierarchy: Profile -> LED -> Conflict. Each conflict row carries a
-ComboBox per ``Conflict.UPDATE_CHILD / UPDATE_PARENT / SKIP`` choice.
-On Apply, the controller calls ``sync_audit.apply_resolution`` for each
-non-skip choice inside one Revit transaction.
+Hierarchy: Profile -> LED -> Conflict. This is a **flag-only** report —
+each conflict row shows the directive source value, the child's actual
+value, and the percentage difference between them. There is no
+correction path (no per-row action combo, no Apply); the only verbs are
+Refresh and Close.
 """
 
 import os
@@ -13,11 +14,8 @@ import os
 import clr  # noqa: F401
 
 from System.Windows.Controls import (  # noqa: E402
-    ComboBox,
-    ComboBoxItem,
     Grid,
     ColumnDefinition,
-    StackPanel,
     TextBlock,
     TreeViewItem,
 )
@@ -32,40 +30,12 @@ _XAML_PATH = os.path.join(
 )
 
 
-# Maps display label -> action constant.
-_ACTION_LABELS = [
-    ("Update child", sync_audit.Conflict.UPDATE_CHILD),
-    ("Update parent", sync_audit.Conflict.UPDATE_PARENT),
-    ("Skip", sync_audit.Conflict.SKIP),
-]
-
-
-class _ConflictRow(object):
-    """One leaf in the tree. Holds the ComboBox so we can read its choice on Apply."""
-    def __init__(self, conflict, combo):
-        self.conflict = conflict
-        self.combo = combo
-
-    @property
-    def chosen_action(self):
-        item = self.combo.SelectedItem
-        if item is None:
-            return sync_audit.Conflict.SKIP
-        return item.Tag
-
-
 class SyncAuditController(object):
 
-    def __init__(self, doc, profile_data, transaction_factory):
-        """``transaction_factory`` is a callable returning a context
-        manager (e.g. ``lambda: revit.Transaction("...", doc=doc)``).
-        We let the caller own transaction semantics.
-        """
+    def __init__(self, doc, profile_data):
         self.doc = doc
         self.profile_data = profile_data
-        self.transaction_factory = transaction_factory
         self.window = _wpf.load_xaml(_XAML_PATH)
-        self._rows = []
         self._wire_controls()
         self.refresh()
 
@@ -75,18 +45,13 @@ class SyncAuditController(object):
         f = self.window.FindName
         self.tree = f("ConflictTree")
         self.summary = f("SummaryLabel")
-        self.bulk_combo = f("BulkActionCombo")
         self.detail_box = f("DetailBox")
         # Retain handler refs so pythonnet's GC can't drop them.
         self._h_refresh = lambda s, e: self._on_refresh(s, e)
-        self._h_apply = lambda s, e: self._on_apply(s, e)
         self._h_close = lambda s, e: self._on_close(s, e)
-        self._h_bulk = lambda s, e: self._on_bulk(s, e)
         self._h_tree_select = lambda s, e: self._on_tree_select(s, e)
         f("RefreshButton").Click += self._h_refresh
-        f("ApplyButton").Click += self._h_apply
         f("CloseButton").Click += self._h_close
-        self.bulk_combo.SelectionChanged += self._h_bulk
         self.tree.SelectedItemChanged += self._h_tree_select
 
     # ---- public ------------------------------------------------------
@@ -97,16 +62,18 @@ class SyncAuditController(object):
     def refresh(self):
         conflicts = sync_audit.detect_conflicts(self.doc, self.profile_data)
         self._populate_tree(conflicts)
-        self.summary.Text = "{} conflict(s) across {} profile(s)".format(
-            len(conflicts),
-            len({c.profile_id for c in conflicts}),
+        self.summary.Text = (
+            "{} flagged difference(s) across {} profile(s)  "
+            "(report only — no changes are made)".format(
+                len(conflicts),
+                len({c.profile_id for c in conflicts}),
+            )
         )
 
     # ---- tree --------------------------------------------------------
 
     def _populate_tree(self, conflicts):
         self.tree.Items.Clear()
-        self._rows = []
         # Group: profile -> led -> [conflicts]
         by_profile = {}
         for c in conflicts:
@@ -168,19 +135,15 @@ class SyncAuditController(object):
         Grid.SetColumn(expected, 2)
         grid.Children.Add(expected)
 
-        combo = ComboBox()
-        combo.Margin = Thickness(0)
-        for label, action in _ACTION_LABELS:
-            item = ComboBoxItem()
-            item.Content = label
-            item.Tag = action
-            combo.Items.Add(item)
-        combo.SelectedIndex = 2  # default = skip
-        Grid.SetColumn(combo, 3)
-        grid.Children.Add(combo)
+        # Percentage difference replaces the old resolution combo —
+        # this audit is flag-only.
+        pct = TextBlock()
+        pct.Text = "Diff: {}".format(conflict.percent_display)
+        pct.Margin = Thickness(0, 0, 8, 0)
+        Grid.SetColumn(pct, 3)
+        grid.Children.Add(pct)
 
         node.Header = grid
-        self._rows.append(_ConflictRow(conflict, combo))
         return node
 
     # ---- handlers ----------------------------------------------------
@@ -238,8 +201,9 @@ class SyncAuditController(object):
             conflict.led_label or "?", conflict.led_id or "?"))
         lines.append("Parameter:      {}".format(conflict.parameter_name or "?"))
         lines.append("Directive kind: {}".format(kind))
+        lines.append("Expected (src): {}".format(_short(conflict.expected_value)))
         lines.append("Actual (child): {}".format(_short(conflict.actual_value)))
-        lines.append("Expected:       {}".format(_short(conflict.expected_value)))
+        lines.append("Difference:     {}".format(conflict.percent_display))
         if conflict.target_param_name:
             lines.append("Source:         {}.{}{}".format(
                 ref_label,
@@ -291,37 +255,6 @@ class SyncAuditController(object):
                 ))
 
         self.detail_box.Text = "\n".join(lines)
-
-    def _on_bulk(self, sender, e):
-        idx = self.bulk_combo.SelectedIndex
-        # 0 = placeholder, 1 = update child, 2 = update parent, 3 = skip
-        if idx <= 0:
-            return
-        target = (
-            sync_audit.Conflict.UPDATE_CHILD,
-            sync_audit.Conflict.UPDATE_PARENT,
-            sync_audit.Conflict.SKIP,
-        )[idx - 1]
-        for row in self._rows:
-            for i in range(row.combo.Items.Count):
-                if row.combo.Items[i].Tag == target:
-                    row.combo.SelectedIndex = i
-                    break
-
-    def _on_apply(self, sender, e):
-        applied = 0
-        skipped = 0
-        with self.transaction_factory():
-            for row in self._rows:
-                ok = sync_audit.apply_resolution(
-                    self.doc, row.conflict, row.chosen_action
-                )
-                if ok:
-                    applied += 1
-                else:
-                    skipped += 1
-        self.refresh()
-        self.summary.Text = "Applied {}, skipped {}".format(applied, skipped)
 
 
 def _short(value):
@@ -390,5 +323,5 @@ def _format_params(name_value_pairs, highlight=None):
     return "\n".join(lines)
 
 
-def show_modal(doc, profile_data, transaction_factory):
-    SyncAuditController(doc, profile_data, transaction_factory).show()
+def show_modal(doc, profile_data):
+    SyncAuditController(doc, profile_data).show()
