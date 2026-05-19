@@ -4,13 +4,19 @@ Synced-relationship audit.
 
 For every placed child element with an ``Element_Linker`` payload, we
 walk the LED's ``parameters`` dict; any ``parent_parameter`` or
-``sibling_parameter`` directive defines an *expected* value. If the
-child's actual value diverges, we record a Conflict. The rewritten UI
-groups conflicts as ``Profile -> LED -> Conflict`` so users can see the
-shape of their constraints.
+``sibling_parameter`` directive defines an *expected* value (read off
+the parent / sibling). If the child's actual value diverges, we record
+a Conflict carrying the **percentage difference** between the source
+and the child. The UI groups conflicts as ``Profile -> LED ->
+Conflict``.
 
-The detector is decoupled from any UI: ``detect_conflicts`` returns
-plain dicts, and ``apply_resolution`` does the parameter write.
+This audit is **flag-only**: ``detect_conflicts`` reports divergence;
+nothing here ever mutates the model. There is intentionally no
+resolution / write path.
+
+Zero-source rule: a ``parent`` directive whose source parameter reads
+0 while the child reads non-0 is NOT flagged — a 0 on the parent means
+the directive source is unconfigured / N/A for that instance.
 """
 
 import re
@@ -46,15 +52,18 @@ def _first_numeric_token(s):
 # ---------------------------------------------------------------------
 
 class Conflict(object):
-    """One detected mismatch."""
+    """One detected mismatch.
 
-    UPDATE_CHILD = "update_child"
-    UPDATE_PARENT = "update_parent"
-    SKIP = "skip"
+    This audit is **flag-only** — there is no correction path. A
+    Conflict is a report row: the directive source value (``expected``,
+    read off the parent/sibling) vs the child's ``actual``, plus the
+    ``percent_difference`` between them when both are numeric.
+    """
 
     def __init__(self, profile_id, profile_name, led_id, led_label,
                  element_id, parameter_name, kind, expected_value,
-                 actual_value, target_param_name, target_element_id):
+                 actual_value, target_param_name, target_element_id,
+                 percent_difference=None):
         self.profile_id = profile_id
         self.profile_name = profile_name
         self.led_id = led_id
@@ -66,10 +75,19 @@ class Conflict(object):
         self.actual_value = actual_value
         self.target_param_name = target_param_name
         self.target_element_id = target_element_id
+        # float percent (e.g. 20.0 for 50 -> 60), or None when one of
+        # the values isn't numeric / the source is 0.
+        self.percent_difference = percent_difference
 
     @property
     def key(self):
         return (self.profile_id, self.led_id, self.element_id, self.parameter_name)
+
+    @property
+    def percent_display(self):
+        if self.percent_difference is None:
+            return "n/a (non-numeric)"
+        return "{:.1f}%".format(self.percent_difference)
 
     def to_display_dict(self):
         return {
@@ -80,6 +98,7 @@ class Conflict(object):
             "kind": self.kind,
             "expected": self.expected_value,
             "actual": self.actual_value,
+            "percent_difference": self.percent_difference,
         }
 
 
@@ -106,26 +125,45 @@ def _read_param_value(elem, name):
     return param.AsValueString() or param.AsString()
 
 
-def _write_param_value(elem, name, value):
-    """Write a value, coerced to the parameter's storage type. Returns True on success."""
-    if elem is None:
-        return False
-    param = elem.LookupParameter(name)
-    if param is None or param.IsReadOnly:
-        return False
-    storage = param.StorageType
+_NUMBER_RE = re.compile(r"[-+]?\d*\.?\d+")
+
+
+def _to_number(value):
+    """Best-effort numeric coercion. ``50`` / ``50.0`` / ``"50 A"`` /
+    ``"-1' - 6\""``-ish all yield the leading signed number; anything
+    with no parseable digits yields ``None``.
+
+    Used so the audit can compute a percentage difference even when a
+    parameter reads back as a unit-bearing string (``"50 A"``).
+    """
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, (int, float)):
+        return float(value)
+    m = _NUMBER_RE.search(str(value).strip())
+    if not m:
+        return None
     try:
-        if storage == StorageType.String:
-            param.Set("" if value is None else str(value))
-        elif storage == StorageType.Integer:
-            param.Set(int(value) if value is not None else 0)
-        elif storage == StorageType.Double:
-            param.Set(float(value) if value is not None else 0.0)
-        else:
-            return False
-    except Exception:
-        return False
-    return True
+        return float(m.group(0))
+    except (TypeError, ValueError):
+        return None
+
+
+def _percent_difference(expected, actual):
+    """Percent the child (``actual``) diverges from the directive source
+    (``expected``): ``abs(actual - expected) / abs(expected) * 100``.
+
+    e.g. expected 50, actual 60 -> 20.0. Returns ``None`` when either
+    side isn't numeric or ``expected`` is 0 (undefined / handled by the
+    caller's zero-source rule).
+    """
+    e = _to_number(expected)
+    a = _to_number(actual)
+    if e is None or a is None or e == 0:
+        return None
+    return abs(a - e) / abs(e) * 100.0
 
 
 # ---------------------------------------------------------------------
@@ -253,6 +291,27 @@ def detect_conflicts(doc, profile_data):
                         actual = _read_param_value(elem, param_name)
                         if _values_match(actual, expected):
                             continue
+
+                        exp_num = _to_number(expected)
+                        act_num = _to_number(actual)
+
+                        # Zero-source rule: when the monitored PARENT
+                        # parameter is 0 but the child's value is not 0,
+                        # do NOT flag. A 0 on the parent means the
+                        # directive source is unconfigured / N/A for
+                        # this instance, so a non-zero child isn't a
+                        # real divergence worth reporting. (Only applies
+                        # to parent directives, per spec; the inverse —
+                        # parent set, child 0 — IS still flagged.)
+                        if (
+                            kind == "parent"
+                            and exp_num is not None
+                            and exp_num == 0
+                            and act_num is not None
+                            and act_num != 0
+                        ):
+                            continue
+
                         conflicts.append(Conflict(
                             profile_id=profile.id,
                             profile_name=profile.name,
@@ -267,6 +326,9 @@ def detect_conflicts(doc, profile_data):
                             target_element_id=(
                                 _id_value(parent_elem) if kind == "parent"
                                 else _sibling_target_id(value, siblings_in_set.get(linked_set.id, []))
+                            ),
+                            percent_difference=_percent_difference(
+                                expected, actual
                             ),
                         ))
     return conflicts
@@ -316,20 +378,8 @@ def _sibling_target_id(directive_value, set_entries):
 # ---------------------------------------------------------------------
 # Resolution
 # ---------------------------------------------------------------------
-
-def apply_resolution(doc, conflict, action):
-    """Mutate the model to apply ``action`` to ``conflict``.
-
-    Caller manages the transaction.
-    """
-    if action == Conflict.SKIP or action is None:
-        return False
-    if action == Conflict.UPDATE_CHILD:
-        elem = doc.GetElement(_make_element_id(doc, conflict.element_id))
-        return _write_param_value(elem, conflict.parameter_name, conflict.expected_value)
-    if action == Conflict.UPDATE_PARENT:
-        if conflict.target_element_id is None or conflict.target_param_name is None:
-            return False
-        target = doc.GetElement(_make_element_id(doc, conflict.target_element_id))
-        return _write_param_value(target, conflict.target_param_name, conflict.actual_value)
-    return False
+#
+# Intentionally none. This audit is flag-only: it reports divergence on
+# a percentage basis and never mutates the model. The old
+# apply_resolution / _write_param_value pair (Update child / Update
+# parent) was removed — "flagging is our only mission".

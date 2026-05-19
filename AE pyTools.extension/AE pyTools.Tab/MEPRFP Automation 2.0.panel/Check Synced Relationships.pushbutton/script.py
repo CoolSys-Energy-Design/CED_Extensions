@@ -39,10 +39,8 @@ def main():
         )
         return
 
-    def transaction_factory():
-        return revit.Transaction("Apply Synced Relationship resolutions", doc=doc)
-
-    sync_audit_window.show_modal(doc, profile_data, transaction_factory)
+    # Flag-only audit: no model mutation, so no transaction needed.
+    sync_audit_window.show_modal(doc, profile_data)
 
 
 if __name__ == "__main__":
