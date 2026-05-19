@@ -72,6 +72,16 @@ class AnnotationPlacementController(object):
         self._match_rows = []
         self.committed = False
         self._last_result = None
+        # Profile-search state. ``_all_profile_labels`` is the full
+        # sorted label list; the ListBox shows a filtered subset.
+        # ``_selected_profile_labels`` persists checked profiles across
+        # filter changes (re-filtering rebuilds the ListBox, which would
+        # otherwise drop selections for rows scrolled out of view).
+        # ``_suppress_profile_selection`` guards the SelectionChanged
+        # handler while we programmatically repopulate.
+        self._all_profile_labels = []
+        self._selected_profile_labels = set()
+        self._suppress_profile_selection = False
         self.window = _wpf.load_xaml(_XAML_PATH)
         self._lookup_controls()
         self._populate_filters()
@@ -89,6 +99,7 @@ class AnnotationPlacementController(object):
         self.kind_text_note = f("KindTextNoteCheck")
         self.category_list = f("CategoryList")
         self.profile_list = f("ProfileList")
+        self.profile_search_box = f("ProfileSearchBox")
         self.skip_dupes_check = f("SkipDupesCheck")
         self.match_btn = f("MatchButton")
         self.check_all_btn = f("CheckAllButton")
@@ -125,6 +136,11 @@ class AnnotationPlacementController(object):
         self.uncheck_all_btn.Click += self._h_uncheck_all
         self.place_btn.Click += self._h_place
         self.close_btn.Click += self._h_close
+        # Profile search + selection-survival wiring. pythonnet wraps
+        # the bound methods automatically; the bound-method instances
+        # are kept alive by the controller itself.
+        self.profile_search_box.TextChanged += self._on_profile_search
+        self.profile_list.SelectionChanged += self._on_profile_selection
 
     def _populate_filters(self):
         cats = sorted({
@@ -137,12 +153,55 @@ class AnnotationPlacementController(object):
         for c in cats:
             self.category_list.Items.Add(c)
 
-        self.profile_list.Items.Clear()
+        labels = []
         for p in self.profiles:
-            label = "{}  ({})".format(
+            if not isinstance(p, dict):
+                continue
+            labels.append("{}  ({})".format(
                 p.get("name") or "(unnamed)", p.get("id") or "?"
-            )
-            self.profile_list.Items.Add(label)
+            ))
+        labels.sort(key=lambda s: s.lower())
+        self._all_profile_labels = labels
+        self._render_profile_list("")
+
+    def _render_profile_list(self, search_text):
+        """Rebuild the ProfileList showing only labels containing
+        ``search_text`` (case-insensitive substring). Re-checks any
+        visible label that's in ``_selected_profile_labels`` so a
+        profile checked under one search term stays checked when the
+        filter changes."""
+        needle = (search_text or "").strip().lower()
+        self._suppress_profile_selection = True
+        try:
+            self.profile_list.Items.Clear()
+            visible = []
+            for label in self._all_profile_labels:
+                if needle and needle not in label.lower():
+                    continue
+                self.profile_list.Items.Add(label)
+                visible.append(label)
+            for label in visible:
+                if label in self._selected_profile_labels:
+                    self.profile_list.SelectedItems.Add(label)
+        finally:
+            self._suppress_profile_selection = False
+
+    def _on_profile_search(self, sender, e):
+        try:
+            self._render_profile_list(self.profile_search_box.Text or "")
+        except Exception as exc:
+            self._set_status("[search] error: {}".format(exc))
+
+    def _on_profile_selection(self, sender, e):
+        if self._suppress_profile_selection:
+            return
+        try:
+            for item in e.AddedItems:
+                self._selected_profile_labels.add(str(item))
+            for item in e.RemovedItems:
+                self._selected_profile_labels.discard(str(item))
+        except Exception as exc:
+            self._set_status("[profile-select] error: {}".format(exc))
 
     def _populate_active_view_label(self):
         if self.view is None:
@@ -165,10 +224,17 @@ class AnnotationPlacementController(object):
         return out
 
     def _selected_profile_ids(self):
+        # Read from the persistent selection set, not
+        # profile_list.SelectedItems — the latter only reflects rows
+        # currently visible under the active search filter, so a
+        # profile checked then filtered out of view would be silently
+        # dropped from the match.
         ids = set()
-        for label in self.profile_list.SelectedItems:
+        for label in self._selected_profile_labels:
             label = str(label)
-            # Format: "name  (id)"
+            # Format: "name  (id)" — the id is the LAST parenthetical,
+            # so rsplit is safe even when the profile name itself
+            # contains parens (e.g. "... Recepts (5)  (EQ-123)").
             if "(" in label and label.endswith(")"):
                 pid = label.rsplit("(", 1)[1].rstrip(")")
                 ids.add(pid)
