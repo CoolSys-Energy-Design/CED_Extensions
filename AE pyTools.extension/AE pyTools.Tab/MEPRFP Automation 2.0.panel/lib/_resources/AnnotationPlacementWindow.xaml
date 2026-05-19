@@ -64,6 +64,9 @@
         <DockPanel Grid.Column="1" Margin="4,0,0,0">
           <TextBlock DockPanel.Dock="Top"
                      Text="By profile name (check to include — leave all unchecked to include all)"/>
+          <TextBox  DockPanel.Dock="Top" x:Name="ProfileSearchBox"
+                    Margin="0,4,0,4" Padding="2"
+                    ToolTip="Filter profiles by name (case-insensitive substring). Checked profiles stay selected even when filtered out of view."/>
           <ListBox x:Name="ProfileList" Height="120"
                    SelectionMode="Multiple"
                    ItemContainerStyle="{StaticResource CheckListBoxItem}"/>
