@@ -113,6 +113,84 @@ def find_alias_owner(profile_data, alias):
     return None
 
 
+def _split_family_type(label):
+    """Split a ``"Family : Type"`` label into ``(family, type)`` (both
+    trimmed). No `` : `` → ``(label, "")``."""
+    text = _normalise_alias(label)
+    if " : " in text:
+        fam, _, typ = text.partition(" : ")
+        return fam.strip(), typ.strip()
+    return text, ""
+
+
+def profiles_representing_label(profile_data, label, exclude=None):
+    """Return ``[(profile, reason), ...]`` for every profile that
+    ALREADY stands for the equipment named by ``label`` (a
+    ``"Family : Type"`` string, e.g. from ``capture.element_label``).
+
+    A profile "represents" the label when any of:
+
+      * ``reason="name"``   — its ``name`` equals the label
+        (case-insensitive, trimmed).
+      * ``reason="parent_filter"`` — its
+        ``parent_filter.family_name_pattern`` equals the label's
+        family AND its ``type_name_pattern`` is empty or equals the
+        label's type (case-insensitive). This is the strongest
+        "this IS that equipment's profile" signal.
+      * ``reason="alias"`` — the label is already one of its
+        ``merged_aliases`` entries.
+
+    ``exclude`` is an iterable of profile dicts to skip (always pass
+    the merge master so it doesn't flag itself). Matching is
+    intentionally **exact** on family/type — it does NOT strip the
+    trailing ``_NNN`` copy suffix the way placement does, because the
+    point is to detect that this *specific* equipment already has its
+    own dedicated profile, not that a normalized sibling exists.
+    """
+    out = []
+    if not label:
+        return out
+    target_key = _alias_match_key(label)
+    fam, typ = _split_family_type(label)
+    fam_key = fam.lower()
+    typ_key = typ.lower()
+    exclude_ids = set()
+    exclude_objs = []
+    for e in exclude or ():
+        if isinstance(e, dict):
+            exclude_objs.append(e)
+            if e.get("id"):
+                exclude_ids.add(e.get("id"))
+    for p in profile_data.get("equipment_definitions") or []:
+        if not isinstance(p, dict):
+            continue
+        if p in exclude_objs or (p.get("id") and p.get("id") in exclude_ids):
+            continue
+        # name match
+        if _alias_match_key(p.get("name")) == target_key and target_key:
+            out.append((p, "name"))
+            continue
+        # parent_filter family (+ optional type) match
+        pf = p.get("parent_filter") or {}
+        if isinstance(pf, dict):
+            pf_fam = (pf.get("family_name_pattern") or "").strip().lower()
+            pf_typ = (pf.get("type_name_pattern") or "").strip().lower()
+            if pf_fam and pf_fam == fam_key and (
+                not pf_typ or not typ_key or pf_typ == typ_key
+            ):
+                out.append((p, "parent_filter"))
+                continue
+        # existing alias match
+        matched_alias = False
+        for a in p.get(MERGED_ALIASES_KEY) or ():
+            if _alias_match_key(a) == target_key and target_key:
+                matched_alias = True
+                break
+        if matched_alias:
+            out.append((p, "alias"))
+    return out
+
+
 def all_alias_entries(profile_data):
     """Flat enumeration ``[(source_profile, alias_string), ...]``."""
     out = []
