@@ -148,7 +148,7 @@ def _maybe_run_legacy_migration(doc, profile_data, output):
     return True
 
 
-def _add_aliases_via_host(uidoc, source):
+def _add_aliases_via_host(uidoc, source, profile_data):
     forms.alert(
         "Pick host-model element(s). Each picked element's "
         "'Family : Type' label will be added as an alias.\n\n"
@@ -159,10 +159,10 @@ def _add_aliases_via_host(uidoc, source):
         refs = selection.pick_children(uidoc, "Pick host element(s) for alias", from_linked=False)
     except selection.SelectionCancelled:
         return [], []
-    return _refs_to_aliases(refs, source)
+    return _refs_to_aliases(refs, source, profile_data)
 
 
-def _add_aliases_via_linked(uidoc, source):
+def _add_aliases_via_linked(uidoc, source, profile_data):
     forms.alert(
         "Pick LINKED-model element(s). Each picked element's "
         "'Family : Type' label will be added as an alias.\n\n"
@@ -173,15 +173,61 @@ def _add_aliases_via_linked(uidoc, source):
         refs = selection.pick_children(uidoc, "Pick linked element(s) for alias", from_linked=True)
     except selection.SelectionCancelled:
         return [], []
-    return _refs_to_aliases(refs, source)
+    return _refs_to_aliases(refs, source, profile_data)
 
 
-def _refs_to_aliases(refs, source):
-    added, skipped = [], []
+def _refs_to_aliases(refs, source, profile_data):
+    # Resolve every picked element's label first so the duplicate-
+    # equipment warning can be one consolidated prompt instead of one
+    # per element.
+    labels, added, skipped = [], [], []
     for r in refs or []:
         label = capture.element_label(r.element)
         if not label:
             skipped.append("(unlabelled element)")
+            continue
+        labels.append(label)
+
+    # A label "conflicts" when some OTHER profile already represents
+    # that exact equipment (by name / parent_filter family:type /
+    # existing alias). Aliasing it onto this master would mean two
+    # different profiles resolve the same equipment at placement time.
+    conflicts = {}
+    for label in labels:
+        hits = merge_workflow.profiles_representing_label(
+            profile_data, label, exclude=[source],
+        )
+        if hits:
+            conflicts[label] = [
+                (p.get("name") or p.get("id") or "?", reason)
+                for p, reason in hits
+            ]
+
+    allow_conflicting = True
+    if conflicts:
+        lines = []
+        for lbl, owners in conflicts.items():
+            owner_txt = ", ".join(
+                "{} [{}]".format(n, why) for n, why in owners
+            )
+            lines.append("  - {}  ->  {}".format(lbl, owner_txt))
+        allow_conflicting = forms.confirm(
+            "{} of the picked element(s) ALREADY exist as their own "
+            "profile(s):\n\n{}\n\n"
+            "Aliasing them onto {!r} means two different profiles will "
+            "match the same equipment during placement.\n\n"
+            "Yes  -  add them anyway (creates the duplicate match)\n"
+            "No   -  skip only the conflicting ones, add the rest".format(
+                len(conflicts),
+                "\n".join(lines),
+                source.get("name") or "?",
+            ),
+            title=TITLE,
+        )
+
+    for label in labels:
+        if label in conflicts and not allow_conflicting:
+            skipped.append(label + " (skipped: already a separate profile)")
             continue
         if merge_workflow.add_alias(source, label):
             added.append(label)
@@ -320,9 +366,9 @@ def main():
 
     added, skipped, picked_profile_ids = [], [], []
     if mode == _MODE_HOST:
-        added, skipped = _add_aliases_via_host(uidoc, source)
+        added, skipped = _add_aliases_via_host(uidoc, source, profile_data)
     elif mode == _MODE_LINKED:
-        added, skipped = _add_aliases_via_linked(uidoc, source)
+        added, skipped = _add_aliases_via_linked(uidoc, source, profile_data)
     elif mode == _MODE_PROFILE:
         added, skipped, picked_profile_ids = _add_aliases_via_existing_profiles(
             profile_data, source
