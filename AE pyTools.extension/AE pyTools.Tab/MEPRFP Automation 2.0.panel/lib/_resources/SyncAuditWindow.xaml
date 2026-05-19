@@ -14,6 +14,17 @@
       <TextBlock DockPanel.Dock="Left" FontWeight="Bold" VerticalAlignment="Center"
                  Text="Synced-relationship audit"/>
       <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
+        <TextBlock Text="Min % diff:" VerticalAlignment="Center" Margin="0,0,4,0"/>
+        <TextBox x:Name="MinPctBox" Width="60" VerticalContentAlignment="Center"
+                 Margin="0,0,12,0"
+                 ToolTip="Only show conflicts whose % difference is at least this value. Blank or 0 shows everything (including non-numeric text mismatches)."/>
+        <TextBlock Text="Sort:" VerticalAlignment="Center" Margin="0,0,4,0"/>
+        <ComboBox x:Name="SortCombo" Width="150" Margin="0,0,12,0"
+                  ToolTip="Order conflicts by their % difference.">
+          <ComboBoxItem Content="Grouped (default)" IsSelected="True"/>
+          <ComboBoxItem Content="% high → low"/>
+          <ComboBoxItem Content="% low → high"/>
+        </ComboBox>
         <Button x:Name="RefreshButton" Content="Refresh" Width="100" Margin="0,0,8,0"/>
       </StackPanel>
       <TextBlock x:Name="SummaryLabel" Margin="16,0,0,0" VerticalAlignment="Center" Foreground="Gray"/>
