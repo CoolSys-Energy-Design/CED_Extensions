@@ -35,6 +35,12 @@ class SyncAuditController(object):
     def __init__(self, doc, profile_data):
         self.doc = doc
         self.profile_data = profile_data
+        # Cache of the last detected conflicts so the % filter / sort
+        # controls can re-render WITHOUT re-running detect_conflicts
+        # (which collects + reads the model — wasteful per keystroke,
+        # and the window is modeless so we avoid touching the API
+        # outside an explicit Refresh).
+        self._all_conflicts = []
         self.window = _wpf.load_xaml(_XAML_PATH)
         self._wire_controls()
         self.refresh()
@@ -46,13 +52,20 @@ class SyncAuditController(object):
         self.tree = f("ConflictTree")
         self.summary = f("SummaryLabel")
         self.detail_box = f("DetailBox")
+        self.min_pct_box = f("MinPctBox")
+        self.sort_combo = f("SortCombo")
         # Retain handler refs so pythonnet's GC can't drop them.
         self._h_refresh = lambda s, e: self._on_refresh(s, e)
         self._h_close = lambda s, e: self._on_close(s, e)
         self._h_tree_select = lambda s, e: self._on_tree_select(s, e)
+        self._h_filter_sort = lambda s, e: self._on_filter_sort_changed(s, e)
         f("RefreshButton").Click += self._h_refresh
         f("CloseButton").Click += self._h_close
         self.tree.SelectedItemChanged += self._h_tree_select
+        # Filter / sort re-render from the CACHED conflicts only —
+        # never re-detects, so it's cheap per-keystroke and modeless-safe.
+        self.min_pct_box.TextChanged += self._h_filter_sort
+        self.sort_combo.SelectionChanged += self._h_filter_sort
 
     # ---- public ------------------------------------------------------
 
@@ -94,15 +107,90 @@ class SyncAuditController(object):
             pass
 
     def refresh(self):
-        conflicts = sync_audit.detect_conflicts(self.doc, self.profile_data)
-        self._populate_tree(conflicts)
-        self.summary.Text = (
-            "{} flagged difference(s) across {} profile(s)  "
-            "(report only — no changes are made)".format(
-                len(conflicts),
-                len({c.profile_id for c in conflicts}),
-            )
+        """Re-run detection (reads the model) and cache the result,
+        then render through the active filter / sort."""
+        self._all_conflicts = sync_audit.detect_conflicts(
+            self.doc, self.profile_data
         )
+        self._render()
+
+    # ---- filter / sort ----------------------------------------------
+
+    def _min_pct(self):
+        """Parsed ``Min % diff`` box, or ``None`` when blank / invalid."""
+        try:
+            txt = (self.min_pct_box.Text or "").strip().rstrip("%").strip()
+        except Exception:
+            txt = ""
+        if not txt:
+            return None
+        try:
+            return float(txt)
+        except ValueError:
+            return None
+
+    def _sort_mode(self):
+        # 0 = Grouped (default), 1 = % high->low, 2 = % low->high
+        try:
+            return self.sort_combo.SelectedIndex
+        except Exception:
+            return 0
+
+    def _filtered_sorted(self, conflicts):
+        """Apply the % filter then the sort. A non-numeric conflict
+        (``percent_difference is None``) has no measurable %, so it is
+        dropped by any positive Min-% filter and always sorts AFTER
+        numeric ones regardless of direction."""
+        min_pct = self._min_pct()
+        out = []
+        for c in conflicts:
+            pd = c.percent_difference
+            if min_pct is not None and min_pct > 0:
+                if pd is None or pd < min_pct:
+                    continue
+            out.append(c)
+        mode = self._sort_mode()
+        if mode in (1, 2):
+            high_low = (mode == 1)
+
+            def _key(c):
+                pd = c.percent_difference
+                numeric_last = 0 if pd is not None else 1
+                v = pd if pd is not None else 0.0
+                return (numeric_last, -v if high_low else v)
+
+            out = sorted(out, key=_key)
+        return out, min_pct, mode
+
+    def _render(self):
+        conflicts, min_pct, mode = self._filtered_sorted(self._all_conflicts)
+        self._populate_tree(conflicts)
+        total = len(self._all_conflicts)
+        shown = len(conflicts)
+        bits = []
+        if shown == total:
+            bits.append("{} flagged difference(s)".format(total))
+        else:
+            bits.append("{} of {} flagged difference(s)".format(shown, total))
+        bits.append("across {} profile(s)".format(
+            len({c.profile_id for c in conflicts})
+        ))
+        if min_pct is not None and min_pct > 0:
+            bits.append("min {:g}%".format(min_pct))
+        if mode == 1:
+            bits.append("sorted % high→low")
+        elif mode == 2:
+            bits.append("sorted % low→high")
+        self.summary.Text = (
+            "  ".join(bits) + "  (report only — no changes are made)"
+        )
+
+    def _on_filter_sort_changed(self, sender, e):
+        # Re-render from the cache only — never re-detects.
+        try:
+            self._render()
+        except Exception as exc:
+            self._set_status_safe("Filter/sort failed: {}".format(exc))
 
     # ---- tree --------------------------------------------------------
 
