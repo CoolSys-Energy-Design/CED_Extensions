@@ -56,8 +56,42 @@ class SyncAuditController(object):
 
     # ---- public ------------------------------------------------------
 
-    def show(self):
-        self.window.ShowDialog()
+    def show_modeless(self):
+        """Show the window non-modally so the user can keep working in
+        Revit (pan/zoom, select elements) with the audit report open.
+
+        Safe without an ExternalEvent gateway because this audit is
+        read-only — ``detect_conflicts`` only collects + reads
+        parameters, never opens a transaction (same precondition the
+        circuit-audit workflow documents for its own modeless use).
+        The first ``refresh()`` already ran in ``__init__`` while the
+        pushbutton was still in the Revit API context, so the tree is
+        populated before the window is ever shown. The defensive
+        ``Loaded`` hook only re-collects if that first pass somehow
+        produced nothing (mirrors ``circuit_window.show_modeless``).
+        """
+        self._h_loaded = lambda s, e: self._on_window_loaded(s, e)
+        try:
+            self.window.Loaded += self._h_loaded
+        except Exception:
+            pass
+        self.window.Show()
+        return self
+
+    def _on_window_loaded(self, sender, e):
+        try:
+            if self.tree is not None and self.tree.Items.Count == 0:
+                self.refresh()
+        except Exception as exc:
+            self._set_status_safe(
+                "Loaded-event refresh failed: {}".format(exc)
+            )
+
+    def _set_status_safe(self, text):
+        try:
+            self.summary.Text = text or ""
+        except Exception:
+            pass
 
     def refresh(self):
         conflicts = sync_audit.detect_conflicts(self.doc, self.profile_data)
@@ -323,5 +357,10 @@ def _format_params(name_value_pairs, highlight=None):
     return "\n".join(lines)
 
 
-def show_modal(doc, profile_data):
-    SyncAuditController(doc, profile_data).show()
+def show_modeless(doc, profile_data):
+    """Open the synced-relationship audit as a non-modal window and
+    return the controller. The window stays alive after the pushbutton
+    script returns the same way the SuperCircuit modeless window does —
+    Revit's window manager keeps the shown ``Window`` (and its
+    handler-bound controller) alive."""
+    return SyncAuditController(doc, profile_data).show_modeless()

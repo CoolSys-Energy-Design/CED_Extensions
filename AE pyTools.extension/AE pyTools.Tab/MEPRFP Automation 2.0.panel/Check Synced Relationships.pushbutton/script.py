@@ -40,7 +40,9 @@ def main():
         return
 
     # Flag-only audit: no model mutation, so no transaction needed.
-    sync_audit_window.show_modal(doc, profile_data)
+    # Shown modeless so the user can keep working in Revit (select /
+    # zoom to flagged elements) with the report open.
+    sync_audit_window.show_modeless(doc, profile_data)
 
 
 if __name__ == "__main__":
