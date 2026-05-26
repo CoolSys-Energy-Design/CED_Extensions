@@ -218,7 +218,7 @@ class SwapRowItem(object):
                 tooltip = "Empty slot"
         elif kind == "spare":
             number_text = row.get("circuit_number") or "SPARE"
-            load_text = "SPARE"
+            load_text = row.get("load_name") or "SPARE"
             meta_text = row.get("meta_text") or "-"
             base_bg = brushes.get("empty_bg") if show_default_replace else brushes.get("spare_bg")
             if is_default_spare:
@@ -227,7 +227,7 @@ class SwapRowItem(object):
                 tooltip = "Spare row."
         elif kind == "space":
             number_text = row.get("circuit_number") or "SPACE"
-            load_text = "SPACE"
+            load_text = row.get("load_name") or "SPACE"
             meta_text = row.get("meta_text") or "-"
             base_bg = brushes.get("empty_bg") if show_default_replace else brushes.get("space_bg")
             if is_default_space:
@@ -585,6 +585,66 @@ class BatchSwapWindow(forms.WPFWindow):
             )
         except Exception:
             self._all_circuits_cache = []
+        self._refresh_panel_option_snapshots(doc)
+
+    def _refresh_panel_option_snapshots(self, doc=None):
+        """Refresh existing panel option payloads to keep header metadata current."""
+        doc = doc or self._active_doc()
+        if doc is None or not self._panel_options:
+            return
+
+        try:
+            refreshed = ps_repo.collect_panel_equipment_options(
+                doc,
+                panels=self._all_panels_cache,
+                include_without_schedule=True,
+            )
+        except Exception:
+            refreshed = []
+
+        refreshed_by_panel = {}
+        for option in list(refreshed or []):
+            panel_id = int(option.get("panel_id", 0) or 0)
+            if panel_id <= 0 or panel_id in refreshed_by_panel:
+                continue
+            refreshed_by_panel[panel_id] = option
+
+        show_full = False
+        for combo in (self.LeftPanelCombo, self.RightPanelCombo):
+            try:
+                if bool(getattr(combo, "IsDropDownOpen", False)):
+                    show_full = True
+                    break
+            except Exception:
+                continue
+
+        for item in list(self._panel_options or []):
+            current_option = getattr(item, "option", None) or {}
+            panel_id = int(current_option.get("panel_id", getattr(item, "panel_id", 0)) or 0)
+            if panel_id <= 0:
+                continue
+            fresh_option = refreshed_by_panel.get(panel_id)
+            if fresh_option is None:
+                continue
+            item.option = fresh_option
+            item.panel_id = panel_id
+            item.panel_name = str(fresh_option.get("panel_name", "Unnamed Panel") or "Unnamed Panel")
+            item.part_type = str(
+                fresh_option.get("part_type_name", "")
+                or fresh_option.get("board_type", "Panelboard")
+                or "Panelboard"
+            )
+            item.dist_system_name = str(
+                fresh_option.get("dist_system_name", "Unknown Dist. System") or "Unknown Dist. System"
+            )
+            item.left_text = "{0} ({1})".format(item.panel_name, item.part_type)
+            item.set_combo_mode(show_full)
+
+        self._panel_option_by_id = {
+            int(getattr(item, "panel_id", 0) or 0): item
+            for item in list(self._panel_options or [])
+            if int(getattr(item, "panel_id", 0) or 0) > 0
+        }
 
     def _format_phase_text(self, phase_value):
         """Return compact phase text from distribution system phase enum."""
