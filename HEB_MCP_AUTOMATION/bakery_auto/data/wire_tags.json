@@ -1,0 +1,1627 @@
+{
+ "view": "Power Callout - BAKERY - L1", 
+ "elements": [
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -1.1981999999999999, 
+    0.1613, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -33.0, 
+    55.595399999999998, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10612402, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10612401, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-30", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    0.82679999999999998, 
+    0.46899999999999997, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -62.438099999999999, 
+    78.0685, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10617518, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10617517, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-71,73,75", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    1.226, 
+    0.1066, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -54.359900000000003, 
+    76.259799999999998, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10617521, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10617520, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-35", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -0.42570000000000002, 
+    0.85770000000000002, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -43.644100000000002, 
+    63.505000000000003, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10617724, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10617693, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-9", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -0.48730000000000001, 
+    0.79320000000000002, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -37.954500000000003, 
+    64.374399999999994, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10617726, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10617694, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-2", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -0.35089999999999999, 
+    0.75929999999999997, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -35.017299999999999, 
+    64.012200000000007, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10617808, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10617794, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-74,76,78", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -0.1933, 
+    0.76859999999999995, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -32.020000000000003, 
+    64.185900000000004, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10617811, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10617781, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-8", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -0.6976, 
+    -0.76529999999999998, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -35.6723, 
+    66.618799999999993, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10618527, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10618526, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-11", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -0.35270000000000001, 
+    -0.69779999999999998, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -45.5595, 
+    66.410700000000006, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10618530, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10618529, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-14", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -0.2697, 
+    -0.75380000000000003, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -38.369500000000002, 
+    66.437100000000001, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10618536, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10618535, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-1", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -0.43780000000000002, 
+    -0.74839999999999995, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -39.739100000000001, 
+    66.3429, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10618537, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10618534, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-11", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -0.35570000000000002, 
+    -0.78300000000000003, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -42.998100000000001, 
+    66.178399999999996, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10618538, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10618533, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-11", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -0.28810000000000002, 
+    -0.83220000000000005, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -44.2361, 
+    65.897999999999996, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10618539, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10618532, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-18", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    0.40720000000000001, 
+    0.68530000000000002, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -32.774999999999999, 
+    66.698700000000002, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10618551, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10618550, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-32", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -0.3604, 
+    -0.78849999999999998, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -32.637799999999999, 
+    57.822699999999998, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10618782, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10618739, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-40", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -0.33389999999999997, 
+    -0.68689999999999996, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -36.442300000000003, 
+    56.982500000000002, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10618783, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10618769, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-56,58,60", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -1.3472999999999999, 
+    0.63619999999999999, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -33.333300000000001, 
+    49.666899999999998, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10619062, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10619019, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-59,61,63", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -1.3568, 
+    0.57950000000000002, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -34.231099999999998, 
+    42.863399999999999, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10619064, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10619004, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-44,46,48", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -1.1032999999999999, 
+    0.46999999999999997, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -33.627200000000002, 
+    41.189700000000002, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10619065, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10618991, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-22", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -1.3769, 
+    0.71389999999999998, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -34.442300000000003, 
+    36.702500000000001, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10619066, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10618976, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-47,49,51", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -1.1495, 
+    0.41539999999999999, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -33.4893, 
+    34.881799999999998, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10619067, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10618965, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-27", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    1.7507999999999999, 
+    0.1211, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -41.871600000000001, 
+    49.720300000000002, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10619116, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10619090, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-65,67,69", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -1.7756000000000001, 
+    0.021399999999999999, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -50.573799999999999, 
+    49.720300000000002, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10619117, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10619103, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-50,52,54", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    0.25159999999999999, 
+    -0.74180000000000001, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -63.168999999999997, 
+    47.798299999999998, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10619149, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10619133, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-4", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -1.7049000000000001, 
+    -0.28289999999999998, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -48.1434, 
+    38.232700000000001, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10619258, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10619239, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-68,70,72", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -1.2204999999999999, 
+    0.0, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -48.747300000000003, 
+    32.986499999999999, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10619313, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10619269, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-25", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -1.2421, 
+    0.0, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -48.907699999999998, 
+    31.107900000000001, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10619363, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10619282, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-36", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -0.54630000000000001, 
+    -0.75919999999999999, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -59.435699999999997, 
+    28.731999999999999, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10619458, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10619392, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-13", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    0.29920000000000002, 
+    -0.78139999999999998, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -61.936300000000003, 
+    41.481400000000001, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10619459, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10619414, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-13", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -0.253, 
+    -0.82550000000000001, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -57.584099999999999, 
+    44.898499999999999, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10619460, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10619366, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-13", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    0.9556, 
+    -0.36149999999999999, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -59.464199999999998, 
+    23.215499999999999, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10619547, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10619534, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-9", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    1.2356, 
+    -0.35099999999999998, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -58.989800000000002, 
+    21.4998, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10619548, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10619521, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-34", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -1.0436000000000001, 
+    -0.38979999999999998, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -47.198500000000003, 
+    24.2803, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10619749, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10619583, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-9", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -1.1913, 
+    -0.17249999999999999, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -48.095300000000002, 
+    22.206600000000002, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10619835, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10619794, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-20", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -1.0074000000000001, 
+    -0.255, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -47.994700000000002, 
+    19.179200000000002, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10619836, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10619809, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-19", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -0.2697, 
+    0.78149999999999997, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -54.150399999999998, 
+    17.771000000000001, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10620006, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10619993, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-34", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -0.0012999999999999999, 
+    0.76749999999999996, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -51.945799999999998, 
+    17.4849, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10620209, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10620178, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": "Attached", 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-7", 
+   "has_leader": true
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -0.0012999999999999999, 
+    0.76170000000000004, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -64.826099999999997, 
+    4.0442999999999998, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10620445, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10620430, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": "Attached", 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-21", 
+   "has_leader": true
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -0.40999999999999998, 
+    0.77290000000000003, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -41.756900000000002, 
+    5.0989000000000004, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10620490, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10620464, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-33", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -0.0012999999999999999, 
+    1.0198, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -49.811900000000001, 
+    5.6093999999999999, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10620587, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10620532, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-45", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -0.2351, 
+    0.85560000000000003, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -48.185699999999997, 
+    6.0419, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10620589, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10620519, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-41", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -0.0012999999999999999, 
+    0.87760000000000005, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -46.9968, 
+    6.7287999999999997, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10620652, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10620506, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-15", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -0.62539999999999996, 
+    -0.58230000000000004, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -35.245399999999997, 
+    11.1656, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10620788, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10620745, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-17", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -0.66110000000000002, 
+    -0.62719999999999998, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -40.686999999999998, 
+    10.7925, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10620789, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10620758, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-62,64,66", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -0.52039999999999997, 
+    -0.75039999999999996, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -44.1693, 
+    10.8407, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10620790, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10620771, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-10", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -0.44240000000000002, 
+    -0.68799999999999994, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -50.719099999999997, 
+    11.148400000000001, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10620963, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10620919, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-37", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -0.0012999999999999999, 
+    -0.83489999999999998, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -47.759, 
+    11.032400000000001, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10620964, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10620893, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-12", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -0.2268, 
+    -0.93700000000000006, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -49.256900000000002, 
+    10.8407, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10620990, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10620906, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-42", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -0.34379999999999999, 
+    -0.71199999999999997, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -53.393999999999998, 
+    11.3375, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10621078, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10621022, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-3", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -0.0012999999999999999, 
+    -0.74060000000000004, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -55.752600000000001, 
+    11.3375, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10621080, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10621035, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-16", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -1.0879000000000001, 
+    -0.1825, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -54.1248, 
+    7.7777000000000003, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10621227, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10621212, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-5", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -0.33750000000000002, 
+    -0.56889999999999996, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -58.1935, 
+    7.9493, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10621243, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10621230, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-6", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -1.2859, 
+    0.12239999999999999, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -34.8797, 
+    24.037800000000001, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10621507, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10621457, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-39", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -0.44729999999999998, 
+    0.78410000000000002, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -56.576599999999999, 
+    18.689399999999999, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10621689, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10621676, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-53,55,57", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    1.1097999999999999, 
+    -0.2354, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -59.026800000000001, 
+    18.898900000000001, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10621770, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10621759, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-81", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    1.7948, 
+    0.1394, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -60.292200000000001, 
+    81.236900000000006, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10666909, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10666908, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-80,82,84", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -0.0012999999999999999, 
+    -0.74270000000000003, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -53.608400000000003, 
+    62.443899999999999, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10831337, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10831311, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-26,28", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -0.34279999999999999, 
+    -0.72140000000000004, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -55.636099999999999, 
+    62.752800000000001, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10831338, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10831324, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-23", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -0.26050000000000001, 
+    -0.66479999999999995, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -60.1083, 
+    62.352600000000002, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10831537, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10831511, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-29,31", 
+   "has_leader": false
+  }, 
+  {
+   "leader_end": null, 
+   "offset_from_wire": [
+    -0.60060000000000002, 
+    -0.67020000000000002, 
+    0.0
+   ], 
+   "tag_family": "E_Tag - Wire", 
+   "head": [
+    -61.8003, 
+    63.150700000000001, 
+    0.0
+   ], 
+   "near_vertex_index": 2, 
+   "type": "Homerun - Panel & Circuits - Slash", 
+   "leader_elbow": null, 
+   "rotation": 0.0, 
+   "id": 10831540, 
+   "wire_num_vertices": 3, 
+   "tagged_id": 10831524, 
+   "tagged_category": "Wires", 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_wire_type": "THWN", 
+   "tag_text": "BA-24", 
+   "has_leader": false
+  }
+ ], 
+ "source_doc": "RunUpdateProfilesHEBCarrollton95PercentCLOUDMODEL", 
+ "count": 60
+}

@@ -1,0 +1,15 @@
+{
+ "rows": [
+  {
+   "panel": "PH", 
+   "status": "FAIL:The panel and circuit do not match.", 
+   "src_sys": "10612412"
+  }
+ ], 
+ "groups": 33, 
+ "target": "CED_HEB Template_MEPR_R24_OkmntProfCorr", 
+ "apply": true, 
+ "failed": 1, 
+ "made": 32, 
+ "updated": 0
+}

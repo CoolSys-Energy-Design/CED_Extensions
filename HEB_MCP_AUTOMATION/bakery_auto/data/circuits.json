@@ -1,0 +1,3716 @@
+{
+ "view": "Power Callout - BAKERY - L1", 
+ "source_doc": "RunUpdateProfilesHEBCarrollton95PercentCLOUDMODEL", 
+ "circuits": [
+  {
+   "voltage": "208 V", 
+   "ckt": "6", 
+   "load_name": "PANEL 'RC'", 
+   "panel": "LDP3", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "PANEL 'RC'", 
+   "sys_id": 7859976, 
+   "rating": "400 A", 
+   "wire_type": null, 
+   "poles": "3", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "LDP - 208V/3Ph, 1200A, IG Bus", 
+    "id": 7855701
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Equipment", 
+     "id": 7855685
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "4", 
+   "load_name": "PANEL 'BA'", 
+   "panel": "LDP4", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "PANEL 'BA'", 
+   "sys_id": 7860447, 
+   "rating": "400 A", 
+   "wire_type": null, 
+   "poles": "3", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "LDP - 208V/3Ph, 1200A, IG Bus", 
+    "id": 7855702
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Equipment", 
+     "id": 7855687
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "10", 
+   "load_name": "5 FOOT TRUE REFRIG 1", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "G1", 
+   "ckt_load_name_cedt": "5 FOOT TRUE REFRIG 1", 
+   "sys_id": 10353227, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "G1", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353438
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "50,52,54", 
+   "load_name": "DOUGH DIVIDER - BAKERY", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "G1", 
+   "ckt_load_name_cedt": "DOUGH DIVIDER - BAKERY", 
+   "sys_id": 10353228, 
+   "rating": "45 A", 
+   "wire_type": null, 
+   "poles": "3", 
+   "frame": "400 A", 
+   "schedule_notes": "G1", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352872
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "68,70,72", 
+   "load_name": "SPIRAL DOUGH MIXER - BAKERY - SHOCK BLOCK", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "SPIRAL DOUGH MIXER - BAKERY - SHOCK BLOCK", 
+   "sys_id": 10353229, 
+   "rating": "45 A", 
+   "wire_type": null, 
+   "poles": "3", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352893
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "65,67,69", 
+   "load_name": "FRENCH BREAD MOULDER - BAKERY", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "G1", 
+   "ckt_load_name_cedt": "FRENCH BREAD MOULDER - BAKERY", 
+   "sys_id": 10353230, 
+   "rating": "45 A", 
+   "wire_type": null, 
+   "poles": "3", 
+   "frame": "400 A", 
+   "schedule_notes": "G1", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352895
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "59,61,63", 
+   "load_name": "PROOFER - BAKERY", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "G1", 
+   "ckt_load_name_cedt": "PROOFER - BAKERY", 
+   "sys_id": 10353231, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "3", 
+   "frame": "400 A", 
+   "schedule_notes": "G1", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352906
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "19", 
+   "load_name": "PET COOLER", 
+   "panel": "FS", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "PET COOLER", 
+   "sys_id": 10353254, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 10473209
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353757
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "22", 
+   "load_name": "PET COOLER", 
+   "panel": "FS", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "PET COOLER", 
+   "sys_id": 10353255, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 10473209
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353759
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "5", 
+   "load_name": "PET COOLER", 
+   "panel": "FS", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "PET COOLER", 
+   "sys_id": 10353256, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 10473209
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353760
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "4", 
+   "load_name": "BAKERY PREP - ARTISN TBLS", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "BAKERY PREP - ARTISN TBLS", 
+   "sys_id": 10353336, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352912
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352913
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "12", 
+   "load_name": "5 FOOT TRUE REFRIG 2", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "G1", 
+   "ckt_load_name_cedt": "5 FOOT TRUE REFRIG 2", 
+   "sys_id": 10353403, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "G1", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353437
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "2", 
+   "load_name": "DONUT GLAZER - BAKERY", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "DONUT GLAZER - BAKERY", 
+   "sys_id": 10353404, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352887
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "40", 
+   "load_name": "PAN WASHER - CONTROLS", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "G1", 
+   "ckt_load_name_cedt": "PAN WASHER - CONTROLS", 
+   "sys_id": 10353405, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "G1", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352904
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "32", 
+   "load_name": "KH-07 CONTROLS", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "KH-07 CONTROLS", 
+   "sys_id": 10353406, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352875
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352877
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352881
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "8", 
+   "load_name": "DONUT HOPPER - BAKERY", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "G1", 
+   "ckt_load_name_cedt": "DONUT HOPPER - BAKERY", 
+   "sys_id": 10353407, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "G1", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352876
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "26,28", 
+   "load_name": "TORTILLA MACHINE 1 - BAKERY", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "G1", 
+   "ckt_load_name_cedt": "TORTILLA MACHINE 1 - BAKERY", 
+   "sys_id": 10353409, 
+   "rating": "60 A", 
+   "wire_type": null, 
+   "poles": "2", 
+   "frame": "400 A", 
+   "schedule_notes": "G1", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352916
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "19", 
+   "load_name": "CAKE IMAGER - BAKERY", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "G1", 
+   "ckt_load_name_cedt": "CAKE IMAGER - BAKERY", 
+   "sys_id": 10353410, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "G1", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352871
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "14", 
+   "load_name": "JELLY GLAZER - CHIPS/DONUTS", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "JELLY GLAZER - CHIPS/DONUTS", 
+   "sys_id": 10353411, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352891
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "18", 
+   "load_name": "MICROWAVE - CHIPS/DONUTS", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "MICROWAVE - CHIPS/DONUTS", 
+   "sys_id": 10353412, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352577
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "23", 
+   "load_name": "TORTILLA WARMER 1", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "G1", 
+   "ckt_load_name_cedt": "TORTILLA WARMER 1", 
+   "sys_id": 10353413, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "G1", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352917
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "22", 
+   "load_name": "DOUBLE RACK CNTRL 1", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "G1", 
+   "ckt_load_name_cedt": "DOUBLE RACK CNTRL 1", 
+   "sys_id": 10353414, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "G1", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352900
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "71,73,75", 
+   "load_name": "MULTI DECK CASE", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "G1", 
+   "ckt_load_name_cedt": "MULTI DECK CASE", 
+   "sys_id": 10353415, 
+   "rating": "25 A", 
+   "wire_type": null, 
+   "poles": "3", 
+   "frame": "400 A", 
+   "schedule_notes": "G1", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353022
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "44,46,48", 
+   "load_name": "DOUBLE RACK OVEN 1 - BAKERY", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "G1", 
+   "ckt_load_name_cedt": "DOUBLE RACK OVEN 1 - BAKERY", 
+   "sys_id": 10353416, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "3", 
+   "frame": "400 A", 
+   "schedule_notes": "G1", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352901
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "62,64,66", 
+   "load_name": "ALTO SHAAM OVEN", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "G1", 
+   "ckt_load_name_cedt": "ALTO SHAAM OVEN", 
+   "sys_id": 10353417, 
+   "rating": "30 A", 
+   "wire_type": null, 
+   "poles": "3", 
+   "frame": "400 A", 
+   "schedule_notes": "G1", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353374
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "56,58,60", 
+   "load_name": "PAN WASHER - BAKERY PREP", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "G1", 
+   "ckt_load_name_cedt": "PAN WASHER - BAKERY PREP", 
+   "sys_id": 10353418, 
+   "rating": "80 A", 
+   "wire_type": null, 
+   "poles": "3", 
+   "frame": "400 A", 
+   "schedule_notes": "G1", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352902
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352905
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "53,55,57", 
+   "load_name": "PLANETARY MIXER - BAKERY - SHOCK BLOCK", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "PLANETARY MIXER - BAKERY - SHOCK BLOCK", 
+   "sys_id": 10353419, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "3", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352894
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "74,76,78", 
+   "load_name": "DONUT FRYER", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "G1", 
+   "ckt_load_name_cedt": "DONUT FRYER", 
+   "sys_id": 10353420, 
+   "rating": "60 A", 
+   "wire_type": null, 
+   "poles": "3", 
+   "frame": "400 A", 
+   "schedule_notes": "G1", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352883
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "17", 
+   "load_name": "2-DOOR FRZER - SUSHI PRP", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "G1", 
+   "ckt_load_name_cedt": "2-DOOR FRZER - SUSHI PRP", 
+   "sys_id": 10353481, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "G1", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353460
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "30", 
+   "load_name": "RO1  RECEPTACLE BAKE PRP", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "RO1  RECEPTACLE BAKE PRP", 
+   "sys_id": 10353487, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353666
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "21", 
+   "load_name": "MONITORS - SUSHI", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "G1", 
+   "ckt_load_name_cedt": "MONITORS - SUSHI", 
+   "sys_id": 10353504, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "G1", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353366
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353368
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "41", 
+   "load_name": "UC FRIDGE - SUSHI PREP", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "UC FRIDGE - SUSHI PREP", 
+   "sys_id": 10353668, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353376
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "1,3", 
+   "load_name": "FLEX SERVE", 
+   "panel": "FS", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "FLEX SERVE", 
+   "sys_id": 10353672, 
+   "rating": "30 A", 
+   "wire_type": null, 
+   "poles": "2", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 10473209
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353645
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "11,13", 
+   "load_name": "FLEX SERVE", 
+   "panel": "FS", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "FLEX SERVE", 
+   "sys_id": 10353673, 
+   "rating": "30 A", 
+   "wire_type": null, 
+   "poles": "2", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 10473209
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353654
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "10,12", 
+   "load_name": "FLEX SERVE", 
+   "panel": "FS", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "FLEX SERVE", 
+   "sys_id": 10353674, 
+   "rating": "30 A", 
+   "wire_type": null, 
+   "poles": "2", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 10473209
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353646
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "15,17", 
+   "load_name": "FLEX SERVE", 
+   "panel": "FS", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "FLEX SERVE", 
+   "sys_id": 10353675, 
+   "rating": "30 A", 
+   "wire_type": null, 
+   "poles": "2", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 10473209
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353647
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "6,8", 
+   "load_name": "FLEX SERVE", 
+   "panel": "FS", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "FLEX SERVE", 
+   "sys_id": 10353676, 
+   "rating": "30 A", 
+   "wire_type": null, 
+   "poles": "2", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 10473209
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353648
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "21,23", 
+   "load_name": "FLEX SERVE", 
+   "panel": "FS", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "FLEX SERVE", 
+   "sys_id": 10353677, 
+   "rating": "30 A", 
+   "wire_type": null, 
+   "poles": "2", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 10473209
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353649
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "18,20", 
+   "load_name": "FLEX SERVE", 
+   "panel": "FS", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "FLEX SERVE", 
+   "sys_id": 10353678, 
+   "rating": "30 A", 
+   "wire_type": null, 
+   "poles": "2", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 10473209
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353650
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "7,9", 
+   "load_name": "FLEX SERVE", 
+   "panel": "FS", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "FLEX SERVE", 
+   "sys_id": 10353679, 
+   "rating": "30 A", 
+   "wire_type": null, 
+   "poles": "2", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 10473209
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353651
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "14,16", 
+   "load_name": "FLEX SERVE", 
+   "panel": "FS", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "FLEX SERVE", 
+   "sys_id": 10353680, 
+   "rating": "30 A", 
+   "wire_type": null, 
+   "poles": "2", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 10473209
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353652
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "2,4", 
+   "load_name": "FLEX SERVE", 
+   "panel": "FS", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "FLEX SERVE", 
+   "sys_id": 10353681, 
+   "rating": "30 A", 
+   "wire_type": null, 
+   "poles": "2", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 10473209
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353653
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "15", 
+   "load_name": "LABEL PRINTERS - SSHI PREP", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "G1", 
+   "ckt_load_name_cedt": "LABEL PRINTERS - SSHI PREP", 
+   "sys_id": 10353682, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "G1", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353764
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353765
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "3", 
+   "load_name": "GRIDDLE - SUSHI PREP", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "GRIDDLE - SUSHI PREP", 
+   "sys_id": 10353699, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353552
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "5", 
+   "load_name": "KH-08 - SUSHI PREP", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "G1", 
+   "ckt_load_name_cedt": "KH-08 - SUSHI PREP", 
+   "sys_id": 10353700, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "G1", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353551
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353554
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353557
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "6", 
+   "load_name": "ANSUL - SUSHI PREP", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "G1", 
+   "ckt_load_name_cedt": "ANSUL - SUSHI PREP", 
+   "sys_id": 10353701, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "G1", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353558
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "42", 
+   "load_name": "RICE WARMER 3 - SUSHI PREP", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "RICE WARMER 3 - SUSHI PREP", 
+   "sys_id": 10353702, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353761
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "16", 
+   "load_name": "REF. CHEF BASE - SUSHI PRP", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "REF. CHEF BASE - SUSHI PRP", 
+   "sys_id": 10353703, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353555
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "35", 
+   "load_name": "TWIST TIE", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "TWIST TIE", 
+   "sys_id": 10353722, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352921
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352922
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "20", 
+   "load_name": "CONVNT REC - BAKERY", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "CONVNT REC - BAKERY", 
+   "sys_id": 10353745, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352529
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352530
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "7", 
+   "load_name": "CONV RECEPTS - BAKERY", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "CONV RECEPTS - BAKERY", 
+   "sys_id": 10353746, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352528
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352531
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352532
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "11", 
+   "load_name": "CONV RECEPTS - DONUTS", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "CONV RECEPTS - DONUTS", 
+   "sys_id": 10353748, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352533
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352534
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352885
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9397175
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "11,13", 
+   "load_name": "CASE POWER - RCFF13", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "CASE POWER - RCFF13", 
+   "sys_id": 10353796, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "2", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": [
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317774
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "24,26", 
+   "load_name": "CASE POWER - RCFF18", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "CASE POWER - RCFF18", 
+   "sys_id": 10353807, 
+   "rating": "70 A", 
+   "wire_type": null, 
+   "poles": "2", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": [
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317791
+    }, 
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317793
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "2", 
+   "load_name": "CASE POWER - RCMS38", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "CASE POWER - RCMS38", 
+   "sys_id": 10353823, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": [
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317892
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "4", 
+   "load_name": "CASE POWER - RCMS40", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "CASE POWER - RCMS40", 
+   "sys_id": 10353825, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": [
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317895
+    }, 
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317896
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "9", 
+   "load_name": "CASE POWER - RCSF41", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "CASE POWER - RCSF41", 
+   "sys_id": 10353826, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": [
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317849
+    }, 
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317850
+    }, 
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317851
+    }, 
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317852
+    }, 
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317853
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "1", 
+   "load_name": "CASE POWER - RCMK44", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "CASE POWER - RCMK44", 
+   "sys_id": 10353829, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": [
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317747
+    }, 
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317944
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "13", 
+   "load_name": "SCALES /TWIST TIE - BAKRY", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "G1", 
+   "ckt_load_name_cedt": "SCALES /TWIST TIE - BAKRY", 
+   "sys_id": 10353874, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "G1", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352918
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352923
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353696
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353697
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "33", 
+   "load_name": "FLY ZAPPER - SUSHI", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "FLY ZAPPER - SUSHI", 
+   "sys_id": 10353879, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352736
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "9", 
+   "load_name": "FLY ZAPPERS - BAKERY PRP", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "FLY ZAPPERS - BAKERY PRP", 
+   "sys_id": 10353880, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352729
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352737
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352738
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "81", 
+   "load_name": "PRINTER", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "PRINTER", 
+   "sys_id": 10353977, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352607
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "34", 
+   "load_name": "STINGER CART/SCALE - BKE", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "G1", 
+   "ckt_load_name_cedt": "STINGER CART/SCALE - BKE", 
+   "sys_id": 10353987, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "G1", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352759
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353698
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "5", 
+   "load_name": "PANEL 'FS'", 
+   "panel": "LDP4", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "PANEL 'FS'", 
+   "sys_id": 10495967, 
+   "rating": "150 A", 
+   "wire_type": null, 
+   "poles": "3", 
+   "frame": "150 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "LDP - 208V/3Ph, 1200A, IG Bus", 
+    "id": 7855702
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Equipment", 
+     "id": 10473209
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "24", 
+   "load_name": "SPARE", 
+   "panel": "FS", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10496294, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 10473209
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "26", 
+   "load_name": "SPARE", 
+   "panel": "FS", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10496295, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 10473209
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "25", 
+   "load_name": "SPARE", 
+   "panel": "FS", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10496296, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 10473209
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "27", 
+   "load_name": "SPACE", 
+   "panel": "FS", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10496297, 
+   "rating": "0 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 10473209
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "29", 
+   "load_name": "SPACE", 
+   "panel": "FS", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10496298, 
+   "rating": "0 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 10473209
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "31", 
+   "load_name": "SPACE", 
+   "panel": "FS", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10496299, 
+   "rating": "0 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 10473209
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "33", 
+   "load_name": "SPACE", 
+   "panel": "FS", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10496300, 
+   "rating": "0 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 10473209
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "35", 
+   "load_name": "SPACE", 
+   "panel": "FS", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10496301, 
+   "rating": "0 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 10473209
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "37", 
+   "load_name": "SPACE", 
+   "panel": "FS", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10496302, 
+   "rating": "0 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 10473209
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "39", 
+   "load_name": "SPACE", 
+   "panel": "FS", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10496303, 
+   "rating": "0 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 10473209
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "41", 
+   "load_name": "SPACE", 
+   "panel": "FS", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10496304, 
+   "rating": "0 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 10473209
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "28", 
+   "load_name": "SPACE", 
+   "panel": "FS", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10496305, 
+   "rating": "0 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 10473209
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "30", 
+   "load_name": "SPACE", 
+   "panel": "FS", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10496306, 
+   "rating": "0 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 10473209
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "32", 
+   "load_name": "SPACE", 
+   "panel": "FS", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10496307, 
+   "rating": "0 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 10473209
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "34", 
+   "load_name": "SPACE", 
+   "panel": "FS", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10496308, 
+   "rating": "0 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 10473209
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "36", 
+   "load_name": "SPACE", 
+   "panel": "FS", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10496309, 
+   "rating": "0 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 10473209
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "38", 
+   "load_name": "SPACE", 
+   "panel": "FS", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10496310, 
+   "rating": "0 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 10473209
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "40", 
+   "load_name": "SPACE", 
+   "panel": "FS", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10496311, 
+   "rating": "0 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 10473209
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "42", 
+   "load_name": "SPACE", 
+   "panel": "FS", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10496312, 
+   "rating": "0 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 10473209
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "24", 
+   "load_name": "TORTILLA WARMER 2", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "G1", 
+   "ckt_load_name_cedt": "TORTILLA WARMER 2", 
+   "sys_id": 10617509, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "G1", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352915
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "29,31", 
+   "load_name": "TORTILLA MACHINE 2 - BAKER", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "G1", 
+   "ckt_load_name_cedt": "TORTILLA MACHINE 2 - BAKER", 
+   "sys_id": 10617616, 
+   "rating": "60 A", 
+   "wire_type": null, 
+   "poles": "2", 
+   "frame": "400 A", 
+   "schedule_notes": "G1", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352914
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "1", 
+   "load_name": "DONUT FILLER - DONUTS", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "DONUT FILLER - DONUTS", 
+   "sys_id": 10618544, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9397172
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "47,49,51", 
+   "load_name": "DOUBLE RACK OVEN 2 - BAKERY", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "G1", 
+   "ckt_load_name_cedt": "DOUBLE RACK OVEN 2 - BAKERY", 
+   "sys_id": 10619078, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "3", 
+   "frame": "400 A", 
+   "schedule_notes": "G1", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352898
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "27", 
+   "load_name": "DOUBLE RACK CNTRL 2", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "G1", 
+   "ckt_load_name_cedt": "DOUBLE RACK CNTRL 2", 
+   "sys_id": 10619081, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "G1", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352896
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "25", 
+   "load_name": "BAKERY FRZR - DOOR HEAT", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "G1", 
+   "ckt_load_name_cedt": "BAKERY FRZR - DOOR HEAT", 
+   "sys_id": 10619311, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "G1", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9438701
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "36", 
+   "load_name": "BAKERY FRZR - THRSHLD HT", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "G1", 
+   "ckt_load_name_cedt": "BAKERY FRZR - THRSHLD HT", 
+   "sys_id": 10619347, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "G1", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9438702
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "37", 
+   "load_name": "RICE WARMER 1 - SUSHI PRP", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "RICE WARMER 1 - SUSHI PRP", 
+   "sys_id": 10621010, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353762
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "45", 
+   "load_name": "RICE WARMER 2 - SUSHI PRP", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "RICE WARMER 2 - SUSHI PRP", 
+   "sys_id": 10621019, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353763
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "39", 
+   "load_name": "BAKERY FRZR - HEAT TRACE", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "G1", 
+   "ckt_load_name_cedt": "BAKERY FRZR - HEAT TRACE", 
+   "sys_id": 10621479, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "G1", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9438257
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "77", 
+   "load_name": "SPARE", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10621690, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "79", 
+   "load_name": "SPARE", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10621691, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "83", 
+   "load_name": "SPARE", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10621693, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "43", 
+   "load_name": "SPARE", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10621697, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "38", 
+   "load_name": "SPARE", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10621698, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "80,82,84", 
+   "load_name": "MULTIDECK CASE", 
+   "panel": "BA", 
+   "ckt_schedule_notes_cedt": "G1", 
+   "ckt_load_name_cedt": "MULTIDECK CASE", 
+   "sys_id": 10666946, 
+   "rating": "25 A", 
+   "wire_type": null, 
+   "poles": "3", 
+   "frame": "400 A", 
+   "schedule_notes": "G1", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855687
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353020
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "50,52,54", 
+   "load_name": "SISF08", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "SISF08", 
+   "sys_id": 10675693, 
+   "rating": "25 A", 
+   "wire_type": null, 
+   "poles": "3", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 10675683
+    }, 
+    {
+     "cat": "Electrical Equipment", 
+     "id": 10675688
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "3", 
+   "load_name": "CASE POWER - RBPR20", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "CASE POWER - RBPR20", 
+   "sys_id": 10676905, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": [
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10626725
+    }, 
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10626729
+    }, 
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10626733
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "7", 
+   "load_name": "CASE POWER - RCBK43", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "CASE POWER - RCBK43", 
+   "sys_id": 10677365, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": [
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317844
+    }, 
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317845
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "5", 
+   "load_name": "CASE POWER - RCBK42", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "CASE POWER - RCBK42", 
+   "sys_id": 10677413, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": [
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317843
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "53,55,57", 
+   "load_name": "CASE POWER - RCFF17", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "CASE POWER - RCFF17", 
+   "sys_id": 10678391, 
+   "rating": "60 A", 
+   "wire_type": null, 
+   "poles": "3", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": [
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317776
+    }, 
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317789
+    }, 
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317795
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "45,47,49", 
+   "load_name": "CASE POWER - RCFF15", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "CASE POWER - RCFF15", 
+   "sys_id": 10678416, 
+   "rating": "60 A", 
+   "wire_type": null, 
+   "poles": "3", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": [
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10678405
+    }, 
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10678406
+    }, 
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10678407
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "20,22", 
+   "load_name": "CASE POWER - RCFF01", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "CASE POWER - RCFF01", 
+   "sys_id": 10678617, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "2", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": [
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317782
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "37,39", 
+   "load_name": "CASE POWER - RCFF02", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "CASE POWER - RCFF02", 
+   "sys_id": 10678782, 
+   "rating": "70 A", 
+   "wire_type": null, 
+   "poles": "2", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": [
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317811
+    }, 
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317813
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "14,16,18", 
+   "load_name": "CASE POWER - RCFF05", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "CASE POWER - RCFF05", 
+   "sys_id": 10680540, 
+   "rating": "60 A", 
+   "wire_type": null, 
+   "poles": "3", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": [
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317784
+    }, 
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317810
+    }, 
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317816
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "40,42", 
+   "load_name": "CASE POWER - RCFF06", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "CASE POWER - RCFF06", 
+   "sys_id": 10680593, 
+   "rating": "70 A", 
+   "wire_type": null, 
+   "poles": "2", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": [
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317812
+    }, 
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317814
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "28,30", 
+   "load_name": "CASE POWER - RCFF07", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "CASE POWER - RCFF07", 
+   "sys_id": 10680788, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "2", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": [
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317778
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "41,43", 
+   "load_name": "CASE POWER - RCFF08", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "CASE POWER - RCFF08", 
+   "sys_id": 10680956, 
+   "rating": "70 A", 
+   "wire_type": null, 
+   "poles": "2", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": [
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317798
+    }, 
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317800
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "23,25,27", 
+   "load_name": "CASE POWER - RCFF09", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "CASE POWER - RCFF09", 
+   "sys_id": 10681203, 
+   "rating": "60 A", 
+   "wire_type": null, 
+   "poles": "3", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": [
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317779
+    }, 
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317796
+    }, 
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317802
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "44,46,48", 
+   "load_name": "CASE POWER - RCFF11", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "CASE POWER - RCFF11", 
+   "sys_id": 10681646, 
+   "rating": "60 A", 
+   "wire_type": null, 
+   "poles": "3", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": [
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317780
+    }, 
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317797
+    }, 
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317803
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "31,33", 
+   "load_name": "CASE POWER - RCFF12", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "CASE POWER - RCFF12", 
+   "sys_id": 10682110, 
+   "rating": "70 A", 
+   "wire_type": null, 
+   "poles": "2", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": [
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317799
+    }, 
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317801
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "34,36", 
+   "load_name": "CASE POWER - RCFF14", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "CASE POWER - RCFF14", 
+   "sys_id": 10682427, 
+   "rating": "70 A", 
+   "wire_type": null, 
+   "poles": "2", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": [
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317790
+    }, 
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317792
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "15,17,19", 
+   "load_name": "CASE POWER - SCMS06/08", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "CASE POWER - SCMS06/08", 
+   "sys_id": 10716849, 
+   "rating": "50 A", 
+   "wire_type": null, 
+   "poles": "3", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": [
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317911
+    }, 
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317912
+    }, 
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10317925
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "8,10,12", 
+   "load_name": "CASE POWER - SCMS05/07", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "CASE POWER - SCMS05/07", 
+   "sys_id": 10717614, 
+   "rating": "50 A", 
+   "wire_type": null, 
+   "poles": "3", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": [
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10717598
+    }, 
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10717599
+    }, 
+    {
+     "cat": "Mechanical Control Devices", 
+     "id": 10717600
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "63", 
+   "load_name": "SPARE", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10725007, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "65", 
+   "load_name": "SPARE", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10725008, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "67", 
+   "load_name": "SPARE", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10725009, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "69", 
+   "load_name": "SPARE", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10725010, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "71", 
+   "load_name": "SPARE", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10725011, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "73", 
+   "load_name": "SPARE", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10725012, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "75", 
+   "load_name": "SPARE", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10725013, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "77", 
+   "load_name": "SPARE", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10725014, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "79", 
+   "load_name": "SPARE", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10725015, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "81", 
+   "load_name": "SPARE", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10725016, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "83", 
+   "load_name": "SPARE", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10725017, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "64", 
+   "load_name": "SPARE", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10725020, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "66", 
+   "load_name": "SPARE", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10725021, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "68", 
+   "load_name": "SPARE", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10725022, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "70", 
+   "load_name": "SPARE", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10725023, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "72", 
+   "load_name": "SPARE", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10725024, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "74", 
+   "load_name": "SPARE", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10725025, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "76", 
+   "load_name": "SPARE", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10725026, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "78", 
+   "load_name": "SPARE", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10725027, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "80", 
+   "load_name": "SPARE", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10725028, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "82", 
+   "load_name": "SPARE", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10725029, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "84", 
+   "load_name": "SPARE", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10725030, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "6", 
+   "load_name": "SPARE", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10815518, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "21", 
+   "load_name": "SPARE", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10815519, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "29", 
+   "load_name": "SPARE", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10815520, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "35", 
+   "load_name": "SPARE", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10815521, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "51", 
+   "load_name": "SPARE", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10815522, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "32", 
+   "load_name": "SPARE", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10815523, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "38", 
+   "load_name": "SPARE", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10815524, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "56", 
+   "load_name": "SPARE", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10815525, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "58", 
+   "load_name": "SPARE", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10815526, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "60", 
+   "load_name": "SPARE", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10815527, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "62", 
+   "load_name": "SPARE", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10815528, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "59", 
+   "load_name": "SPARE", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10815529, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "61", 
+   "load_name": "SPARE", 
+   "panel": "RC", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10815530, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855685
+   }, 
+   "members": []
+  }
+ ], 
+ "count": 152
+}

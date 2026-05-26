@@ -1,0 +1,370 @@
+{
+ "rows": [
+  {
+   "status": "ok", 
+   "tagged_wire": 10612401, 
+   "text": "BA-30", 
+   "id": 10612402
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10617517, 
+   "text": "BA-71,73,75", 
+   "id": 10617518
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10617520, 
+   "text": "BA-35", 
+   "id": 10617521
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10617693, 
+   "text": "BA-9", 
+   "id": 10617724
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10617694, 
+   "text": "BA-2", 
+   "id": 10617726
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10617794, 
+   "text": "BA-74,76,78", 
+   "id": 10617808
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10617781, 
+   "text": "BA-8", 
+   "id": 10617811
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10618526, 
+   "text": "BA-11", 
+   "id": 10618527
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10618529, 
+   "text": "BA-14", 
+   "id": 10618530
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10618535, 
+   "text": "BA-1", 
+   "id": 10618536
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10618534, 
+   "text": "BA-11", 
+   "id": 10618537
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10618533, 
+   "text": "BA-11", 
+   "id": 10618538
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10618532, 
+   "text": "BA-18", 
+   "id": 10618539
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10618550, 
+   "text": "BA-32", 
+   "id": 10618551
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10618739, 
+   "text": "BA-40", 
+   "id": 10618782
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10618769, 
+   "text": "BA-56,58,60", 
+   "id": 10618783
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10619019, 
+   "text": "BA-59,61,63", 
+   "id": 10619062
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10619004, 
+   "text": "BA-44,46,48", 
+   "id": 10619064
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10618991, 
+   "text": "BA-22", 
+   "id": 10619065
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10618976, 
+   "text": "BA-47,49,51", 
+   "id": 10619066
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10618965, 
+   "text": "BA-27", 
+   "id": 10619067
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10619090, 
+   "text": "BA-65,67,69", 
+   "id": 10619116
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10619103, 
+   "text": "BA-50,52,54", 
+   "id": 10619117
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10619133, 
+   "text": "BA-4", 
+   "id": 10619149
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10619239, 
+   "text": "BA-68,70,72", 
+   "id": 10619258
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10619269, 
+   "text": "BA-25", 
+   "id": 10619313
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10619282, 
+   "text": "BA-36", 
+   "id": 10619363
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10619392, 
+   "text": "BA-13", 
+   "id": 10619458
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10619414, 
+   "text": "BA-13", 
+   "id": 10619459
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10619366, 
+   "text": "BA-13", 
+   "id": 10619460
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10619534, 
+   "text": "BA-9", 
+   "id": 10619547
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10619521, 
+   "text": "BA-34", 
+   "id": 10619548
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10619583, 
+   "text": "BA-9", 
+   "id": 10619749
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10619794, 
+   "text": "BA-20", 
+   "id": 10619835
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10619809, 
+   "text": "BA-19", 
+   "id": 10619836
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10619993, 
+   "text": "BA-34", 
+   "id": 10620006
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10620178, 
+   "text": "BA-7", 
+   "id": 10620209
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10620430, 
+   "text": "BA-21", 
+   "id": 10620445
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10620464, 
+   "text": "BA-33", 
+   "id": 10620490
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10620532, 
+   "text": "BA-45", 
+   "id": 10620587
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10620519, 
+   "text": "BA-41", 
+   "id": 10620589
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10620506, 
+   "text": "BA-15", 
+   "id": 10620652
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10620745, 
+   "text": "BA-17", 
+   "id": 10620788
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10620758, 
+   "text": "BA-62,64,66", 
+   "id": 10620789
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10620771, 
+   "text": "BA-10", 
+   "id": 10620790
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10620919, 
+   "text": "BA-37", 
+   "id": 10620963
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10620893, 
+   "text": "BA-12", 
+   "id": 10620964
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10620906, 
+   "text": "BA-42", 
+   "id": 10620990
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10621022, 
+   "text": "BA-3", 
+   "id": 10621078
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10621035, 
+   "text": "BA-16", 
+   "id": 10621080
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10621212, 
+   "text": "BA-5", 
+   "id": 10621227
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10621230, 
+   "text": "BA-6", 
+   "id": 10621243
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10621457, 
+   "text": "BA-39", 
+   "id": 10621507
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10621676, 
+   "text": "BA-53,55,57", 
+   "id": 10621689
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10621759, 
+   "text": "BA-81", 
+   "id": 10621770
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10666908, 
+   "text": "BA-80,82,84", 
+   "id": 10666909
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10831311, 
+   "text": "BA-26,28", 
+   "id": 10831337
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10831324, 
+   "text": "BA-23", 
+   "id": 10831338
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10831511, 
+   "text": "BA-29,31", 
+   "id": 10831537
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10831524, 
+   "text": "BA-24", 
+   "id": 10831540
+  }
+ ], 
+ "skipped": 0, 
+ "placed": 60, 
+ "target": "CED_HEB Template_MEPR_R24_OkmntProfCorr", 
+ "apply": true, 
+ "removed": 0, 
+ "count": 60
+}

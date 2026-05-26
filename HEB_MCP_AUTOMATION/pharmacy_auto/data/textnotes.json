@@ -1,0 +1,571 @@
+{
+ "view": "Power Callouts - PHARMACY", 
+ "elements": [
+  {
+   "h_align": "Left", 
+   "coord": [
+    197.64959999999999, 
+    17.470199999999998, 
+    0.0
+   ], 
+   "type": "3/32\" Arial", 
+   "textnote_type": "3/32\" Arial", 
+   "text": "WP\r", 
+   "rotation": null, 
+   "id": 9408978, 
+   "leaders": [], 
+   "rel_to_equipment": {
+    "family": "BOLLARD", 
+    "category": "Generic Models", 
+    "dist_ft": 2.7311999999999999, 
+    "dxy_ft": [
+     -1.8914, 
+     1.9702
+    ], 
+    "id": 2795921
+   }, 
+   "width": 0.024330000000000001, 
+   "owner_view": 2243900, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 1.2984, 
+    "dxy_ft": [
+     -0.94840000000000002, 
+     0.88670000000000004
+    ], 
+    "id": 9408913
+   }, 
+   "has_leaders": false
+  }, 
+  {
+   "h_align": "Left", 
+   "coord": [
+    213.64019999999999, 
+    18.869199999999999, 
+    0.0
+   ], 
+   "type": "3/32\" Arial", 
+   "textnote_type": "3/32\" Arial", 
+   "text": "WP\r", 
+   "rotation": null, 
+   "id": 9408987, 
+   "leaders": [], 
+   "rel_to_equipment": {
+    "family": "BOLLARD", 
+    "category": "Generic Models", 
+    "dist_ft": 2.6595, 
+    "dxy_ft": [
+     -1.8917999999999999, 
+     1.8692
+    ], 
+    "id": 2795909
+   }, 
+   "width": 0.024330000000000001, 
+   "owner_view": 2243900, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 1.2316, 
+    "dxy_ft": [
+     -0.94840000000000002, 
+     0.78569999999999995
+    ], 
+    "id": 9408899
+   }, 
+   "has_leaders": false
+  }, 
+  {
+   "h_align": "Left", 
+   "coord": [
+    169.61189999999999, 
+    -37.055500000000002, 
+    0.0
+   ], 
+   "type": "3/32\" Arial", 
+   "textnote_type": "3/32\" Arial", 
+   "text": "ACCESS CONTROL\r", 
+   "rotation": null, 
+   "id": 9409240, 
+   "leaders": [
+    {
+     "end": [
+      174.38990000000001, 
+      -38.411200000000001, 
+      0.0
+     ], 
+     "elbow": [
+      173.01730000000001, 
+      -37.9617, 
+      0.0
+     ], 
+     "has_elbow": true, 
+     "anchor": [
+      172.33770000000001, 
+      -37.9617, 
+      0.0
+     ]
+    }
+   ], 
+   "rel_to_equipment": {
+    "family": "Troffer Light - 2x4 Parabolic", 
+    "category": "Lighting Fixtures", 
+    "dist_ft": 2.4388999999999998, 
+    "dxy_ft": [
+     -0.45810000000000001, 
+     2.3955000000000002
+    ], 
+    "id": 4652436
+   }, 
+   "width": 0.055489999999999998, 
+   "owner_view": 2243900, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 4.6308999999999996, 
+    "dxy_ft": [
+     -1.5153000000000001, 
+     4.3760000000000003
+    ], 
+    "id": 9353521
+   }, 
+   "has_leaders": true
+  }, 
+  {
+   "h_align": "Left", 
+   "coord": [
+    160.96799999999999, 
+    -74.492800000000003, 
+    0.0
+   ], 
+   "type": "3/32\" Arial", 
+   "textnote_type": "3/32\" Arial", 
+   "text": "MONITOR\r", 
+   "rotation": null, 
+   "id": 9409864, 
+   "leaders": [
+    {
+     "end": [
+      165.89279999999999, 
+      -74.794799999999995, 
+      0.0
+     ], 
+     "elbow": [
+      163.80779999999999, 
+      -74.794799999999995, 
+      0.0
+     ], 
+     "has_elbow": true, 
+     "anchor": [
+      163.80779999999999, 
+      -74.794799999999995, 
+      0.0
+     ]
+    }
+   ], 
+   "rel_to_equipment": {
+    "family": "FD.05.07.01_We Make It All Better wall decal", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 5.1601999999999997, 
+    "dxy_ft": [
+     -5.1429999999999998, 
+     -0.42080000000000001
+    ], 
+    "id": 4293738
+   }, 
+   "width": 0.057860000000000002, 
+   "owner_view": 2243900, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 5.5964999999999998, 
+    "dxy_ft": [
+     -5.5914999999999999, 
+     0.2366
+    ], 
+    "id": 9353360
+   }, 
+   "has_leaders": true
+  }, 
+  {
+   "h_align": "Left", 
+   "coord": [
+    177.7448, 
+    -68.483400000000003, 
+    -0.0
+   ], 
+   "type": "3/32\" Arial - Loop", 
+   "textnote_type": "3/32\" Arial - Loop", 
+   "text": "(4) 1\"C\r", 
+   "rotation": null, 
+   "id": 9409934, 
+   "leaders": [
+    {
+     "end": [
+      176.8827, 
+      -67.229900000000001, 
+      -0.0
+     ], 
+     "elbow": [
+      176.8827, 
+      -68.786000000000001, 
+      -0.0
+     ], 
+     "has_elbow": true, 
+     "anchor": [
+      177.6823, 
+      -68.785499999999999, 
+      -0.0
+     ]
+    }
+   ], 
+   "rel_to_equipment": {
+    "family": "005_FingerprintReader_URU_1027654", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 3.2040000000000002, 
+    "dxy_ft": [
+     1.8058000000000001, 
+     2.6465999999999998
+    ], 
+    "id": 1396878
+   }, 
+   "width": 0.034709999999999998, 
+   "owner_view": 2243900, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 3.5669, 
+    "dxy_ft": [
+     -3.5185, 
+     -0.58550000000000002
+    ], 
+    "id": 9352966
+   }, 
+   "has_leaders": true
+  }, 
+  {
+   "h_align": "Left", 
+   "coord": [
+    171.71270000000001, 
+    -77.985299999999995, 
+    -0.0
+   ], 
+   "type": "3/32\" Arial - Loop", 
+   "textnote_type": "3/32\" Arial - Loop", 
+   "text": "(4) 1\"C\r", 
+   "rotation": null, 
+   "id": 9649631, 
+   "leaders": [
+    {
+     "end": [
+      170.85059999999999, 
+      -79.390500000000003, 
+      -0.0
+     ], 
+     "elbow": [
+      170.85059999999999, 
+      -78.287899999999993, 
+      -0.0
+     ], 
+     "has_elbow": true, 
+     "anchor": [
+      171.65020000000001, 
+      -78.287400000000005, 
+      -0.0
+     ]
+    }
+   ], 
+   "rel_to_equipment": {
+    "family": "008_Printer_POS_Epson_1200204", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 2.5354000000000001, 
+    "dxy_ft": [
+     2.5196999999999998, 
+     0.28170000000000001
+    ], 
+    "id": 5815158
+   }, 
+   "width": 0.034709999999999998, 
+   "owner_view": 2243900, 
+   "rel_to_device": {
+    "family": "CED-E-STUB-UP", 
+    "dist_ft": 2.2797000000000001, 
+    "dxy_ft": [
+     2.1326000000000001, 
+     0.80559999999999998
+    ], 
+    "id": 9411764
+   }, 
+   "has_leaders": true
+  }, 
+  {
+   "h_align": "Left", 
+   "coord": [
+    177.52019999999999, 
+    -30.311800000000002, 
+    0.0
+   ], 
+   "type": "3/32\" Arial - Arrow", 
+   "textnote_type": "3/32\" Arial - Arrow", 
+   "text": "EWH-1\r", 
+   "rotation": null, 
+   "id": 10612404, 
+   "leaders": [
+    {
+     "end": [
+      176.0419, 
+      -32.318899999999999, 
+      0.0
+     ], 
+     "elbow": [
+      176.5985, 
+      -30.624300000000002, 
+      0.0
+     ], 
+     "has_elbow": true, 
+     "anchor": [
+      177.39519999999999, 
+      -30.624300000000002, 
+      0.0
+     ]
+    }, 
+    {
+     "end": [
+      177.3201, 
+      -32.299999999999997, 
+      0.0
+     ], 
+     "elbow": [
+      176.5985, 
+      -30.624300000000002, 
+      0.0
+     ], 
+     "has_elbow": true, 
+     "anchor": [
+      177.39519999999999, 
+      -30.624300000000002, 
+      0.0
+     ]
+    }
+   ], 
+   "rel_to_equipment": {
+    "family": "000_Dispenser_Soap_Manual_1212153", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 2.0743999999999998, 
+    "dxy_ft": [
+     0.60519999999999996, 
+     1.9842
+    ], 
+    "id": 5434249
+   }, 
+   "width": 0.036790000000000003, 
+   "owner_view": 2243900, 
+   "rel_to_device": {
+    "family": "EF-U_Motor Rated Switch_CED", 
+    "dist_ft": 1.9881, 
+    "dxy_ft": [
+     0.1227, 
+     1.9843
+    ], 
+    "id": 10612409
+   }, 
+   "has_leaders": true
+  }, 
+  {
+   "h_align": "Left", 
+   "coord": [
+    165.99510000000001, 
+    -43.5501, 
+    0.0
+   ], 
+   "type": "3/32\" Arial - Arrow", 
+   "textnote_type": "3/32\" Arial - Arrow", 
+   "text": "BLOOD PRESSURE MACHINE\r", 
+   "rotation": null, 
+   "id": 10662490, 
+   "leaders": [
+    {
+     "end": [
+      170.9316, 
+      -41.987299999999998, 
+      0.0
+     ], 
+     "elbow": [
+      169.66589999999999, 
+      -45.060499999999998, 
+      0.0
+     ], 
+     "has_elbow": true, 
+     "anchor": [
+      169.25460000000001, 
+      -45.060499999999998, 
+      0.0
+     ]
+    }
+   ], 
+   "rel_to_equipment": {
+    "family": "005_Brochure_Holder_1034786", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 2.0495999999999999, 
+    "dxy_ft": [
+     1.3891, 
+     -1.5071000000000001
+    ], 
+    "id": 5008243
+   }, 
+   "width": 0.065299999999999997, 
+   "owner_view": 2243900, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 5.5522, 
+    "dxy_ft": [
+     -5.1321000000000003, 
+     -2.1185999999999998
+    ], 
+    "id": 9353521
+   }, 
+   "has_leaders": true
+  }, 
+  {
+   "h_align": "Left", 
+   "coord": [
+    180.9273, 
+    -35.571599999999997, 
+    0.0
+   ], 
+   "type": "3/32\" Arial - Arrow", 
+   "textnote_type": "3/32\" Arial - Arrow", 
+   "text": "(ON)\r", 
+   "rotation": null, 
+   "id": 10662499, 
+   "leaders": [], 
+   "rel_to_equipment": {
+    "family": "001_PRINTER MX522ADHE MONO LASER PRINTER W HARD DRIVE_1", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 2.0659999999999998, 
+    "dxy_ft": [
+     -1.2197, 
+     -1.6676
+    ], 
+    "id": 1397384
+   }, 
+   "width": 0.025499999999999998, 
+   "owner_view": 2243900, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 3.5482999999999998, 
+    "dxy_ft": [
+     -1.3644000000000001, 
+     -3.2755000000000001
+    ], 
+    "id": 9352937
+   }, 
+   "has_leaders": false
+  }, 
+  {
+   "h_align": "Left", 
+   "coord": [
+    183.69880000000001, 
+    -36.160600000000002, 
+    0.0
+   ], 
+   "type": "3/32\" Arial - Arrow", 
+   "textnote_type": "3/32\" Arial - Arrow", 
+   "text": "(ON)\r", 
+   "rotation": null, 
+   "id": 10662500, 
+   "leaders": [], 
+   "rel_to_equipment": {
+    "family": "001_PRINTER MX522ADHE MONO LASER PRINTER W HARD DRIVE_1", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 2.2763, 
+    "dxy_ft": [
+     -0.29820000000000002, 
+     -2.2566000000000002
+    ], 
+    "id": 5008304
+   }, 
+   "width": 0.025499999999999998, 
+   "owner_view": 2243900, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 3.8793000000000002, 
+    "dxy_ft": [
+     0.43009999999999998, 
+     -3.8553000000000002
+    ], 
+    "id": 9374485
+   }, 
+   "has_leaders": false
+  }, 
+  {
+   "h_align": "Left", 
+   "coord": [
+    182.2216, 
+    -36.421100000000003, 
+    0.0
+   ], 
+   "type": "3/32\" Arial - Arrow", 
+   "textnote_type": "3/32\" Arial - Arrow", 
+   "text": "(ON)\r", 
+   "rotation": null, 
+   "id": 10662501, 
+   "leaders": [], 
+   "rel_to_equipment": {
+    "family": "001_PRINTER MX522ADHE MONO LASER PRINTER W HARD DRIVE_1", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 2.5182000000000002, 
+    "dxy_ft": [
+     0.0746, 
+     -2.5171000000000001
+    ], 
+    "id": 1397384
+   }, 
+   "width": 0.025499999999999998, 
+   "owner_view": 2243900, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 4.1256000000000004, 
+    "dxy_ft": [
+     -0.070099999999999996, 
+     -4.125
+    ], 
+    "id": 9352937
+   }, 
+   "has_leaders": false
+  }, 
+  {
+   "h_align": "Left", 
+   "coord": [
+    184.74019999999999, 
+    -35.057200000000002, 
+    0.0
+   ], 
+   "type": "3/32\" Arial - Arrow", 
+   "textnote_type": "3/32\" Arial - Arrow", 
+   "text": "(ON)\r", 
+   "rotation": null, 
+   "id": 10662502, 
+   "leaders": [], 
+   "rel_to_equipment": {
+    "family": "001_PRINTER MX522ADHE MONO LASER PRINTER W HARD DRIVE_1", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 1.3718999999999999, 
+    "dxy_ft": [
+     0.74319999999999997, 
+     -1.1532
+    ], 
+    "id": 5008304
+   }, 
+   "width": 0.025499999999999998, 
+   "owner_view": 2243900, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 2.7783000000000002, 
+    "dxy_ft": [
+     -0.38269999999999998, 
+     -2.7519
+    ], 
+    "id": 9352934
+   }, 
+   "has_leaders": false
+  }
+ ], 
+ "source_doc": "RunUpdateProfilesHEBCarrollton95PercentCLOUDMODEL", 
+ "count": 12
+}

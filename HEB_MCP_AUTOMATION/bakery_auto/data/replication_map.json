@@ -1,0 +1,554 @@
+{
+ "circuits": {
+  "10619078": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "DOUBLE RACK OVEN 2 - BAKERY", 
+   "tgt_sys_id": 9271408, 
+   "n_devices": 1
+  }, 
+  "10353411": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "JELLY GLAZER - CHIPS/DONUTS", 
+   "tgt_sys_id": 9271438, 
+   "n_devices": 1
+  }, 
+  "10621019": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "RICE WARMER 2 - SUSHI PRP", 
+   "tgt_sys_id": 9271430, 
+   "n_devices": 1
+  }, 
+  "10353481": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "2-DOOR FRZER - SUSHI PRP", 
+   "tgt_sys_id": 9271419, 
+   "n_devices": 1
+  }, 
+  "10617616": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "TORTILLA MACHINE 2 - BAKER", 
+   "tgt_sys_id": 9271429, 
+   "n_devices": 1
+  }, 
+  "10619347": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "BAKERY FRZR - THRSHLD HT", 
+   "tgt_sys_id": 9271421, 
+   "n_devices": 1
+  }, 
+  "10353701": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "ANSUL - SUSHI PREP", 
+   "tgt_sys_id": 9271402, 
+   "n_devices": 1
+  }, 
+  "10353406": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "KH-07 CONTROLS", 
+   "tgt_sys_id": 9271434, 
+   "n_devices": 3
+  }, 
+  "10353416": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "DOUBLE RACK OVEN 1 - BAKERY", 
+   "tgt_sys_id": 9271443, 
+   "n_devices": 1
+  }, 
+  "10353403": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "5 FOOT TRUE REFRIG 2", 
+   "tgt_sys_id": 9271431, 
+   "n_devices": 1
+  }, 
+  "10617509": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "TORTILLA WARMER 2", 
+   "tgt_sys_id": 9271440, 
+   "n_devices": 1
+  }, 
+  "10353413": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "TORTILLA WARMER 1", 
+   "tgt_sys_id": 9271442, 
+   "n_devices": 1
+  }, 
+  "10618544": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "DONUT FILLER - DONUTS", 
+   "tgt_sys_id": 9271399, 
+   "n_devices": 1
+  }, 
+  "10353879": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "FLY ZAPPER - SUSHI", 
+   "tgt_sys_id": 9271425, 
+   "n_devices": 1
+  }, 
+  "10353418": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "PAN WASHER - BAKERY PREP", 
+   "tgt_sys_id": 9271445, 
+   "n_devices": 2
+  }, 
+  "10353229": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "SPIRAL DOUGH MIXER - BAKERY - SHOCK BLOCK", 
+   "tgt_sys_id": 9271415, 
+   "n_devices": 1
+  }, 
+  "10353977": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "PRINTER", 
+   "tgt_sys_id": 9271411, 
+   "n_devices": 1
+  }, 
+  "10353410": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "CAKE IMAGER - BAKERY", 
+   "tgt_sys_id": 9271437, 
+   "n_devices": 1
+  }, 
+  "10353231": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "PROOFER - BAKERY", 
+   "tgt_sys_id": 9271418, 
+   "n_devices": 1
+  }, 
+  "10353420": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "DONUT FRYER", 
+   "tgt_sys_id": 9271395, 
+   "n_devices": 1
+  }, 
+  "10353987": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "STINGER CART/SCALE - BKE", 
+   "tgt_sys_id": 9271417, 
+   "n_devices": 2
+  }, 
+  "10353702": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "RICE WARMER 3 - SUSHI PREP", 
+   "tgt_sys_id": 9271403, 
+   "n_devices": 1
+  }, 
+  "10353722": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "TWIST TIE", 
+   "tgt_sys_id": 9271409, 
+   "n_devices": 2
+  }, 
+  "10666946": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "MULTIDECK CASE", 
+   "tgt_sys_id": 9271406, 
+   "n_devices": 1
+  }, 
+  "10353405": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "PAN WASHER - CONTROLS", 
+   "tgt_sys_id": 9271433, 
+   "n_devices": 1
+  }, 
+  "10353415": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "MULTI DECK CASE", 
+   "tgt_sys_id": 9271444, 
+   "n_devices": 1
+  }, 
+  "10353748": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "CONV RECEPTS - DONUTS", 
+   "tgt_sys_id": 9271424, 
+   "n_devices": 4
+  }, 
+  "10619081": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "DOUBLE RACK CNTRL 2", 
+   "tgt_sys_id": 9271410, 
+   "n_devices": 1
+  }, 
+  "10353745": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "CONVNT REC - BAKERY", 
+   "tgt_sys_id": 9271422, 
+   "n_devices": 2
+  }, 
+  "10353699": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "GRIDDLE - SUSHI PREP", 
+   "tgt_sys_id": 9271400, 
+   "n_devices": 1
+  }, 
+  "10353504": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "MONITORS - SUSHI", 
+   "tgt_sys_id": 9271427, 
+   "n_devices": 2
+  }, 
+  "10353412": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "MICROWAVE - CHIPS/DONUTS", 
+   "tgt_sys_id": 9271439, 
+   "n_devices": 1
+  }, 
+  "10353227": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "5 FOOT TRUE REFRIG 1", 
+   "tgt_sys_id": 9271413, 
+   "n_devices": 1
+  }, 
+  "10353880": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "FLY ZAPPERS - BAKERY PRP", 
+   "tgt_sys_id": 9271426, 
+   "n_devices": 3
+  }, 
+  "10353700": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "KH-08 - SUSHI PREP", 
+   "tgt_sys_id": 9271401, 
+   "n_devices": 3
+  }, 
+  "10353228": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "DOUGH DIVIDER - BAKERY", 
+   "tgt_sys_id": 9271414, 
+   "n_devices": 1
+  }, 
+  "10619311": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "BAKERY FRZR - DOOR HEAT", 
+   "tgt_sys_id": 9271405, 
+   "n_devices": 1
+  }, 
+  "10353336": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "BAKERY PREP - ARTISN TBLS", 
+   "tgt_sys_id": 9271407, 
+   "n_devices": 2
+  }, 
+  "10621010": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "RICE WARMER 1 - SUSHI PRP", 
+   "tgt_sys_id": 9271428, 
+   "n_devices": 1
+  }, 
+  "10353407": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "DONUT HOPPER - BAKERY", 
+   "tgt_sys_id": 9271435, 
+   "n_devices": 1
+  }, 
+  "10353417": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "ALTO SHAAM OVEN", 
+   "tgt_sys_id": 9271396, 
+   "n_devices": 1
+  }, 
+  "10353230": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "FRENCH BREAD MOULDER - BAKERY", 
+   "tgt_sys_id": 9271416, 
+   "n_devices": 1
+  }, 
+  "10621479": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "BAKERY FRZR - HEAT TRACE", 
+   "tgt_sys_id": 9271412, 
+   "n_devices": 1
+  }, 
+  "10353682": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "LABEL PRINTERS - SSHI PREP", 
+   "tgt_sys_id": 9271398, 
+   "n_devices": 2
+  }, 
+  "10353487": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "RO1  RECEPTACLE BAKE PRP", 
+   "tgt_sys_id": 9271420, 
+   "n_devices": 1
+  }, 
+  "10353703": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "REF. CHEF BASE - SUSHI PRP", 
+   "tgt_sys_id": 9271404, 
+   "n_devices": 1
+  }, 
+  "10353668": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "UC FRIDGE - SUSHI PREP", 
+   "tgt_sys_id": 9271397, 
+   "n_devices": 1
+  }, 
+  "10353409": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "TORTILLA MACHINE 1 - BAKERY", 
+   "tgt_sys_id": 9271436, 
+   "n_devices": 1
+  }, 
+  "10353404": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "DONUT GLAZER - BAKERY", 
+   "tgt_sys_id": 9271432, 
+   "n_devices": 1
+  }, 
+  "10353414": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "DOUBLE RACK CNTRL 1", 
+   "tgt_sys_id": 9271441, 
+   "n_devices": 1
+  }, 
+  "10353419": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "PLANETARY MIXER - BAKERY - SHOCK BLOCK", 
+   "tgt_sys_id": 9271447, 
+   "n_devices": 1
+  }, 
+  "10353746": {
+   "panel": "BA", 
+   "auto_ckt": "<unnamed>", 
+   "load_name": "CONV RECEPTS - BAKERY", 
+   "tgt_sys_id": 9271423, 
+   "n_devices": 3
+  }
+ }, 
+ "wires": {
+  "10619090": 9271294, 
+  "10618532": 9271279, 
+  "10617517": 9271269, 
+  "10617781": 9271274, 
+  "10620147": 9271312, 
+  "10620178": 9271314, 
+  "10618529": 9271278, 
+  "10619392": 9271303, 
+  "10620506": 9271318, 
+  "10617794": 9271275, 
+  "10612401": 9271268, 
+  "10620668": 9271321, 
+  "10618549": 9271284, 
+  "10619583": 9271307, 
+  "10621230": 9271333, 
+  "10621457": 9271334, 
+  "10618752": 9271287, 
+  "10619239": 9271298, 
+  "10620758": 9271323, 
+  "10831311": 9271338, 
+  "10618534": 9271281, 
+  "10619809": 9271309, 
+  "10619269": 9271299, 
+  "10617519": 9271270, 
+  "10620464": 9271317, 
+  "10618976": 9271290, 
+  "10620919": 9271327, 
+  "10619414": 9271304, 
+  "10621143": 9271331, 
+  "10617693": 9271272, 
+  "10620745": 9271322, 
+  "10619133": 9271297, 
+  "10618533": 9271280, 
+  "10619103": 9271295, 
+  "10619282": 9271300, 
+  "10617694": 9271273, 
+  "10620519": 9271319, 
+  "10618965": 9271289, 
+  "10621212": 9271332, 
+  "10831324": 9271339, 
+  "10666908": 9271337, 
+  "10618526": 9271276, 
+  "10621022": 9271328, 
+  "10619794": 9271308, 
+  "10621759": 9271336, 
+  "10831511": 9271340, 
+  "10619004": 9271292, 
+  "10619019": 9271293, 
+  "10618535": 9271282, 
+  "10620532": 9271320, 
+  "10620415": 9271315, 
+  "10621676": 9271335, 
+  "10621035": 9271329, 
+  "10618528": 9271277, 
+  "10618739": 9271286, 
+  "10619366": 9271301, 
+  "10619379": 9271302, 
+  "10618769": 9271288, 
+  "10620893": 9271325, 
+  "10831524": 9271341, 
+  "10619120": 9271296, 
+  "10620430": 9271316, 
+  "10619993": 9271311, 
+  "10618991": 9271291, 
+  "10618550": 9271285, 
+  "10621130": 9271330, 
+  "10620906": 9271326, 
+  "10618547": 9271283, 
+  "10620162": 9271313, 
+  "10620771": 9271324, 
+  "10619521": 9271305, 
+  "10619534": 9271306, 
+  "10617520": 9271271, 
+  "10619916": 9271310
+ }, 
+ "flags": [
+  "PANEL FS missing in target (src 10473209) - skipped, circuiting deferred", 
+  "CIRCUIT FAIL src_sys 10353874 panel BA: There should be at least one component that can create the specified circuit type\r\nParameter name: electComponents"
+ ], 
+ "panels": {
+  "RC": 7855685, 
+  "BA": 7855687
+ }, 
+ "devices": {
+  "9353376": 9271218, 
+  "9353374": 9271217, 
+  "9352577": 9271171, 
+  "9352912": 9271199, 
+  "9352913": 9271200, 
+  "9352914": 9271203, 
+  "9352915": 9271204, 
+  "9352916": 9271205, 
+  "9352917": 9271206, 
+  "9352918": 9271209, 
+  "9352881": 9271183, 
+  "9352883": 9271184, 
+  "9353558": 9271227, 
+  "9352885": 9271185, 
+  "9353559": 9271228, 
+  "9352887": 9271186, 
+  "9353554": 9271224, 
+  "9353555": 9271225, 
+  "9353557": 9271226, 
+  "9352759": 9271177, 
+  "9353551": 9271222, 
+  "9353552": 9271223, 
+  "9353020": 9271213, 
+  "9353022": 9271214, 
+  "9438701": 9271241, 
+  "9438702": 9271242, 
+  "9352729": 9271173, 
+  "9353666": 9271229, 
+  "9352534": 9271170, 
+  "9352530": 9271166, 
+  "9352531": 9271167, 
+  "9352532": 9271168, 
+  "9352533": 9271169, 
+  "9352900": 9271193, 
+  "9352901": 9271194, 
+  "9352902": 9271195, 
+  "9352904": 9271196, 
+  "9352905": 9271197, 
+  "9352906": 9271198, 
+  "9353368": 9271216, 
+  "9397172": 9271238, 
+  "9397175": 9271239, 
+  "9353366": 9271215, 
+  "9353764": 9271236, 
+  "9353762": 9271234, 
+  "9353763": 9271235, 
+  "9353765": 9271237, 
+  "9353761": 9271233, 
+  "9352871": 9271178, 
+  "9353438": 9271220, 
+  "9352872": 9271179, 
+  "9352875": 9271180, 
+  "9352877": 9271182, 
+  "9352876": 9271181, 
+  "9353437": 9271219, 
+  "9352921": 9271210, 
+  "9352922": 9271211, 
+  "9352923": 9271212, 
+  "9352891": 9271187, 
+  "9352528": 9271164, 
+  "9352529": 9271165, 
+  "9352893": 9271188, 
+  "9352895": 9271190, 
+  "9352894": 9271189, 
+  "9352896": 9271191, 
+  "9353698": 9271232, 
+  "9352607": 9271172, 
+  "9352898": 9271192, 
+  "9353460": 9271221, 
+  "9353696": 9271230, 
+  "9353697": 9271231, 
+  "9352738": 9271176, 
+  "9438257": 9271240, 
+  "9352736": 9271174, 
+  "9352737": 9271175
+ }, 
+ "keynotes": {
+  "9438253": 9271250, 
+  "9438250": 9271248, 
+  "10095618": 9271263, 
+  "10621258": 9271265, 
+  "10095605": 9271262, 
+  "9438548": 9271258, 
+  "9438549": 9271259, 
+  "9438546": 9271256, 
+  "9438547": 9271257, 
+  "9438544": 9271254, 
+  "9438545": 9271255, 
+  "9438703": 9271260, 
+  "9438705": 9271261, 
+  "9438249": 9271247, 
+  "9438248": 9271246, 
+  "9438245": 9271243, 
+  "9438247": 9271245, 
+  "9438246": 9271244, 
+  "9438259": 9271253, 
+  "9438255": 9271251, 
+  "9438256": 9271252, 
+  "9438251": 9271249, 
+  "10619691": 9271264
+ }
+}

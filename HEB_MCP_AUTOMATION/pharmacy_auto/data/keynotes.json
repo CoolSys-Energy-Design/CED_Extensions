@@ -1,0 +1,856 @@
+{
+ "view": "Power Callouts - PHARMACY", 
+ "family": "GA_Keynote Symbol_CED", 
+ "elements": [
+  {
+   "rel_to_equipment": {
+    "family": "Single Phase Panel - 120V MCB - Recessed1", 
+    "category": "Electrical Equipment", 
+    "dist_ft": 2.2711999999999999, 
+    "dxy_ft": [
+     -0.066600000000000006, 
+     2.2703000000000002
+    ], 
+    "id": 1396137
+   }, 
+   "id": 9649422, 
+   "rel_to_device": {
+    "family": "EE-U_Panelboard_CED", 
+    "dist_ft": 2.2298, 
+    "dxy_ft": [
+     -0.066699999999999995, 
+     2.2288000000000001
+    ], 
+    "id": 7855682
+   }, 
+   "owner_view": 2243900, 
+   "rotation": null, 
+   "family": "GA_Keynote Symbol_CED", 
+   "world_xyz": [
+    170.8914, 
+    -84.577699999999993, 
+    4.0
+   ], 
+   "params": {
+    "Category": -2000150, 
+    "Level": -1, 
+    "Volume": 0.0, 
+    "Family": 8119134, 
+    "Family Name": null, 
+    "Type Id": 8119134, 
+    "Symbol Text": "", 
+    "Host Id": -1, 
+    "Keynote Value": "11", 
+    "Type Name": null, 
+    "Type": 8119134, 
+    "Keynote Description": "INSTALL PANEL SO THAT THE BOTTOM OF TRIM IS ABOVE WAINSCOT. VERIFY THAT THE TOP-MOST BREAKER DOES NOT EXCEED 6'-6\" AFF.", 
+    "Edited by": "", 
+    "Workset": 4496, 
+    "Design Option": -1, 
+    "Family and Type": 8119134, 
+    "Keynote Category": "E3.5", 
+    "Show Symbol Text": 0, 
+    "Area": 0.00084999999999999995
+   }, 
+   "type": "Standard - Electrical", 
+   "has_leader": null
+  }, 
+  {
+   "rel_to_equipment": {
+    "family": "000_Mat_Fatigue_3x11_1203731", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 1.1166, 
+    "dxy_ft": [
+     0.76570000000000005, 
+     0.81279999999999997
+    ], 
+    "id": 1398720
+   }, 
+   "id": 9649448, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 3.0695000000000001, 
+    "dxy_ft": [
+     -3.0678000000000001, 
+     0.099599999999999994
+    ], 
+    "id": 9353529
+   }, 
+   "owner_view": 2243900, 
+   "rotation": null, 
+   "family": "GA_Keynote Symbol_CED", 
+   "world_xyz": [
+    187.7757, 
+    -42.452199999999998, 
+    4.0
+   ], 
+   "params": {
+    "Category": -2000150, 
+    "Level": -1, 
+    "Volume": 0.0, 
+    "Family": 8119134, 
+    "Family Name": null, 
+    "Type Id": 8119134, 
+    "Symbol Text": "", 
+    "Host Id": -1, 
+    "Keynote Value": "12", 
+    "Type Name": null, 
+    "Type": 8119134, 
+    "Keynote Description": "QUAD RECEPTACLE FOR QTS SYSTEM AT HEIGHT INDICATED. VERIFY ALL REQUIREMENTS WITH EQUIPMENT VENDOR AND OWNDER'S CONSTRUCTION MANAGER PRIOR TO ROUGH-IN. COORDINATE WITH QTS FOR CONNECTIONS TO BLOWER PACKS ON ROOF. RE: MEPR-1.4.", 
+    "Edited by": "", 
+    "Workset": 4496, 
+    "Design Option": -1, 
+    "Family and Type": 8119134, 
+    "Keynote Category": "E3.5", 
+    "Show Symbol Text": 0, 
+    "Area": 0.00084999999999999995
+   }, 
+   "type": "Standard - Electrical", 
+   "has_leader": null
+  }, 
+  {
+   "rel_to_equipment": {
+    "family": "005_Cabinet_Metal_Will_Call_1300079", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 0.89190000000000003, 
+    "dxy_ft": [
+     -0.41930000000000001, 
+     0.78720000000000001
+    ], 
+    "id": 1396899
+   }, 
+   "id": 9649465, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 1.8003, 
+    "dxy_ft": [
+     -1.3426, 
+     1.1995
+    ], 
+    "id": 9352965
+   }, 
+   "owner_view": 2243900, 
+   "rotation": null, 
+   "family": "GA_Keynote Symbol_CED", 
+   "world_xyz": [
+    179.92070000000001, 
+    -65.772800000000004, 
+    4.0
+   ], 
+   "params": {
+    "Category": -2000150, 
+    "Level": -1, 
+    "Volume": 0.0, 
+    "Family": 8119134, 
+    "Family Name": null, 
+    "Type Id": 8119134, 
+    "Symbol Text": "", 
+    "Host Id": -1, 
+    "Keynote Value": "13", 
+    "Type Name": null, 
+    "Type": 8119134, 
+    "Keynote Description": "MOUNT RECEPTACLES FOR COMPUTER EQUIPMENT FLUSH IN WALLS. COORDINATE WITH PROVIDED MILLWORK. RE: 8/E-7.1.", 
+    "Edited by": "", 
+    "Workset": 4496, 
+    "Design Option": -1, 
+    "Family and Type": 8119134, 
+    "Keynote Category": "E3.5", 
+    "Show Symbol Text": 0, 
+    "Area": 0.00084999999999999995
+   }, 
+   "type": "Standard - Electrical", 
+   "has_leader": null
+  }, 
+  {
+   "rel_to_equipment": {
+    "family": "Troffer Light - 2x4 Parabolic", 
+    "category": "Lighting Fixtures", 
+    "dist_ft": 2.1738, 
+    "dxy_ft": [
+     1.9883, 
+     0.87880000000000003
+    ], 
+    "id": 4652651
+   }, 
+   "id": 9649478, 
+   "rel_to_device": {
+    "family": "CED-E-STUB-UP", 
+    "dist_ft": 3.3128000000000002, 
+    "dxy_ft": [
+     2.5783999999999998, 
+     -2.0800000000000001
+    ], 
+    "id": 9411422
+   }, 
+   "owner_view": 2243900, 
+   "rotation": null, 
+   "family": "GA_Keynote Symbol_CED", 
+   "world_xyz": [
+    184.0583, 
+    -70.572199999999995, 
+    4.0
+   ], 
+   "params": {
+    "Category": -2000150, 
+    "Level": -1, 
+    "Volume": 0.0, 
+    "Family": 8119134, 
+    "Family Name": null, 
+    "Type Id": 8119134, 
+    "Symbol Text": "", 
+    "Host Id": -1, 
+    "Keynote Value": "13", 
+    "Type Name": null, 
+    "Type": 8119134, 
+    "Keynote Description": "MOUNT RECEPTACLES FOR COMPUTER EQUIPMENT FLUSH IN WALLS. COORDINATE WITH PROVIDED MILLWORK. RE: 8/E-7.1.", 
+    "Edited by": "", 
+    "Workset": 4496, 
+    "Design Option": -1, 
+    "Family and Type": 8119134, 
+    "Keynote Category": "E3.5", 
+    "Show Symbol Text": 0, 
+    "Area": 0.00084999999999999995
+   }, 
+   "type": "Standard - Electrical", 
+   "has_leader": null
+  }, 
+  {
+   "rel_to_equipment": {
+    "family": "Troffer Light - 2x4 Parabolic", 
+    "category": "Lighting Fixtures", 
+    "dist_ft": 0.72319999999999995, 
+    "dxy_ft": [
+     -0.64410000000000001, 
+     -0.32879999999999998
+    ], 
+    "id": 4652536
+   }, 
+   "id": 9649487, 
+   "rel_to_device": {
+    "family": "CED-E-STUB-UP", 
+    "dist_ft": 2.9371999999999998, 
+    "dxy_ft": [
+     1.2068000000000001, 
+     2.6778
+    ], 
+    "id": 9411630
+   }, 
+   "owner_view": 2243900, 
+   "rotation": null, 
+   "family": "GA_Keynote Symbol_CED", 
+   "world_xyz": [
+    175.42590000000001, 
+    -63.779800000000002, 
+    4.0
+   ], 
+   "params": {
+    "Category": -2000150, 
+    "Level": -1, 
+    "Volume": 0.0, 
+    "Family": 8119134, 
+    "Family Name": null, 
+    "Type Id": 8119134, 
+    "Symbol Text": "", 
+    "Host Id": -1, 
+    "Keynote Value": "13", 
+    "Type Name": null, 
+    "Type": 8119134, 
+    "Keynote Description": "MOUNT RECEPTACLES FOR COMPUTER EQUIPMENT FLUSH IN WALLS. COORDINATE WITH PROVIDED MILLWORK. RE: 8/E-7.1.", 
+    "Edited by": "", 
+    "Workset": 4496, 
+    "Design Option": -1, 
+    "Family and Type": 8119134, 
+    "Keynote Category": "E3.5", 
+    "Show Symbol Text": 0, 
+    "Area": 0.00084999999999999995
+   }, 
+   "type": "Standard - Electrical", 
+   "has_leader": null
+  }, 
+  {
+   "rel_to_equipment": {
+    "family": "Troffer Light - 2x4 Parabolic", 
+    "category": "Lighting Fixtures", 
+    "dist_ft": 1.3616999999999999, 
+    "dxy_ft": [
+     0.63660000000000005, 
+     -1.2038
+    ], 
+    "id": 4652536
+   }, 
+   "id": 9649494, 
+   "rel_to_device": {
+    "family": "CED-E-STUB-UP", 
+    "dist_ft": 3.0720999999999998, 
+    "dxy_ft": [
+     2.4874999999999998, 
+     1.8028
+    ], 
+    "id": 9411630
+   }, 
+   "owner_view": 2243900, 
+   "rotation": null, 
+   "family": "GA_Keynote Symbol_CED", 
+   "world_xyz": [
+    176.70660000000001, 
+    -64.654799999999994, 
+    4.0
+   ], 
+   "params": {
+    "Category": -2000150, 
+    "Level": -1, 
+    "Volume": 0.0, 
+    "Family": 8119134, 
+    "Family Name": null, 
+    "Type Id": 8119134, 
+    "Symbol Text": "", 
+    "Host Id": -1, 
+    "Keynote Value": "13", 
+    "Type Name": null, 
+    "Type": 8119134, 
+    "Keynote Description": "MOUNT RECEPTACLES FOR COMPUTER EQUIPMENT FLUSH IN WALLS. COORDINATE WITH PROVIDED MILLWORK. RE: 8/E-7.1.", 
+    "Edited by": "", 
+    "Workset": 4496, 
+    "Design Option": -1, 
+    "Family and Type": 8119134, 
+    "Keynote Category": "E3.5", 
+    "Show Symbol Text": 0, 
+    "Area": 0.00084999999999999995
+   }, 
+   "type": "Standard - Electrical", 
+   "has_leader": null
+  }, 
+  {
+   "rel_to_equipment": {
+    "family": "Troffer Light - 2x4 Parabolic", 
+    "category": "Lighting Fixtures", 
+    "dist_ft": 2.4542999999999999, 
+    "dxy_ft": [
+     0.79549999999999998, 
+     -2.3218000000000001
+    ], 
+    "id": 4652536
+   }, 
+   "id": 9649501, 
+   "rel_to_device": {
+    "family": "CED-E-STUB-UP", 
+    "dist_ft": 2.7336, 
+    "dxy_ft": [
+     2.6463999999999999, 
+     0.68479999999999996
+    ], 
+    "id": 9411630
+   }, 
+   "owner_view": 2243900, 
+   "rotation": null, 
+   "family": "GA_Keynote Symbol_CED", 
+   "world_xyz": [
+    176.8655, 
+    -65.772800000000004, 
+    4.0
+   ], 
+   "params": {
+    "Category": -2000150, 
+    "Level": -1, 
+    "Volume": 0.0, 
+    "Family": 8119134, 
+    "Family Name": null, 
+    "Type Id": 8119134, 
+    "Symbol Text": "", 
+    "Host Id": -1, 
+    "Keynote Value": "13", 
+    "Type Name": null, 
+    "Type": 8119134, 
+    "Keynote Description": "MOUNT RECEPTACLES FOR COMPUTER EQUIPMENT FLUSH IN WALLS. COORDINATE WITH PROVIDED MILLWORK. RE: 8/E-7.1.", 
+    "Edited by": "", 
+    "Workset": 4496, 
+    "Design Option": -1, 
+    "Family and Type": 8119134, 
+    "Keynote Category": "E3.5", 
+    "Show Symbol Text": 0, 
+    "Area": 0.00084999999999999995
+   }, 
+   "type": "Standard - Electrical", 
+   "has_leader": null
+  }, 
+  {
+   "rel_to_equipment": {
+    "family": "000_Mat_Fatigue_3x6_1203713", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 1.3596999999999999, 
+    "dxy_ft": [
+     0.47539999999999999, 
+     1.2739
+    ], 
+    "id": 5008288
+   }, 
+   "id": 9649508, 
+   "rel_to_device": {
+    "family": "CED-E-STUB-UP", 
+    "dist_ft": 2.9157999999999999, 
+    "dxy_ft": [
+     2.1863000000000001, 
+     -1.9292
+    ], 
+    "id": 9411764
+   }, 
+   "owner_view": 2243900, 
+   "rotation": null, 
+   "family": "GA_Keynote Symbol_CED", 
+   "world_xyz": [
+    171.7664, 
+    -80.720100000000002, 
+    4.0
+   ], 
+   "params": {
+    "Category": -2000150, 
+    "Level": -1, 
+    "Volume": 0.0, 
+    "Family": 8119134, 
+    "Family Name": null, 
+    "Type Id": 8119134, 
+    "Symbol Text": "", 
+    "Host Id": -1, 
+    "Keynote Value": "13", 
+    "Type Name": null, 
+    "Type": 8119134, 
+    "Keynote Description": "MOUNT RECEPTACLES FOR COMPUTER EQUIPMENT FLUSH IN WALLS. COORDINATE WITH PROVIDED MILLWORK. RE: 8/E-7.1.", 
+    "Edited by": "", 
+    "Workset": 4496, 
+    "Design Option": -1, 
+    "Family and Type": 8119134, 
+    "Keynote Category": "E3.5", 
+    "Show Symbol Text": 0, 
+    "Area": 0.00084999999999999995
+   }, 
+   "type": "Standard - Electrical", 
+   "has_leader": null
+  }, 
+  {
+   "rel_to_equipment": {
+    "family": "000_Mat_Fatigue_3x6_1203713", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 0.93489999999999995, 
+    "dxy_ft": [
+     -0.82889999999999997, 
+     -0.43219999999999997
+    ], 
+    "id": 5008288
+   }, 
+   "id": 9649513, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 3.4468000000000001, 
+    "dxy_ft": [
+     2.8090000000000002, 
+     -1.9975000000000001
+    ], 
+    "id": 9352963
+   }, 
+   "owner_view": 2243900, 
+   "rotation": null, 
+   "family": "GA_Keynote Symbol_CED", 
+   "world_xyz": [
+    170.46209999999999, 
+    -82.426199999999994, 
+    4.0
+   ], 
+   "params": {
+    "Category": -2000150, 
+    "Level": -1, 
+    "Volume": 0.0, 
+    "Family": 8119134, 
+    "Family Name": null, 
+    "Type Id": 8119134, 
+    "Symbol Text": "", 
+    "Host Id": -1, 
+    "Keynote Value": "13", 
+    "Type Name": null, 
+    "Type": 8119134, 
+    "Keynote Description": "MOUNT RECEPTACLES FOR COMPUTER EQUIPMENT FLUSH IN WALLS. COORDINATE WITH PROVIDED MILLWORK. RE: 8/E-7.1.", 
+    "Edited by": "", 
+    "Workset": 4496, 
+    "Design Option": -1, 
+    "Family and Type": 8119134, 
+    "Keynote Category": "E3.5", 
+    "Show Symbol Text": 0, 
+    "Area": 0.00084999999999999995
+   }, 
+   "type": "Standard - Electrical", 
+   "has_leader": null
+  }, 
+  {
+   "rel_to_equipment": {
+    "family": "005_Kirby_Lester_1000898", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 2.8874, 
+    "dxy_ft": [
+     2.5621, 
+     -1.3314999999999999
+    ], 
+    "id": 1397270
+   }, 
+   "id": 9649528, 
+   "rel_to_device": {
+    "family": "CED-E-STUB-UP", 
+    "dist_ft": 2.2885, 
+    "dxy_ft": [
+     2.0305, 
+     -1.0556000000000001
+    ], 
+    "id": 9411763
+   }, 
+   "owner_view": 2243900, 
+   "rotation": null, 
+   "family": "GA_Keynote Symbol_CED", 
+   "world_xyz": [
+    178.1361, 
+    -82.873500000000007, 
+    4.0
+   ], 
+   "params": {
+    "Category": -2000150, 
+    "Level": -1, 
+    "Volume": 0.0, 
+    "Family": 8119134, 
+    "Family Name": null, 
+    "Type Id": 8119134, 
+    "Symbol Text": "", 
+    "Host Id": -1, 
+    "Keynote Value": "13", 
+    "Type Name": null, 
+    "Type": 8119134, 
+    "Keynote Description": "MOUNT RECEPTACLES FOR COMPUTER EQUIPMENT FLUSH IN WALLS. COORDINATE WITH PROVIDED MILLWORK. RE: 8/E-7.1.", 
+    "Edited by": "", 
+    "Workset": 4496, 
+    "Design Option": -1, 
+    "Family and Type": 8119134, 
+    "Keynote Category": "E3.5", 
+    "Show Symbol Text": 0, 
+    "Area": 0.00084999999999999995
+   }, 
+   "type": "Standard - Electrical", 
+   "has_leader": null
+  }, 
+  {
+   "rel_to_equipment": {
+    "family": "Troffer Light - 2x4 Parabolic", 
+    "category": "Lighting Fixtures", 
+    "dist_ft": 2.5148999999999999, 
+    "dxy_ft": [
+     2.391, 
+     -0.77959999999999996
+    ], 
+    "id": 4652654
+   }, 
+   "id": 9649535, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 2.4704000000000002, 
+    "dxy_ft": [
+     2.4358, 
+     0.41189999999999999
+    ], 
+    "id": 9352948
+   }, 
+   "owner_view": 2243900, 
+   "rotation": null, 
+   "family": "GA_Keynote Symbol_CED", 
+   "world_xyz": [
+    178.46100000000001, 
+    -80.230599999999995, 
+    4.0
+   ], 
+   "params": {
+    "Category": -2000150, 
+    "Level": -1, 
+    "Volume": 0.0, 
+    "Family": 8119134, 
+    "Family Name": null, 
+    "Type Id": 8119134, 
+    "Symbol Text": "", 
+    "Host Id": -1, 
+    "Keynote Value": "13", 
+    "Type Name": null, 
+    "Type": 8119134, 
+    "Keynote Description": "MOUNT RECEPTACLES FOR COMPUTER EQUIPMENT FLUSH IN WALLS. COORDINATE WITH PROVIDED MILLWORK. RE: 8/E-7.1.", 
+    "Edited by": "", 
+    "Workset": 4496, 
+    "Design Option": -1, 
+    "Family and Type": 8119134, 
+    "Keynote Category": "E3.5", 
+    "Show Symbol Text": 0, 
+    "Area": 0.00084999999999999995
+   }, 
+   "type": "Standard - Electrical", 
+   "has_leader": null
+  }, 
+  {
+   "rel_to_equipment": {
+    "family": "BOLLARD", 
+    "category": "Generic Models", 
+    "dist_ft": 1.8424, 
+    "dxy_ft": [
+     -1.8177000000000001, 
+     0.30059999999999998
+    ], 
+    "id": 2795921
+   }, 
+   "id": 9649549, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 1.1738999999999999, 
+    "dxy_ft": [
+     -0.87470000000000003, 
+     -0.78290000000000004
+    ], 
+    "id": 9408913
+   }, 
+   "owner_view": 2243900, 
+   "rotation": null, 
+   "family": "GA_Keynote Symbol_CED", 
+   "world_xyz": [
+    197.72329999999999, 
+    15.800599999999999, 
+    4.0
+   ], 
+   "params": {
+    "Category": -2000150, 
+    "Level": -1, 
+    "Volume": 0.0, 
+    "Family": 8119134, 
+    "Family Name": null, 
+    "Type Id": 8119134, 
+    "Symbol Text": "", 
+    "Host Id": -1, 
+    "Keynote Value": "14", 
+    "Type Name": null, 
+    "Type": 8119134, 
+    "Keynote Description": "RECEPTACLE MOUNTED AT CANOPY SOFFIT FOR CUSTOMER UNIT COORDINATE WITH QTS SYSTEM INSTALLER.", 
+    "Edited by": "", 
+    "Workset": 4496, 
+    "Design Option": -1, 
+    "Family and Type": 8119134, 
+    "Keynote Category": "E3.5", 
+    "Show Symbol Text": 0, 
+    "Area": 0.00084999999999999995
+   }, 
+   "type": "Standard - Electrical", 
+   "has_leader": null
+  }, 
+  {
+   "rel_to_equipment": {
+    "family": "BOLLARD", 
+    "category": "Generic Models", 
+    "dist_ft": 1.7456, 
+    "dxy_ft": [
+     -1.7301, 
+     0.23169999999999999
+    ], 
+    "id": 2795909
+   }, 
+   "id": 9649562, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 1.1595, 
+    "dxy_ft": [
+     -0.78669999999999995, 
+     -0.8518
+    ], 
+    "id": 9408899
+   }, 
+   "owner_view": 2243900, 
+   "rotation": null, 
+   "family": "GA_Keynote Symbol_CED", 
+   "world_xyz": [
+    213.80189999999999, 
+    17.2317, 
+    4.0
+   ], 
+   "params": {
+    "Category": -2000150, 
+    "Level": -1, 
+    "Volume": 0.0, 
+    "Family": 8119134, 
+    "Family Name": null, 
+    "Type Id": 8119134, 
+    "Symbol Text": "", 
+    "Host Id": -1, 
+    "Keynote Value": "14", 
+    "Type Name": null, 
+    "Type": 8119134, 
+    "Keynote Description": "RECEPTACLE MOUNTED AT CANOPY SOFFIT FOR CUSTOMER UNIT COORDINATE WITH QTS SYSTEM INSTALLER.", 
+    "Edited by": "", 
+    "Workset": 4496, 
+    "Design Option": -1, 
+    "Family and Type": 8119134, 
+    "Keynote Category": "E3.5", 
+    "Show Symbol Text": 0, 
+    "Area": 0.00084999999999999995
+   }, 
+   "type": "Standard - Electrical", 
+   "has_leader": null
+  }, 
+  {
+   "rel_to_equipment": {
+    "family": "HEB_Curb_Straight_Run_45_Cut_One_Side", 
+    "category": "Generic Models", 
+    "dist_ft": 3.1198000000000001, 
+    "dxy_ft": [
+     -2.0933999999999999, 
+     2.3132999999999999
+    ], 
+    "id": 5497474
+   }, 
+   "id": 9649575, 
+   "rel_to_device": {
+    "family": "CED-E-STUB-UP", 
+    "dist_ft": 3.75, 
+    "dxy_ft": [
+     1.6140000000000001, 
+     -3.3847999999999998
+    ], 
+    "id": 9411763
+   }, 
+   "owner_view": 2243900, 
+   "rotation": null, 
+   "family": "GA_Keynote Symbol_CED", 
+   "world_xyz": [
+    177.71960000000001, 
+    -85.202699999999993, 
+    4.0
+   ], 
+   "params": {
+    "Category": -2000150, 
+    "Level": -1, 
+    "Volume": 0.0, 
+    "Family": 8119134, 
+    "Family Name": null, 
+    "Type Id": 8119134, 
+    "Symbol Text": "", 
+    "Host Id": -1, 
+    "Keynote Value": "1", 
+    "Type Name": null, 
+    "Type": 8119134, 
+    "Keynote Description": "LIGHTING CONTROL PANEL LOCATED ABOVE CEILING IN ACCESSIBLE LOCATION. REFER TO LIGHTING CONTACTOR SCHEDULE SHEET E-5.1.", 
+    "Edited by": "", 
+    "Workset": 4496, 
+    "Design Option": -1, 
+    "Family and Type": 8119134, 
+    "Keynote Category": "E3.5", 
+    "Show Symbol Text": 0, 
+    "Area": 0.00084999999999999995
+   }, 
+   "type": "Standard - Electrical", 
+   "has_leader": null
+  }, 
+  {
+   "rel_to_equipment": {
+    "family": "HEB_Curb_Straight_Run_45_Cut_One_Side", 
+    "category": "Generic Models", 
+    "dist_ft": 2.6145, 
+    "dxy_ft": [
+     -1.2183999999999999, 
+     2.3132999999999999
+    ], 
+    "id": 5497474
+   }, 
+   "id": 9649586, 
+   "rel_to_device": {
+    "family": "CED-E-STUB-UP", 
+    "dist_ft": 4.2015000000000002, 
+    "dxy_ft": [
+     2.4889999999999999, 
+     -3.3847999999999998
+    ], 
+    "id": 9411763
+   }, 
+   "owner_view": 2243900, 
+   "rotation": null, 
+   "family": "GA_Keynote Symbol_CED", 
+   "world_xyz": [
+    178.59460000000001, 
+    -85.202699999999993, 
+    4.0
+   ], 
+   "params": {
+    "Category": -2000150, 
+    "Level": -1, 
+    "Volume": 0.0, 
+    "Family": 8119134, 
+    "Family Name": null, 
+    "Type Id": 8119134, 
+    "Symbol Text": "", 
+    "Host Id": -1, 
+    "Keynote Value": "2", 
+    "Type Name": null, 
+    "Type": 8119134, 
+    "Keynote Description": "EMS VENDOR TO PROVIDE LOCAL UPS BACKUP AT EACH LIGHTING CONTROL PANEL.", 
+    "Edited by": "", 
+    "Workset": 4496, 
+    "Design Option": -1, 
+    "Family and Type": 8119134, 
+    "Keynote Category": "E3.5", 
+    "Show Symbol Text": 0, 
+    "Area": 0.00084999999999999995
+   }, 
+   "type": "Standard - Electrical", 
+   "has_leader": null
+  }, 
+  {
+   "rel_to_equipment": {
+    "family": "000_Shelf_Metro_5Tier_18x48Chrome_wInlays_1029224", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 0.52859999999999996, 
+    "dxy_ft": [
+     0.52859999999999996, 
+     -0.0001
+    ], 
+    "id": 5809324
+   }, 
+   "id": 10651787, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 2.3433000000000002, 
+    "dxy_ft": [
+     -2.2201, 
+     -0.75
+    ], 
+    "id": 9352937
+   }, 
+   "owner_view": 2243900, 
+   "rotation": null, 
+   "family": "GA_Keynote Symbol_CED", 
+   "world_xyz": [
+    180.07159999999999, 
+    -33.046100000000003, 
+    4.0
+   ], 
+   "params": {
+    "Category": -2000150, 
+    "Level": -1, 
+    "Volume": 0.0, 
+    "Family": 8119134, 
+    "Family Name": null, 
+    "Type Id": 8119134, 
+    "Symbol Text": "", 
+    "Host Id": -1, 
+    "Keynote Value": "3", 
+    "Type Name": null, 
+    "Type": 8119134, 
+    "Keynote Description": "30A/2P/250V/NF/NEMA 1 DISCONNECT SWITCH MOUNTED IN ACCESSIBLE LOCATION. COORDINATE WITH PLUMBING INSTALLER.", 
+    "Edited by": "", 
+    "Workset": 4496, 
+    "Design Option": -1, 
+    "Family and Type": 8119134, 
+    "Keynote Category": "E3.5", 
+    "Show Symbol Text": 0, 
+    "Area": 0.00084999999999999995
+   }, 
+   "type": "Standard - Electrical", 
+   "has_leader": null
+  }
+ ], 
+ "source_doc": "RunUpdateProfilesHEBCarrollton95PercentCLOUDMODEL", 
+ "count": 16
+}

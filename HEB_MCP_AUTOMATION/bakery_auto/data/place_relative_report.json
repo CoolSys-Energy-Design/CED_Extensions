@@ -1,0 +1,2491 @@
+{
+ "devices_total": 75, 
+ "unique_match": 75, 
+ "dryrun": false, 
+ "anchor_missing": 0, 
+ "equip_shift_ft_min": 0.0, 
+ "rows": [
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 6.2831849999999996, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352528, 
+   "anchor_id": 3098855, 
+   "equip_shift_ft": 1.0700000000000001, 
+   "type": "Duplex Wall - GFCI Horizontal", 
+   "tgt_dev_xyz": [
+    -51.023000000000003, 
+    14.199, 
+    3.6669999999999998
+   ], 
+   "status": "matched", 
+   "anchor_fam": "030_5ft_True_Refrigerator_W_SS_Worktop_True_1029462", 
+   "anchor_dist_ft": 1.0, 
+   "src_anchor_w": [
+    -51.167000000000002, 
+    13.923, 
+    0.0
+   ], 
+   "offset_ft": [
+    -0.91800000000000004, 
+    0.38500000000000001, 
+    3.6669999999999998
+   ], 
+   "tgt_anchor_w": [
+    -50.104999999999997, 
+    13.814, 
+    0.0
+   ], 
+   "tgt_dev_rot": 6.2831849999999996
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 1.5707960000000001, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352529, 
+   "anchor_id": 3185909, 
+   "equip_shift_ft": 1.3300000000000001, 
+   "type": "Duplex Wall - GFCI Horizontal", 
+   "tgt_dev_xyz": [
+    -44.215000000000003, 
+    20.535, 
+    3.6669999999999998
+   ], 
+   "status": "matched", 
+   "anchor_fam": "003_Cake_AirBrush_1000087", 
+   "anchor_dist_ft": 1.6599999999999999, 
+   "src_anchor_w": [
+    -45.609000000000002, 
+    23.033000000000001, 
+    3.0
+   ], 
+   "offset_ft": [
+    1.171, 
+    -1.1819999999999999, 
+    0.66700000000000004
+   ], 
+   "tgt_anchor_w": [
+    -45.387, 
+    21.716999999999999, 
+    3.0
+   ], 
+   "tgt_dev_rot": 1.5707960000000001
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 1.5707960000000001, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352530, 
+   "anchor_id": 3185838, 
+   "equip_shift_ft": 0.79000000000000004, 
+   "type": "Duplex Wall - GFCI Horizontal", 
+   "tgt_dev_xyz": [
+    -44.021000000000001, 
+    17.236999999999998, 
+    3.6669999999999998
+   ], 
+   "status": "matched", 
+   "anchor_fam": "003_Cake_Imager_1200201", 
+   "anchor_dist_ft": 1.3, 
+   "src_anchor_w": [
+    -45.466000000000001, 
+    18.699999999999999, 
+    3.0
+   ], 
+   "offset_ft": [
+    1.0289999999999999, 
+    -0.79500000000000004, 
+    0.66700000000000004
+   ], 
+   "tgt_anchor_w": [
+    -45.049999999999997, 
+    18.032, 
+    3.0
+   ], 
+   "tgt_dev_rot": 1.5707960000000001
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 6.2831849999999996, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352531, 
+   "anchor_id": 3150894, 
+   "equip_shift_ft": 1.0700000000000001, 
+   "type": "Duplex Wall - GFCI Horizontal", 
+   "tgt_dev_xyz": [
+    -45.304000000000002, 
+    14.199, 
+    3.6669999999999998
+   ], 
+   "status": "matched", 
+   "anchor_fam": "030_5ft_True_Refrigerator_W_SS_Worktop_True_1029462", 
+   "anchor_dist_ft": 0.45000000000000001, 
+   "src_anchor_w": [
+    -46.140999999999998, 
+    13.923, 
+    0.0
+   ], 
+   "offset_ft": [
+    -0.22600000000000001, 
+    0.38500000000000001, 
+    3.6669999999999998
+   ], 
+   "tgt_anchor_w": [
+    -45.079000000000001, 
+    13.814, 
+    0.0
+   ], 
+   "tgt_dev_rot": 6.2831849999999996
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 6.2831849999999996, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352532, 
+   "anchor_id": 3098906, 
+   "equip_shift_ft": 1.0700000000000001, 
+   "type": "Duplex Wall - GFCI Horizontal", 
+   "tgt_dev_xyz": [
+    -47.968000000000004, 
+    14.199, 
+    3.6669999999999998
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Shelf_Wall_Metro_2Tier_48x18Metroseal_1035443", 
+   "anchor_dist_ft": 0.54000000000000004, 
+   "src_anchor_w": [
+    -48.655999999999999, 
+    13.923, 
+    6.234
+   ], 
+   "offset_ft": [
+    -0.374, 
+    0.38500000000000001, 
+    -2.5680000000000001
+   ], 
+   "tgt_anchor_w": [
+    -47.594000000000001, 
+    13.814, 
+    6.234
+   ], 
+   "tgt_dev_rot": 6.2831849999999996
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352533, 
+   "anchor_id": 3280208, 
+   "equip_shift_ft": 0.059999999999999998, 
+   "type": "Duplex Wall - GFCI Horizontal", 
+   "tgt_dev_xyz": [
+    -32.042999999999999, 
+    69.798000000000002, 
+    3.6669999999999998
+   ], 
+   "status": "matched", 
+   "anchor_fam": "017_Case_12ft_6RVMC24BD_Rem_RDM_Beer_Beverage_Zero_Zone_1306866", 
+   "anchor_dist_ft": 5.0099999999999998, 
+   "src_anchor_w": [
+    -27.276, 
+    71.123000000000005, 
+    0.0
+   ], 
+   "offset_ft": [
+    -4.827, 
+    -1.325, 
+    3.6669999999999998
+   ], 
+   "tgt_anchor_w": [
+    -27.216000000000001, 
+    71.123000000000005, 
+    0.0
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352534, 
+   "anchor_id": 3280208, 
+   "equip_shift_ft": 0.059999999999999998, 
+   "type": "Duplex Wall - GFCI Horizontal", 
+   "tgt_dev_xyz": [
+    -34.706000000000003, 
+    69.798000000000002, 
+    3.6669999999999998
+   ], 
+   "status": "matched", 
+   "anchor_fam": "017_Case_12ft_6RVMC24BD_Rem_RDM_Beer_Beverage_Zero_Zone_1306866", 
+   "anchor_dist_ft": 7.6100000000000003, 
+   "src_anchor_w": [
+    -27.276, 
+    71.123000000000005, 
+    0.0
+   ], 
+   "offset_ft": [
+    -7.4900000000000002, 
+    -1.325, 
+    3.6669999999999998
+   ], 
+   "tgt_anchor_w": [
+    -27.216000000000001, 
+    71.123000000000005, 
+    0.0
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352577, 
+   "anchor_id": 3770839, 
+   "equip_shift_ft": 1.96, 
+   "type": "Duplex Wall - GFCI Horizontal", 
+   "tgt_dev_xyz": [
+    -45.905999999999999, 
+    69.817999999999998, 
+    3.6669999999999998
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Shelf_Metro_5Tier_18x48Metroseal_wCasters_1034016", 
+   "anchor_dist_ft": 8.4299999999999997, 
+   "src_anchor_w": [
+    -40.764000000000003, 
+    77.605999999999995, 
+    0.0
+   ], 
+   "offset_ft": [
+    -3.1840000000000002, 
+    -7.8079999999999998, 
+    3.6669999999999998
+   ], 
+   "tgt_anchor_w": [
+    -42.722000000000001, 
+    77.626999999999995, 
+    0.0
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 4.7123889999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352607, 
+   "anchor_id": 3185822, 
+   "equip_shift_ft": 0.5, 
+   "type": "Duplex Wall - GFCI", 
+   "tgt_dev_xyz": [
+    -62.011000000000003, 
+    19.311, 
+    4.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Printer_Laser_Lexmark_3", 
+   "anchor_dist_ft": 0.92000000000000004, 
+   "src_anchor_w": [
+    -61.145000000000003, 
+    19.131, 
+    2.2400000000000002
+   ], 
+   "offset_ft": [
+    -0.86599999999999999, 
+    -0.32000000000000001, 
+    2.2599999999999998
+   ], 
+   "tgt_anchor_w": [
+    -61.145000000000003, 
+    19.631, 
+    2.2400000000000002
+   ], 
+   "tgt_dev_rot": 4.7123889999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 1.5707960000000001, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352729, 
+   "anchor_id": 3573636, 
+   "equip_shift_ft": 0.27000000000000002, 
+   "type": "Duplex Wall - GFCI", 
+   "tgt_dev_xyz": [
+    -44.671999999999997, 
+    25.395, 
+    6.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Sink_1Comp_1320735", 
+   "anchor_dist_ft": 1.1100000000000001, 
+   "src_anchor_w": [
+    -45.438000000000002, 
+    24.791, 
+    -0.0
+   ], 
+   "offset_ft": [
+    1.0029999999999999, 
+    0.47899999999999998, 
+    6.5
+   ], 
+   "tgt_anchor_w": [
+    -45.674999999999997, 
+    24.916, 
+    -0.0
+   ], 
+   "tgt_dev_rot": 1.5707960000000001
+  }, 
+  {
+   "dtheta_deg": -90.0, 
+   "src_dev_rot": 0.0, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352736, 
+   "anchor_id": 3150889, 
+   "equip_shift_ft": 0.27000000000000002, 
+   "type": "Duplex Wall - GFCI", 
+   "tgt_dev_xyz": [
+    -41.32, 
+    2.7429999999999999, 
+    6.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "HEB_Sink_Hand_Nested", 
+   "anchor_dist_ft": 0.02, 
+   "src_anchor_w": [
+    -41.048999999999999, 
+    2.7040000000000002, 
+    0.0
+   ], 
+   "offset_ft": [
+    -0.024, 
+    0.0, 
+    6.5
+   ], 
+   "tgt_anchor_w": [
+    -41.32, 
+    2.7189999999999999, 
+    0.0
+   ], 
+   "tgt_dev_rot": -1.5707963267948948
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 4.7123889999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352737, 
+   "anchor_id": 3185837, 
+   "equip_shift_ft": 0.34999999999999998, 
+   "type": "Duplex Wall - GFCI", 
+   "tgt_dev_xyz": [
+    -62.103000000000002, 
+    23.91, 
+    6.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "HEB_Sink_Hand_Nested", 
+   "anchor_dist_ft": 0.20999999999999999, 
+   "src_anchor_w": [
+    -62.011000000000003, 
+    23.782, 
+    0.91700000000000004
+   ], 
+   "offset_ft": [
+    -0.0, 
+    -0.20499999999999999, 
+    5.5830000000000002
+   ], 
+   "tgt_anchor_w": [
+    -62.103000000000002, 
+    24.116, 
+    0.91700000000000004
+   ], 
+   "tgt_dev_rot": 4.7123889999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 0.0, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352738, 
+   "anchor_id": 3573631, 
+   "equip_shift_ft": 0.01, 
+   "type": "Duplex Wall - GFCI", 
+   "tgt_dev_xyz": [
+    -44.021000000000001, 
+    60.704999999999998, 
+    6.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "HEB_Sink_Hand_Nested", 
+   "anchor_dist_ft": 0.01, 
+   "src_anchor_w": [
+    -44.018000000000001, 
+    60.725000000000001, 
+    0.91700000000000004
+   ], 
+   "offset_ft": [
+    -0.0030000000000000001, 
+    -0.01, 
+    5.5830000000000002
+   ], 
+   "tgt_anchor_w": [
+    -44.018000000000001, 
+    60.715000000000003, 
+    0.91700000000000004
+   ], 
+   "tgt_dev_rot": 0.0
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 4.7123889999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352759, 
+   "anchor_id": 3185819, 
+   "equip_shift_ft": 0.23000000000000001, 
+   "type": "Duplex Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    -61.991999999999997, 
+    21.527999999999999, 
+    3.6669999999999998
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Stinger_Cart_2", 
+   "anchor_dist_ft": 1.0800000000000001, 
+   "src_anchor_w": [
+    -60.923999999999999, 
+    21.146999999999998, 
+    -0.0
+   ], 
+   "offset_ft": [
+    -1.0680000000000001, 
+    0.152, 
+    3.6669999999999998
+   ], 
+   "tgt_anchor_w": [
+    -60.923999999999999, 
+    21.376000000000001, 
+    -0.0
+   ], 
+   "tgt_dev_rot": 4.7123889999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 1.5707960000000001, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352871, 
+   "anchor_id": 3185838, 
+   "equip_shift_ft": 0.79000000000000004, 
+   "type": "Duplex Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    -44.021000000000001, 
+    18.238, 
+    3.6669999999999998
+   ], 
+   "status": "matched", 
+   "anchor_fam": "003_Cake_Imager_1200201", 
+   "anchor_dist_ft": 1.05, 
+   "src_anchor_w": [
+    -45.466000000000001, 
+    18.699999999999999, 
+    3.0
+   ], 
+   "offset_ft": [
+    1.0289999999999999, 
+    0.20599999999999999, 
+    0.66700000000000004
+   ], 
+   "tgt_anchor_w": [
+    -45.049999999999997, 
+    18.032, 
+    3.0
+   ], 
+   "tgt_dev_rot": 1.5707960000000001
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352872, 
+   "anchor_id": 3592122, 
+   "equip_shift_ft": 0.0, 
+   "type": "Cord Drop - 208V/3Ph", 
+   "tgt_dev_xyz": [
+    -47.018999999999998, 
+    47.917000000000002, 
+    9.8330000000000002
+   ], 
+   "status": "matched", 
+   "anchor_fam": "003_Divider_Dough_Hydraulic_1027902", 
+   "anchor_dist_ft": 1.24, 
+   "src_anchor_w": [
+    -47.564, 
+    49.031999999999996, 
+    -0.0
+   ], 
+   "offset_ft": [
+    0.54500000000000004, 
+    -1.115, 
+    9.8330000000000002
+   ], 
+   "tgt_anchor_w": [
+    -47.564, 
+    49.031999999999996, 
+    -0.0
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 6.2831849999999996, 
+   "fam": "EF-U_Motor Rated Switch_CED", 
+   "id": 9352875, 
+   "anchor_id": 3580651, 
+   "equip_shift_ft": 0.54000000000000004, 
+   "type": "Motor Rated Switch - 120V, 1 Pole", 
+   "tgt_dev_xyz": [
+    -33.445999999999998, 
+    64.688999999999993, 
+    7.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "003_Donut_Hopper_Pin_1026055", 
+   "anchor_dist_ft": 3.02, 
+   "src_anchor_w": [
+    -32.179000000000002, 
+    62.478999999999999, 
+    3.7810000000000001
+   ], 
+   "offset_ft": [
+    -1.2669999999999999, 
+    2.746, 
+    3.7189999999999999
+   ], 
+   "tgt_anchor_w": [
+    -32.179000000000002, 
+    61.942, 
+    3.7810000000000001
+   ], 
+   "tgt_dev_rot": 6.2831849999999996
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 0.0, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352876, 
+   "anchor_id": 3580652, 
+   "equip_shift_ft": 0.029999999999999999, 
+   "type": "Duplex Wall", 
+   "tgt_dev_xyz": [
+    -32.277000000000001, 
+    60.683, 
+    4.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "003_Donut_Fryer_1208264", 
+   "anchor_dist_ft": 0.29999999999999999, 
+   "src_anchor_w": [
+    -31.978999999999999, 
+    60.725000000000001, 
+    -0.0
+   ], 
+   "offset_ft": [
+    -0.29899999999999999, 
+    -0.01, 
+    4.5
+   ], 
+   "tgt_anchor_w": [
+    -31.978999999999999, 
+    60.692999999999998, 
+    -0.0
+   ], 
+   "tgt_dev_rot": 0.0
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 0.0, 
+   "fam": "EF-U_Motor Rated Switch_CED", 
+   "id": 9352877, 
+   "anchor_id": 3580651, 
+   "equip_shift_ft": 0.54000000000000004, 
+   "type": "Motor Rated Switch - 120V, 1 Pole", 
+   "tgt_dev_xyz": [
+    -34.314999999999998, 
+    64.688999999999993, 
+    7.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "003_Donut_Hopper_Pin_1026055", 
+   "anchor_dist_ft": 3.48, 
+   "src_anchor_w": [
+    -32.179000000000002, 
+    62.478999999999999, 
+    3.7810000000000001
+   ], 
+   "offset_ft": [
+    -2.1360000000000001, 
+    2.746, 
+    3.7189999999999999
+   ], 
+   "tgt_anchor_w": [
+    -32.179000000000002, 
+    61.942, 
+    3.7810000000000001
+   ], 
+   "tgt_dev_rot": 0.0
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 1.5707960000000001, 
+   "fam": "EF-U_Balanced Power Connector_CED", 
+   "id": 9352881, 
+   "anchor_id": 3580651, 
+   "equip_shift_ft": 0.54000000000000004, 
+   "type": "120V/1P", 
+   "tgt_dev_xyz": [
+    -34.965000000000003, 
+    64.390000000000001, 
+    7.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "003_Donut_Hopper_Pin_1026055", 
+   "anchor_dist_ft": 3.71, 
+   "src_anchor_w": [
+    -32.179000000000002, 
+    62.478999999999999, 
+    3.7810000000000001
+   ], 
+   "offset_ft": [
+    -2.786, 
+    2.448, 
+    3.7189999999999999
+   ], 
+   "tgt_anchor_w": [
+    -32.179000000000002, 
+    61.942, 
+    3.7810000000000001
+   ], 
+   "tgt_dev_rot": 1.5707960000000001
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 0.0, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352883, 
+   "anchor_id": 3573626, 
+   "equip_shift_ft": 0.34999999999999998, 
+   "type": "Specialty Wall - 208V/3Ph", 
+   "tgt_dev_xyz": [
+    -34.579000000000001, 
+    60.767000000000003, 
+    4.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "Jug Holder Bracket", 
+   "anchor_dist_ft": 1.8600000000000001, 
+   "src_anchor_w": [
+    -36.673999999999999, 
+    60.088999999999999, 
+    2.0
+   ], 
+   "offset_ft": [
+    1.7509999999999999, 
+    0.625, 
+    2.5
+   ], 
+   "tgt_anchor_w": [
+    -36.329999999999998, 
+    60.142000000000003, 
+    2.0
+   ], 
+   "tgt_dev_rot": 0.0
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352885, 
+   "anchor_id": 3580653, 
+   "equip_shift_ft": 0.45000000000000001, 
+   "type": "Duplex Wall - GFCI Horizontal", 
+   "tgt_dev_xyz": [
+    -38.756999999999998, 
+    69.641000000000005, 
+    3.6669999999999998
+   ], 
+   "status": "matched", 
+   "anchor_fam": "003_EZLift Glazer_18x26 Belshaw Glazer_1208571", 
+   "anchor_dist_ft": 7.3499999999999996, 
+   "src_anchor_w": [
+    -38.158999999999999, 
+    62.515999999999998, 
+    -0.0
+   ], 
+   "offset_ft": [
+    -1.014, 
+    7.282, 
+    3.6669999999999998
+   ], 
+   "tgt_anchor_w": [
+    -37.743000000000002, 
+    62.359999999999999, 
+    -0.0
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 6.2831849999999996, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352887, 
+   "anchor_id": 3573621, 
+   "equip_shift_ft": 0.34999999999999998, 
+   "type": "Duplex Wall - GFCI", 
+   "tgt_dev_xyz": [
+    -37.540999999999997, 
+    60.767000000000003, 
+    4.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "Test strip sign", 
+   "anchor_dist_ft": 0.5, 
+   "src_anchor_w": [
+    -38.07, 
+    60.253, 
+    4.0419999999999998
+   ], 
+   "offset_ft": [
+    0.185, 
+    0.46100000000000002, 
+    0.45800000000000002
+   ], 
+   "tgt_anchor_w": [
+    -37.725999999999999, 
+    60.305999999999997, 
+    4.0419999999999998
+   ], 
+   "tgt_dev_rot": 6.2831849999999996
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352891, 
+   "anchor_id": 3770839, 
+   "equip_shift_ft": 1.96, 
+   "type": "Duplex Wall - GFCI Horizontal", 
+   "tgt_dev_xyz": [
+    -46.911999999999999, 
+    69.817999999999998, 
+    3.6669999999999998
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Shelf_Metro_5Tier_18x48Metroseal_wCasters_1034016", 
+   "anchor_dist_ft": 8.8599999999999994, 
+   "src_anchor_w": [
+    -40.764000000000003, 
+    77.605999999999995, 
+    0.0
+   ], 
+   "offset_ft": [
+    -4.1900000000000004, 
+    -7.8079999999999998, 
+    3.6669999999999998
+   ], 
+   "tgt_anchor_w": [
+    -42.722000000000001, 
+    77.626999999999995, 
+    0.0
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 0.0, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352893, 
+   "anchor_id": 3592124, 
+   "equip_shift_ft": 0.27000000000000002, 
+   "type": "Cord Drop - 208V/3Ph", 
+   "tgt_dev_xyz": [
+    -44.701000000000001, 
+    38.764000000000003, 
+    9.8330000000000002
+   ], 
+   "status": "matched", 
+   "anchor_fam": "003_Mixer_120L_Spiral_1026799", 
+   "anchor_dist_ft": 0.77000000000000002, 
+   "src_anchor_w": [
+    -44.192, 
+    38.555999999999997, 
+    0.0
+   ], 
+   "offset_ft": [
+    -0.75900000000000001, 
+    0.104, 
+    9.8330000000000002
+   ], 
+   "tgt_anchor_w": [
+    -43.942, 
+    38.659999999999997, 
+    0.0
+   ], 
+   "tgt_dev_rot": 0.0
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 6.2831849999999996, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352894, 
+   "anchor_id": 3098883, 
+   "equip_shift_ft": 1.03, 
+   "type": "Cord Drop - 208V/3Ph", 
+   "tgt_dev_xyz": [
+    -55.558, 
+    15.782, 
+    9.8330000000000002
+   ], 
+   "status": "matched", 
+   "anchor_fam": "030_Imperial_60in_Griddle_1307749", 
+   "anchor_dist_ft": 2.1899999999999999, 
+   "src_anchor_w": [
+    -56.774000000000001, 
+    13.829000000000001, 
+    2.1160000000000001
+   ], 
+   "offset_ft": [
+    0.216, 
+    2.1789999999999998, 
+    7.7169999999999996
+   ], 
+   "tgt_anchor_w": [
+    -55.774000000000001, 
+    13.603999999999999, 
+    2.1160000000000001
+   ], 
+   "tgt_dev_rot": 6.2831849999999996
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 0.0, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352895, 
+   "anchor_id": 3592121, 
+   "equip_shift_ft": 0.050000000000000003, 
+   "type": "Cord Drop - 208V/3Ph", 
+   "tgt_dev_xyz": [
+    -45.177999999999997, 
+    47.963000000000001, 
+    9.8330000000000002
+   ], 
+   "status": "matched", 
+   "anchor_fam": "003_Moulder_Bread_French_1027898", 
+   "anchor_dist_ft": 1.6799999999999999, 
+   "src_anchor_w": [
+    -44.838999999999999, 
+    49.558, 
+    -0.0
+   ], 
+   "offset_ft": [
+    -0.33900000000000002, 
+    -1.641, 
+    9.8330000000000002
+   ], 
+   "tgt_anchor_w": [
+    -44.838999999999999, 
+    49.603999999999999, 
+    -0.0
+   ], 
+   "tgt_dev_rot": 0.0
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Balanced Power Connector_CED", 
+   "id": 9352896, 
+   "anchor_id": 3458596, 
+   "equip_shift_ft": 0.13, 
+   "type": "120V/1P", 
+   "tgt_dev_xyz": [
+    -30.210999999999999, 
+    34.878999999999998, 
+    8.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_RefgCase_RL_3DR_Black_1212095", 
+   "anchor_dist_ft": 2.54, 
+   "src_anchor_w": [
+    -29.052, 
+    37.07, 
+    0.0
+   ], 
+   "offset_ft": [
+    -1.292, 
+    -2.1909999999999998, 
+    8.5
+   ], 
+   "tgt_anchor_w": [
+    -28.919, 
+    37.07, 
+    0.0
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Balanced Power Connector_CED", 
+   "id": 9352898, 
+   "anchor_id": 3458596, 
+   "equip_shift_ft": 0.13, 
+   "type": "208V/3P", 
+   "tgt_dev_xyz": [
+    -30.210999999999999, 
+    36.460000000000001, 
+    8.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_RefgCase_RL_3DR_Black_1212095", 
+   "anchor_dist_ft": 1.4299999999999999, 
+   "src_anchor_w": [
+    -29.052, 
+    37.07, 
+    0.0
+   ], 
+   "offset_ft": [
+    -1.292, 
+    -0.60999999999999999, 
+    8.5
+   ], 
+   "tgt_anchor_w": [
+    -28.919, 
+    37.07, 
+    0.0
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Balanced Power Connector_CED", 
+   "id": 9352900, 
+   "anchor_id": 3461044, 
+   "equip_shift_ft": 0.13, 
+   "type": "120V/1P", 
+   "tgt_dev_xyz": [
+    -30.210999999999999, 
+    41.232999999999997, 
+    8.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_End_Panel_RL_B_1", 
+   "anchor_dist_ft": 1.29, 
+   "src_anchor_w": [
+    -29.052, 
+    41.173999999999999, 
+    0.0
+   ], 
+   "offset_ft": [
+    -1.292, 
+    0.058999999999999997, 
+    8.5
+   ], 
+   "tgt_anchor_w": [
+    -28.919, 
+    41.173999999999999, 
+    0.0
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Balanced Power Connector_CED", 
+   "id": 9352901, 
+   "anchor_id": 3461044, 
+   "equip_shift_ft": 0.13, 
+   "type": "208V/3P", 
+   "tgt_dev_xyz": [
+    -30.210999999999999, 
+    42.814, 
+    8.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_End_Panel_RL_B_1", 
+   "anchor_dist_ft": 2.0899999999999999, 
+   "src_anchor_w": [
+    -29.052, 
+    41.173999999999999, 
+    0.0
+   ], 
+   "offset_ft": [
+    -1.292, 
+    1.6399999999999999, 
+    8.5
+   ], 
+   "tgt_anchor_w": [
+    -28.919, 
+    41.173999999999999, 
+    0.0
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Disconnect Switch_CED", 
+   "id": 9352902, 
+   "anchor_id": 3573626, 
+   "equip_shift_ft": 0.34999999999999998, 
+   "type": "Fused - 100A", 
+   "tgt_dev_xyz": [
+    -35.107999999999997, 
+    60.323, 
+    4.0
+   ], 
+   "status": "matched", 
+   "anchor_fam": "Jug Holder Bracket", 
+   "anchor_dist_ft": 1.24, 
+   "src_anchor_w": [
+    -36.673999999999999, 
+    60.088999999999999, 
+    2.0
+   ], 
+   "offset_ft": [
+    1.2230000000000001, 
+    0.18099999999999999, 
+    2.0
+   ], 
+   "tgt_anchor_w": [
+    -36.329999999999998, 
+    60.142000000000003, 
+    2.0
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 0.0, 
+   "fam": "EF-U_Balanced Power Connector_CED", 
+   "id": 9352904, 
+   "anchor_id": 3580652, 
+   "equip_shift_ft": 0.029999999999999999, 
+   "type": "120V/1P", 
+   "tgt_dev_xyz": [
+    -32.216000000000001, 
+    59.973999999999997, 
+    6.6669999999999998
+   ], 
+   "status": "matched", 
+   "anchor_fam": "003_Donut_Fryer_1208264", 
+   "anchor_dist_ft": 0.76000000000000001, 
+   "src_anchor_w": [
+    -31.978999999999999, 
+    60.725000000000001, 
+    -0.0
+   ], 
+   "offset_ft": [
+    -0.23699999999999999, 
+    -0.71899999999999997, 
+    6.6669999999999998
+   ], 
+   "tgt_anchor_w": [
+    -31.978999999999999, 
+    60.692999999999998, 
+    -0.0
+   ], 
+   "tgt_dev_rot": 0.0
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 0.0, 
+   "fam": "EF-U_Junction Box_CED", 
+   "id": 9352905, 
+   "anchor_id": 3573609, 
+   "equip_shift_ft": 0.28000000000000003, 
+   "type": "Floor", 
+   "tgt_dev_xyz": [
+    -33.691000000000003, 
+    60.058, 
+    6.6669999999999998
+   ], 
+   "status": "matched", 
+   "anchor_fam": "003_Pan_Washer_1010730", 
+   "anchor_dist_ft": 1.48, 
+   "src_anchor_w": [
+    -33.177, 
+    58.756, 
+    0.0
+   ], 
+   "offset_ft": [
+    -0.79300000000000004, 
+    1.25, 
+    6.6669999999999998
+   ], 
+   "tgt_anchor_w": [
+    -32.898000000000003, 
+    58.808, 
+    0.0
+   ], 
+   "tgt_dev_rot": 0.0
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 0.0, 
+   "fam": "EF-U_Junction Box_CED", 
+   "id": 9352906, 
+   "anchor_id": 3592127, 
+   "equip_shift_ft": 0.25, 
+   "type": "Floor", 
+   "tgt_dev_xyz": [
+    -30.138999999999999, 
+    49.256999999999998, 
+    8.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "003_Proofer_2Door_6Rack_1", 
+   "anchor_dist_ft": 3.5299999999999998, 
+   "src_anchor_w": [
+    -33.853999999999999, 
+    48.601999999999997, 
+    0.0
+   ], 
+   "offset_ft": [
+    3.468, 
+    0.64900000000000002, 
+    8.5
+   ], 
+   "tgt_anchor_w": [
+    -33.606999999999999, 
+    48.607999999999997, 
+    0.0
+   ], 
+   "tgt_dev_rot": 0.0
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Junction Box_CED", 
+   "id": 9352912, 
+   "anchor_id": 4267863, 
+   "equip_shift_ft": 0.0, 
+   "type": "Floor", 
+   "tgt_dev_xyz": [
+    -64.006, 
+    49.555, 
+    0.0
+   ], 
+   "status": "matched", 
+   "anchor_fam": "FD.03.17.06A_Bread Process Chalkboard posters", 
+   "anchor_dist_ft": 1.7, 
+   "src_anchor_w": [
+    -65.688000000000002, 
+    49.792999999999999, 
+    6.25
+   ], 
+   "offset_ft": [
+    1.6819999999999999, 
+    -0.23799999999999999, 
+    -6.25
+   ], 
+   "tgt_anchor_w": [
+    -65.688000000000002, 
+    49.792999999999999, 
+    6.25
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Junction Box_CED", 
+   "id": 9352913, 
+   "anchor_id": 3185804, 
+   "equip_shift_ft": 0.0, 
+   "type": "Floor", 
+   "tgt_dev_xyz": [
+    -64.006, 
+    57.549999999999997, 
+    0.0
+   ], 
+   "status": "matched", 
+   "anchor_fam": "003_Table_Bread_Artisan_3Tier_8FT_1209706", 
+   "anchor_dist_ft": 1.76, 
+   "src_anchor_w": [
+    -65.400000000000006, 
+    58.628999999999998, 
+    0.0
+   ], 
+   "offset_ft": [
+    1.3939999999999999, 
+    -1.079, 
+    0.0
+   ], 
+   "tgt_anchor_w": [
+    -65.400000000000006, 
+    58.628999999999998, 
+    0.0
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 0.0, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352914, 
+   "anchor_id": 3592131, 
+   "equip_shift_ft": 0.67000000000000004, 
+   "type": "Cord Drop - 208V/1Ph", 
+   "tgt_dev_xyz": [
+    -59.343000000000004, 
+    64.465999999999994, 
+    9.8330000000000002
+   ], 
+   "status": "matched", 
+   "anchor_fam": "003_Tortilla_Machine_GrandeMax_1206082", 
+   "anchor_dist_ft": 0.68999999999999995, 
+   "src_anchor_w": [
+    -58.740000000000002, 
+    65.566999999999993, 
+    0.0
+   ], 
+   "offset_ft": [
+    -0.54100000000000004, 
+    -0.435, 
+    9.8330000000000002
+   ], 
+   "tgt_anchor_w": [
+    -58.802, 
+    64.900999999999996, 
+    0.0
+   ], 
+   "tgt_dev_rot": 0.0
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 0.0, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352915, 
+   "anchor_id": 3592131, 
+   "equip_shift_ft": 0.67000000000000004, 
+   "type": "Cord Drop - 120V/1Ph", 
+   "tgt_dev_xyz": [
+    -60.402999999999999, 
+    64.465999999999994, 
+    9.8330000000000002
+   ], 
+   "status": "matched", 
+   "anchor_fam": "003_Tortilla_Machine_GrandeMax_1206082", 
+   "anchor_dist_ft": 1.6599999999999999, 
+   "src_anchor_w": [
+    -58.740000000000002, 
+    65.566999999999993, 
+    0.0
+   ], 
+   "offset_ft": [
+    -1.601, 
+    -0.435, 
+    9.8330000000000002
+   ], 
+   "tgt_anchor_w": [
+    -58.802, 
+    64.900999999999996, 
+    0.0
+   ], 
+   "tgt_dev_rot": 0.0
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 0.0, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352916, 
+   "anchor_id": 3592137, 
+   "equip_shift_ft": 0.67000000000000004, 
+   "type": "Cord Drop - 208V/1Ph", 
+   "tgt_dev_xyz": [
+    -53.744999999999997, 
+    64.438000000000002, 
+    9.8330000000000002
+   ], 
+   "status": "matched", 
+   "anchor_fam": "003_Tortilla_Machine_GrandeMax_1206082", 
+   "anchor_dist_ft": 0.93999999999999995, 
+   "src_anchor_w": [
+    -52.927999999999997, 
+    65.566999999999993, 
+    0.0
+   ], 
+   "offset_ft": [
+    -0.81699999999999995, 
+    -0.46200000000000002, 
+    9.8330000000000002
+   ], 
+   "tgt_anchor_w": [
+    -52.927999999999997, 
+    64.900999999999996, 
+    0.0
+   ], 
+   "tgt_dev_rot": 0.0
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 0.0, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352917, 
+   "anchor_id": 3592137, 
+   "equip_shift_ft": 0.67000000000000004, 
+   "type": "Cord Drop - 120V/1Ph", 
+   "tgt_dev_xyz": [
+    -54.716999999999999, 
+    64.465999999999994, 
+    9.8330000000000002
+   ], 
+   "status": "matched", 
+   "anchor_fam": "003_Tortilla_Machine_GrandeMax_1206082", 
+   "anchor_dist_ft": 1.8400000000000001, 
+   "src_anchor_w": [
+    -52.927999999999997, 
+    65.566999999999993, 
+    0.0
+   ], 
+   "offset_ft": [
+    -1.7889999999999999, 
+    -0.435, 
+    9.8330000000000002
+   ], 
+   "tgt_anchor_w": [
+    -52.927999999999997, 
+    64.900999999999996, 
+    0.0
+   ], 
+   "tgt_dev_rot": 0.0
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 0.0, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352918, 
+   "anchor_id": 3185842, 
+   "equip_shift_ft": 0.0, 
+   "type": "Cord Drop - 120V/1Ph 2 IG", 
+   "tgt_dev_xyz": [
+    -57.331000000000003, 
+    47.127000000000002, 
+    3.6669999999999998
+   ], 
+   "status": "matched", 
+   "anchor_fam": "003_Twist_Tie_1033842", 
+   "anchor_dist_ft": 0.37, 
+   "src_anchor_w": [
+    -57.704000000000001, 
+    47.124000000000002, 
+    3.0
+   ], 
+   "offset_ft": [
+    0.372, 
+    0.0030000000000000001, 
+    0.66700000000000004
+   ], 
+   "tgt_anchor_w": [
+    -57.704000000000001, 
+    47.124000000000002, 
+    3.0
+   ], 
+   "tgt_dev_rot": 0.0
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352921, 
+   "anchor_id": 3592135, 
+   "equip_shift_ft": 0.67000000000000004, 
+   "type": "Cord Drop - 120V/1Ph 2 IG", 
+   "tgt_dev_xyz": [
+    -63.127000000000002, 
+    74.736999999999995, 
+    3.6669999999999998
+   ], 
+   "status": "matched", 
+   "anchor_fam": "003_Twist_Tie_1033842", 
+   "anchor_dist_ft": 0.37, 
+   "src_anchor_w": [
+    -63.103000000000002, 
+    75.030000000000001, 
+    3.0
+   ], 
+   "offset_ft": [
+    -0.0030000000000000001, 
+    0.372, 
+    0.66700000000000004
+   ], 
+   "tgt_anchor_w": [
+    -63.122999999999998, 
+    74.364000000000004, 
+    3.0
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352922, 
+   "anchor_id": 3592130, 
+   "equip_shift_ft": 0.67000000000000004, 
+   "type": "Cord Drop - 120V/1Ph 2 IG", 
+   "tgt_dev_xyz": [
+    -57.052999999999997, 
+    74.736999999999995, 
+    3.6669999999999998
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Table_SS_24x60_1028919", 
+   "anchor_dist_ft": 4.2000000000000002, 
+   "src_anchor_w": [
+    -61.216999999999999, 
+    75.030000000000001, 
+    0.0
+   ], 
+   "offset_ft": [
+    4.1849999999999996, 
+    0.372, 
+    3.6669999999999998
+   ], 
+   "tgt_anchor_w": [
+    -61.238, 
+    74.364000000000004, 
+    0.0
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352923, 
+   "anchor_id": 3185847, 
+   "equip_shift_ft": 0.0, 
+   "type": "Cord Drop - 120V/1Ph 2 IG", 
+   "tgt_dev_xyz": [
+    -56.938000000000002, 
+    31.922999999999998, 
+    3.6669999999999998
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Table_SS_30x72_wUnSh_NoSplash_1000639", 
+   "anchor_dist_ft": 0.88, 
+   "src_anchor_w": [
+    -57.558999999999997, 
+    32.548000000000002, 
+    -0.0
+   ], 
+   "offset_ft": [
+    0.621, 
+    -0.626, 
+    3.6669999999999998
+   ], 
+   "tgt_anchor_w": [
+    -57.558999999999997, 
+    32.548000000000002, 
+    -0.0
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Junction Box_CED", 
+   "id": 9353020, 
+   "anchor_id": 3185802, 
+   "equip_shift_ft": 0.0, 
+   "type": "Floor", 
+   "tgt_dev_xyz": [
+    -64.228999999999999, 
+    79.888000000000005, 
+    1.0
+   ], 
+   "status": "matched", 
+   "anchor_fam": "006_Heated_Merchandiser_5_Deck_1301330", 
+   "anchor_dist_ft": 0.050000000000000003, 
+   "src_anchor_w": [
+    -64.176000000000002, 
+    79.888000000000005, 
+    -0.0
+   ], 
+   "offset_ft": [
+    -0.052999999999999999, 
+    -0.0, 
+    1.0
+   ], 
+   "tgt_anchor_w": [
+    -64.176000000000002, 
+    79.888000000000005, 
+    -0.0
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Junction Box_CED", 
+   "id": 9353022, 
+   "anchor_id": 3185811, 
+   "equip_shift_ft": 0.0, 
+   "type": "Floor", 
+   "tgt_dev_xyz": [
+    -64.228999999999999, 
+    75.950000000000003, 
+    1.0
+   ], 
+   "status": "matched", 
+   "anchor_fam": "006_Heated_Merchandiser_5_Deck_1301330", 
+   "anchor_dist_ft": 0.050000000000000003, 
+   "src_anchor_w": [
+    -64.176000000000002, 
+    75.950000000000003, 
+    -0.0
+   ], 
+   "offset_ft": [
+    -0.052999999999999999, 
+    -0.0, 
+    1.0
+   ], 
+   "tgt_anchor_w": [
+    -64.176000000000002, 
+    75.950000000000003, 
+    -0.0
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 2.3561939999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9353366, 
+   "anchor_id": 3098934, 
+   "equip_shift_ft": 0.0, 
+   "type": "Duplex Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    -64.228999999999999, 
+    2.0390000000000001, 
+    5.992
+   ], 
+   "status": "matched", 
+   "anchor_fam": "FD.54.09.16_Sushiya Blank service case decals", 
+   "anchor_dist_ft": 0.34000000000000002, 
+   "src_anchor_w": [
+    -64.555999999999997, 
+    2.1419999999999999, 
+    3.2919999999999998
+   ], 
+   "offset_ft": [
+    0.32700000000000001, 
+    -0.10199999999999999, 
+    2.7010000000000001
+   ], 
+   "tgt_anchor_w": [
+    -64.555999999999997, 
+    2.1419999999999999, 
+    3.2919999999999998
+   ], 
+   "tgt_dev_rot": 2.3561939999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 2.3561939999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9353368, 
+   "anchor_id": 3098876, 
+   "equip_shift_ft": 0.0, 
+   "type": "Duplex Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    -62.274000000000001, 
+    0.13800000000000001, 
+    6.0
+   ], 
+   "status": "matched", 
+   "anchor_fam": "FD.54.09.21A_Sushiya service case decals", 
+   "anchor_dist_ft": 0.23999999999999999, 
+   "src_anchor_w": [
+    -62.511000000000003, 
+    0.127, 
+    3.2919999999999998
+   ], 
+   "offset_ft": [
+    0.23699999999999999, 
+    0.010999999999999999, 
+    2.7080000000000002
+   ], 
+   "tgt_anchor_w": [
+    -62.511000000000003, 
+    0.127, 
+    3.2919999999999998
+   ], 
+   "tgt_dev_rot": 2.3561939999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9353374, 
+   "anchor_id": 3098892, 
+   "equip_shift_ft": 0.85999999999999999, 
+   "type": "Specialty Wall - 208V/3Ph", 
+   "tgt_dev_xyz": [
+    -39.106999999999999, 
+    13.699999999999999, 
+    4.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "012_OVEN - ALTO SHAAM VMC-H3H__1304278", 
+   "anchor_dist_ft": 0.81000000000000005, 
+   "src_anchor_w": [
+    -40.747, 
+    13.923, 
+    2.0939999999999999
+   ], 
+   "offset_ft": [
+    0.80700000000000005, 
+    -0.0, 
+    2.4060000000000001
+   ], 
+   "tgt_anchor_w": [
+    -39.914000000000001, 
+    13.699999999999999, 
+    2.0939999999999999
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 0.0, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9353376, 
+   "anchor_id": 3098900, 
+   "equip_shift_ft": 0.38, 
+   "type": "Duplex Wall - GFCI", 
+   "tgt_dev_xyz": [
+    -48.593000000000004, 
+    2.7839999999999998, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Shelf_Wall_Metro_2Tier_48x18Metroseal_1035443", 
+   "anchor_dist_ft": 0.13, 
+   "src_anchor_w": [
+    -48.088999999999999, 
+    2.7040000000000002, 
+    6.234
+   ], 
+   "offset_ft": [
+    -0.129, 
+    0.0, 
+    -4.734
+   ], 
+   "tgt_anchor_w": [
+    -48.463999999999999, 
+    2.7839999999999998, 
+    6.234
+   ], 
+   "tgt_dev_rot": 0.0
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9353437, 
+   "anchor_id": 3098906, 
+   "equip_shift_ft": 1.0700000000000001, 
+   "type": "Duplex Wall - GFCI", 
+   "tgt_dev_xyz": [
+    -47.363, 
+    13.814, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Shelf_Wall_Metro_2Tier_48x18Metroseal_1035443", 
+   "anchor_dist_ft": 0.23000000000000001, 
+   "src_anchor_w": [
+    -48.655999999999999, 
+    13.923, 
+    6.234
+   ], 
+   "offset_ft": [
+    0.23100000000000001, 
+    -0.0, 
+    -4.734
+   ], 
+   "tgt_anchor_w": [
+    -47.594000000000001, 
+    13.814, 
+    6.234
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9353438, 
+   "anchor_id": 3150895, 
+   "equip_shift_ft": 1.0700000000000001, 
+   "type": "Duplex Wall - GFCI", 
+   "tgt_dev_xyz": [
+    -42.585999999999999, 
+    13.814, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Shelf_Wall_Metro_2Tier_48x18Metroseal_1035443", 
+   "anchor_dist_ft": 0.02, 
+   "src_anchor_w": [
+    -43.630000000000003, 
+    13.923, 
+    6.234
+   ], 
+   "offset_ft": [
+    -0.019, 
+    -0.0, 
+    -4.734
+   ], 
+   "tgt_anchor_w": [
+    -42.567999999999998, 
+    13.814, 
+    6.234
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9353460, 
+   "anchor_id": 3098899, 
+   "equip_shift_ft": 0.46000000000000002, 
+   "type": "Duplex Wall", 
+   "tgt_dev_xyz": [
+    -34.305999999999997, 
+    13.73, 
+    4.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "030_Freezer_2Door_1", 
+   "anchor_dist_ft": 2.4700000000000002, 
+   "src_anchor_w": [
+    -34.466999999999999, 
+    11.464, 
+    0.0
+   ], 
+   "offset_ft": [
+    -0.25600000000000001, 
+    2.4580000000000002, 
+    4.5
+   ], 
+   "tgt_anchor_w": [
+    -34.049999999999997, 
+    11.272, 
+    0.0
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Motor Rated Switch_CED", 
+   "id": 9353551, 
+   "anchor_id": 3098817, 
+   "equip_shift_ft": 1.0600000000000001, 
+   "type": "Motor Rated Switch - 120V, 1 Pole", 
+   "tgt_dev_xyz": [
+    -50.738, 
+    9.4190000000000005, 
+    7.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "Rice Warmers", 
+   "anchor_dist_ft": 3.3700000000000001, 
+   "src_anchor_w": [
+    -50.378, 
+    12.470000000000001, 
+    3.0
+   ], 
+   "offset_ft": [
+    -1.423, 
+    -3.0499999999999998, 
+    4.5
+   ], 
+   "tgt_anchor_w": [
+    -49.314999999999998, 
+    12.470000000000001, 
+    3.0
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9353552, 
+   "anchor_id": 3098884, 
+   "equip_shift_ft": 1.1899999999999999, 
+   "type": "Duplex Wall - GFCI", 
+   "tgt_dev_xyz": [
+    -52.713999999999999, 
+    13.712999999999999, 
+    4.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "HEB_72'' Chef's Base TRBC72_1201714", 
+   "anchor_dist_ft": 1.52, 
+   "src_anchor_w": [
+    -54.347999999999999, 
+    12.492000000000001, 
+    -0.0
+   ], 
+   "offset_ft": [
+    0.46700000000000003, 
+    1.45, 
+    4.5
+   ], 
+   "tgt_anchor_w": [
+    -53.180999999999997, 
+    12.263, 
+    -0.0
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Motor Rated Switch_CED", 
+   "id": 9353554, 
+   "anchor_id": 3098884, 
+   "equip_shift_ft": 1.1899999999999999, 
+   "type": "Motor Rated Switch - 120V, 1 Pole", 
+   "tgt_dev_xyz": [
+    -51.478999999999999, 
+    9.1899999999999995, 
+    7.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "HEB_72'' Chef's Base TRBC72_1201714", 
+   "anchor_dist_ft": 3.5099999999999998, 
+   "src_anchor_w": [
+    -54.347999999999999, 
+    12.492000000000001, 
+    -0.0
+   ], 
+   "offset_ft": [
+    1.702, 
+    -3.073, 
+    7.5
+   ], 
+   "tgt_anchor_w": [
+    -53.180999999999997, 
+    12.263, 
+    -0.0
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9353555, 
+   "anchor_id": 3098884, 
+   "equip_shift_ft": 1.1899999999999999, 
+   "type": "Duplex Wall - GFCI", 
+   "tgt_dev_xyz": [
+    -53.616999999999997, 
+    13.712999999999999, 
+    4.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "HEB_72'' Chef's Base TRBC72_1201714", 
+   "anchor_dist_ft": 1.51, 
+   "src_anchor_w": [
+    -54.347999999999999, 
+    12.492000000000001, 
+    -0.0
+   ], 
+   "offset_ft": [
+    -0.437, 
+    1.45, 
+    4.5
+   ], 
+   "tgt_anchor_w": [
+    -53.180999999999997, 
+    12.263, 
+    -0.0
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 0.0, 
+   "fam": "EF-U_Balanced Power Connector_CED", 
+   "id": 9353557, 
+   "anchor_id": 3098817, 
+   "equip_shift_ft": 1.0600000000000001, 
+   "type": "120V/1P", 
+   "tgt_dev_xyz": [
+    -50.098999999999997, 
+    9.6850000000000005, 
+    7.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "Rice Warmers", 
+   "anchor_dist_ft": 2.8900000000000001, 
+   "src_anchor_w": [
+    -50.378, 
+    12.470000000000001, 
+    3.0
+   ], 
+   "offset_ft": [
+    -0.78400000000000003, 
+    -2.7839999999999998, 
+    4.5
+   ], 
+   "tgt_anchor_w": [
+    -49.314999999999998, 
+    12.470000000000001, 
+    3.0
+   ], 
+   "tgt_dev_rot": 0.0
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 0.0, 
+   "fam": "EF-U_Balanced Power Connector_CED", 
+   "id": 9353558, 
+   "anchor_id": 3098832, 
+   "equip_shift_ft": 2.8500000000000001, 
+   "type": "120V/1P", 
+   "tgt_dev_xyz": [
+    -55.292000000000002, 
+    8.0939999999999994, 
+    7.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Cart_Demo_Sample_1028371", 
+   "anchor_dist_ft": 3.9700000000000002, 
+   "src_anchor_w": [
+    -60.274000000000001, 
+    12.733000000000001, 
+    0.0
+   ], 
+   "offset_ft": [
+    2.7530000000000001, 
+    -2.8660000000000001, 
+    7.5
+   ], 
+   "tgt_anchor_w": [
+    -58.045000000000002, 
+    10.960000000000001, 
+    0.0
+   ], 
+   "tgt_dev_rot": 0.0
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 4.7123889999999999, 
+   "fam": "EF-U_Junction Box_CED", 
+   "id": 9353559, 
+   "anchor_id": 3254556, 
+   "equip_shift_ft": 0.93999999999999995, 
+   "type": "Wall - No Stem", 
+   "tgt_dev_xyz": [
+    -62.948, 
+    11.441000000000001, 
+    7.0
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Mccue_Box_Rail_End_Cap_1210571", 
+   "anchor_dist_ft": 0.19, 
+   "src_anchor_w": [
+    -61.963999999999999, 
+    11.196999999999999, 
+    -0.0
+   ], 
+   "offset_ft": [
+    -0.045999999999999999, 
+    0.18099999999999999, 
+    7.0
+   ], 
+   "tgt_anchor_w": [
+    -62.902000000000001, 
+    11.26, 
+    -0.0
+   ], 
+   "tgt_dev_rot": 4.7123889999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 1.5707960000000001, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9353666, 
+   "anchor_id": 3573612, 
+   "equip_shift_ft": 0.23000000000000001, 
+   "type": "Duplex Wall - GFCI", 
+   "tgt_dev_xyz": [
+    -30.106000000000002, 
+    54.210000000000001, 
+    4.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "003_Bakery_Brush _Kit_1205918", 
+   "anchor_dist_ft": 1.5700000000000001, 
+   "src_anchor_w": [
+    -30.177, 
+    55.563000000000002, 
+    -0.0
+   ], 
+   "offset_ft": [
+    0.0, 
+    -1.5720000000000001, 
+    4.5
+   ], 
+   "tgt_anchor_w": [
+    -30.106000000000002, 
+    55.780999999999999, 
+    -0.0
+   ], 
+   "tgt_dev_rot": 1.5707960000000001
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 4.7123889999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9353696, 
+   "anchor_id": 3185825, 
+   "equip_shift_ft": 0.0, 
+   "type": "Duplex Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    -63.284999999999997, 
+    43.601999999999997, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "HEB_SCALE ISHIDA UNI-10D_1314729", 
+   "anchor_dist_ft": 1.7, 
+   "src_anchor_w": [
+    -64.980999999999995, 
+    43.476999999999997, 
+    4.3490000000000002
+   ], 
+   "offset_ft": [
+    1.696, 
+    0.125, 
+    -2.8490000000000002
+   ], 
+   "tgt_anchor_w": [
+    -64.980999999999995, 
+    43.476999999999997, 
+    4.3490000000000002
+   ], 
+   "tgt_dev_rot": 4.7123889999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9353697, 
+   "anchor_id": 3185848, 
+   "equip_shift_ft": 0.0, 
+   "type": "Cord Drop - 120V/1Ph 2 IG", 
+   "tgt_dev_xyz": [
+    -58.436, 
+    30.678999999999998, 
+    3.6669999999999998
+   ], 
+   "status": "matched", 
+   "anchor_fam": "HEB_SCALE ISHIDA UNI-10D_1314729", 
+   "anchor_dist_ft": 0.66000000000000003, 
+   "src_anchor_w": [
+    -57.771999999999998, 
+    30.678999999999998, 
+    3.0
+   ], 
+   "offset_ft": [
+    -0.66400000000000003, 
+    0.0, 
+    0.66700000000000004
+   ], 
+   "tgt_anchor_w": [
+    -57.771999999999998, 
+    30.678999999999998, 
+    3.0
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 0.0, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9353698, 
+   "anchor_id": 3098884, 
+   "equip_shift_ft": 1.1899999999999999, 
+   "type": "Duplex Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    -52.496000000000002, 
+    14.079000000000001, 
+    3.6669999999999998
+   ], 
+   "status": "matched", 
+   "anchor_fam": "HEB_72'' Chef's Base TRBC72_1201714", 
+   "anchor_dist_ft": 1.9399999999999999, 
+   "src_anchor_w": [
+    -54.347999999999999, 
+    12.492000000000001, 
+    -0.0
+   ], 
+   "offset_ft": [
+    0.68500000000000005, 
+    1.8160000000000001, 
+    3.6669999999999998
+   ], 
+   "tgt_anchor_w": [
+    -53.180999999999997, 
+    12.263, 
+    -0.0
+   ], 
+   "tgt_dev_rot": 0.0
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9353761, 
+   "anchor_id": 3098906, 
+   "equip_shift_ft": 1.0700000000000001, 
+   "type": "Duplex Wall - GFCI", 
+   "tgt_dev_xyz": [
+    -48.090000000000003, 
+    13.814, 
+    4.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Shelf_Wall_Metro_2Tier_48x18Metroseal_1035443", 
+   "anchor_dist_ft": 0.5, 
+   "src_anchor_w": [
+    -48.655999999999999, 
+    13.923, 
+    6.234
+   ], 
+   "offset_ft": [
+    -0.496, 
+    -0.0, 
+    -1.734
+   ], 
+   "tgt_anchor_w": [
+    -47.594000000000001, 
+    13.814, 
+    6.234
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9353762, 
+   "anchor_id": 3098855, 
+   "equip_shift_ft": 1.0700000000000001, 
+   "type": "Duplex Wall - GFCI", 
+   "tgt_dev_xyz": [
+    -49.378, 
+    13.814, 
+    4.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "030_5ft_True_Refrigerator_W_SS_Worktop_True_1029462", 
+   "anchor_dist_ft": 0.72999999999999998, 
+   "src_anchor_w": [
+    -51.167000000000002, 
+    13.923, 
+    0.0
+   ], 
+   "offset_ft": [
+    0.72699999999999998, 
+    -0.0, 
+    4.5
+   ], 
+   "tgt_anchor_w": [
+    -50.104999999999997, 
+    13.814, 
+    0.0
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 0.0, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9353763, 
+   "anchor_id": 3098900, 
+   "equip_shift_ft": 0.38, 
+   "type": "Duplex Wall - GFCI", 
+   "tgt_dev_xyz": [
+    -49.283000000000001, 
+    2.7839999999999998, 
+    4.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Shelf_Wall_Metro_2Tier_48x18Metroseal_1035443", 
+   "anchor_dist_ft": 0.81999999999999995, 
+   "src_anchor_w": [
+    -48.088999999999999, 
+    2.7040000000000002, 
+    6.234
+   ], 
+   "offset_ft": [
+    -0.81899999999999995, 
+    0.0, 
+    -1.734
+   ], 
+   "tgt_anchor_w": [
+    -48.463999999999999, 
+    2.7839999999999998, 
+    6.234
+   ], 
+   "tgt_dev_rot": 0.0
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 0.0, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9353764, 
+   "anchor_id": 3098900, 
+   "equip_shift_ft": 0.38, 
+   "type": "Duplex Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    -47.960000000000001, 
+    2.7839999999999998, 
+    4.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Shelf_Wall_Metro_2Tier_48x18Metroseal_1035443", 
+   "anchor_dist_ft": 0.5, 
+   "src_anchor_w": [
+    -48.088999999999999, 
+    2.7040000000000002, 
+    6.234
+   ], 
+   "offset_ft": [
+    0.504, 
+    0.0, 
+    -1.734
+   ], 
+   "tgt_anchor_w": [
+    -48.463999999999999, 
+    2.7839999999999998, 
+    6.234
+   ], 
+   "tgt_dev_rot": 0.0
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 0.0, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9353765, 
+   "anchor_id": 3098900, 
+   "equip_shift_ft": 0.38, 
+   "type": "Duplex Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    -47.042000000000002, 
+    2.7839999999999998, 
+    4.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Shelf_Wall_Metro_2Tier_48x18Metroseal_1035443", 
+   "anchor_dist_ft": 1.4199999999999999, 
+   "src_anchor_w": [
+    -48.088999999999999, 
+    2.7040000000000002, 
+    6.234
+   ], 
+   "offset_ft": [
+    1.421, 
+    0.0, 
+    -1.734
+   ], 
+   "tgt_anchor_w": [
+    -48.463999999999999, 
+    2.7839999999999998, 
+    6.234
+   ], 
+   "tgt_dev_rot": 0.0
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9397172, 
+   "anchor_id": 3580653, 
+   "equip_shift_ft": 0.45000000000000001, 
+   "type": "Duplex Wall - GFCI Horizontal", 
+   "tgt_dev_xyz": [
+    -37.683, 
+    69.641000000000005, 
+    3.6669999999999998
+   ], 
+   "status": "matched", 
+   "anchor_fam": "003_EZLift Glazer_18x26 Belshaw Glazer_1208571", 
+   "anchor_dist_ft": 7.2800000000000002, 
+   "src_anchor_w": [
+    -38.158999999999999, 
+    62.515999999999998, 
+    -0.0
+   ], 
+   "offset_ft": [
+    0.058999999999999997, 
+    7.282, 
+    3.6669999999999998
+   ], 
+   "tgt_anchor_w": [
+    -37.743000000000002, 
+    62.359999999999999, 
+    -0.0
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9397175, 
+   "anchor_id": 3770839, 
+   "equip_shift_ft": 1.96, 
+   "type": "Duplex Wall - GFCI Horizontal", 
+   "tgt_dev_xyz": [
+    -44.808, 
+    69.817999999999998, 
+    3.6669999999999998
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Shelf_Metro_5Tier_18x48Metroseal_wCasters_1034016", 
+   "anchor_dist_ft": 8.0800000000000001, 
+   "src_anchor_w": [
+    -40.764000000000003, 
+    77.605999999999995, 
+    0.0
+   ], 
+   "offset_ft": [
+    -2.0859999999999999, 
+    -7.8079999999999998, 
+    3.6669999999999998
+   ], 
+   "tgt_anchor_w": [
+    -42.722000000000001, 
+    77.626999999999995, 
+    0.0
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 1.5707960000000001, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9438257, 
+   "anchor_id": 3767209, 
+   "equip_shift_ft": 1.5900000000000001, 
+   "type": "Duplex Wall", 
+   "tgt_dev_xyz": [
+    -30.260999999999999, 
+    24.765999999999998, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Shelf_Metro_5Tier_18x48Metroseal_wCasters_1034016", 
+   "anchor_dist_ft": 1.24, 
+   "src_anchor_w": [
+    -31.474, 
+    23.850999999999999, 
+    0.0
+   ], 
+   "offset_ft": [
+    1.046, 
+    -0.66800000000000004, 
+    1.5
+   ], 
+   "tgt_anchor_w": [
+    -31.306999999999999, 
+    25.434999999999999, 
+    0.0
+   ], 
+   "tgt_dev_rot": 1.5707960000000001
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 1.5707960000000001, 
+   "fam": "EF-U_Junction Box_CED", 
+   "id": 9438701, 
+   "anchor_id": 3767206, 
+   "equip_shift_ft": 0.34999999999999998, 
+   "type": "Wall - No Stem", 
+   "tgt_dev_xyz": [
+    -44.084000000000003, 
+    32.253999999999998, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Shelf_Metro_5Tier_18x48Metroseal_wCasters_1034016", 
+   "anchor_dist_ft": 6.2300000000000004, 
+   "src_anchor_w": [
+    -38.411000000000001, 
+    30.699000000000002, 
+    0.0
+   ], 
+   "offset_ft": [
+    -6.0259999999999998, 
+    1.569, 
+    1.5
+   ], 
+   "tgt_anchor_w": [
+    -38.057000000000002, 
+    30.684999999999999, 
+    0.0
+   ], 
+   "tgt_dev_rot": 1.5707960000000001
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 1.5707960000000001, 
+   "fam": "EF-U_Junction Box_CED", 
+   "id": 9438702, 
+   "anchor_id": 3767206, 
+   "equip_shift_ft": 0.34999999999999998, 
+   "type": "Wall - No Stem", 
+   "tgt_dev_xyz": [
+    -44.084000000000003, 
+    31.744, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Shelf_Metro_5Tier_18x48Metroseal_wCasters_1034016", 
+   "anchor_dist_ft": 6.1200000000000001, 
+   "src_anchor_w": [
+    -38.411000000000001, 
+    30.699000000000002, 
+    0.0
+   ], 
+   "offset_ft": [
+    -6.0259999999999998, 
+    1.0589999999999999, 
+    1.5
+   ], 
+   "tgt_anchor_w": [
+    -38.057000000000002, 
+    30.684999999999999, 
+    0.0
+   ], 
+   "tgt_dev_rot": 1.5707960000000001
+  }
+ ], 
+ "tgt_equip": "00000_Oakmont_v24_HEB_ARCH", 
+ "no_anchor": 0, 
+ "target": "CED_HEB Template_MEPR_R24_OkmntProfCorr", 
+ "src_equip": "Equip", 
+ "ambiguous": 0, 
+ "equip_shift_ft_max": 2.8500000000000001, 
+ "equip_shift_ft_avg": 0.58999999999999997
+}

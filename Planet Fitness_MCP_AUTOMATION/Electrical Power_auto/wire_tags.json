@@ -1,0 +1,475 @@
+{
+  "items": [
+    {
+      "tag_head_position": [
+        118.68271921807649, 
+        79.582303344291034, 
+        0.0
+      ], 
+      "tagged_elements": [
+        {
+          "category": "Wires", 
+          "name": "THWN", 
+          "id": 7815601
+        }
+      ], 
+      "bbox_center": [
+        118.68540169160335, 
+        79.536060075070139, 
+        0.0
+      ], 
+      "class": "IndependentTag", 
+      "tag_text": "L1/25,27,29,31,33,35,37,39,41,43", 
+      "type_id": 4959576, 
+      "instance_params": {
+        "Category": null, 
+        "Family Name": null, 
+        "Family": {
+          "name": "", 
+          "id": 4959576
+        }, 
+        "Type Id": {
+          "name": "", 
+          "id": 4959576
+        }, 
+        "Type Name": null, 
+        "Orientation": 0, 
+        "Leader Type": 0, 
+        "Type": {
+          "name": "", 
+          "id": 4959576
+        }, 
+        "Edited by": "", 
+        "Leader Line": 0, 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 4959576
+        }, 
+        "Angle": "0.00°"
+      }, 
+      "type_params": {
+        "Comments": 0, 
+        "Border Visible": 0, 
+        "Description": 0, 
+        "Keyword(s)": "Electrical", 
+        "Family Name": "E_Tag - Wire", 
+        "Identity Type Mark": 0, 
+        "Edited by": "", 
+        "Circuits": 0, 
+        "Circuit Load Name": 0, 
+        "Category": null, 
+        "Design Option": null, 
+        "Family Name & Type Name": 0, 
+        "Panel & Circuits OverUnder": 0, 
+        "Existing Phase Symbol": 0, 
+        "Border Width": "0' - 0 1/4\"", 
+        "Workset": 8336, 
+        "Type Name": "Homerun - Panel & Circuits - Slash", 
+        "Leader Arrowhead": null, 
+        "Family Version": "20.1.2", 
+        "Circuit Description": 0, 
+        "Comments Long": 0, 
+        "Panel & Circuits Dash": 1, 
+        "Border Height": "0' - 0 3/16\""
+      }, 
+      "has_leader": false, 
+      "type_name": "", 
+      "id": 7815891
+    }, 
+    {
+      "tag_head_position": [
+        136.71078790446387, 
+        80.068264799407828, 
+        0.0
+      ], 
+      "tagged_elements": [
+        {
+          "category": "Wires", 
+          "name": "THWN", 
+          "id": 7815828
+        }
+      ], 
+      "bbox_center": [
+        136.71347037799072, 
+        80.022021530186919, 
+        0.0
+      ], 
+      "class": "IndependentTag", 
+      "tag_text": "L1/26,28,30,32,34,36,38,40,42,44", 
+      "type_id": 4959576, 
+      "instance_params": {
+        "Category": null, 
+        "Family Name": null, 
+        "Family": {
+          "name": "", 
+          "id": 4959576
+        }, 
+        "Type Id": {
+          "name": "", 
+          "id": 4959576
+        }, 
+        "Type Name": null, 
+        "Orientation": 0, 
+        "Leader Type": 0, 
+        "Type": {
+          "name": "", 
+          "id": 4959576
+        }, 
+        "Edited by": "", 
+        "Leader Line": 0, 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 4959576
+        }, 
+        "Angle": "0.00°"
+      }, 
+      "type_params": {
+        "Comments": 0, 
+        "Border Visible": 0, 
+        "Description": 0, 
+        "Keyword(s)": "Electrical", 
+        "Family Name": "E_Tag - Wire", 
+        "Identity Type Mark": 0, 
+        "Edited by": "", 
+        "Circuits": 0, 
+        "Circuit Load Name": 0, 
+        "Category": null, 
+        "Design Option": null, 
+        "Family Name & Type Name": 0, 
+        "Panel & Circuits OverUnder": 0, 
+        "Existing Phase Symbol": 0, 
+        "Border Width": "0' - 0 1/4\"", 
+        "Workset": 8336, 
+        "Type Name": "Homerun - Panel & Circuits - Slash", 
+        "Leader Arrowhead": null, 
+        "Family Version": "20.1.2", 
+        "Circuit Description": 0, 
+        "Comments Long": 0, 
+        "Panel & Circuits Dash": 1, 
+        "Border Height": "0' - 0 3/16\""
+      }, 
+      "has_leader": false, 
+      "type_name": "", 
+      "id": 7815893
+    }, 
+    {
+      "tag_head_position": [
+        119.44315056107686, 
+        125.30112974135595, 
+        0.0
+      ], 
+      "tagged_elements": [
+        {
+          "category": "Wires", 
+          "name": "THWN", 
+          "id": 7815991
+        }
+      ], 
+      "bbox_center": [
+        119.44583303460371, 
+        125.25488647213498, 
+        0.0
+      ], 
+      "class": "IndependentTag", 
+      "tag_text": "L1/1,3,5,7,9,11,13,15,17,19,21,23", 
+      "type_id": 4959576, 
+      "instance_params": {
+        "Category": null, 
+        "Family Name": null, 
+        "Family": {
+          "name": "", 
+          "id": 4959576
+        }, 
+        "Type Id": {
+          "name": "", 
+          "id": 4959576
+        }, 
+        "Type Name": null, 
+        "Orientation": 0, 
+        "Leader Type": 0, 
+        "Type": {
+          "name": "", 
+          "id": 4959576
+        }, 
+        "Edited by": "", 
+        "Leader Line": 0, 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 4959576
+        }, 
+        "Angle": "0.00°"
+      }, 
+      "type_params": {
+        "Comments": 0, 
+        "Border Visible": 0, 
+        "Description": 0, 
+        "Keyword(s)": "Electrical", 
+        "Family Name": "E_Tag - Wire", 
+        "Identity Type Mark": 0, 
+        "Edited by": "", 
+        "Circuits": 0, 
+        "Circuit Load Name": 0, 
+        "Category": null, 
+        "Design Option": null, 
+        "Family Name & Type Name": 0, 
+        "Panel & Circuits OverUnder": 0, 
+        "Existing Phase Symbol": 0, 
+        "Border Width": "0' - 0 1/4\"", 
+        "Workset": 8336, 
+        "Type Name": "Homerun - Panel & Circuits - Slash", 
+        "Leader Arrowhead": null, 
+        "Family Version": "20.1.2", 
+        "Circuit Description": 0, 
+        "Comments Long": 0, 
+        "Panel & Circuits Dash": 1, 
+        "Border Height": "0' - 0 3/16\""
+      }, 
+      "has_leader": false, 
+      "type_name": "", 
+      "id": 7816037
+    }, 
+    {
+      "tag_head_position": [
+        135.82223216505372, 
+        125.30112974135594, 
+        0.0
+      ], 
+      "tagged_elements": [
+        {
+          "category": "Wires", 
+          "name": "THWN", 
+          "id": 7816149
+        }
+      ], 
+      "bbox_center": [
+        135.82491463858059, 
+        125.25488647213498, 
+        0.0
+      ], 
+      "class": "IndependentTag", 
+      "tag_text": "L1/2,4,6,8,10,12,14,16,18,20,22,24", 
+      "type_id": 4959576, 
+      "instance_params": {
+        "Category": null, 
+        "Family Name": null, 
+        "Family": {
+          "name": "", 
+          "id": 4959576
+        }, 
+        "Type Id": {
+          "name": "", 
+          "id": 4959576
+        }, 
+        "Type Name": null, 
+        "Orientation": 0, 
+        "Leader Type": 0, 
+        "Type": {
+          "name": "", 
+          "id": 4959576
+        }, 
+        "Edited by": "", 
+        "Leader Line": 0, 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 4959576
+        }, 
+        "Angle": "0.00°"
+      }, 
+      "type_params": {
+        "Comments": 0, 
+        "Border Visible": 0, 
+        "Description": 0, 
+        "Keyword(s)": "Electrical", 
+        "Family Name": "E_Tag - Wire", 
+        "Identity Type Mark": 0, 
+        "Edited by": "", 
+        "Circuits": 0, 
+        "Circuit Load Name": 0, 
+        "Category": null, 
+        "Design Option": null, 
+        "Family Name & Type Name": 0, 
+        "Panel & Circuits OverUnder": 0, 
+        "Existing Phase Symbol": 0, 
+        "Border Width": "0' - 0 1/4\"", 
+        "Workset": 8336, 
+        "Type Name": "Homerun - Panel & Circuits - Slash", 
+        "Leader Arrowhead": null, 
+        "Family Version": "20.1.2", 
+        "Circuit Description": 0, 
+        "Comments Long": 0, 
+        "Panel & Circuits Dash": 1, 
+        "Border Height": "0' - 0 3/16\""
+      }, 
+      "has_leader": false, 
+      "type_name": "", 
+      "id": 7816193
+    }, 
+    {
+      "tag_head_position": [
+        144.52788874794092, 
+        137.03090161737268, 
+        0.0
+      ], 
+      "tagged_elements": [
+        {
+          "category": "Wires", 
+          "name": "THWN", 
+          "id": 7837403
+        }
+      ], 
+      "bbox_center": [
+        144.53057122146777, 
+        136.98465834815175, 
+        0.0
+      ], 
+      "class": "IndependentTag", 
+      "tag_text": "L2/1,3,5,7,9,11,13,15", 
+      "type_id": 4959576, 
+      "instance_params": {
+        "Category": null, 
+        "Family Name": null, 
+        "Family": {
+          "name": "", 
+          "id": 4959576
+        }, 
+        "Type Id": {
+          "name": "", 
+          "id": 4959576
+        }, 
+        "Type Name": null, 
+        "Orientation": 0, 
+        "Leader Type": 0, 
+        "Type": {
+          "name": "", 
+          "id": 4959576
+        }, 
+        "Edited by": "", 
+        "Leader Line": 0, 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 4959576
+        }, 
+        "Angle": "0.00°"
+      }, 
+      "type_params": {
+        "Comments": 0, 
+        "Border Visible": 0, 
+        "Description": 0, 
+        "Keyword(s)": "Electrical", 
+        "Family Name": "E_Tag - Wire", 
+        "Identity Type Mark": 0, 
+        "Edited by": "", 
+        "Circuits": 0, 
+        "Circuit Load Name": 0, 
+        "Category": null, 
+        "Design Option": null, 
+        "Family Name & Type Name": 0, 
+        "Panel & Circuits OverUnder": 0, 
+        "Existing Phase Symbol": 0, 
+        "Border Width": "0' - 0 1/4\"", 
+        "Workset": 8336, 
+        "Type Name": "Homerun - Panel & Circuits - Slash", 
+        "Leader Arrowhead": null, 
+        "Family Version": "20.1.2", 
+        "Circuit Description": 0, 
+        "Comments Long": 0, 
+        "Panel & Circuits Dash": 1, 
+        "Border Height": "0' - 0 3/16\""
+      }, 
+      "has_leader": false, 
+      "type_name": "", 
+      "id": 7837417
+    }, 
+    {
+      "tag_head_position": [
+        90.044497505380761, 
+        161.55576961612147, 
+        0.0
+      ], 
+      "tagged_elements": [
+        {
+          "category": "Wires", 
+          "name": "THWN", 
+          "id": 7940318
+        }
+      ], 
+      "bbox_center": [
+        90.04717997890765, 
+        161.50952634690054, 
+        0.0
+      ], 
+      "class": "IndependentTag", 
+      "tag_text": "L2/42", 
+      "type_id": 4959576, 
+      "instance_params": {
+        "Category": null, 
+        "Family Name": null, 
+        "Family": {
+          "name": "", 
+          "id": 4959576
+        }, 
+        "Type Id": {
+          "name": "", 
+          "id": 4959576
+        }, 
+        "Type Name": null, 
+        "Orientation": 0, 
+        "Leader Type": 0, 
+        "Type": {
+          "name": "", 
+          "id": 4959576
+        }, 
+        "Edited by": "", 
+        "Leader Line": 0, 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 4959576
+        }, 
+        "Angle": "0.00°"
+      }, 
+      "type_params": {
+        "Comments": 0, 
+        "Border Visible": 0, 
+        "Description": 0, 
+        "Keyword(s)": "Electrical", 
+        "Family Name": "E_Tag - Wire", 
+        "Identity Type Mark": 0, 
+        "Edited by": "", 
+        "Circuits": 0, 
+        "Circuit Load Name": 0, 
+        "Category": null, 
+        "Design Option": null, 
+        "Family Name & Type Name": 0, 
+        "Panel & Circuits OverUnder": 0, 
+        "Existing Phase Symbol": 0, 
+        "Border Width": "0' - 0 1/4\"", 
+        "Workset": 8336, 
+        "Type Name": "Homerun - Panel & Circuits - Slash", 
+        "Leader Arrowhead": null, 
+        "Family Version": "20.1.2", 
+        "Circuit Description": 0, 
+        "Comments Long": 0, 
+        "Panel & Circuits Dash": 1, 
+        "Border Height": "0' - 0 3/16\""
+      }, 
+      "has_leader": false, 
+      "type_name": "", 
+      "id": 7940319
+    }
+  ], 
+  "view_name": "E101 - Power Plan", 
+  "view_id": 2243920, 
+  "count": 6
+}

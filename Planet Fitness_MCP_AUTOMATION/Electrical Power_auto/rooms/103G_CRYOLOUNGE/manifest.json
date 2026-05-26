@@ -1,0 +1,40 @@
+{
+  "last_shift": {
+    "note": "user-confirmed: fixtures should sit near relative corner of each bay", 
+    "dy_ft": -2.3333333333333335
+  }, 
+  "fixtures": [
+    {
+      "id": 8222001, 
+      "room": "103G", 
+      "load": "CRYOLOUNGE - 103", 
+      "wall": "E", 
+      "type": "Duplex Wall", 
+      "y": -283.83333333333331, 
+      "x": 269.42899999999997
+    }, 
+    {
+      "id": 8222002, 
+      "room": "103G", 
+      "load": "CRYOLOUNGE - 103", 
+      "wall": "E", 
+      "type": "Duplex Wall", 
+      "y": -290.33333333333331, 
+      "x": 269.42899999999997
+    }, 
+    {
+      "id": 8222018, 
+      "load": "CRYOLOUNGE - 103", 
+      "type": "Non-Fused - 30A", 
+      "y": -296.33333333333331, 
+      "x": 269.30000000000001
+    }, 
+    {
+      "id": 8222019, 
+      "load": "CRYOLOUNGE - 103", 
+      "type": "Non-Fused - 30A", 
+      "y": -302.33333333333331, 
+      "x": 269.30000000000001
+    }
+  ]
+}

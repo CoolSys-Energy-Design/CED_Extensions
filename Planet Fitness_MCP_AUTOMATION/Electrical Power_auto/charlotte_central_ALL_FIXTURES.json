@@ -1,0 +1,1589 @@
+{
+  "fixtures": [
+    {
+      "loc": [
+        -208.41999999999999, 
+        -1064.1199999999999, 
+        -100.0
+      ], 
+      "fam": "EF-U_Disconnect Switch_CED", 
+      "level": 1678189, 
+      "id": 2246909, 
+      "type": "Fused - 200A", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -208.41999999999999, 
+        -1066.73, 
+        -100.0
+      ], 
+      "fam": "EF-U_Disconnect Switch_CED", 
+      "level": 1678189, 
+      "id": 2246914, 
+      "type": "Combination Starter - 200A", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -209.72999999999999, 
+        -1058.4400000000001, 
+        -100.0
+      ], 
+      "fam": "EF-U_Junction Box_CED", 
+      "level": 1678189, 
+      "id": 2246919, 
+      "type": "Wall - With Stem", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -207.90000000000001, 
+        -1057.7, 
+        -100.0
+      ], 
+      "fam": "EF-U_Junction Box_CED", 
+      "level": 1678189, 
+      "id": 2246920, 
+      "type": "Ceiling", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -206.08000000000001, 
+        -1057.7, 
+        -100.0
+      ], 
+      "fam": "EF-U_Junction Box_CED", 
+      "level": 1678189, 
+      "id": 2246921, 
+      "type": "Floor", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -207.56, 
+        -1074.76, 
+        -100.0
+      ], 
+      "fam": "EF-U_Motor Rated Switch_CED", 
+      "level": 1678189, 
+      "id": 2246928, 
+      "type": "Motor Rated Switch - 120V, 1 Pole", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -207.90000000000001, 
+        -1024.1199999999999, 
+        -100.0
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 1678189, 
+      "id": 2246931, 
+      "type": "Duplex Ceiling", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -206.08000000000001, 
+        -1024.1199999999999, 
+        -100.0
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 1678189, 
+      "id": 2246933, 
+      "type": "Duplex Floor", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -209.72999999999999, 
+        -1024.9100000000001, 
+        -100.0
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 1678189, 
+      "id": 2246934, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -208.90000000000001, 
+        -1049.4100000000001, 
+        -100.0
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 1678189, 
+      "id": 2246935, 
+      "type": "Duplex Wall - Controlled", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -208.90000000000001, 
+        -1051.97, 
+        -100.0
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 1678189, 
+      "id": 2246936, 
+      "type": "Duplex Wall - Emergency", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -208.90000000000001, 
+        -1046.3299999999999, 
+        -100.0
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 1678189, 
+      "id": 2246937, 
+      "type": "Duplex Wall - GFCI", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -208.90000000000001, 
+        -1055.1700000000001, 
+        -100.0
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 1678189, 
+      "id": 2246938, 
+      "type": "Duplex Wall - Isolated Ground", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -207.90000000000001, 
+        -1026.28, 
+        -100.0
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 1678189, 
+      "id": 2246939, 
+      "type": "Quad Ceiling", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -206.08000000000001, 
+        -1026.28, 
+        -100.0
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 1678189, 
+      "id": 2246940, 
+      "type": "Quad Floor", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -209.72999999999999, 
+        -1027.0699999999999, 
+        -100.0
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 1678189, 
+      "id": 2246942, 
+      "type": "Quad Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -206.91999999999999, 
+        -1051.97, 
+        -100.0
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 1678189, 
+      "id": 2246943, 
+      "type": "Quad Wall - Emergency", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -206.91999999999999, 
+        -1046.3299999999999, 
+        -100.0
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 1678189, 
+      "id": 2246944, 
+      "type": "Quad Wall - GFCI", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -206.91999999999999, 
+        -1055.1700000000001, 
+        -100.0
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 1678189, 
+      "id": 2246945, 
+      "type": "Quad Wall - Isolated Ground", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -207.90000000000001, 
+        -1036.0999999999999, 
+        -100.0
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 1678189, 
+      "id": 2246946, 
+      "type": "Specialty Ceiling - 208V/1Ph", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -206.08000000000001, 
+        -1036.0999999999999, 
+        -100.0
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 1678189, 
+      "id": 2246947, 
+      "type": "Specialty Floor - 208V/1Ph", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -209.72999999999999, 
+        -1036.8900000000001, 
+        -100.0
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 1678189, 
+      "id": 2246948, 
+      "type": "Specialty Wall - 208V/1Ph", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -208.41999999999999, 
+        -1061.4400000000001, 
+        -100.0
+      ], 
+      "fam": "EF-U_Disconnect Switch_CED", 
+      "level": 1678189, 
+      "id": 2250261, 
+      "type": "Non-Fused - 200A", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -207.90000000000001, 
+        -1021.96, 
+        -100.0
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 1678189, 
+      "id": 2250464, 
+      "type": "Simplex Ceiling", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -206.08000000000001, 
+        -1021.96, 
+        -100.0
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 1678189, 
+      "id": 2250465, 
+      "type": "Simplex Floor", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -209.72999999999999, 
+        -1022.84, 
+        -100.0
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 1678189, 
+      "id": 2250466, 
+      "type": "Simplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -206.91999999999999, 
+        -1049.4100000000001, 
+        -100.0
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 1678189, 
+      "id": 2251115, 
+      "type": "Quad Wall - Controlled", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -207.56, 
+        -1079.98, 
+        -94.0
+      ], 
+      "fam": "EF-U_Cord Reel_CED", 
+      "level": 1678189, 
+      "id": 2254446, 
+      "type": "Cord Reel - JBox", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -207.90000000000001, 
+        -1038.27, 
+        -100.0
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 1678189, 
+      "id": 2941984, 
+      "type": "Specialty Ceiling - 208V/3Ph", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -206.08000000000001, 
+        -1038.27, 
+        -100.0
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 1678189, 
+      "id": 2941985, 
+      "type": "Specialty Floor - 208V/3Ph", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -209.72999999999999, 
+        -1039.05, 
+        -100.0
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 1678189, 
+      "id": 2941986, 
+      "type": "Specialty Wall - 208V/3Ph", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -209.09, 
+        -1112.2, 
+        -100.0
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 1678189, 
+      "id": 2992405, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -208.78, 
+        -1119.47, 
+        -100.0
+      ], 
+      "fam": "EF-U_Motor Connection_CED", 
+      "level": 1678189, 
+      "id": 2992734, 
+      "type": "Ceiling - No Switch", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -207.56, 
+        -1083.48, 
+        -94.0
+      ], 
+      "fam": "EF-U_Cord Reel_CED", 
+      "level": 1678189, 
+      "id": 3010154, 
+      "type": "Drop Cord - Duplex", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -207.56, 
+        -1077.26, 
+        -100.0
+      ], 
+      "fam": "EF-U_Motor Rated Switch_CED", 
+      "level": 1678189, 
+      "id": 3297989, 
+      "type": "Motor Rated Switch - 208V, 2 Pole", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -148.72, 
+        -1074.05, 
+        -100.0
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 1678189, 
+      "id": 3330612, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -148.72, 
+        -1069.55, 
+        -100.0
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 1678189, 
+      "id": 3330700, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -148.72, 
+        -1071.8, 
+        -100.0
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 1678189, 
+      "id": 3330754, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -207.71000000000001, 
+        -1087.3399999999999, 
+        -96.5
+      ], 
+      "fam": "EF-U_Plug Strip_CED", 
+      "level": 1678189, 
+      "id": 3367077, 
+      "type": "zSymbol Legend - Plugstrip", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -208.19999999999999, 
+        -1099.51, 
+        -96.0
+      ], 
+      "fam": "EF-U_General Electrical Box_CED", 
+      "level": 1678189, 
+      "id": 3369004, 
+      "type": "Push Button - Wall Rectangle", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -208.19999999999999, 
+        -1102.8399999999999, 
+        -96.0
+      ], 
+      "fam": "EF-U_General Electrical Box_CED", 
+      "level": 1678189, 
+      "id": 3387496, 
+      "type": "Emergency Power Off Button", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -207.56, 
+        -1095.4300000000001, 
+        -96.0
+      ], 
+      "fam": "EF-U_General Electrical Box_CED", 
+      "level": 1678189, 
+      "id": 3396984, 
+      "type": "EMS - Energy Meter", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -207.56, 
+        -1092.01, 
+        -96.0
+      ], 
+      "fam": "EF-U_General Electrical Box_CED", 
+      "level": 1678189, 
+      "id": 3397476, 
+      "type": "Floor Box", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        61.399999999999999, 
+        -151.84, 
+        1.5
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8097954, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        61.399999999999999, 
+        -111.84, 
+        1.5
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8097955, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        34.359999999999999, 
+        -131.84, 
+        1.5
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8097956, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        34.359999999999999, 
+        -91.840000000000003, 
+        1.5
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8097957, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        34.359999999999999, 
+        -51.840000000000003, 
+        1.5
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8097958, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        34.359999999999999, 
+        -164.34, 
+        1.5
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8097959, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        56.399999999999999, 
+        -88.040000000000006, 
+        1.5
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8097965, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        61.399999999999999, 
+        -83.859999999999999, 
+        1.5
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8097966, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        58.25, 
+        -78.040000000000006, 
+        1.5
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8097967, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        51.399999999999999, 
+        -83.859999999999999, 
+        1.5
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8097968, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        56.399999999999999, 
+        -67.439999999999998, 
+        1.5
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8097969, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        51.399999999999999, 
+        -71.510000000000005, 
+        1.5
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8097970, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        57.399999999999999, 
+        -77.439999999999998, 
+        1.5
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8097971, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        61.399999999999999, 
+        -73.019999999999996, 
+        1.5
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8097972, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -11.83, 
+        -183.18000000000001, 
+        1.5
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8097975, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -11.83, 
+        -208.18000000000001, 
+        1.5
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8097977, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -25.129999999999999, 
+        -231.77000000000001, 
+        1.5
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8097978, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -38.869999999999997, 
+        -220.68000000000001, 
+        1.5
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8097979, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -38.869999999999997, 
+        -195.68000000000001, 
+        1.5
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8097980, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        -38.869999999999997, 
+        -170.68000000000001, 
+        1.5
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8097981, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        49.670000000000002, 
+        -120.59, 
+        27.0
+      ], 
+      "fam": "EF-U_Disconnect Switch_CED", 
+      "level": 1678422, 
+      "id": 8098640, 
+      "type": "Non-Fused - 60A", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        68.140000000000001, 
+        -217.34999999999999, 
+        27.0
+      ], 
+      "fam": "EF-U_Disconnect Switch_CED", 
+      "level": 1678422, 
+      "id": 8098641, 
+      "type": "Non-Fused - 60A", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        77.349999999999994, 
+        -259.22000000000003, 
+        27.0
+      ], 
+      "fam": "EF-U_Disconnect Switch_CED", 
+      "level": 1678422, 
+      "id": 8098642, 
+      "type": "Non-Fused - 60A", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        106.75, 
+        -241.19999999999999, 
+        27.0
+      ], 
+      "fam": "EF-U_Disconnect Switch_CED", 
+      "level": 1678422, 
+      "id": 8098643, 
+      "type": "Non-Fused - 60A", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        181.61000000000001, 
+        -205.19, 
+        27.0
+      ], 
+      "fam": "EF-U_Disconnect Switch_CED", 
+      "level": 1678422, 
+      "id": 8098644, 
+      "type": "Non-Fused - 60A", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        211.09999999999999, 
+        -239.25999999999999, 
+        27.0
+      ], 
+      "fam": "EF-U_Disconnect Switch_CED", 
+      "level": 1678422, 
+      "id": 8098645, 
+      "type": "Non-Fused - 60A", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        172.88999999999999, 
+        -291.0, 
+        27.0
+      ], 
+      "fam": "EF-U_Disconnect Switch_CED", 
+      "level": 1678422, 
+      "id": 8098646, 
+      "type": "Non-Fused - 60A", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        77.090000000000003, 
+        -287.27999999999997, 
+        27.0
+      ], 
+      "fam": "EF-U_Disconnect Switch_CED", 
+      "level": 1678422, 
+      "id": 8098647, 
+      "type": "Non-Fused - 60A", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        128.84, 
+        -290.64999999999998, 
+        27.5
+      ], 
+      "fam": "EF-U_Motor Rated Switch_CED", 
+      "level": 1678422, 
+      "id": 8098683, 
+      "type": "Motor Rated Switch - 120V, 1 Pole", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        149.59, 
+        -290.64999999999998, 
+        27.5
+      ], 
+      "fam": "EF-U_Motor Rated Switch_CED", 
+      "level": 1678422, 
+      "id": 8098802, 
+      "type": "Motor Rated Switch - 120V, 1 Pole", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        258.02999999999997, 
+        -275.25, 
+        27.5
+      ], 
+      "fam": "EF-U_Motor Rated Switch_CED", 
+      "level": 1678422, 
+      "id": 8098922, 
+      "type": "Motor Rated Switch - 120V, 1 Pole", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        257.61000000000001, 
+        -289.38999999999999, 
+        27.5
+      ], 
+      "fam": "EF-U_Motor Rated Switch_CED", 
+      "level": 1678422, 
+      "id": 8099231, 
+      "type": "Motor Rated Switch - 120V, 1 Pole", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        127.7, 
+        -291.80000000000001, 
+        25.5
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 1678422, 
+      "id": 8099509, 
+      "type": "Duplex Wall - GFCI", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        148.44999999999999, 
+        -291.80000000000001, 
+        25.5
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 1678422, 
+      "id": 8099642, 
+      "type": "Duplex Wall - GFCI", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        211.09999999999999, 
+        -241.06, 
+        25.5
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 1678422, 
+      "id": 8100069, 
+      "type": "Duplex Wall - GFCI", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        257.14999999999998, 
+        -276.13, 
+        25.5
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 1678422, 
+      "id": 8100077, 
+      "type": "Duplex Wall - GFCI", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        256.45999999999998, 
+        -290.48000000000002, 
+        25.5
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 1678422, 
+      "id": 8100085, 
+      "type": "Duplex Wall - GFCI", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        181.61000000000001, 
+        -207.34999999999999, 
+        25.5
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 1678422, 
+      "id": 8100095, 
+      "type": "Duplex Wall - GFCI", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        106.79000000000001, 
+        -243.84, 
+        25.5
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 1678422, 
+      "id": 8100103, 
+      "type": "Duplex Wall - GFCI", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        68.129999999999995, 
+        -218.84999999999999, 
+        25.5
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 1678422, 
+      "id": 8100111, 
+      "type": "Duplex Wall - GFCI", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        49.670000000000002, 
+        -122.64, 
+        25.5
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 1678422, 
+      "id": 8100121, 
+      "type": "Duplex Wall - GFCI", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        77.349999999999994, 
+        -261.64999999999998, 
+        25.5
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 1678422, 
+      "id": 8100129, 
+      "type": "Duplex Wall - GFCI", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        77.090000000000003, 
+        -288.85000000000002, 
+        25.5
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 1678422, 
+      "id": 8100209, 
+      "type": "Duplex Wall - GFCI", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        172.88999999999999, 
+        -293.29000000000002, 
+        25.5
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 1678422, 
+      "id": 8200873, 
+      "type": "Duplex Wall - GFCI", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        164.00999999999999, 
+        -230.37, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221708, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        151.18000000000001, 
+        -230.21000000000001, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221709, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        147.74000000000001, 
+        -253.08000000000001, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221710, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        170.84, 
+        -241.41, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221711, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        180.24000000000001, 
+        -221.87, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221712, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        164.37, 
+        -219.18000000000001, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221713, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        174.56999999999999, 
+        -217.97999999999999, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221714, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        140.93000000000001, 
+        -253.08000000000001, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221715, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        144.34, 
+        -253.08000000000001, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221716, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        151.16, 
+        -253.08000000000001, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221717, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        147.74000000000001, 
+        -241.28, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221718, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        151.16, 
+        -241.28, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221719, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        140.91, 
+        -241.28, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221720, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        144.31999999999999, 
+        -241.28, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221721, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        137.49000000000001, 
+        -241.28, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221722, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        194.74000000000001, 
+        -241.28, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221723, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        187.91, 
+        -241.28, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221724, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        191.31999999999999, 
+        -241.28, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221725, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        181.06999999999999, 
+        -241.28, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221726, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        184.49000000000001, 
+        -241.28, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221727, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        174.24000000000001, 
+        -241.28, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221728, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        177.66, 
+        -241.28, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221729, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        194.74000000000001, 
+        -253.08000000000001, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221730, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        187.91, 
+        -253.08000000000001, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221731, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        191.31999999999999, 
+        -253.08000000000001, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221732, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        181.06999999999999, 
+        -253.08000000000001, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221733, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        184.49000000000001, 
+        -253.08000000000001, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221734, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        174.24000000000001, 
+        -253.08000000000001, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221735, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        177.66, 
+        -253.08000000000001, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221736, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        167.41, 
+        -253.08000000000001, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221737, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        170.81999999999999, 
+        -253.08000000000001, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221738, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        160.56999999999999, 
+        -253.08000000000001, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221739, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        163.99000000000001, 
+        -253.08000000000001, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221740, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        167.43000000000001, 
+        -241.41, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221741, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        164.00999999999999, 
+        -241.41, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221742, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        160.59, 
+        -241.41, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221743, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        174.25, 
+        -230.08000000000001, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221744, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        170.83000000000001, 
+        -230.08000000000001, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221745, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        167.41999999999999, 
+        -230.08000000000001, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221746, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        160.59, 
+        -230.37, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221747, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        191.33000000000001, 
+        -230.08000000000001, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221748, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        177.66999999999999, 
+        -230.08000000000001, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221749, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        180.66999999999999, 
+        -230.08000000000001, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221750, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        186.66999999999999, 
+        -230.08000000000001, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221751, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }, 
+    {
+      "loc": [
+        183.66999999999999, 
+        -230.08000000000001, 
+        3.8300000000000001
+      ], 
+      "fam": "EF-U_Receptacle_CED", 
+      "level": 30, 
+      "id": 8221752, 
+      "type": "Duplex Wall", 
+      "owner_view": -1
+    }
+  ], 
+  "n": 132
+}

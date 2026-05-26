@@ -1,0 +1,3486 @@
+{
+  "items": [
+    {
+      "family": "", 
+      "bbox_center": [
+        106.3843767695171, 
+        13.953124999999925, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "7", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        107.47481582859335, 
+        13.953124999999927, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7792657
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        106.36504983607438, 
+        17.842028586745009, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "7", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        107.47481582859338, 
+        18.385571467716314, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7792660
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        96.0181831045644, 
+        22.435721124806875, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "8", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        95.193975058018765, 
+        22.646755960789719, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7792663
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        102.30738892139163, 
+        41.934921948547597, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "16", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        102.30738892139163, 
+        41.934921948547604, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7792672
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        98.990497526650032, 
+        41.934921948547611, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "16", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        98.990497526650032, 
+        41.934921948547625, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7792675
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        89.763827966011547, 
+        150.37435019459951, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "11", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        90.714282912716286, 
+        150.00165487111883, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7792678
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        95.902268285774895, 
+        17.174812046202735, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "11", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        95.193975058018765, 
+        17.412436268104781, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7792681
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        78.677083333333329, 
+        87.124999999999972, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        78.677083333333329, 
+        87.125, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7792698
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        78.677083333333329, 
+        87.124999999999972, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        78.677083333333329, 
+        87.125, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7792699
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        78.677083333333329, 
+        87.124999999999972, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        78.677083333333329, 
+        87.125, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7792700
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        78.677083333333329, 
+        87.124999999999972, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        78.677083333333329, 
+        87.125, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7792701
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        121.97478804682515, 
+        52.423587966735866, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "19", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        121.40226893825049, 
+        51.637727190957207, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7792718
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        104.55829971869656, 
+        2.7245628192009761, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "11", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        103.8140475748329, 
+        2.9597578911332061, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7792731
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        100.22458696727296, 
+        37.195411851582961, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "11", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        100.99049752665002, 
+        37.478205111948839, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7792734
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        73.027306899099756, 
+        59.011371016792758, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "5", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        73.027306899099756, 
+        59.011371016792772, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7792737
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        75.209922177803463, 
+        40.678784001566157, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "4", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        75.209922177803463, 
+        40.678784001566171, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7792740
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        75.084024836953034, 
+        15.493041805198795, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "4", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        75.084024836953034, 
+        15.493041805198796, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7792743
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        70.477860301058456, 
+        21.045238430925316, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "4", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        70.477860301058456, 
+        21.045238430925323, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7792746
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        70.477860301058456, 
+        31.045238430925313, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "4", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        70.477860301058456, 
+        31.045238430925323, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7792749
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        86.692526611524983, 
+        40.091947075639766, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "11", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        85.895760533951318, 
+        40.041717747995243, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7792752
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        86.423214552507133, 
+        45.669731248359511, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "5", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        86.423214552507133, 
+        45.669731248359518, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7792761
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        92.926875962652787, 
+        66.468750000000028, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "5", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        92.926875962652787, 
+        66.468750000000043, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7792764
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        73.656711404039243, 
+        51.754538232252088, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "5", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        73.656711404039243, 
+        51.754538232252095, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7792767
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        70.42802174246863, 
+        67.645023681102259, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "5", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        70.42802174246863, 
+        67.645023681102288, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7792770
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        92.504688401633686, 
+        61.675759171665753, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "5", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        92.504688401633686, 
+        61.675759171665774, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7792776
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        94.844406533548963, 
+        41.93492194854764, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "16", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        94.844406533548963, 
+        41.934921948547654, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7792782
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        81.259750274216501, 
+        127.93021781443905, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 7775379, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 7775379
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 7775379
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 7775379
+        }, 
+        "CED-G-NOTE #": "1", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 7775379
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        80.002921203192429, 
+        128.52358620355119, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square - Typical", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 1, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7792787
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        81.543580988697414, 
+        123.95675744190522, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 7775379, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 7775379
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 7775379
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 7775379
+        }, 
+        "CED-G-NOTE #": "3", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 7775379
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        80.002921203192429, 
+        124.55012583101737, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square - Typical", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 1, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7792794
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        80.292070304089847, 
+        131.82082903062934, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "2", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        79.611825806220651, 
+        131.84596836772386, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7792795
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        73.477860301058456, 
+        47.046763287851903, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "5", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        73.477860301058456, 
+        47.04676328785191, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7792829
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        94.151041666666671, 
+        9.6041666666666714, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "9", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        94.151041666666671, 
+        9.6041666666666714, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7792832
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        122.40329662675302, 
+        96.933836441012915, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "13", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        123.40226893825049, 
+        96.655463245808534, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7792837
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        108.01103711153894, 
+        114.50132493580138, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "12", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        108.01103711153894, 
+        114.50132493580142, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7792845
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        152.27684072840526, 
+        124.4868553953637, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "14", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        153.11580733252367, 
+        124.65048564541306, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7792856
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        89.681592675258855, 
+        79.558645421641842, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "11", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        90.504688401633686, 
+        79.887198597946565, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7792871
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        163.96808602431048, 
+        161.75747797442602, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "11", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        163.35220127395706, 
+        161.39391550898176, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7792874
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        121.97478804682515, 
+        90.399169109075928, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "19", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        121.40226893825049, 
+        89.613308333297283, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7834202
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        80.292070304089847, 
+        118.67809207271183, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "2", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        79.611825806220651, 
+        118.70323140980635, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7834213
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        81.43084702509303, 
+        109.03438448110572, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 7775379, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 7775379
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 7775379
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 7775379
+        }, 
+        "CED-G-NOTE #": "1", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 7775379
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        80.0029212031924, 
+        109.62775287021786, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square - Typical", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 1, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7834222
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        81.510408238781906, 
+        105.0609241085719, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 7775379, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 7775379
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 7775379
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 7775379
+        }, 
+        "CED-G-NOTE #": "3", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 7775379
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        80.0029212031924, 
+        105.65429249768404, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square - Typical", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 1, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7834223
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        80.292070304089819, 
+        100.31937284360018, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "2", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        79.611825806220622, 
+        100.34451218069469, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7834224
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        80.292070304089862, 
+        113.03709293352235, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "2", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        79.611825806220665, 
+        113.06223227061686, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7834225
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        100.75566072906066, 
+        133.36439336310582, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 7775379, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 7775379
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 7775379
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 7775379
+        }, 
+        "CED-G-NOTE #": "1", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 7775379
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        99.629273654776156, 
+        133.79735653576603, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square - Typical", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 1, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7834240
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        99.643834533321723, 
+        87.203765257101196, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 7775379, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 7775379
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 7775379
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 7775379
+        }, 
+        "CED-G-NOTE #": "1", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 7775379
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        98.517447459037214, 
+        87.636728429761405, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square - Typical", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 1, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7834241
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        190.60959106004861, 
+        77.812348991180585, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "17", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        189.98760968050118, 
+        78.016105725809012, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7837298
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        190.60959106004856, 
+        23.200777386073874, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "18", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        189.98760968050109, 
+        23.404534120702309, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7837301
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        134.90838476125799, 
+        102.71943001789879, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "20", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        135.51587334802153, 
+        102.37900860848191, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7881475
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        135.04819136006964, 
+        67.107579926495532, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "20", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        135.87953258391249, 
+        66.915878500036996, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7888851
+    }, 
+    {
+      "family": "", 
+      "bbox_center": [
+        122.403296626753, 
+        63.948548021456389, 
+        3.9999999999999987
+      ], 
+      "class": "AnnotationSymbol", 
+      "type": "", 
+      "type_id": 6755033, 
+      "tagged_element_ids": null, 
+      "instance_params": {
+        "Category": null, 
+        "Level": null, 
+        "Volume": null, 
+        "Family": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Family Name": null, 
+        "Type Id": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "VIEW TYPE": "", 
+        "Host Id": null, 
+        "CED-G-NOTE TEXT": "XXXX", 
+        "Type Name": null, 
+        "Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "CED-G-NOTE #": "13", 
+        "CED-G-TEXT VISIBILITY": 0, 
+        "CED-G-SHEET #/DISCIPLINE": "", 
+        "Edited by": "", 
+        "Workset": 4500, 
+        "Design Option": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 6755033
+        }, 
+        "Area": null
+      }, 
+      "location_point": [
+        123.40226893825047, 
+        63.670174826251994, 
+        4.0
+      ], 
+      "type_params": {
+        "Category": null, 
+        "dev-Group ID": "", 
+        "CED-G-HEXAGON V": 0, 
+        "Type Name": "Square", 
+        "CED-G-SQUARE": 1, 
+        "CED-G-HEXAGON": 0, 
+        "CED-G-DIAMOND": 0, 
+        "Leader Arrowhead": {
+          "name": "", 
+          "id": 6755032
+        }, 
+        "Workset": 32292, 
+        "Edited by": "", 
+        "Design Option": null, 
+        "Typical": 0, 
+        "CED-G-CIRCLE": 0, 
+        "Family Name": "Manual Key Note- All Shapes"
+      }, 
+      "category": "Generic Annotations", 
+      "id": 7918699
+    }
+  ], 
+  "view_name": "E101 - Power Plan", 
+  "view_id": 2243920, 
+  "count": 49
+}

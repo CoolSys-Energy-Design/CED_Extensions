@@ -1,0 +1,461 @@
+{
+ "view": "Power Callouts - PHARMACY", 
+ "elements": [
+  {
+   "head": [
+    192.17679999999999, 
+    -40.813800000000001, 
+    1.5
+   ], 
+   "rotation": 0.0, 
+   "type": "Elevation (Inches)", 
+   "tagged_id": 9353525, 
+   "id": 10662625, 
+   "tagged_category": "Electrical Fixtures", 
+   "tag_text": "18\"", 
+   "offset_from_host": [
+    1.3332999999999999, 
+    0.0, 
+    -0.0
+   ], 
+   "leader_end": null, 
+   "has_leader": true, 
+   "tag_family": "EF-Tag_Electrical Fixtures_CED", 
+   "leader_elbow": null, 
+   "leader_end_condition": "Attached", 
+   "orientation": "Horizontal", 
+   "tagged_family": "EF-U_Receptacle_CED"
+  }, 
+  {
+   "head": [
+    192.17679999999999, 
+    -39.397199999999998, 
+    1.5
+   ], 
+   "rotation": 0.0, 
+   "type": "Elevation (Inches)", 
+   "tagged_id": 9353530, 
+   "id": 10662626, 
+   "tagged_category": "Electrical Fixtures", 
+   "tag_text": "18\"", 
+   "offset_from_host": [
+    1.3332999999999999, 
+    0.0, 
+    -0.0
+   ], 
+   "leader_end": null, 
+   "has_leader": true, 
+   "tag_family": "EF-Tag_Electrical Fixtures_CED", 
+   "leader_elbow": null, 
+   "leader_end_condition": "Attached", 
+   "orientation": "Horizontal", 
+   "tagged_family": "EF-U_Receptacle_CED"
+  }, 
+  {
+   "head": [
+    192.17679999999999, 
+    -41.6907, 
+    1.5
+   ], 
+   "rotation": 0.0, 
+   "type": "Elevation (Inches)", 
+   "tagged_id": 9353535, 
+   "id": 10662627, 
+   "tagged_category": "Electrical Fixtures", 
+   "tag_text": "18\"", 
+   "offset_from_host": [
+    1.3332999999999999, 
+    0.0, 
+    -0.0
+   ], 
+   "leader_end": null, 
+   "has_leader": true, 
+   "tag_family": "EF-Tag_Electrical Fixtures_CED", 
+   "leader_elbow": null, 
+   "leader_end_condition": "Attached", 
+   "orientation": "Horizontal", 
+   "tagged_family": "EF-U_Receptacle_CED"
+  }, 
+  {
+   "head": [
+    192.17679999999999, 
+    -42.5518, 
+    1.5
+   ], 
+   "rotation": 0.0, 
+   "type": "Elevation (Inches)", 
+   "tagged_id": 9353529, 
+   "id": 10662628, 
+   "tagged_category": "Electrical Fixtures", 
+   "tag_text": "18\"", 
+   "offset_from_host": [
+    1.3332999999999999, 
+    0.0, 
+    -0.0
+   ], 
+   "leader_end": null, 
+   "has_leader": true, 
+   "tag_family": "EF-Tag_Electrical Fixtures_CED", 
+   "leader_elbow": null, 
+   "leader_end_condition": "Attached", 
+   "orientation": "Horizontal", 
+   "tagged_family": "EF-U_Receptacle_CED"
+  }, 
+  {
+   "head": [
+    192.17679999999999, 
+    -43.415500000000002, 
+    1.5
+   ], 
+   "rotation": 0.0, 
+   "type": "Elevation (Inches)", 
+   "tagged_id": 9353527, 
+   "id": 10662629, 
+   "tagged_category": "Electrical Fixtures", 
+   "tag_text": "18\"", 
+   "offset_from_host": [
+    1.3332999999999999, 
+    0.0, 
+    -0.0
+   ], 
+   "leader_end": null, 
+   "has_leader": true, 
+   "tag_family": "EF-Tag_Electrical Fixtures_CED", 
+   "leader_elbow": null, 
+   "leader_end_condition": "Attached", 
+   "orientation": "Horizontal", 
+   "tagged_family": "EF-U_Receptacle_CED"
+  }, 
+  {
+   "head": [
+    192.15989999999999, 
+    -46.306100000000001, 
+    1.5
+   ], 
+   "rotation": 0.0, 
+   "type": "Elevation (Inches)", 
+   "tagged_id": 9353537, 
+   "id": 10662630, 
+   "tagged_category": "Electrical Fixtures", 
+   "tag_text": "18\"", 
+   "offset_from_host": [
+    1.3332999999999999, 
+    0.0, 
+    -0.0
+   ], 
+   "leader_end": null, 
+   "has_leader": true, 
+   "tag_family": "EF-Tag_Electrical Fixtures_CED", 
+   "leader_elbow": null, 
+   "leader_end_condition": "Attached", 
+   "orientation": "Horizontal", 
+   "tagged_family": "EF-U_Receptacle_CED"
+  }, 
+  {
+   "head": [
+    192.15989999999999, 
+    -47.722799999999999, 
+    1.5
+   ], 
+   "rotation": 0.0, 
+   "type": "Elevation (Inches)", 
+   "tagged_id": 9353526, 
+   "id": 10662632, 
+   "tagged_category": "Electrical Fixtures", 
+   "tag_text": "18\"", 
+   "offset_from_host": [
+    1.3332999999999999, 
+    0.0, 
+    -0.0
+   ], 
+   "leader_end": null, 
+   "has_leader": true, 
+   "tag_family": "EF-Tag_Electrical Fixtures_CED", 
+   "leader_elbow": null, 
+   "leader_end_condition": "Attached", 
+   "orientation": "Horizontal", 
+   "tagged_family": "EF-U_Receptacle_CED"
+  }, 
+  {
+   "head": [
+    189.47739999999999, 
+    -31.133400000000002, 
+    4.5
+   ], 
+   "rotation": 0.0, 
+   "type": "Elevation (Inches)", 
+   "tagged_id": 9353000, 
+   "id": 10662635, 
+   "tagged_category": "Electrical Fixtures", 
+   "tag_text": "54\"", 
+   "offset_from_host": [
+    -0.020799999999999999, 
+    1.1718999999999999, 
+    -0.0
+   ], 
+   "leader_end": null, 
+   "has_leader": true, 
+   "tag_family": "EF-Tag_Electrical Fixtures_CED", 
+   "leader_elbow": null, 
+   "leader_end_condition": "Attached", 
+   "orientation": "Horizontal", 
+   "tagged_family": "EF-U_Receptacle_CED"
+  }, 
+  {
+   "head": [
+    188.22739999999999, 
+    -31.133400000000002, 
+    4.5
+   ], 
+   "rotation": 0.0, 
+   "type": "Elevation (Inches)", 
+   "tagged_id": 9352999, 
+   "id": 10662636, 
+   "tagged_category": "Electrical Fixtures", 
+   "tag_text": "54\"", 
+   "offset_from_host": [
+    -0.020799999999999999, 
+    1.1718999999999999, 
+    -0.0
+   ], 
+   "leader_end": null, 
+   "has_leader": true, 
+   "tag_family": "EF-Tag_Electrical Fixtures_CED", 
+   "leader_elbow": null, 
+   "leader_end_condition": "Attached", 
+   "orientation": "Horizontal", 
+   "tagged_family": "EF-U_Receptacle_CED"
+  }, 
+  {
+   "head": [
+    187.14410000000001, 
+    -31.133400000000002, 
+    4.5
+   ], 
+   "rotation": 0.0, 
+   "type": "Elevation (Inches)", 
+   "tagged_id": 9352997, 
+   "id": 10662638, 
+   "tagged_category": "Electrical Fixtures", 
+   "tag_text": "54\"", 
+   "offset_from_host": [
+    -0.020799999999999999, 
+    1.1718999999999999, 
+    -0.0
+   ], 
+   "leader_end": null, 
+   "has_leader": true, 
+   "tag_family": "EF-Tag_Electrical Fixtures_CED", 
+   "leader_elbow": null, 
+   "leader_end_condition": "Attached", 
+   "orientation": "Horizontal", 
+   "tagged_family": "EF-U_Receptacle_CED"
+  }, 
+  {
+   "head": [
+    184.16669999999999, 
+    -31.2544, 
+    4.5
+   ], 
+   "rotation": 0.0, 
+   "type": "Elevation (Inches)", 
+   "tagged_id": 9374459, 
+   "id": 10662850, 
+   "tagged_category": "Electrical Fixtures", 
+   "tag_text": "54\"", 
+   "offset_from_host": [
+    -0.041700000000000001, 
+    1.0417000000000001, 
+    -0.0
+   ], 
+   "leader_end": null, 
+   "has_leader": true, 
+   "tag_family": "EF-Tag_Electrical Fixtures_CED", 
+   "leader_elbow": null, 
+   "leader_end_condition": "Attached", 
+   "orientation": "Horizontal", 
+   "tagged_family": "EF-U_Receptacle_CED"
+  }, 
+  {
+   "head": [
+    182.25, 
+    -31.2544, 
+    4.5
+   ], 
+   "rotation": 0.0, 
+   "type": "Elevation (Inches)", 
+   "tagged_id": 9352937, 
+   "id": 10662852, 
+   "tagged_category": "Electrical Fixtures", 
+   "tag_text": "54\"", 
+   "offset_from_host": [
+    -0.041700000000000001, 
+    1.0417000000000001, 
+    -0.0
+   ], 
+   "leader_end": null, 
+   "has_leader": true, 
+   "tag_family": "EF-Tag_Electrical Fixtures_CED", 
+   "leader_elbow": null, 
+   "leader_end_condition": "Attached", 
+   "orientation": "Horizontal", 
+   "tagged_family": "EF-U_Receptacle_CED"
+  }, 
+  {
+   "head": [
+    192.09350000000001, 
+    -54.531399999999998, 
+    4.0
+   ], 
+   "rotation": 0.0, 
+   "type": "Elevation (Inches)", 
+   "tagged_id": 9352943, 
+   "id": 10662856, 
+   "tagged_category": "Electrical Fixtures", 
+   "tag_text": "48\"", 
+   "offset_from_host": [
+    1.25, 
+    0.0, 
+    -0.0
+   ], 
+   "leader_end": null, 
+   "has_leader": true, 
+   "tag_family": "EF-Tag_Electrical Fixtures_CED", 
+   "leader_elbow": null, 
+   "leader_end_condition": "Attached", 
+   "orientation": "Horizontal", 
+   "tagged_family": "EF-U_Receptacle_CED"
+  }, 
+  {
+   "head": [
+    192.09350000000001, 
+    -58.5319, 
+    4.0
+   ], 
+   "rotation": 0.0, 
+   "type": "Elevation (Inches)", 
+   "tagged_id": 9352940, 
+   "id": 10662858, 
+   "tagged_category": "Electrical Fixtures", 
+   "tag_text": "48\"", 
+   "offset_from_host": [
+    1.25, 
+    0.0, 
+    -0.0
+   ], 
+   "leader_end": null, 
+   "has_leader": true, 
+   "tag_family": "EF-Tag_Electrical Fixtures_CED", 
+   "leader_elbow": null, 
+   "leader_end_condition": "Attached", 
+   "orientation": "Horizontal", 
+   "tagged_family": "EF-U_Receptacle_CED"
+  }, 
+  {
+   "head": [
+    192.00829999999999, 
+    -61.743099999999998, 
+    4.0
+   ], 
+   "rotation": 0.0, 
+   "type": "Elevation (Inches)", 
+   "tagged_id": 9352935, 
+   "id": 10662952, 
+   "tagged_category": "Electrical Fixtures", 
+   "tag_text": "48\"", 
+   "offset_from_host": [
+    1.1832, 
+    -0.0028999999999999998, 
+    -0.0
+   ], 
+   "leader_end": null, 
+   "has_leader": true, 
+   "tag_family": "EF-Tag_Electrical Fixtures_CED", 
+   "leader_elbow": null, 
+   "leader_end_condition": "Attached", 
+   "orientation": "Horizontal", 
+   "tagged_family": "EF-U_Receptacle_CED"
+  }, 
+  {
+   "head": [
+    197.1832, 
+    16.583500000000001, 
+    7.5
+   ], 
+   "rotation": 0.0, 
+   "type": "Panel & Circuit Number", 
+   "tagged_id": 9408913, 
+   "id": 10665931, 
+   "tagged_category": "Electrical Fixtures", 
+   "tag_text": "PH-3", 
+   "offset_from_host": [
+    -1.4148000000000001, 
+    0.0, 
+    -0.0
+   ], 
+   "leader_end": null, 
+   "has_leader": false, 
+   "tag_family": "EF-Tag_Electrical Fixtures_CED", 
+   "leader_elbow": null, 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_family": "EF-U_Receptacle_CED"
+  }, 
+  {
+   "head": [
+    213.18770000000001, 
+    18.083500000000001, 
+    7.5
+   ], 
+   "rotation": 0.0, 
+   "type": "Panel & Circuit Number", 
+   "tagged_id": 9408899, 
+   "id": 10665933, 
+   "tagged_category": "Electrical Fixtures", 
+   "tag_text": "PH-5", 
+   "offset_from_host": [
+    -1.401, 
+    0.0, 
+    -0.0
+   ], 
+   "leader_end": null, 
+   "has_leader": false, 
+   "tag_family": "EF-Tag_Electrical Fixtures_CED", 
+   "leader_elbow": null, 
+   "leader_end_condition": null, 
+   "orientation": "Horizontal", 
+   "tagged_family": "EF-U_Receptacle_CED"
+  }, 
+  {
+   "head": [
+    164.67310000000001, 
+    -73.844499999999996, 
+    6.0
+   ], 
+   "rotation": 0.0, 
+   "type": "Elevation (Inches)", 
+   "tagged_id": 9353360, 
+   "id": 10832407, 
+   "tagged_category": "Electrical Fixtures", 
+   "tag_text": "72\"", 
+   "offset_from_host": [
+    -1.8864000000000001, 
+    0.88490000000000002, 
+    -0.0
+   ], 
+   "leader_end": null, 
+   "has_leader": true, 
+   "tag_family": "EF-Tag_Electrical Fixtures_CED", 
+   "leader_elbow": [
+    166.166, 
+    -73.8416, 
+    6.0
+   ], 
+   "leader_end_condition": "Attached", 
+   "orientation": "Horizontal", 
+   "tagged_family": "EF-U_Receptacle_CED"
+  }
+ ], 
+ "source_doc": "RunUpdateProfilesHEBCarrollton95PercentCLOUDMODEL", 
+ "count": 18
+}

@@ -1,0 +1,104 @@
+{
+  "distribution": "N/S/W walls per user image", 
+  "fixtures": [
+    {
+      "y": -245.19499999999999, 
+      "type": "Duplex Wall", 
+      "load": "CHECK-IN RECEPT", 
+      "room": "102", 
+      "id": 8221942, 
+      "wall": "N", 
+      "x": 237.0
+    }, 
+    {
+      "y": -245.19499999999999, 
+      "type": "Duplex Wall", 
+      "load": "CHECK-IN RECEPT", 
+      "room": "102", 
+      "id": 8221943, 
+      "wall": "N", 
+      "x": 241.0
+    }, 
+    {
+      "y": -263.97399999999999, 
+      "type": "Duplex Wall", 
+      "load": "CHECK-IN RECEPT", 
+      "room": "102", 
+      "id": 8221944, 
+      "wall": "S", 
+      "x": 247.0
+    }, 
+    {
+      "y": -263.97399999999999, 
+      "type": "Duplex Wall", 
+      "load": "TMAX RECEPT", 
+      "room": "102", 
+      "id": 8221945, 
+      "wall": "S", 
+      "x": 252.0
+    }, 
+    {
+      "y": -263.97399999999999, 
+      "type": "Duplex Wall", 
+      "load": "TMAX RECEPT", 
+      "room": "102", 
+      "id": 8221946, 
+      "wall": "S", 
+      "x": 256.0
+    }, 
+    {
+      "y": -263.97399999999999, 
+      "type": "Duplex Wall", 
+      "load": "TMAX RECEPT", 
+      "room": "102", 
+      "id": 8221947, 
+      "wall": "S", 
+      "x": 260.0
+    }, 
+    {
+      "y": -263.97399999999999, 
+      "type": "Duplex Wall", 
+      "load": "TV - DIGITAL MEDIA", 
+      "room": "102", 
+      "id": 8221948, 
+      "wall": "S", 
+      "x": 264.0
+    }, 
+    {
+      "y": -248.0, 
+      "type": "Duplex Wall", 
+      "load": "ROOM", 
+      "room": "102", 
+      "id": 8221949, 
+      "wall": "W", 
+      "x": 230.47200000000001
+    }, 
+    {
+      "y": -250.0, 
+      "type": "Duplex Wall", 
+      "load": "ROOM", 
+      "room": "102", 
+      "id": 8221950, 
+      "wall": "W", 
+      "x": 230.47200000000001
+    }, 
+    {
+      "y": -252.0, 
+      "type": "Duplex Wall", 
+      "load": "ROOM", 
+      "room": "102", 
+      "id": 8221951, 
+      "wall": "W", 
+      "x": 230.47200000000001
+    }, 
+    {
+      "y": -246.0, 
+      "type": "Quad Wall", 
+      "load": "IT RACK", 
+      "room": "102", 
+      "id": 8221952, 
+      "wall": "W", 
+      "x": 230.47200000000001
+    }
+  ]
+}

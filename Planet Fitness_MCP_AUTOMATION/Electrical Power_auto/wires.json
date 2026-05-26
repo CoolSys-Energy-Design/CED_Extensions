@@ -1,0 +1,727 @@
+{
+  "items": [
+    {
+      "instance_params": {
+        "Comments": null, 
+        "Tick Marks": 0, 
+        "Neutral Conductors": 1, 
+        "IfcGUID": "3KLr3QH6PAzwdPA1S5Br_U", 
+        "Ground Conductors": 1, 
+        "Image": null, 
+        "Appears in Schedule": 0, 
+        "Export to IFC As": null, 
+        "Family Name": null, 
+        "Edited by": "", 
+        "IFC Predefined Type": null, 
+        "Wiring Visibility_CED": 0, 
+        "Circuits": "25,27,29,31,33,35,37,39,41,43", 
+        "Export to IFC": 0, 
+        "Circuit Load Name": "TREADMILL,TREADMILL,TREADMILL,TREADMILL,TREADMILL,TREADMILL,TREADMILL,TREADMILL,TREADMILL,TREADMILL", 
+        "Type Id": {
+          "name": "", 
+          "id": 784886
+        }, 
+        "Category": null, 
+        "Design Option": null, 
+        "Phase Symbol": null, 
+        "Identity Mark": null, 
+        "Mark": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 784886
+        }, 
+        "Workset": 4500, 
+        "Type Name": null, 
+        "Panel": "L1", 
+        "Circuit Description": "120V-1P/20A,120V-1P/20A,120V-1P/20A,120V-1P/20A,120V-1P/20A,120V-1P/20A,120V-1P/20A,120V-1P/20A,120V-1P/20A,120V-1P/20A", 
+        "Switched Wire": 0, 
+        "Family": {
+          "name": "", 
+          "id": 784886
+        }, 
+        "Wire Size": "10-#6, 1-#6, 1-#6", 
+        "Hot Conductors": 10, 
+        "Type": {
+          "name": "", 
+          "id": 784886
+        }
+      }, 
+      "id": 7815601, 
+      "type_id": 784886, 
+      "vertices": [
+        [
+          119.65542996780596, 
+          66.012665347248841, 
+          0.0
+        ], 
+        [
+          121.52546113337594, 
+          67.56393472029032, 
+          0.0
+        ], 
+        [
+          121.05961392505432, 
+          77.879292222581384, 
+          0.0
+        ]
+      ], 
+      "wiring_type": "Arc", 
+      "type_name": "THWN", 
+      "type_params": {
+        "Type IfcGUID": "1ypltef2j2Kg6fDpxy$sDo", 
+        "Model": null, 
+        "Type Image": null, 
+        "Description": null, 
+        "Share Neutral Conductor": 1, 
+        "Cost": null, 
+        "Export Type to IFC": 0, 
+        "Keyword(s)": null, 
+        "Neutral Multiplier": "1", 
+        "Export Type to IFC As": null, 
+        "Family Name": "Wire Types", 
+        "Identity Type Mark": null, 
+        "Insulation": {
+          "name": "", 
+          "id": 134052
+        }, 
+        "Assembly Description": "", 
+        "Edited by": "", 
+        "Manufacturer": null, 
+        "Type Mark": null, 
+        "Keynote": null, 
+        "Category": null, 
+        "Share Ground Conductor": 1, 
+        "Max Size": "600", 
+        "Design Option": null, 
+        "Identity Label Separator": null, 
+        "Temperature Rating": {
+          "name": "", 
+          "id": 134063
+        }, 
+        "Conduit Type": "Non-Magnetic", 
+        "Neutral Size": 0, 
+        "Workset": 70, 
+        "Type Comments": null, 
+        "Type Name": "THWN", 
+        "Type IFC Predefined Type": null, 
+        "Neutral Included in Balanced Load": 0, 
+        "URL": null, 
+        "Material": {
+          "name": "", 
+          "id": 134032
+        }, 
+        "Assembly Code": ""
+      }, 
+      "category": "Wires", 
+      "circuits": [
+        {
+          "name": "31", 
+          "id": 7792977
+        }
+      ]
+    }, 
+    {
+      "instance_params": {
+        "Comments": null, 
+        "Tick Marks": 0, 
+        "Neutral Conductors": 1, 
+        "IfcGUID": "3KLr3QH6PAzwdPA1S5Brox", 
+        "Ground Conductors": 1, 
+        "Image": null, 
+        "Appears in Schedule": 0, 
+        "Export to IFC As": null, 
+        "Family Name": null, 
+        "Edited by": "", 
+        "IFC Predefined Type": null, 
+        "Wiring Visibility_CED": 0, 
+        "Circuits": "26,28,30,32,34,36,38,40,42,44", 
+        "Export to IFC": 0, 
+        "Circuit Load Name": "POWERED BIKE,POWERED BIKE,TREADMILL,TREADMILL,TREADMILL,TREADMILL,TREADMILL,TREADMILL,TREADMILL,TREADMILL", 
+        "Type Id": {
+          "name": "", 
+          "id": 784886
+        }, 
+        "Category": null, 
+        "Design Option": null, 
+        "Phase Symbol": null, 
+        "Identity Mark": null, 
+        "Mark": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 784886
+        }, 
+        "Workset": 4500, 
+        "Type Name": null, 
+        "Panel": "L1", 
+        "Circuit Description": "120V-1P/20A,120V-1P/20A,120V-1P/20A,120V-1P/20A,120V-1P/20A,120V-1P/20A,120V-1P/20A,120V-1P/20A,120V-1P/20A,120V-1P/20A", 
+        "Switched Wire": 0, 
+        "Family": {
+          "name": "", 
+          "id": 784886
+        }, 
+        "Wire Size": "10-#6, 1-#6, 1-#6", 
+        "Hot Conductors": 10, 
+        "Type": {
+          "name": "", 
+          "id": 784886
+        }
+      }, 
+      "id": 7815828, 
+      "type_id": 784886, 
+      "vertices": [
+        [
+          133.1973304401354, 
+          68.887740427981868, 
+          0.0
+        ], 
+        [
+          137.01419562136155, 
+          69.189749490283631, 
+          0.0
+        ], 
+        [
+          136.81522397692834, 
+          78.307269776951358, 
+          0.0
+        ]
+      ], 
+      "wiring_type": "Arc", 
+      "type_name": "THWN", 
+      "type_params": {
+        "Type IfcGUID": "1ypltef2j2Kg6fDpxy$sDo", 
+        "Model": null, 
+        "Type Image": null, 
+        "Description": null, 
+        "Share Neutral Conductor": 1, 
+        "Cost": null, 
+        "Export Type to IFC": 0, 
+        "Keyword(s)": null, 
+        "Neutral Multiplier": "1", 
+        "Export Type to IFC As": null, 
+        "Family Name": "Wire Types", 
+        "Identity Type Mark": null, 
+        "Insulation": {
+          "name": "", 
+          "id": 134052
+        }, 
+        "Assembly Description": "", 
+        "Edited by": "", 
+        "Manufacturer": null, 
+        "Type Mark": null, 
+        "Keynote": null, 
+        "Category": null, 
+        "Share Ground Conductor": 1, 
+        "Max Size": "600", 
+        "Design Option": null, 
+        "Identity Label Separator": null, 
+        "Temperature Rating": {
+          "name": "", 
+          "id": 134063
+        }, 
+        "Conduit Type": "Non-Magnetic", 
+        "Neutral Size": 0, 
+        "Workset": 70, 
+        "Type Comments": null, 
+        "Type Name": "THWN", 
+        "Type IFC Predefined Type": null, 
+        "Neutral Included in Balanced Load": 0, 
+        "URL": null, 
+        "Material": {
+          "name": "", 
+          "id": 134032
+        }, 
+        "Assembly Code": ""
+      }, 
+      "category": "Wires", 
+      "circuits": [
+        {
+          "name": "26", 
+          "id": 7792995
+        }
+      ]
+    }, 
+    {
+      "instance_params": {
+        "Comments": null, 
+        "Tick Marks": 0, 
+        "Neutral Conductors": 1, 
+        "IfcGUID": "3KLr3QH6PAzwdPA1S5BrqO", 
+        "Ground Conductors": 1, 
+        "Image": null, 
+        "Appears in Schedule": 0, 
+        "Export to IFC As": null, 
+        "Family Name": null, 
+        "Edited by": "", 
+        "IFC Predefined Type": null, 
+        "Wiring Visibility_CED": 0, 
+        "Circuits": "1,3,5,7,9,11,13,15,17,19,21,23", 
+        "Export to IFC": 0, 
+        "Circuit Load Name": "STAIRMASTER,STAIRMASTER,TREADMILL,STAIRMASTER,STAIRMASTER,STAIRMASTER,STAIRMASTER,STAIRMASTER,STAIRMASTER,STAIRMASTER,STAIRMASTER,TREADMILL", 
+        "Type Id": {
+          "name": "", 
+          "id": 784886
+        }, 
+        "Category": null, 
+        "Design Option": null, 
+        "Phase Symbol": null, 
+        "Identity Mark": null, 
+        "Mark": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 784886
+        }, 
+        "Workset": 4500, 
+        "Type Name": null, 
+        "Panel": "L1", 
+        "Circuit Description": "120V-1P/20A,120V-1P/20A,120V-1P/20A,120V-1P/20A,120V-1P/20A,120V-1P/20A,120V-1P/20A,120V-1P/20A,120V-1P/20A,120V-1P/20A,120V-1P/20A,120V-1P/20A", 
+        "Switched Wire": 0, 
+        "Family": {
+          "name": "", 
+          "id": 784886
+        }, 
+        "Wire Size": "12-#8, 1-#8, 1-#8", 
+        "Hot Conductors": 12, 
+        "Type": {
+          "name": "", 
+          "id": 784886
+        }
+      }, 
+      "id": 7815991, 
+      "type_id": 784886, 
+      "vertices": [
+        [
+          119.86756617822509, 
+          98.305911885321706, 
+          0.0
+        ], 
+        [
+          122.01060101605351, 
+          102.86205065453193, 
+          0.0
+        ], 
+        [
+          122.36879362145787, 
+          123.38289127456686, 
+          0.0
+        ]
+      ], 
+      "wiring_type": "Arc", 
+      "type_name": "THWN", 
+      "type_params": {
+        "Type IfcGUID": "1ypltef2j2Kg6fDpxy$sDo", 
+        "Model": null, 
+        "Type Image": null, 
+        "Description": null, 
+        "Share Neutral Conductor": 1, 
+        "Cost": null, 
+        "Export Type to IFC": 0, 
+        "Keyword(s)": null, 
+        "Neutral Multiplier": "1", 
+        "Export Type to IFC As": null, 
+        "Family Name": "Wire Types", 
+        "Identity Type Mark": null, 
+        "Insulation": {
+          "name": "", 
+          "id": 134052
+        }, 
+        "Assembly Description": "", 
+        "Edited by": "", 
+        "Manufacturer": null, 
+        "Type Mark": null, 
+        "Keynote": null, 
+        "Category": null, 
+        "Share Ground Conductor": 1, 
+        "Max Size": "600", 
+        "Design Option": null, 
+        "Identity Label Separator": null, 
+        "Temperature Rating": {
+          "name": "", 
+          "id": 134063
+        }, 
+        "Conduit Type": "Non-Magnetic", 
+        "Neutral Size": 0, 
+        "Workset": 70, 
+        "Type Comments": null, 
+        "Type Name": "THWN", 
+        "Type IFC Predefined Type": null, 
+        "Neutral Included in Balanced Load": 0, 
+        "URL": null, 
+        "Material": {
+          "name": "", 
+          "id": 134032
+        }, 
+        "Assembly Code": ""
+      }, 
+      "category": "Wires", 
+      "circuits": [
+        {
+          "name": "3", 
+          "id": 7792976
+        }
+      ]
+    }, 
+    {
+      "instance_params": {
+        "Comments": null, 
+        "Tick Marks": 0, 
+        "Neutral Conductors": 1, 
+        "IfcGUID": "3KLr3QH6PAzwdPA1S5Brtw", 
+        "Ground Conductors": 1, 
+        "Image": null, 
+        "Appears in Schedule": 0, 
+        "Export to IFC As": null, 
+        "Family Name": null, 
+        "Edited by": "", 
+        "IFC Predefined Type": null, 
+        "Wiring Visibility_CED": 0, 
+        "Circuits": "2,4,6,8,10,12,14,16,18,20,22,24", 
+        "Export to IFC": 0, 
+        "Circuit Load Name": "TREADMILL,TREADMILL,POWERED BIKE,POWERED BIKE,TREADMILL,TREADMILL,TREADMILL,TREADMILL,TREADMILL,TREADMILL,TREADMILL,TREADMILL", 
+        "Type Id": {
+          "name": "", 
+          "id": 784886
+        }, 
+        "Category": null, 
+        "Design Option": null, 
+        "Phase Symbol": null, 
+        "Identity Mark": null, 
+        "Mark": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 784886
+        }, 
+        "Workset": 4500, 
+        "Type Name": null, 
+        "Panel": "L1", 
+        "Circuit Description": "120V-1P/20A,120V-1P/20A,120V-1P/20A,120V-1P/20A,120V-1P/20A,120V-1P/20A,120V-1P/20A,120V-1P/20A,120V-1P/20A,120V-1P/20A,120V-1P/20A,120V-1P/20A", 
+        "Switched Wire": 0, 
+        "Family": {
+          "name": "", 
+          "id": 784886
+        }, 
+        "Wire Size": "2-#6, 10-#8, 1-#6, 1-#6", 
+        "Hot Conductors": 12, 
+        "Type": {
+          "name": "", 
+          "id": 784886
+        }
+      }, 
+      "id": 7816149, 
+      "type_id": 784886, 
+      "vertices": [
+        [
+          132.8830626918411, 
+          105.1733588070244, 
+          0.0
+        ], 
+        [
+          135.58277476720232, 
+          106.23755126548463, 
+          0.0
+        ], 
+        [
+          135.28374886446841, 
+          123.36873375971587, 
+          0.0
+        ]
+      ], 
+      "wiring_type": "Arc", 
+      "type_name": "THWN", 
+      "type_params": {
+        "Type IfcGUID": "1ypltef2j2Kg6fDpxy$sDo", 
+        "Model": null, 
+        "Type Image": null, 
+        "Description": null, 
+        "Share Neutral Conductor": 1, 
+        "Cost": null, 
+        "Export Type to IFC": 0, 
+        "Keyword(s)": null, 
+        "Neutral Multiplier": "1", 
+        "Export Type to IFC As": null, 
+        "Family Name": "Wire Types", 
+        "Identity Type Mark": null, 
+        "Insulation": {
+          "name": "", 
+          "id": 134052
+        }, 
+        "Assembly Description": "", 
+        "Edited by": "", 
+        "Manufacturer": null, 
+        "Type Mark": null, 
+        "Keynote": null, 
+        "Category": null, 
+        "Share Ground Conductor": 1, 
+        "Max Size": "600", 
+        "Design Option": null, 
+        "Identity Label Separator": null, 
+        "Temperature Rating": {
+          "name": "", 
+          "id": 134063
+        }, 
+        "Conduit Type": "Non-Magnetic", 
+        "Neutral Size": 0, 
+        "Workset": 70, 
+        "Type Comments": null, 
+        "Type Name": "THWN", 
+        "Type IFC Predefined Type": null, 
+        "Neutral Included in Balanced Load": 0, 
+        "URL": null, 
+        "Material": {
+          "name": "", 
+          "id": 134032
+        }, 
+        "Assembly Code": ""
+      }, 
+      "category": "Wires", 
+      "circuits": [
+        {
+          "name": "20", 
+          "id": 7792984
+        }
+      ]
+    }, 
+    {
+      "instance_params": {
+        "Comments": null, 
+        "Tick Marks": 0, 
+        "Neutral Conductors": 1, 
+        "IfcGUID": "1nVZKBtuD2nQF3O412IpuS", 
+        "Ground Conductors": 1, 
+        "Image": null, 
+        "Appears in Schedule": 0, 
+        "Export to IFC As": null, 
+        "Family Name": null, 
+        "Edited by": "", 
+        "IFC Predefined Type": null, 
+        "Wiring Visibility_CED": 0, 
+        "Circuits": "1,3,5,7,9,11,13,15", 
+        "Export to IFC": 0, 
+        "Circuit Load Name": "TV TRUSS,TV TRUSS,TV TRUSS,TV TRUSS,TV TRUSS,TV TRUSS,TV TRUSS,TV TRUSS", 
+        "Type Id": {
+          "name": "", 
+          "id": 784886
+        }, 
+        "Category": null, 
+        "Design Option": null, 
+        "Phase Symbol": null, 
+        "Identity Mark": null, 
+        "Mark": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 784886
+        }, 
+        "Workset": 4500, 
+        "Type Name": null, 
+        "Panel": "L2", 
+        "Circuit Description": "120V-1P/20A,120V-1P/20A,120V-1P/20A,120V-1P/20A,120V-1P/20A,120V-1P/20A,120V-1P/20A,120V-1P/20A", 
+        "Switched Wire": 0, 
+        "Family": {
+          "name": "", 
+          "id": 784886
+        }, 
+        "Wire Size": "2-#10, 1-#12, 5-#8, 1-#8, 1-#8", 
+        "Hot Conductors": 8, 
+        "Type": {
+          "name": "", 
+          "id": 784886
+        }
+      }, 
+      "id": 7837403, 
+      "type_id": 784886, 
+      "vertices": [
+        [
+          150.08606706771099, 
+          123.38392045804046, 
+          0.0
+        ], 
+        [
+          150.51458582209202, 
+          130.09202491184237, 
+          0.0
+        ], 
+        [
+          146.29505060678289, 
+          135.3244064205571, 
+          0.0
+        ]
+      ], 
+      "wiring_type": "Arc", 
+      "type_name": "THWN", 
+      "type_params": {
+        "Type IfcGUID": "1ypltef2j2Kg6fDpxy$sDo", 
+        "Model": null, 
+        "Type Image": null, 
+        "Description": null, 
+        "Share Neutral Conductor": 1, 
+        "Cost": null, 
+        "Export Type to IFC": 0, 
+        "Keyword(s)": null, 
+        "Neutral Multiplier": "1", 
+        "Export Type to IFC As": null, 
+        "Family Name": "Wire Types", 
+        "Identity Type Mark": null, 
+        "Insulation": {
+          "name": "", 
+          "id": 134052
+        }, 
+        "Assembly Description": "", 
+        "Edited by": "", 
+        "Manufacturer": null, 
+        "Type Mark": null, 
+        "Keynote": null, 
+        "Category": null, 
+        "Share Ground Conductor": 1, 
+        "Max Size": "600", 
+        "Design Option": null, 
+        "Identity Label Separator": null, 
+        "Temperature Rating": {
+          "name": "", 
+          "id": 134063
+        }, 
+        "Conduit Type": "Non-Magnetic", 
+        "Neutral Size": 0, 
+        "Workset": 70, 
+        "Type Comments": null, 
+        "Type Name": "THWN", 
+        "Type IFC Predefined Type": null, 
+        "Neutral Included in Balanced Load": 0, 
+        "URL": null, 
+        "Material": {
+          "name": "", 
+          "id": 134032
+        }, 
+        "Assembly Code": ""
+      }, 
+      "category": "Wires", 
+      "circuits": [
+        {
+          "name": "1", 
+          "id": 7793041
+        }
+      ]
+    }, 
+    {
+      "instance_params": {
+        "Comments": null, 
+        "Tick Marks": 0, 
+        "Neutral Conductors": 1, 
+        "IfcGUID": "0P9_dir$TCDOzDl6xiDc8d", 
+        "Ground Conductors": 1, 
+        "Image": null, 
+        "Appears in Schedule": 0, 
+        "Export to IFC As": null, 
+        "Family Name": null, 
+        "Edited by": "", 
+        "IFC Predefined Type": null, 
+        "Wiring Visibility_CED": 0, 
+        "Circuits": "42", 
+        "Export to IFC": 0, 
+        "Circuit Load Name": "FACU", 
+        "Type Id": {
+          "name": "", 
+          "id": 784886
+        }, 
+        "Category": null, 
+        "Design Option": null, 
+        "Phase Symbol": null, 
+        "Identity Mark": null, 
+        "Mark": null, 
+        "Family and Type": {
+          "name": "", 
+          "id": 784886
+        }, 
+        "Workset": 4500, 
+        "Type Name": null, 
+        "Panel": "L2", 
+        "Circuit Description": "120V-1P/20A", 
+        "Switched Wire": 0, 
+        "Family": {
+          "name": "", 
+          "id": 784886
+        }, 
+        "Wire Size": "1-#12, 1-#12, 1-#12", 
+        "Hot Conductors": 1, 
+        "Type": {
+          "name": "", 
+          "id": 784886
+        }
+      }, 
+      "id": 7940318, 
+      "type_id": 784886, 
+      "vertices": [
+        [
+          93.91493783817873, 
+          163.48400096814044, 
+          0.0
+        ], 
+        [
+          93.679605353022069, 
+          161.94847254681162, 
+          0.0
+        ], 
+        [
+          92.246881613888007, 
+          161.69584469570077, 
+          0.0
+        ]
+      ], 
+      "wiring_type": "Arc", 
+      "type_name": "THWN", 
+      "type_params": {
+        "Type IfcGUID": "1ypltef2j2Kg6fDpxy$sDo", 
+        "Model": null, 
+        "Type Image": null, 
+        "Description": null, 
+        "Share Neutral Conductor": 1, 
+        "Cost": null, 
+        "Export Type to IFC": 0, 
+        "Keyword(s)": null, 
+        "Neutral Multiplier": "1", 
+        "Export Type to IFC As": null, 
+        "Family Name": "Wire Types", 
+        "Identity Type Mark": null, 
+        "Insulation": {
+          "name": "", 
+          "id": 134052
+        }, 
+        "Assembly Description": "", 
+        "Edited by": "", 
+        "Manufacturer": null, 
+        "Type Mark": null, 
+        "Keynote": null, 
+        "Category": null, 
+        "Share Ground Conductor": 1, 
+        "Max Size": "600", 
+        "Design Option": null, 
+        "Identity Label Separator": null, 
+        "Temperature Rating": {
+          "name": "", 
+          "id": 134063
+        }, 
+        "Conduit Type": "Non-Magnetic", 
+        "Neutral Size": 0, 
+        "Workset": 70, 
+        "Type Comments": null, 
+        "Type Name": "THWN", 
+        "Type IFC Predefined Type": null, 
+        "Neutral Included in Balanced Load": 0, 
+        "URL": null, 
+        "Material": {
+          "name": "", 
+          "id": 134032
+        }, 
+        "Assembly Code": ""
+      }, 
+      "category": "Wires", 
+      "circuits": [
+        {
+          "name": "42", 
+          "id": 7940316
+        }
+      ]
+    }
+  ], 
+  "view_name": "E101 - Power Plan", 
+  "view_id": 2243920, 
+  "count": 6
+}

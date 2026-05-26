@@ -1,0 +1,22 @@
+{
+  "room_number": "(spans gym)",
+  "room_name": "GYM TV TRUSS",
+  "_comment": "TV TRUSS receps span the gym width along Y=-222.167 (26\" south of the original Y=-220 guess, user-confirmed). 10 truss anchors at 10ft X spacing, each anchor places 2 Quad Wall - TV receps offset ±28\" in X (per yaml profile PF_Plan TV Truss). The TVs face SOUTH (rotation_rad = pi).",
+  "anchor_y": -222.167,
+  "anchor_xs": [110, 120, 130, 140, 150, 160, 170, 180, 190, 200],
+  "x_offset_in_per_pair": 28,
+  "rotation_rad_pi": true,
+  "mount_height_in": 60,
+  "fixture_family": "EF-U_Receptacle_CED",
+  "fixture_type": "Quad Wall - TV",
+  "yaml_profile": "PF_Plan TV Truss",
+  "pair_dev_group_ids": ["TV TRUSS", "CAUTION SECOND TV TRUSS"],
+  "params": {
+    "CKT_Panel_CEDT": "L2",
+    "CKT_Circuit Number_CEDT": "",
+    "CKT_Rating_CED": 20,
+    "Apparent Load Input_CED": 360,
+    "CKT_Load Name_CEDT": "TV TRUSS",
+    "FLA Input_CED": 0
+  }
+}

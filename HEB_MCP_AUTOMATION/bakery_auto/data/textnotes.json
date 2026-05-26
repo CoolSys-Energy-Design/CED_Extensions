@@ -1,0 +1,621 @@
+{
+ "view": "Power Callout - BAKERY - L1", 
+ "elements": [
+  {
+   "h_align": "Left", 
+   "coord": [
+    -33.132399999999997, 
+    53.167099999999998, 
+    0.0
+   ], 
+   "type": "3/32\" Arial", 
+   "textnote_type": "3/32\" Arial", 
+   "text": "RO2\r", 
+   "rotation": null, 
+   "id": 9397212, 
+   "leaders": [
+    {
+     "end": [
+      -30.829000000000001, 
+      53.928800000000003, 
+      0.0
+     ], 
+     "elbow": [
+      -31.246700000000001, 
+      52.854599999999998, 
+      0.0
+     ], 
+     "has_elbow": true, 
+     "anchor": [
+      -31.854199999999999, 
+      52.854599999999998, 
+      0.0
+     ]
+    }
+   ], 
+   "rel_to_equipment": {
+    "family": "000_Mccue_Bollard_FlexPost_3in_SS_1210578", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 1.0437000000000001, 
+    "dxy_ft": [
+     -1.0044, 
+     -0.28389999999999999
+    ], 
+    "id": 5774933
+   }, 
+   "width": 0.025329999999999998, 
+   "owner_view": 2243900, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 3.0676999999999999, 
+    "dxy_ft": [
+     -2.9550999999999998, 
+     -0.82369999999999999
+    ], 
+    "id": 9353666
+   }, 
+   "has_leaders": true
+  }, 
+  {
+   "h_align": "Left", 
+   "coord": [
+    -45.174300000000002, 
+    19.280799999999999, 
+    0.0
+   ], 
+   "type": "(Default Project Text) 3/32\" Arial Narrow", 
+   "textnote_type": "(Default Project Text) 3/32\" Arial Narrow", 
+   "text": "H\r", 
+   "rotation": null, 
+   "id": 9397788, 
+   "leaders": [], 
+   "rel_to_equipment": {
+    "family": "003_Cake_Imager_1200201", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 0.64990000000000003, 
+    "dxy_ft": [
+     0.29170000000000001, 
+     0.58079999999999998
+    ], 
+    "id": 3185838
+   }, 
+   "width": 0.011650000000000001, 
+   "owner_view": 2243900, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 0.82650000000000001, 
+    "dxy_ft": [
+     -0.73660000000000003, 
+     0.37490000000000001
+    ], 
+    "id": 9352871
+   }, 
+   "has_leaders": false
+  }, 
+  {
+   "h_align": "Left", 
+   "coord": [
+    -53.329700000000003, 
+    15.0303, 
+    0.0
+   ], 
+   "type": "(Default Project Text) 3/32\" Arial Narrow", 
+   "textnote_type": "(Default Project Text) 3/32\" Arial Narrow", 
+   "text": "H\r", 
+   "rotation": null, 
+   "id": 9397991, 
+   "leaders": [], 
+   "rel_to_equipment": {
+    "family": "000_METRO SMARTLEVER_4ft_Workstation_1307603", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 0.70860000000000001, 
+    "dxy_ft": [
+     -0.13969999999999999, 
+     -0.69469999999999998
+    ], 
+    "id": 5807204
+   }, 
+   "width": 0.011650000000000001, 
+   "owner_view": 2243900, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 0.79510000000000003, 
+    "dxy_ft": [
+     0.3327, 
+     0.72219999999999995
+    ], 
+    "id": 9353698
+   }, 
+   "has_leaders": false
+  }, 
+  {
+   "h_align": "Left", 
+   "coord": [
+    -31.357299999999999, 
+    22.8581, 
+    0.0
+   ], 
+   "type": "3/32\" Arial", 
+   "textnote_type": "3/32\" Arial", 
+   "text": "WP\r", 
+   "rotation": null, 
+   "id": 9438258, 
+   "leaders": [], 
+   "rel_to_equipment": {
+    "family": "000_Shelf_Metro_5Tier_18x48Metroseal_wCasters_1034016", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 0.99970000000000003, 
+    "dxy_ft": [
+     0.1167, 
+     -0.9929
+    ], 
+    "id": 3767209
+   }, 
+   "width": 0.027310000000000001, 
+   "owner_view": 2243900, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 0.98509999999999998, 
+    "dxy_ft": [
+     -0.93000000000000005, 
+     -0.32500000000000001
+    ], 
+    "id": 9438257
+   }, 
+   "has_leaders": false
+  }, 
+  {
+   "h_align": "Left", 
+   "coord": [
+    -48.423099999999998, 
+    35.072000000000003, 
+    0.0
+   ], 
+   "type": "3/32\" Arial", 
+   "textnote_type": "3/32\" Arial", 
+   "text": "DOOR HEAT\r", 
+   "rotation": null, 
+   "id": 9438704, 
+   "leaders": [
+    {
+     "end": [
+      -44.7318, 
+      32.537100000000002, 
+      0.0
+     ], 
+     "elbow": [
+      -44.7318, 
+      34.165799999999997, 
+      0.0
+     ], 
+     "has_elbow": true, 
+     "anchor": [
+      -46.267600000000002, 
+      34.165799999999997, 
+      0.0
+     ]
+    }
+   ], 
+   "rel_to_equipment": {
+    "family": "Troffer Light - 2x4 Parabolic", 
+    "category": "Lighting Fixtures", 
+    "dist_ft": 4.5872000000000002, 
+    "dxy_ft": [
+     0.048899999999999999, 
+     -4.5869999999999997
+    ], 
+    "id": 5283890
+   }, 
+   "width": 0.0436, 
+   "owner_view": 2243900, 
+   "rel_to_device": {
+    "family": "EF-U_Junction Box_CED", 
+    "dist_ft": 4.8728999999999996, 
+    "dxy_ft": [
+     -3.9853999999999998, 
+     2.8037999999999998
+    ], 
+    "id": 9438701
+   }, 
+   "has_leaders": true
+  }, 
+  {
+   "h_align": "Left", 
+   "coord": [
+    -36.290799999999997, 
+    66.342200000000005, 
+    0.0
+   ], 
+   "type": "3/32\" Arial - Arrow", 
+   "textnote_type": "3/32\" Arial - Arrow", 
+   "text": "(ON)\r", 
+   "rotation": null, 
+   "id": 10618540, 
+   "leaders": [], 
+   "rel_to_equipment": {
+    "family": "000_METRO SMARTLEVER_6ft_Workstation_1307748", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 2.1297000000000001, 
+    "dxy_ft": [
+     -0.54479999999999995, 
+     -2.0588000000000002
+    ], 
+    "id": 5278851
+   }, 
+   "width": 0.02528, 
+   "owner_view": 2243900, 
+   "rel_to_device": {
+    "family": "EF-U_Balanced Power Connector_CED", 
+    "dist_ft": 1.9396, 
+    "dxy_ft": [
+     -1.3262, 
+     1.4155
+    ], 
+    "id": 9352881
+   }, 
+   "has_leaders": false
+  }, 
+  {
+   "h_align": "Left", 
+   "coord": [
+    -40.290799999999997, 
+    66.069100000000006, 
+    0.0
+   ], 
+   "type": "3/32\" Arial - Arrow", 
+   "textnote_type": "3/32\" Arial - Arrow", 
+   "text": "(ON)\r", 
+   "rotation": null, 
+   "id": 10618541, 
+   "leaders": [], 
+   "rel_to_equipment": {
+    "family": "Floor Drain_Square_Adjustable Size 4in-9in", 
+    "category": "Generic Models", 
+    "dist_ft": 2.1126999999999998, 
+    "dxy_ft": [
+     -1.8378000000000001, 
+     1.0421
+    ], 
+    "id": 2560905
+   }, 
+   "width": 0.02528, 
+   "owner_view": 2243900, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 3.8923000000000001, 
+    "dxy_ft": [
+     -1.1173999999999999, 
+     -3.7284999999999999
+    ], 
+    "id": 9352885
+   }, 
+   "has_leaders": false
+  }, 
+  {
+   "h_align": "Left", 
+   "coord": [
+    -43.6006, 
+    65.944100000000006, 
+    0.0
+   ], 
+   "type": "3/32\" Arial - Arrow", 
+   "textnote_type": "3/32\" Arial - Arrow", 
+   "text": "(ON)\r", 
+   "rotation": null, 
+   "id": 10618542, 
+   "leaders": [], 
+   "rel_to_equipment": {
+    "family": "000_METRO SMARTLEVER_4ft_Workstation_1", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 2.4384000000000001, 
+    "dxy_ft": [
+     0.084400000000000003, 
+     -2.4369000000000001
+    ], 
+    "id": 3585430
+   }, 
+   "width": 0.02528, 
+   "owner_view": 2243900, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 3.8691, 
+    "dxy_ft": [
+     0.34739999999999999, 
+     -3.8534999999999999
+    ], 
+    "id": 9352577
+   }, 
+   "has_leaders": false
+  }, 
+  {
+   "h_align": "Left", 
+   "coord": [
+    -60.134, 
+    28.488299999999999, 
+    0.0
+   ], 
+   "type": "3/32\" Arial - Arrow", 
+   "textnote_type": "3/32\" Arial - Arrow", 
+   "text": "(ON)\r", 
+   "rotation": null, 
+   "id": 10619481, 
+   "leaders": [], 
+   "rel_to_equipment": {
+    "family": "Troffer Light - 2x4 Parabolic", 
+    "category": "Lighting Fixtures", 
+    "dist_ft": 0.89549999999999996, 
+    "dxy_ft": [
+     0.33800000000000002, 
+     0.82930000000000004
+    ], 
+    "id": 5283877
+   }, 
+   "width": 0.026620000000000001, 
+   "owner_view": 2243900, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 2.7722000000000002, 
+    "dxy_ft": [
+     -1.6982999999999999, 
+     -2.1911
+    ], 
+    "id": 9353697
+   }, 
+   "has_leaders": false
+  }, 
+  {
+   "h_align": "Left", 
+   "coord": [
+    -58.226199999999999, 
+    44.659399999999998, 
+    0.0
+   ], 
+   "type": "3/32\" Arial - Arrow", 
+   "textnote_type": "3/32\" Arial - Arrow", 
+   "text": "(ON)\r", 
+   "rotation": null, 
+   "id": 10619489, 
+   "leaders": [], 
+   "rel_to_equipment": {
+    "family": "000_Table_SS_30x72_wUnSh_NoSplash_1000639", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 0.67649999999999999, 
+    "dxy_ft": [
+     -0.66720000000000002, 
+     0.1114
+    ], 
+    "id": 3185846
+   }, 
+   "width": 0.026620000000000001, 
+   "owner_view": 2243900, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 2.6248, 
+    "dxy_ft": [
+     -0.89500000000000002, 
+     -2.4674999999999998
+    ], 
+    "id": 9352918
+   }, 
+   "has_leaders": false
+  }, 
+  {
+   "h_align": "Left", 
+   "coord": [
+    -62.472700000000003, 
+    41.197099999999999, 
+    0.0
+   ], 
+   "type": "3/32\" Arial - Arrow", 
+   "textnote_type": "3/32\" Arial - Arrow", 
+   "text": "(ON)\r", 
+   "rotation": null, 
+   "id": 10619496, 
+   "leaders": [], 
+   "rel_to_equipment": {
+    "family": "Troffer Light - 2x4 Parabolic", 
+    "category": "Lighting Fixtures", 
+    "dist_ft": 2.5236000000000001, 
+    "dxy_ft": [
+     -2.0007000000000001, 
+     1.5381
+    ], 
+    "id": 5283888
+   }, 
+   "width": 0.026620000000000001, 
+   "owner_view": 2243900, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 2.5383, 
+    "dxy_ft": [
+     0.81240000000000001, 
+     -2.4047000000000001
+    ], 
+    "id": 9353696
+   }, 
+   "has_leaders": false
+  }, 
+  {
+   "h_align": "Left", 
+   "coord": [
+    -59.634300000000003, 
+    21.2239, 
+    0.0
+   ], 
+   "type": "3/32\" Arial - Arrow", 
+   "textnote_type": "3/32\" Arial - Arrow", 
+   "text": "(ON)\r", 
+   "rotation": null, 
+   "id": 10620041, 
+   "leaders": [], 
+   "rel_to_equipment": {
+    "family": "000_Stinger_Laptop_1", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 1.1137999999999999, 
+    "dxy_ft": [
+     1.1136999999999999, 
+     0.015900000000000001
+    ], 
+    "id": 3185821
+   }, 
+   "width": 0.026620000000000001, 
+   "owner_view": 2243900, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 2.3591000000000002, 
+    "dxy_ft": [
+     2.3580000000000001, 
+     -0.0751
+    ], 
+    "id": 9352759
+   }, 
+   "has_leaders": false
+  }, 
+  {
+   "h_align": "Left", 
+   "coord": [
+    -59.997900000000001, 
+    22.932200000000002, 
+    0.0
+   ], 
+   "type": "3/32\" Arial - Arrow", 
+   "textnote_type": "3/32\" Arial - Arrow", 
+   "text": "(ON)\r", 
+   "rotation": null, 
+   "id": 10620048, 
+   "leaders": [], 
+   "rel_to_equipment": {
+    "family": "000_Stinger_Laptop_1", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 1.8803000000000001, 
+    "dxy_ft": [
+     0.75009999999999999, 
+     1.7242
+    ], 
+    "id": 3185821
+   }, 
+   "width": 0.026620000000000001, 
+   "owner_view": 2243900, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 2.1135000000000002, 
+    "dxy_ft": [
+     2.0127999999999999, 
+     -0.64480000000000004
+    ], 
+    "id": 9352737
+   }, 
+   "has_leaders": false
+  }, 
+  {
+   "h_align": "Left", 
+   "coord": [
+    -47.776299999999999, 
+    23.972300000000001, 
+    0.0
+   ], 
+   "type": "3/32\" Arial - Arrow", 
+   "textnote_type": "3/32\" Arial - Arrow", 
+   "text": "(ON)\r", 
+   "rotation": null, 
+   "id": 10620055, 
+   "leaders": [], 
+   "rel_to_equipment": {
+    "family": "003_Cake_AirBrush_1000087", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 2.3620999999999999, 
+    "dxy_ft": [
+     -2.1673, 
+     0.93930000000000002
+    ], 
+    "id": 3185909
+   }, 
+   "width": 0.026620000000000001, 
+   "owner_view": 2243900, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 3.5844, 
+    "dxy_ft": [
+     -3.3412999999999999, 
+     -1.2975000000000001
+    ], 
+    "id": 9352729
+   }, 
+   "has_leaders": false
+  }, 
+  {
+   "h_align": "Left", 
+   "coord": [
+    -54.792200000000001, 
+    18.623899999999999, 
+    0.0
+   ], 
+   "type": "3/32\" Arial - Arrow", 
+   "textnote_type": "3/32\" Arial - Arrow", 
+   "text": "(ON)\r", 
+   "rotation": null, 
+   "id": 10620062, 
+   "leaders": [], 
+   "rel_to_equipment": {
+    "family": "Troffer Light - 2x4 Parabolic", 
+    "category": "Lighting Fixtures", 
+    "dist_ft": 1.0834999999999999, 
+    "dxy_ft": [
+     -0.32019999999999998, 
+     -1.0350999999999999
+    ], 
+    "id": 5283881
+   }, 
+   "width": 0.026620000000000001, 
+   "owner_view": 2243900, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 3.1566000000000001, 
+    "dxy_ft": [
+     1.766, 
+     2.6164000000000001
+    ], 
+    "id": 9352894
+   }, 
+   "has_leaders": false
+  }, 
+  {
+   "h_align": "Left", 
+   "coord": [
+    -44.182499999999997, 
+    64.338899999999995, 
+    0.0
+   ], 
+   "type": "3/32\" Arial - Arrow", 
+   "textnote_type": "3/32\" Arial - Arrow", 
+   "text": "(ON)\r", 
+   "rotation": null, 
+   "id": 10621631, 
+   "leaders": [], 
+   "rel_to_equipment": {
+    "family": "Troffer Light - 2x4 Parabolic", 
+    "category": "Lighting Fixtures", 
+    "dist_ft": 1.8407, 
+    "dxy_ft": [
+     -1.7104999999999999, 
+     0.67989999999999995
+    ], 
+    "id": 5284100
+   }, 
+   "width": 0.026620000000000001, 
+   "owner_view": 2243900, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 3.6278000000000001, 
+    "dxy_ft": [
+     -0.16200000000000001, 
+     3.6242000000000001
+    ], 
+    "id": 9352738
+   }, 
+   "has_leaders": false
+  }
+ ], 
+ "source_doc": "RunUpdateProfilesHEBCarrollton95PercentCLOUDMODEL", 
+ "count": 16
+}

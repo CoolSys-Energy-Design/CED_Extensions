@@ -1,0 +1,141 @@
+{
+ "rows": [
+  {
+   "pos": [
+    200.411, 
+    14.129
+   ], 
+   "status": "ok", 
+   "anchor_src_dev": 9408913, 
+   "leaders": 0, 
+   "text": "WP", 
+   "id": 9408978
+  }, 
+  {
+   "pos": [
+    213.989, 
+    13.925000000000001
+   ], 
+   "status": "ok", 
+   "anchor_src_dev": 9408899, 
+   "leaders": 0, 
+   "text": "WP", 
+   "id": 9408987
+  }, 
+  {
+   "pos": [
+    169.61199999999999, 
+    -38.738999999999997
+   ], 
+   "status": "ok", 
+   "anchor_src_dev": 9353521, 
+   "leaders": 1, 
+   "text": "ACCESS CONTROL", 
+   "id": 9409240
+  }, 
+  {
+   "pos": [
+    161.15799999999999, 
+    -76.055000000000007
+   ], 
+   "status": "ok", 
+   "anchor_src_dev": 9353360, 
+   "leaders": 1, 
+   "text": "MONITOR", 
+   "id": 9409864
+  }, 
+  {
+   "pos": [
+    177.60300000000001, 
+    -69.385000000000005
+   ], 
+   "status": "ok", 
+   "anchor_src_dev": 9352966, 
+   "leaders": 1, 
+   "text": "(4) 1\"C", 
+   "id": 9409934
+  }, 
+  {
+   "pos": [
+    171.99000000000001, 
+    -78.984999999999999
+   ], 
+   "status": "ok", 
+   "anchor_src_dev": 9411764, 
+   "leaders": 1, 
+   "text": "(4) 1\"C", 
+   "id": 9649631
+  }, 
+  {
+   "pos": [
+    177.52000000000001, 
+    -31.922999999999998
+   ], 
+   "status": "ok", 
+   "anchor_src_dev": 10612409, 
+   "leaders": 2, 
+   "text": "EWH-1", 
+   "id": 10612404
+  }, 
+  {
+   "pos": [
+    165.995, 
+    -45.234000000000002
+   ], 
+   "status": "ok", 
+   "anchor_src_dev": 9353521, 
+   "leaders": 1, 
+   "text": "BLOOD PRESSURE MACHINE", 
+   "id": 10662490
+  }, 
+  {
+   "pos": [
+    186.946, 
+    -30.047999999999998
+   ], 
+   "status": "ok", 
+   "anchor_src_dev": 9352937, 
+   "leaders": 0, 
+   "text": "(ON)", 
+   "id": 10662499
+  }, 
+  {
+   "pos": [
+    186.12899999999999, 
+    -29.468
+   ], 
+   "status": "ok", 
+   "anchor_src_dev": 9374485, 
+   "leaders": 0, 
+   "text": "(ON)", 
+   "id": 10662500
+  }, 
+  {
+   "pos": [
+    185.65199999999999, 
+    -29.199000000000002
+   ], 
+   "status": "ok", 
+   "anchor_src_dev": 9352937, 
+   "leaders": 0, 
+   "text": "(ON)", 
+   "id": 10662501
+  }, 
+  {
+   "pos": [
+    184.74000000000001, 
+    -36.651000000000003
+   ], 
+   "status": "ok", 
+   "anchor_src_dev": 9352934, 
+   "leaders": 0, 
+   "text": "(ON)", 
+   "id": 10662502
+  }
+ ], 
+ "skipped": 0, 
+ "placed": 12, 
+ "target": "CED_HEB Template_MEPR_R24_OkmntProfCorr", 
+ "apply": true, 
+ "count": 12
+}

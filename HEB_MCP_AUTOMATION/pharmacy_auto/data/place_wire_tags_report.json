@@ -1,0 +1,196 @@
+{
+ "rows": [
+  {
+   "status": "ok", 
+   "tagged_wire": 10612411, 
+   "text": "PH-21,23", 
+   "id": 10612414
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10651781, 
+   "text": "PH-20", 
+   "id": 10651782
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10651780, 
+   "text": "PH-24", 
+   "id": 10651783
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10651779, 
+   "text": "PH-4", 
+   "id": 10651785
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10651788, 
+   "text": "PH-19", 
+   "id": 10651789
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10662493, 
+   "text": "PH-14", 
+   "id": 10662495
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10662494, 
+   "text": "PH-17", 
+   "id": 10662496
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10662492, 
+   "text": "PH-14", 
+   "id": 10662497
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10662491, 
+   "text": "PH-17", 
+   "id": 10662498
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10662506, 
+   "text": "PH-32", 
+   "id": 10662507
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10662508, 
+   "text": "PH-25", 
+   "id": 10662613
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10662509, 
+   "text": "PH-29", 
+   "id": 10662614
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10662510, 
+   "text": "PH-18", 
+   "id": 10662615
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10662511, 
+   "text": "PH-18", 
+   "id": 10662616
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10662512, 
+   "text": "PH-18", 
+   "id": 10662617
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10662513, 
+   "text": "PH-18", 
+   "id": 10662619
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10662514, 
+   "text": "PH-27", 
+   "id": 10662620
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10662515, 
+   "text": "PH-2", 
+   "id": 10662621
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10662874, 
+   "text": "PH-13", 
+   "id": 10662947
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10662861, 
+   "text": "PH-12", 
+   "id": 10662948
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10662955, 
+   "text": "PH-22", 
+   "id": 10662970
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10663106, 
+   "text": "PH-54", 
+   "id": 10663123
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10663093, 
+   "text": "PH-52", 
+   "id": 10663124
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10663674, 
+   "text": "PH-7", 
+   "id": 10663701
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10663833, 
+   "text": "PH-31", 
+   "id": 10663877
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10663836, 
+   "text": "PH-35", 
+   "id": 10663878
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10663975, 
+   "text": "PH-33", 
+   "id": 10663992
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10664023, 
+   "text": "PH-34", 
+   "id": 10664138
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10664064, 
+   "text": "PH-36", 
+   "id": 10664141
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10665825, 
+   "text": "PH-50", 
+   "id": 10665916
+  }, 
+  {
+   "status": "ok", 
+   "tagged_wire": 10665812, 
+   "text": "PH-16", 
+   "id": 10665917
+  }
+ ], 
+ "skipped": 0, 
+ "placed": 31, 
+ "target": "CED_HEB Template_MEPR_R24_OkmntProfCorr", 
+ "apply": true, 
+ "removed": 0, 
+ "count": 31
+}

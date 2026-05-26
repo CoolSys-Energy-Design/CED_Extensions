@@ -1,0 +1,1066 @@
+{
+  "102": {
+    "room_name": "CHECK-IN",
+    "n_convenience_receps": 10,
+    "bbox_W": 18.7,
+    "bbox_H": 19.0,
+    "perim_est_ft": 75.5,
+    "spacing_ft_per_recep": 7.6,
+    "fixtures": [
+      {
+        "type": "Duplex Wall",
+        "load_name": "CHECK-IN RECEPT",
+        "loc": [
+          104.26,
+          13.92
+        ],
+        "room_name": "CHECK-IN"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "CHECK-IN RECEPT",
+        "loc": [
+          104.26,
+          17.68
+        ],
+        "room_name": "CHECK-IN"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "TMAX RECEPT",
+        "loc": [
+          98.53,
+          21.85
+        ],
+        "room_name": "CHECK-IN"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "TMAX RECEPT",
+        "loc": [
+          98.28,
+          21.18
+        ],
+        "room_name": "CHECK-IN"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "TMAX RECEPT",
+        "loc": [
+          97.86,
+          11.18
+        ],
+        "room_name": "CHECK-IN"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "TV - DIGITAL MEDIA",
+        "loc": [
+          97.2,
+          15.61
+        ],
+        "room_name": "CHECK-IN"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "ROOM",
+        "loc": [
+          115.93,
+          30.21
+        ],
+        "room_name": "CHECK-IN"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "ROOM",
+        "loc": [
+          114.11,
+          30.21
+        ],
+        "room_name": "CHECK-IN"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "ROOM",
+        "loc": [
+          114.11,
+          26.71
+        ],
+        "room_name": "CHECK-IN"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "CHECK-IN RECEPT",
+        "loc": [
+          104.26,
+          16.24
+        ],
+        "room_name": "CHECK-IN"
+      }
+    ]
+  },
+  "101B": {
+    "room_name": "EMPLOYEE BREAKROOM",
+    "n_convenience_receps": 5,
+    "bbox_W": 9.6,
+    "bbox_H": 10.5,
+    "perim_est_ft": 40.2,
+    "spacing_ft_per_recep": 8.0,
+    "fixtures": [
+      {
+        "type": "Duplex Wall",
+        "load_name": "VENDING MACHINE",
+        "loc": [
+          102.89,
+          45.52
+        ],
+        "room_name": "EMPLOYEE BREAKROOM"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "VENDING MACHINE",
+        "loc": [
+          99.58,
+          45.52
+        ],
+        "room_name": "EMPLOYEE BREAKROOM"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "BREAKROOM",
+        "loc": [
+          95.2,
+          55.83
+        ],
+        "room_name": "EMPLOYEE BREAKROOM"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "BREAKROOM",
+        "loc": [
+          104.2,
+          51.18
+        ],
+        "room_name": "EMPLOYEE BREAKROOM"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "",
+        "loc": [
+          104.8,
+          45.33
+        ],
+        "room_name": "EMPLOYEE BREAKROOM"
+      }
+    ]
+  },
+  "105B": {
+    "room_name": "SHOWER",
+    "n_convenience_receps": 2,
+    "bbox_W": 4.9,
+    "bbox_H": 14.5,
+    "perim_est_ft": 38.9,
+    "spacing_ft_per_recep": 19.4,
+    "fixtures": [
+      {
+        "type": "Duplex Wall - GFCI",
+        "load_name": "TV - MEN/WOMEN LOCKER ROOM",
+        "loc": [
+          87.34,
+          153.04
+        ],
+        "room_name": "SHOWER"
+      },
+      {
+        "type": "Duplex Wall - GFCI",
+        "load_name": "",
+        "loc": [
+          82.4,
+          138.54
+        ],
+        "room_name": "SHOWER"
+      }
+    ]
+  },
+  "101": {
+    "room_name": "RECEPTION",
+    "n_convenience_receps": 4,
+    "bbox_W": 7.2,
+    "bbox_H": 11.0,
+    "perim_est_ft": 36.2,
+    "spacing_ft_per_recep": 9.1,
+    "fixtures": [
+      {
+        "type": "Duplex Wall",
+        "load_name": "ROOM",
+        "loc": [
+          115.93,
+          22.3
+        ],
+        "room_name": "RECEPTION"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "ROOM",
+        "loc": [
+          115.93,
+          26.71
+        ],
+        "room_name": "RECEPTION"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "ROOM",
+        "loc": [
+          114.11,
+          22.3
+        ],
+        "room_name": "RECEPTION"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "",
+        "loc": [
+          121.27,
+          33.26
+        ],
+        "room_name": "RECEPTION"
+      }
+    ]
+  },
+  "100": {
+    "room_name": "VESTIBULE",
+    "n_convenience_receps": 2,
+    "bbox_W": 39.4,
+    "bbox_H": 0.0,
+    "perim_est_ft": 78.8,
+    "spacing_ft_per_recep": 39.4,
+    "fixtures": [
+      {
+        "type": "Duplex Wall",
+        "load_name": "TV - BLACK CARD SUITE",
+        "loc": [
+          106.82,
+          0.15
+        ],
+        "room_name": "VESTIBULE"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "",
+        "loc": [
+          146.23,
+          0.15
+        ],
+        "room_name": "VESTIBULE"
+      }
+    ]
+  },
+  "103": {
+    "room_name": "BLACK CARD SPA",
+    "n_convenience_receps": 3,
+    "bbox_W": 12.4,
+    "bbox_H": 3.2,
+    "perim_est_ft": 31.2,
+    "spacing_ft_per_recep": 10.4,
+    "fixtures": [
+      {
+        "type": "Duplex Wall",
+        "load_name": "TV - BLACK CARD SUITE",
+        "loc": [
+          97.2,
+          35.48
+        ],
+        "room_name": "BLACK CARD SPA"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "",
+        "loc": [
+          84.77,
+          32.32
+        ],
+        "room_name": "BLACK CARD SPA"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "",
+        "loc": [
+          85.24,
+          32.79
+        ],
+        "room_name": "BLACK CARD SPA"
+      }
+    ]
+  },
+  "103C": {
+    "room_name": "HYBRID",
+    "n_convenience_receps": 2,
+    "bbox_W": 0.0,
+    "bbox_H": 4.7,
+    "perim_est_ft": 9.5,
+    "spacing_ft_per_recep": 4.7,
+    "fixtures": [
+      {
+        "type": "Duplex Wall",
+        "load_name": "RECEPT - BCS",
+        "loc": [
+          78.48,
+          59.93
+        ],
+        "room_name": "HYBRID"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "RECEPT - BCS",
+        "loc": [
+          78.48,
+          55.19
+        ],
+        "room_name": "HYBRID"
+      }
+    ]
+  },
+  "103H": {
+    "room_name": "TANNING",
+    "n_convenience_receps": 4,
+    "bbox_W": 11.7,
+    "bbox_H": 6.3,
+    "perim_est_ft": 36.0,
+    "spacing_ft_per_recep": 9.0,
+    "fixtures": [
+      {
+        "type": "Duplex Wall",
+        "load_name": "TV - BLACK CARD SUITE",
+        "loc": [
+          89.01,
+          42.54
+        ],
+        "room_name": "TANNING"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "RECEPT - BCS",
+        "loc": [
+          84.29,
+          48.82
+        ],
+        "room_name": "TANNING"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "VENDING MACHINE",
+        "loc": [
+          95.29,
+          45.52
+        ],
+        "room_name": "TANNING"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "BREAKROOM",
+        "loc": [
+          96.03,
+          46.26
+        ],
+        "room_name": "TANNING"
+      }
+    ]
+  },
+  "103F": {
+    "room_name": "TANNING",
+    "n_convenience_receps": 2,
+    "bbox_W": 3.2,
+    "bbox_H": 5.4,
+    "perim_est_ft": 17.3,
+    "spacing_ft_per_recep": 8.6,
+    "fixtures": [
+      {
+        "type": "Duplex Wall",
+        "load_name": "RECEPT - BCS",
+        "loc": [
+          84.29,
+          70.33
+        ],
+        "room_name": "TANNING"
+      },
+      {
+        "type": "Duplex Wall - GFCI",
+        "load_name": "TV - MEN/WOMEN LOCKER ROOM",
+        "loc": [
+          87.48,
+          75.77
+        ],
+        "room_name": "TANNING"
+      }
+    ]
+  },
+  "103E": {
+    "room_name": "HYBRID TANNING",
+    "n_convenience_receps": 1,
+    "bbox_W": 0,
+    "bbox_H": 0,
+    "perim_est_ft": 0,
+    "spacing_ft_per_recep": null,
+    "fixtures": [
+      {
+        "type": "Duplex Wall",
+        "load_name": "RECEPT - BCS",
+        "loc": [
+          78.48,
+          70.0
+        ],
+        "room_name": "HYBRID TANNING"
+      }
+    ]
+  },
+  "103G": {
+    "room_name": "TLT TANNING",
+    "n_convenience_receps": 2,
+    "bbox_W": 0.4,
+    "bbox_H": 0.7,
+    "perim_est_ft": 2.3,
+    "spacing_ft_per_recep": 1.1,
+    "fixtures": [
+      {
+        "type": "Duplex Wall",
+        "load_name": "RECEPT - BCS",
+        "loc": [
+          84.29,
+          59.93
+        ],
+        "room_name": "TLT TANNING"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "",
+        "loc": [
+          83.88,
+          59.2
+        ],
+        "room_name": "TLT TANNING"
+      }
+    ]
+  },
+  "105D": {
+    "room_name": "STORAGE",
+    "n_convenience_receps": 8,
+    "bbox_W": 19.5,
+    "bbox_H": 11.6,
+    "perim_est_ft": 62.2,
+    "spacing_ft_per_recep": 7.8,
+    "fixtures": [
+      {
+        "type": "Duplex Wall - GFCI",
+        "load_name": "BATHROOM SINK",
+        "loc": [
+          85.25,
+          121.93
+        ],
+        "room_name": "STORAGE"
+      },
+      {
+        "type": "Duplex Wall - GFCI",
+        "load_name": "BATHROOM SINKS",
+        "loc": [
+          83.83,
+          119.93
+        ],
+        "room_name": "STORAGE"
+      },
+      {
+        "type": "Duplex Wall - GFCI",
+        "load_name": "BATHROOM SINKS",
+        "loc": [
+          85.25,
+          125.82
+        ],
+        "room_name": "STORAGE"
+      },
+      {
+        "type": "Duplex Wall - GFCI",
+        "load_name": "BATHROOM SINKS",
+        "loc": [
+          85.25,
+          123.85
+        ],
+        "room_name": "STORAGE"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "DRINK FOUNTAIN",
+        "loc": [
+          103.3,
+          114.4
+        ],
+        "room_name": "STORAGE"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "",
+        "loc": [
+          98.72,
+          114.2
+        ],
+        "room_name": "STORAGE"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "",
+        "loc": [
+          93.38,
+          119.44
+        ],
+        "room_name": "STORAGE"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "",
+        "loc": [
+          98.72,
+          114.61
+        ],
+        "room_name": "STORAGE"
+      }
+    ]
+  },
+  "105A": {
+    "room_name": "TOILET",
+    "n_convenience_receps": 1,
+    "bbox_W": 0,
+    "bbox_H": 0,
+    "perim_est_ft": 0,
+    "spacing_ft_per_recep": null,
+    "fixtures": [
+      {
+        "type": "Duplex Wall - GFCI",
+        "load_name": "BATHROOM SINKS",
+        "loc": [
+          83.83,
+          127.76
+        ],
+        "room_name": "TOILET"
+      }
+    ]
+  },
+  "104D": {
+    "room_name": "STORAGE",
+    "n_convenience_receps": 5,
+    "bbox_W": 9.1,
+    "bbox_H": 8.3,
+    "perim_est_ft": 34.9,
+    "spacing_ft_per_recep": 7.0,
+    "fixtures": [
+      {
+        "type": "Duplex Wall - GFCI",
+        "load_name": "BATHROOM SINK",
+        "loc": [
+          85.25,
+          103.02
+        ],
+        "room_name": "STORAGE"
+      },
+      {
+        "type": "Duplex Wall - GFCI",
+        "load_name": "BATHROOM SINKS",
+        "loc": [
+          84.25,
+          101.05
+        ],
+        "room_name": "STORAGE"
+      },
+      {
+        "type": "Duplex Wall - GFCI",
+        "load_name": "BATHROOM SINKS",
+        "loc": [
+          85.25,
+          106.85
+        ],
+        "room_name": "STORAGE"
+      },
+      {
+        "type": "Duplex Wall - GFCI",
+        "load_name": "BATHROOM SINKS",
+        "loc": [
+          85.25,
+          104.96
+        ],
+        "room_name": "STORAGE"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "",
+        "loc": [
+          93.38,
+          109.37
+        ],
+        "room_name": "STORAGE"
+      }
+    ]
+  },
+  "104A": {
+    "room_name": "TOILET",
+    "n_convenience_receps": 1,
+    "bbox_W": 0,
+    "bbox_H": 0,
+    "perim_est_ft": 0,
+    "spacing_ft_per_recep": null,
+    "fixtures": [
+      {
+        "type": "Duplex Wall - GFCI",
+        "load_name": "BATHROOM SINKS",
+        "loc": [
+          84.25,
+          108.88
+        ],
+        "room_name": "TOILET"
+      }
+    ]
+  },
+  "103B": {
+    "room_name": "RED WAVE",
+    "n_convenience_receps": 1,
+    "bbox_W": 0,
+    "bbox_H": 0,
+    "perim_est_ft": 0,
+    "spacing_ft_per_recep": null,
+    "fixtures": [
+      {
+        "type": "Duplex Wall",
+        "load_name": "RECEPT - BCS",
+        "loc": [
+          78.48,
+          45.11
+        ],
+        "room_name": "RED WAVE"
+      }
+    ]
+  },
+  "107": {
+    "room_name": "FUNCTIONAL TRAINING/ MOBILITY ROOM",
+    "n_convenience_receps": 5,
+    "bbox_W": 34.4,
+    "bbox_H": 36.2,
+    "perim_est_ft": 141.2,
+    "spacing_ft_per_recep": 28.2,
+    "fixtures": [
+      {
+        "type": "Duplex Wall",
+        "load_name": "TV - BLACK CARD SUITE",
+        "loc": [
+          165.78,
+          164.44
+        ],
+        "room_name": "FUNCTIONAL TRAINING/ MOBILITY ROOM"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "",
+        "loc": [
+          175.88,
+          128.23
+        ],
+        "room_name": "FUNCTIONAL TRAINING/ MOBILITY ROOM"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "",
+        "loc": [
+          158.96,
+          164.44
+        ],
+        "room_name": "FUNCTIONAL TRAINING/ MOBILITY ROOM"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "",
+        "loc": [
+          159.33,
+          128.83
+        ],
+        "room_name": "FUNCTIONAL TRAINING/ MOBILITY ROOM"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "",
+        "loc": [
+          193.37,
+          151.89
+        ],
+        "room_name": "FUNCTIONAL TRAINING/ MOBILITY ROOM"
+      }
+    ]
+  },
+  "101C": {
+    "room_name": "MECHANICAL ROOM",
+    "n_convenience_receps": 3,
+    "bbox_W": 7.2,
+    "bbox_H": 18.1,
+    "perim_est_ft": 50.6,
+    "spacing_ft_per_recep": 16.9,
+    "fixtures": [
+      {
+        "type": "Duplex Wall",
+        "load_name": "BREAKROOM",
+        "loc": [
+          97.56,
+          64.76
+        ],
+        "room_name": "MECHANICAL ROOM"
+      },
+      {
+        "type": "Duplex Wall - GFCI",
+        "load_name": "",
+        "loc": [
+          104.2,
+          71.05
+        ],
+        "room_name": "MECHANICAL ROOM"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "",
+        "loc": [
+          104.8,
+          82.83
+        ],
+        "room_name": "MECHANICAL ROOM"
+      }
+    ]
+  },
+  "104": {
+    "room_name": "WOMENS LOCKER ROOM",
+    "n_convenience_receps": 2,
+    "bbox_W": 0.0,
+    "bbox_H": 6.2,
+    "perim_est_ft": 12.3,
+    "spacing_ft_per_recep": 6.2,
+    "fixtures": [
+      {
+        "type": "Duplex Wall - GFCI",
+        "load_name": "",
+        "loc": [
+          102.23,
+          94.4
+        ],
+        "room_name": "WOMENS LOCKER ROOM"
+      },
+      {
+        "type": "Duplex Wall - GFCI",
+        "load_name": "",
+        "loc": [
+          102.23,
+          88.24
+        ],
+        "room_name": "WOMENS LOCKER ROOM"
+      }
+    ]
+  },
+  "105": {
+    "room_name": "MENS LOCKER ROOM",
+    "n_convenience_receps": 6,
+    "bbox_W": 19.0,
+    "bbox_H": 31.6,
+    "perim_est_ft": 101.2,
+    "spacing_ft_per_recep": 16.9,
+    "fixtures": [
+      {
+        "type": "Duplex Wall - GFCI",
+        "load_name": "",
+        "loc": [
+          103.36,
+          140.57
+        ],
+        "room_name": "MENS LOCKER ROOM"
+      },
+      {
+        "type": "Duplex Wall - GFCI",
+        "load_name": "",
+        "loc": [
+          103.36,
+          134.41
+        ],
+        "room_name": "MENS LOCKER ROOM"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "",
+        "loc": [
+          122.38,
+          128.23
+        ],
+        "room_name": "MENS LOCKER ROOM"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "",
+        "loc": [
+          104.8,
+          159.79
+        ],
+        "room_name": "MENS LOCKER ROOM"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "",
+        "loc": [
+          115.13,
+          128.83
+        ],
+        "room_name": "MENS LOCKER ROOM"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "",
+        "loc": [
+          104.2,
+          158.29
+        ],
+        "room_name": "MENS LOCKER ROOM"
+      }
+    ]
+  },
+  "104B": {
+    "room_name": "SHOWER",
+    "n_convenience_receps": 1,
+    "bbox_W": 0,
+    "bbox_H": 0,
+    "perim_est_ft": 0,
+    "spacing_ft_per_recep": null,
+    "fixtures": [
+      {
+        "type": "Duplex Wall - GFCI",
+        "load_name": "",
+        "loc": [
+          82.4,
+          90.27
+        ],
+        "room_name": "SHOWER"
+      }
+    ]
+  },
+  "108": {
+    "room_name": "CARDIO",
+    "n_convenience_receps": 2,
+    "bbox_W": 0.0,
+    "bbox_H": 33.0,
+    "perim_est_ft": 66.0,
+    "spacing_ft_per_recep": 33.0,
+    "fixtures": [
+      {
+        "type": "Duplex Wall",
+        "load_name": "",
+        "loc": [
+          121.27,
+          99.26
+        ],
+        "room_name": "CARDIO"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "",
+        "loc": [
+          121.27,
+          66.26
+        ],
+        "room_name": "CARDIO"
+      }
+    ]
+  },
+  "110": {
+    "room_name": "STRENGTH",
+    "n_convenience_receps": 3,
+    "bbox_W": 35.6,
+    "bbox_H": 35.5,
+    "perim_est_ft": 142.2,
+    "spacing_ft_per_recep": 47.4,
+    "fixtures": [
+      {
+        "type": "Duplex Wall",
+        "load_name": "",
+        "loc": [
+          157.77,
+          99.26
+        ],
+        "room_name": "STRENGTH"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "",
+        "loc": [
+          193.37,
+          101.65
+        ],
+        "room_name": "STRENGTH"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "",
+        "loc": [
+          193.37,
+          66.15
+        ],
+        "room_name": "STRENGTH"
+      }
+    ]
+  },
+  "109": {
+    "room_name": "CIRCUIT",
+    "n_convenience_receps": 2,
+    "bbox_W": 0.0,
+    "bbox_H": 33.0,
+    "perim_est_ft": 66.0,
+    "spacing_ft_per_recep": 33.0,
+    "fixtures": [
+      {
+        "type": "Duplex Wall",
+        "load_name": "",
+        "loc": [
+          157.77,
+          66.26
+        ],
+        "room_name": "CIRCUIT"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "",
+        "loc": [
+          157.77,
+          33.26
+        ],
+        "room_name": "CIRCUIT"
+      }
+    ]
+  },
+  "111": {
+    "room_name": "FREE WEIGHTS",
+    "n_convenience_receps": 2,
+    "bbox_W": 17.0,
+    "bbox_H": 33.2,
+    "perim_est_ft": 100.3,
+    "spacing_ft_per_recep": 50.2,
+    "fixtures": [
+      {
+        "type": "Duplex Wall",
+        "load_name": "",
+        "loc": [
+          193.42,
+          33.34
+        ],
+        "room_name": "FREE WEIGHTS"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "",
+        "loc": [
+          176.44,
+          0.15
+        ],
+        "room_name": "FREE WEIGHTS"
+      }
+    ]
+  },
+  "101A": {
+    "room_name": "IT ROOM",
+    "n_convenience_receps": 2,
+    "bbox_W": 0.6,
+    "bbox_H": 1.6,
+    "perim_est_ft": 4.5,
+    "spacing_ft_per_recep": 2.3,
+    "fixtures": [
+      {
+        "type": "Duplex Wall",
+        "load_name": "",
+        "loc": [
+          97.2,
+          7.02
+        ],
+        "room_name": "IT ROOM"
+      },
+      {
+        "type": "Duplex Wall",
+        "load_name": "",
+        "loc": [
+          96.59,
+          5.37
+        ],
+        "room_name": "IT ROOM"
+      }
+    ]
+  },
+  "106": {
+    "room_name": "ELECTRICAL / STORAGE ROOM",
+    "n_convenience_receps": 1,
+    "bbox_W": 0,
+    "bbox_H": 0,
+    "perim_est_ft": 0,
+    "spacing_ft_per_recep": null,
+    "fixtures": [
+      {
+        "type": "Duplex Wall",
+        "load_name": "",
+        "loc": [
+          83.94,
+          164.44
+        ],
+        "room_name": "ELECTRICAL / STORAGE ROOM"
+      }
+    ]
+  },
+  "104C": {
+    "room_name": "JANITOR",
+    "n_convenience_receps": 2,
+    "bbox_W": 5.8,
+    "bbox_H": 2.3,
+    "perim_est_ft": 16.3,
+    "spacing_ft_per_recep": 8.1,
+    "fixtures": [
+      {
+        "type": "Duplex Wall - GFCI",
+        "load_name": "",
+        "loc": [
+          69.03,
+          93.19
+        ],
+        "room_name": "JANITOR"
+      },
+      {
+        "type": "Duplex Wall - GFCI",
+        "load_name": "",
+        "loc": [
+          74.86,
+          90.89
+        ],
+        "room_name": "JANITOR"
+      }
+    ]
+  },
+  "105C": {
+    "room_name": "JANITOR",
+    "n_convenience_receps": 2,
+    "bbox_W": 5.8,
+    "bbox_H": 3.5,
+    "perim_est_ft": 18.7,
+    "spacing_ft_per_recep": 9.4,
+    "fixtures": [
+      {
+        "type": "Duplex Wall - GFCI",
+        "load_name": "",
+        "loc": [
+          69.03,
+          134.26
+        ],
+        "room_name": "JANITOR"
+      },
+      {
+        "type": "Duplex Wall - GFCI",
+        "load_name": "",
+        "loc": [
+          74.86,
+          137.79
+        ],
+        "room_name": "JANITOR"
+      }
+    ]
+  }
+}

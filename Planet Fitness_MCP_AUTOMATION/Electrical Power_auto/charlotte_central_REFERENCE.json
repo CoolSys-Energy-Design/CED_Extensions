@@ -1,0 +1,2382 @@
+{
+  "ElectricalEquipment": [
+    {
+      "family": "EE-U_Transformer_CED", 
+      "loc": [
+        259.51799999999997, 
+        -270.96800000000002, 
+        0.0
+      ], 
+      "params": {
+        "CKT_Rating_CED": {
+          "disp": "200 A", 
+          "raw": 200.0
+        }, 
+        "CKT_Panel_CEDT": "DP", 
+        "Mark": "24340634", 
+        "CKT_Circuit Number_CEDT": "3", 
+        "Elevation from Level": {
+          "disp": "0' - 0\"", 
+          "raw": 0.0
+        }, 
+        "CKT_Load Name_CEDT": "PANEL L4 VIA 112.5KVA XFMR TR-L4"
+      }, 
+      "tagged_ids": null, 
+      "id": 7962879, 
+      "type": "Dry-Type - 150 KVA - 240V", 
+      "rot": 1.5708
+    }, 
+    {
+      "family": "EE-U_Equipment Switch_CED", 
+      "loc": [
+        259.51799999999997, 
+        -273.77999999999997, 
+        4.0
+      ], 
+      "params": {
+        "CKT_Rating_CED": {
+          "disp": "200 A", 
+          "raw": 200.0
+        }, 
+        "CKT_Panel_CEDT": "DP", 
+        "Load Classification_CED": {
+          "name": "NC", 
+          "id": 1632054
+        }, 
+        "Mark": "24340635", 
+        "Number of Poles_CED": 3, 
+        "CKT_Circuit Number_CEDT": "3", 
+        "Voltage_CED": {
+          "disp": "480 V", 
+          "raw": 5166.6769999999997
+        }, 
+        "Elevation from Level": {
+          "disp": "4' - 0\"", 
+          "raw": 4.0
+        }, 
+        "CKT_Load Name_CEDT": "PANEL L4 VIA 112.5KVA XFMR TR-L4"
+      }, 
+      "tagged_ids": null, 
+      "id": 7962880, 
+      "type": "Fused - 200A", 
+      "rot": 4.7123900000000001
+    }, 
+    {
+      "family": "EE-U_Panelboard_CED", 
+      "loc": [
+        259.435, 
+        -268.04199999999997, 
+        0.0
+      ], 
+      "params": {
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "TR-L4", 
+        "Mark": "24340636", 
+        "Number of Poles_CED": 3, 
+        "CKT_Circuit Number_CEDT": "1", 
+        "Voltage_CED": {
+          "disp": "240 V", 
+          "raw": 2583.3384999999998
+        }, 
+        "Elevation from Level": {
+          "disp": "0' - 0\"", 
+          "raw": 0.0
+        }, 
+        "CKT_Load Name_CEDT": "L4"
+      }, 
+      "tagged_ids": null, 
+      "id": 7962881, 
+      "type": "L4_Panelboard - 240V/3Ph", 
+      "rot": 4.7123900000000001
+    }, 
+    {
+      "family": "EE-U_Panelboard_CED", 
+      "loc": [
+        259.435, 
+        -265.64600000000002, 
+        0.0
+      ], 
+      "params": {
+        "CKT_Rating_CED": {
+          "disp": "150 A", 
+          "raw": 150.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "Mark": "24340637", 
+        "Number of Poles_CED": 3, 
+        "CKT_Circuit Number_CEDT": "80,82,84", 
+        "Voltage_CED": {
+          "disp": "208 V", 
+          "raw": 2238.8933999999999
+        }, 
+        "Elevation from Level": {
+          "disp": "0' - 0\"", 
+          "raw": 0.0
+        }, 
+        "CKT_Load Name_CEDT": "PANEL L3 SUB FEED BREAKER"
+      }, 
+      "tagged_ids": null, 
+      "id": 7962882, 
+      "type": "Panelboard - 208V/3Ph, 125A", 
+      "rot": 4.7123900000000001
+    }, 
+    {
+      "family": "EE-U_Panelboard_CED", 
+      "loc": [
+        61.716000000000001, 
+        -210.661, 
+        0.0
+      ], 
+      "params": {
+        "CKT_Rating_CED": {
+          "disp": "150 A", 
+          "raw": 150.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "Mark": "24340638", 
+        "Number of Poles_CED": 3, 
+        "CKT_Circuit Number_CEDT": "79,81,83", 
+        "Voltage_CED": {
+          "disp": "208 V", 
+          "raw": 2238.8933999999999
+        }, 
+        "Elevation from Level": {
+          "disp": "0' - 0\"", 
+          "raw": 0.0
+        }, 
+        "CKT_Load Name_CEDT": "PANEL L2 SUB FEED BREAKER"
+      }, 
+      "tagged_ids": null, 
+      "id": 7962883, 
+      "type": "Panelboard - 208V/3Ph, 125A", 
+      "rot": 1.5708
+    }, 
+    {
+      "family": "EE-U_Panelboard_CED", 
+      "loc": [
+        61.716000000000001, 
+        -208.541, 
+        0.0
+      ], 
+      "params": {
+        "CKT_Rating_CED": {
+          "disp": "400 A", 
+          "raw": 400.0
+        }, 
+        "CKT_Panel_CEDT": "(E) MDP-1", 
+        "Mark": "24340639", 
+        "Number of Poles_CED": 3, 
+        "CKT_Circuit Number_CEDT": "10", 
+        "Voltage_CED": {
+          "disp": "208 V", 
+          "raw": 2238.8933999999999
+        }, 
+        "Elevation from Level": {
+          "disp": "0' - 0\"", 
+          "raw": 0.0
+        }, 
+        "CKT_Load Name_CEDT": "PANEL L1"
+      }, 
+      "tagged_ids": null, 
+      "id": 7962884, 
+      "type": "Panelboard - 208V/3Ph, 600A", 
+      "rot": 1.5708
+    }, 
+    {
+      "family": "EE-U_Switchboard_CED", 
+      "loc": [
+        60.945999999999998, 
+        -201.62100000000001, 
+        0.0
+      ], 
+      "params": {
+        "CKT_Rating_CED": {
+          "disp": "", 
+          "raw": 0.0
+        }, 
+        "Mark": "24340641", 
+        "Number of Poles_CED": 3, 
+        "Elevation from Level": {
+          "disp": "0' - 0\"", 
+          "raw": 0.0
+        }, 
+        "Voltage_CED": {
+          "disp": "480 V", 
+          "raw": 5166.6769999999997
+        }
+      }, 
+      "tagged_ids": null, 
+      "id": 7964949, 
+      "type": "Switchboard - 480V/3Ph, I-Line Type", 
+      "rot": 1.5708
+    }, 
+    {
+      "family": "EE-U_Transformer_CED", 
+      "loc": [
+        61.716000000000001, 
+        -205.62799999999999, 
+        0.0
+      ], 
+      "params": {
+        "Elevation from Level": {
+          "disp": "0' - 0\"", 
+          "raw": 0.0
+        }, 
+        "CKT_Rating_CED": {
+          "disp": "", 
+          "raw": 0.0
+        }, 
+        "Mark": "24340643"
+      }, 
+      "tagged_ids": null, 
+      "id": 7999542, 
+      "type": "Dry-Type - 150 KVA", 
+      "rot": 4.7123900000000001
+    }
+  ], 
+  "TextNotes": [
+    {
+      "family": "", 
+      "loc": null, 
+      "params": {}, 
+      "tagged_ids": null, 
+      "id": 8036647, 
+      "type": "", 
+      "rot": null
+    }, 
+    {
+      "family": "", 
+      "loc": null, 
+      "params": {}, 
+      "tagged_ids": null, 
+      "id": 8036648, 
+      "type": "", 
+      "rot": null
+    }, 
+    {
+      "family": "", 
+      "loc": null, 
+      "params": {}, 
+      "tagged_ids": null, 
+      "id": 8036649, 
+      "type": "", 
+      "rot": null
+    }, 
+    {
+      "family": "", 
+      "loc": null, 
+      "params": {}, 
+      "tagged_ids": null, 
+      "id": 8036650, 
+      "type": "", 
+      "rot": null
+    }, 
+    {
+      "family": "", 
+      "loc": null, 
+      "params": {}, 
+      "tagged_ids": null, 
+      "id": 8036651, 
+      "type": "", 
+      "rot": null
+    }, 
+    {
+      "family": "", 
+      "loc": null, 
+      "params": {}, 
+      "tagged_ids": null, 
+      "id": 8036652, 
+      "type": "", 
+      "rot": null
+    }, 
+    {
+      "family": "", 
+      "loc": null, 
+      "params": {}, 
+      "tagged_ids": null, 
+      "id": 8097995, 
+      "type": "", 
+      "rot": null
+    }
+  ], 
+  "WireVertices": [], 
+  "ElectricalFixtures": [
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        164.00899999999999, 
+        -230.37100000000001, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346470", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221708, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        151.17500000000001, 
+        -230.214, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346471", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221709, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        147.739, 
+        -253.07599999999999, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346473", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221710, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        170.84200000000001, 
+        -241.40899999999999, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346474", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221711, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        180.238, 
+        -221.87200000000001, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346475", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221712, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        164.37200000000001, 
+        -219.18299999999999, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346476", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221713, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        174.56999999999999, 
+        -217.983, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346477", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221714, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        140.92500000000001, 
+        -253.07599999999999, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346478", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221715, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        144.34200000000001, 
+        -253.07599999999999, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346479", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221716, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        151.15600000000001, 
+        -253.07599999999999, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346480", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221717, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        147.739, 
+        -241.27600000000001, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346481", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221718, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        151.15600000000001, 
+        -241.27600000000001, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346482", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221719, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        140.90600000000001, 
+        -241.27600000000001, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346483", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221720, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        144.322, 
+        -241.27600000000001, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346484", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221721, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        137.489, 
+        -241.27600000000001, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346485", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221722, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        194.739, 
+        -241.27600000000001, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346486", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221723, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        187.90600000000001, 
+        -241.27600000000001, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346487", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221724, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        191.322, 
+        -241.27600000000001, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346488", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221725, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        181.072, 
+        -241.27600000000001, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346489", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221726, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        184.489, 
+        -241.27600000000001, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346490", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221727, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        174.239, 
+        -241.27600000000001, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346491", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221728, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        177.65600000000001, 
+        -241.27600000000001, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346492", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221729, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        194.739, 
+        -253.07599999999999, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346493", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221730, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        187.90600000000001, 
+        -253.07599999999999, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346494", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221731, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        191.322, 
+        -253.07599999999999, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346495", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221732, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        181.072, 
+        -253.07599999999999, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346496", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221733, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        184.489, 
+        -253.07599999999999, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346497", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221734, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        174.239, 
+        -253.07599999999999, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346498", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221735, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        177.65600000000001, 
+        -253.07599999999999, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346499", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221736, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        167.40600000000001, 
+        -253.07599999999999, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346500", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221737, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        170.822, 
+        -253.07599999999999, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346501", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221738, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        160.572, 
+        -253.07599999999999, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346502", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221739, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        163.989, 
+        -253.07599999999999, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346503", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221740, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        167.42500000000001, 
+        -241.40899999999999, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346504", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221741, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        164.00899999999999, 
+        -241.40899999999999, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346505", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221742, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        160.59200000000001, 
+        -241.40899999999999, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346506", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221743, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        174.249, 
+        -230.083, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346507", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221744, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        170.83199999999999, 
+        -230.083, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346508", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221745, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        167.41499999999999, 
+        -230.083, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346509", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221746, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        160.59200000000001, 
+        -230.37100000000001, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346510", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221747, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        191.33199999999999, 
+        -230.083, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346511", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221748, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        177.66499999999999, 
+        -230.083, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346512", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221749, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        180.66499999999999, 
+        -230.083, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346513", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221750, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        186.66499999999999, 
+        -230.083, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346514", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221751, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }, 
+    {
+      "family": "EF-U_Receptacle_CED", 
+      "loc": [
+        183.66499999999999, 
+        -230.083, 
+        3.8330000000000002
+      ], 
+      "params": {
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+        "CKT_Rating_CED": {
+          "disp": "20 A", 
+          "raw": 20.0
+        }, 
+        "CKT_Panel_CEDT": "L1", 
+        "FLA Input_CED": {
+          "disp": "0 A", 
+          "raw": 0.0
+        }, 
+        "Load Classification_CED": {
+          "name": "REC", 
+          "id": 1632027
+        }, 
+        "Mark": "24346515", 
+        "Number of Poles_CED": 1, 
+        "Apparent Load Input_CED": {
+          "disp": "1500 VA", 
+          "raw": 16145.865599999999
+        }, 
+        "CKT_Circuit Number_CEDT": "DEDICATED", 
+        "Voltage_CED": {
+          "disp": "120 V", 
+          "raw": 1291.6693
+        }, 
+        "Elevation from Level": {
+          "disp": "3' - 10\"", 
+          "raw": 3.8332999999999999
+        }, 
+        "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+      }, 
+      "tagged_ids": null, 
+      "id": 8221752, 
+      "type": "Duplex Wall", 
+      "rot": 0.0
+    }
+  ], 
+  "GenericAnnotation": [], 
+  "WireTags": [], 
+  "EquipmentTags": [
+    {
+      "family": "", 
+      "loc": null, 
+      "params": {}, 
+      "tagged_ids": [
+        7962879
+      ], 
+      "id": 8037556, 
+      "type": "", 
+      "rot": null
+    }, 
+    {
+      "family": "", 
+      "loc": null, 
+      "params": {}, 
+      "tagged_ids": [
+        7962881
+      ], 
+      "id": 8037560, 
+      "type": "", 
+      "rot": null
+    }, 
+    {
+      "family": "", 
+      "loc": null, 
+      "params": {}, 
+      "tagged_ids": [
+        7962882
+      ], 
+      "id": 8037564, 
+      "type": "", 
+      "rot": null
+    }, 
+    {
+      "family": "", 
+      "loc": null, 
+      "params": {}, 
+      "tagged_ids": [
+        7962880
+      ], 
+      "id": 8037580, 
+      "type": "", 
+      "rot": null
+    }, 
+    {
+      "family": "", 
+      "loc": null, 
+      "params": {}, 
+      "tagged_ids": [
+        7999542
+      ], 
+      "id": 8037829, 
+      "type": "", 
+      "rot": null
+    }, 
+    {
+      "family": "", 
+      "loc": null, 
+      "params": {}, 
+      "tagged_ids": [
+        7964949
+      ], 
+      "id": 8037831, 
+      "type": "", 
+      "rot": null
+    }, 
+    {
+      "family": "", 
+      "loc": null, 
+      "params": {}, 
+      "tagged_ids": [
+        7962884
+      ], 
+      "id": 8037833, 
+      "type": "", 
+      "rot": null
+    }, 
+    {
+      "family": "", 
+      "loc": null, 
+      "params": {}, 
+      "tagged_ids": [
+        7962883
+      ], 
+      "id": 8037837, 
+      "type": "", 
+      "rot": null
+    }
+  ], 
+  "Wires": [], 
+  "FixtureTags": []
+}

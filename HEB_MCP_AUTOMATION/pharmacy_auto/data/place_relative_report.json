@@ -1,0 +1,2359 @@
+{
+ "devices_total": 71, 
+ "unique_match": 71, 
+ "dryrun": false, 
+ "anchor_missing": 0, 
+ "equip_shift_ft_min": 0.93000000000000005, 
+ "rows": [
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 1.5707960000000001, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352727, 
+   "anchor_id": 5008246, 
+   "equip_shift_ft": 1.0, 
+   "type": "Duplex Wall", 
+   "tgt_dev_xyz": [
+    190.78100000000001, 
+    -50.241, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "FD.05.25.14_PharmacyAccess&Security", 
+   "anchor_dist_ft": 15.789999999999999, 
+   "src_anchor_w": [
+    175.38200000000001, 
+    -46.029000000000003, 
+    4.0
+   ], 
+   "offset_ft": [
+    15.461, 
+    -3.2149999999999999, 
+    -2.5
+   ], 
+   "tgt_anchor_w": [
+    175.31999999999999, 
+    -47.027000000000001, 
+    4.0
+   ], 
+   "tgt_dev_rot": 1.5707960000000001
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352934, 
+   "anchor_id": 4353917, 
+   "equip_shift_ft": 3.3300000000000001, 
+   "type": "Duplex Wall", 
+   "tgt_dev_xyz": [
+    188.41300000000001, 
+    -32.825000000000003, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "NP.23.00.N01-50_AisleMarker", 
+   "anchor_dist_ft": 10.539999999999999, 
+   "src_anchor_w": [
+    176.42099999999999, 
+    -26.359999999999999, 
+    9.0
+   ], 
+   "offset_ft": [
+    8.702, 
+    -5.9450000000000003, 
+    -7.5
+   ], 
+   "tgt_anchor_w": [
+    179.71100000000001, 
+    -26.879000000000001, 
+    9.0
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 1.5707960000000001, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352935, 
+   "anchor_id": 5008188, 
+   "equip_shift_ft": 1.3, 
+   "type": "Duplex Wall", 
+   "tgt_dev_xyz": [
+    190.43100000000001, 
+    -62.975000000000001, 
+    4.0
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Mat_Fatigue_3x16_1203707", 
+   "anchor_dist_ft": 15.31, 
+   "src_anchor_w": [
+    175.916, 
+    -58.253999999999998, 
+    0.0
+   ], 
+   "offset_ft": [
+    14.909000000000001, 
+    -3.4860000000000002, 
+    4.0
+   ], 
+   "tgt_anchor_w": [
+    175.523, 
+    -59.488999999999997, 
+    0.0
+   ], 
+   "tgt_dev_rot": 1.5707960000000001
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352937, 
+   "anchor_id": 4353917, 
+   "equip_shift_ft": 3.3300000000000001, 
+   "type": "Duplex Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    185.58199999999999, 
+    -32.816000000000003, 
+    4.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "NP.23.00.N01-50_AisleMarker", 
+   "anchor_dist_ft": 8.3499999999999996, 
+   "src_anchor_w": [
+    176.42099999999999, 
+    -26.359999999999999, 
+    9.0
+   ], 
+   "offset_ft": [
+    5.8710000000000004, 
+    -5.9359999999999999, 
+    -4.5
+   ], 
+   "tgt_anchor_w": [
+    179.71100000000001, 
+    -26.879000000000001, 
+    9.0
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 1.5707960000000001, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352940, 
+   "anchor_id": 5008188, 
+   "equip_shift_ft": 1.3, 
+   "type": "Duplex Wall", 
+   "tgt_dev_xyz": [
+    190.44999999999999, 
+    -59.765999999999998, 
+    4.0
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Mat_Fatigue_3x16_1203707", 
+   "anchor_dist_ft": 14.93, 
+   "src_anchor_w": [
+    175.916, 
+    -58.253999999999998, 
+    0.0
+   ], 
+   "offset_ft": [
+    14.927, 
+    -0.27700000000000002, 
+    4.0
+   ], 
+   "tgt_anchor_w": [
+    175.523, 
+    -59.488999999999997, 
+    0.0
+   ], 
+   "tgt_dev_rot": 1.5707960000000001
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 1.5707960000000001, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352943, 
+   "anchor_id": 5008188, 
+   "equip_shift_ft": 1.3, 
+   "type": "Duplex Wall", 
+   "tgt_dev_xyz": [
+    190.44999999999999, 
+    -55.765999999999998, 
+    4.0
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Mat_Fatigue_3x16_1203707", 
+   "anchor_dist_ft": 15.380000000000001, 
+   "src_anchor_w": [
+    175.916, 
+    -58.253999999999998, 
+    0.0
+   ], 
+   "offset_ft": [
+    14.927, 
+    3.7229999999999999, 
+    4.0
+   ], 
+   "tgt_anchor_w": [
+    175.523, 
+    -59.488999999999997, 
+    0.0
+   ], 
+   "tgt_dev_rot": 1.5707960000000001
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 1.5707960000000001, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352945, 
+   "anchor_id": 5008294, 
+   "equip_shift_ft": 1.4299999999999999, 
+   "type": "Quad Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    176.392, 
+    -78.361000000000004, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Mat_Fatigue_3x6_1203713", 
+   "anchor_dist_ft": 6.1699999999999999, 
+   "src_anchor_w": [
+    170.875, 
+    -73.576999999999998, 
+    0.0
+   ], 
+   "offset_ft": [
+    5.1500000000000004, 
+    -3.3980000000000001, 
+    1.5
+   ], 
+   "tgt_anchor_w": [
+    171.24199999999999, 
+    -74.962999999999994, 
+    0.0
+   ], 
+   "tgt_dev_rot": 1.5707960000000001
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 1.5707960000000001, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352946, 
+   "anchor_id": 5008294, 
+   "equip_shift_ft": 1.4299999999999999, 
+   "type": "Quad Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    176.392, 
+    -77.436000000000007, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Mat_Fatigue_3x6_1203713", 
+   "anchor_dist_ft": 5.71, 
+   "src_anchor_w": [
+    170.875, 
+    -73.576999999999998, 
+    0.0
+   ], 
+   "offset_ft": [
+    5.1500000000000004, 
+    -2.4729999999999999, 
+    1.5
+   ], 
+   "tgt_anchor_w": [
+    171.24199999999999, 
+    -74.962999999999994, 
+    0.0
+   ], 
+   "tgt_dev_rot": 1.5707960000000001
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 1.5707960000000001, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352948, 
+   "anchor_id": 5008288, 
+   "equip_shift_ft": 0.93000000000000005, 
+   "type": "Quad Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    175.84800000000001, 
+    -81.558999999999997, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Mat_Fatigue_3x6_1203713", 
+   "anchor_dist_ft": 4.9199999999999999, 
+   "src_anchor_w": [
+    171.291, 
+    -81.994, 
+    0.0
+   ], 
+   "offset_ft": [
+    4.734, 
+    1.3520000000000001, 
+    1.5
+   ], 
+   "tgt_anchor_w": [
+    171.114, 
+    -82.911000000000001, 
+    0.0
+   ], 
+   "tgt_dev_rot": 1.5707960000000001
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 1.5707960000000001, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352949, 
+   "anchor_id": 5008288, 
+   "equip_shift_ft": 0.93000000000000005, 
+   "type": "Quad Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    175.84800000000001, 
+    -80.632999999999996, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Mat_Fatigue_3x6_1203713", 
+   "anchor_dist_ft": 5.25, 
+   "src_anchor_w": [
+    171.291, 
+    -81.994, 
+    0.0
+   ], 
+   "offset_ft": [
+    4.734, 
+    2.2770000000000001, 
+    1.5
+   ], 
+   "tgt_anchor_w": [
+    171.114, 
+    -82.911000000000001, 
+    0.0
+   ], 
+   "tgt_dev_rot": 1.5707960000000001
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 1.5707960000000001, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352951, 
+   "anchor_id": 5008294, 
+   "equip_shift_ft": 1.4299999999999999, 
+   "type": "Quad Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    176.392, 
+    -74.694000000000003, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Mat_Fatigue_3x6_1203713", 
+   "anchor_dist_ft": 5.1600000000000001, 
+   "src_anchor_w": [
+    170.875, 
+    -73.576999999999998, 
+    0.0
+   ], 
+   "offset_ft": [
+    5.1500000000000004, 
+    0.26800000000000002, 
+    1.5
+   ], 
+   "tgt_anchor_w": [
+    171.24199999999999, 
+    -74.962999999999994, 
+    0.0
+   ], 
+   "tgt_dev_rot": 1.5707960000000001
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 1.5707960000000001, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352952, 
+   "anchor_id": 5008294, 
+   "equip_shift_ft": 1.4299999999999999, 
+   "type": "Quad Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    176.392, 
+    -73.769000000000005, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Mat_Fatigue_3x6_1203713", 
+   "anchor_dist_ft": 5.29, 
+   "src_anchor_w": [
+    170.875, 
+    -73.576999999999998, 
+    0.0
+   ], 
+   "offset_ft": [
+    5.1500000000000004, 
+    1.194, 
+    1.5
+   ], 
+   "tgt_anchor_w": [
+    171.24199999999999, 
+    -74.962999999999994, 
+    0.0
+   ], 
+   "tgt_dev_rot": 1.5707960000000001
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 4.7123889999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352954, 
+   "anchor_id": 5008302, 
+   "equip_shift_ft": 1.5700000000000001, 
+   "type": "Quad Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    167.25200000000001, 
+    -77.430999999999997, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Shelf_Wall_Metro_2Tier_18x48Chrome_1033428", 
+   "anchor_dist_ft": 3.2400000000000002, 
+   "src_anchor_w": [
+    167.06200000000001, 
+    -72.631, 
+    4.5
+   ], 
+   "offset_ft": [
+    0.0, 
+    -3.238, 
+    -3.0
+   ], 
+   "tgt_anchor_w": [
+    167.25200000000001, 
+    -74.192999999999998, 
+    4.5
+   ], 
+   "tgt_dev_rot": 4.7123889999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 4.7123889999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352955, 
+   "anchor_id": 5008287, 
+   "equip_shift_ft": 1.02, 
+   "type": "Quad Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    167.47999999999999, 
+    -77.721000000000004, 
+    2.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "005_Gate_6ft_Pharmacy_Roll_Down_Security_Grille_Custom_1038027", 
+   "anchor_dist_ft": 2.6200000000000001, 
+   "src_anchor_w": [
+    168.47900000000001, 
+    -78.994, 
+    2.0
+   ], 
+   "offset_ft": [
+    -1.417, 
+    2.2000000000000002, 
+    -0.5
+   ], 
+   "tgt_anchor_w": [
+    168.89599999999999, 
+    -79.921000000000006, 
+    3.0
+   ], 
+   "tgt_dev_rot": 4.7123889999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 4.7123889999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352957, 
+   "anchor_id": 5008302, 
+   "equip_shift_ft": 1.5700000000000001, 
+   "type": "Quad Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    167.25200000000001, 
+    -73.347999999999999, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Shelf_Wall_Metro_2Tier_18x48Chrome_1033428", 
+   "anchor_dist_ft": 0.84999999999999998, 
+   "src_anchor_w": [
+    167.06200000000001, 
+    -72.631, 
+    4.5
+   ], 
+   "offset_ft": [
+    0.0, 
+    0.84599999999999997, 
+    -3.0
+   ], 
+   "tgt_anchor_w": [
+    167.25200000000001, 
+    -74.192999999999998, 
+    4.5
+   ], 
+   "tgt_dev_rot": 4.7123889999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 4.7123889999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352958, 
+   "anchor_id": 5008302, 
+   "equip_shift_ft": 1.5700000000000001, 
+   "type": "Quad Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    167.25200000000001, 
+    -74.272999999999996, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Shelf_Wall_Metro_2Tier_18x48Chrome_1033428", 
+   "anchor_dist_ft": 0.080000000000000002, 
+   "src_anchor_w": [
+    167.06200000000001, 
+    -72.631, 
+    4.5
+   ], 
+   "offset_ft": [
+    0.0, 
+    -0.080000000000000002, 
+    -3.0
+   ], 
+   "tgt_anchor_w": [
+    167.25200000000001, 
+    -74.192999999999998, 
+    4.5
+   ], 
+   "tgt_dev_rot": 4.7123889999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 4.7123889999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352959, 
+   "anchor_id": 5008283, 
+   "equip_shift_ft": 1.04, 
+   "type": "Quad Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    167.93000000000001, 
+    -80.647000000000006, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "004_Monitor_Arm_1206176", 
+   "anchor_dist_ft": 0.84999999999999998, 
+   "src_anchor_w": [
+    168.49299999999999, 
+    -79.774000000000001, 
+    2.855
+   ], 
+   "offset_ft": [
+    -0.83899999999999997, 
+    0.127, 
+    -1.355
+   ], 
+   "tgt_anchor_w": [
+    168.76900000000001, 
+    -80.774000000000001, 
+    2.855
+   ], 
+   "tgt_dev_rot": 4.7123889999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 4.7123889999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352963, 
+   "anchor_id": 5008283, 
+   "equip_shift_ft": 1.04, 
+   "type": "Quad Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    167.93000000000001, 
+    -81.429000000000002, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "004_Monitor_Arm_1206176", 
+   "anchor_dist_ft": 1.0600000000000001, 
+   "src_anchor_w": [
+    168.49299999999999, 
+    -79.774000000000001, 
+    2.855
+   ], 
+   "offset_ft": [
+    -0.83899999999999997, 
+    -0.65500000000000003, 
+    -1.355
+   ], 
+   "tgt_anchor_w": [
+    168.76900000000001, 
+    -80.774000000000001, 
+    2.855
+   ], 
+   "tgt_dev_rot": 4.7123889999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 4.7123889999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352965, 
+   "anchor_id": 5008227, 
+   "equip_shift_ft": 1.27, 
+   "type": "Quad Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    180.899, 
+    -68.191000000000003, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Luxe_8500I_Payment_Terminal_1304743", 
+   "anchor_dist_ft": 7.79, 
+   "src_anchor_w": [
+    174.15799999999999, 
+    -63.779000000000003, 
+    3.0
+   ], 
+   "offset_ft": [
+    7.1050000000000004, 
+    -3.1930000000000001, 
+    -1.5
+   ], 
+   "tgt_anchor_w": [
+    173.79300000000001, 
+    -64.998000000000005, 
+    3.0
+   ], 
+   "tgt_dev_rot": 4.7123889999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 4.7123889999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352966, 
+   "anchor_id": 5008227, 
+   "equip_shift_ft": 1.27, 
+   "type": "Quad Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    180.899, 
+    -69.117000000000004, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Luxe_8500I_Payment_Terminal_1304743", 
+   "anchor_dist_ft": 8.2100000000000009, 
+   "src_anchor_w": [
+    174.15799999999999, 
+    -63.779000000000003, 
+    3.0
+   ], 
+   "offset_ft": [
+    7.1050000000000004, 
+    -4.1180000000000003, 
+    -1.5
+   ], 
+   "tgt_anchor_w": [
+    173.79300000000001, 
+    -64.998000000000005, 
+    3.0
+   ], 
+   "tgt_dev_rot": 4.7123889999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352967, 
+   "anchor_id": 5008264, 
+   "equip_shift_ft": 1.6799999999999999, 
+   "type": "Quad Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    171.92699999999999, 
+    -33.979999999999997, 
+    4.0
+   ], 
+   "status": "matched", 
+   "anchor_fam": "005_Scanner_Code_wStand_1033825", 
+   "anchor_dist_ft": 1.28, 
+   "src_anchor_w": [
+    171.89400000000001, 
+    -33.576999999999998, 
+    3.3330000000000002
+   ], 
+   "offset_ft": [
+    0.033000000000000002, 
+    1.2809999999999999, 
+    0.66700000000000004
+   ], 
+   "tgt_anchor_w": [
+    171.89400000000001, 
+    -35.259999999999998, 
+    3.3330000000000002
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352969, 
+   "anchor_id": 5008265, 
+   "equip_shift_ft": 1.6799999999999999, 
+   "type": "Quad Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    170.923, 
+    -33.979999999999997, 
+    4.0
+   ], 
+   "status": "matched", 
+   "anchor_fam": "004_Monitor_Arm_1206176", 
+   "anchor_dist_ft": 0.76000000000000001, 
+   "src_anchor_w": [
+    170.78200000000001, 
+    -33.039999999999999, 
+    2.7829999999999999
+   ], 
+   "offset_ft": [
+    0.14000000000000001, 
+    0.74399999999999999, 
+    1.2170000000000001
+   ], 
+   "tgt_anchor_w": [
+    170.78200000000001, 
+    -34.723999999999997, 
+    2.7829999999999999
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 4.7123889999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352970, 
+   "anchor_id": 5008237, 
+   "equip_shift_ft": 3.8500000000000001, 
+   "type": "Quad Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    172.24799999999999, 
+    -57.07, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "FD.05.25.19_Pharmacy POS signs", 
+   "anchor_dist_ft": 0.41999999999999998, 
+   "src_anchor_w": [
+    172.30600000000001, 
+    -61.338000000000001, 
+    3.3540000000000001
+   ], 
+   "offset_ft": [
+    -0.058999999999999997, 
+    0.41399999999999998, 
+    -1.8540000000000001
+   ], 
+   "tgt_anchor_w": [
+    172.30600000000001, 
+    -57.484000000000002, 
+    3.3540000000000001
+   ], 
+   "tgt_dev_rot": 4.7123889999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 4.7123889999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352971, 
+   "anchor_id": 5008172, 
+   "equip_shift_ft": 1.8100000000000001, 
+   "type": "Quad Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    171.98699999999999, 
+    -61.212000000000003, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Hypercom_1027619", 
+   "anchor_dist_ft": 0.56999999999999995, 
+   "src_anchor_w": [
+    172.24600000000001, 
+    -58.853999999999999, 
+    3.9860000000000002
+   ], 
+   "offset_ft": [
+    0.001, 
+    -0.56699999999999995, 
+    -2.4860000000000002
+   ], 
+   "tgt_anchor_w": [
+    171.98599999999999, 
+    -60.646000000000001, 
+    3.9860000000000002
+   ], 
+   "tgt_dev_rot": 4.7123889999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 4.7123889999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352975, 
+   "anchor_id": 5008237, 
+   "equip_shift_ft": 3.8500000000000001, 
+   "type": "Quad Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    172.24799999999999, 
+    -56.32, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "FD.05.25.19_Pharmacy POS signs", 
+   "anchor_dist_ft": 1.1699999999999999, 
+   "src_anchor_w": [
+    172.30600000000001, 
+    -61.338000000000001, 
+    3.3540000000000001
+   ], 
+   "offset_ft": [
+    -0.058999999999999997, 
+    1.1639999999999999, 
+    -1.8540000000000001
+   ], 
+   "tgt_anchor_w": [
+    172.30600000000001, 
+    -57.484000000000002, 
+    3.3540000000000001
+   ], 
+   "tgt_dev_rot": 4.7123889999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 4.7123889999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352976, 
+   "anchor_id": 5008222, 
+   "equip_shift_ft": 1.8, 
+   "type": "Quad Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    171.98699999999999, 
+    -67.664000000000001, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Hypercom_1027619", 
+   "anchor_dist_ft": 2.02, 
+   "src_anchor_w": [
+    172.24600000000001, 
+    -63.863999999999997, 
+    3.9860000000000002
+   ], 
+   "offset_ft": [
+    0.001, 
+    -2.0179999999999998, 
+    -2.4860000000000002
+   ], 
+   "tgt_anchor_w": [
+    171.98599999999999, 
+    -65.646000000000001, 
+    3.9860000000000002
+   ], 
+   "tgt_dev_rot": 4.7123889999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 4.7123889999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352977, 
+   "anchor_id": 5008222, 
+   "equip_shift_ft": 1.8, 
+   "type": "Quad Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    171.98699999999999, 
+    -66.284999999999997, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Hypercom_1027619", 
+   "anchor_dist_ft": 0.64000000000000001, 
+   "src_anchor_w": [
+    172.24600000000001, 
+    -63.863999999999997, 
+    3.9860000000000002
+   ], 
+   "offset_ft": [
+    0.001, 
+    -0.64000000000000001, 
+    -2.4860000000000002
+   ], 
+   "tgt_anchor_w": [
+    171.98599999999999, 
+    -65.646000000000001, 
+    3.9860000000000002
+   ], 
+   "tgt_dev_rot": 4.7123889999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 4.7123889999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352981, 
+   "anchor_id": 5008222, 
+   "equip_shift_ft": 1.8, 
+   "type": "Quad Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    171.98699999999999, 
+    -66.954999999999998, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Hypercom_1027619", 
+   "anchor_dist_ft": 1.3100000000000001, 
+   "src_anchor_w": [
+    172.24600000000001, 
+    -63.863999999999997, 
+    3.9860000000000002
+   ], 
+   "offset_ft": [
+    0.001, 
+    -1.3100000000000001, 
+    -2.4860000000000002
+   ], 
+   "tgt_anchor_w": [
+    171.98599999999999, 
+    -65.646000000000001, 
+    3.9860000000000002
+   ], 
+   "tgt_dev_rot": 4.7123889999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 4.7123889999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352982, 
+   "anchor_id": 5008236, 
+   "equip_shift_ft": 6.1299999999999999, 
+   "type": "Quad Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    172.245, 
+    -61.762999999999998, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "FD.05.25.16_Pharmacy POS signs", 
+   "anchor_dist_ft": 0.70999999999999996, 
+   "src_anchor_w": [
+    172.30600000000001, 
+    -56.338000000000001, 
+    3.3540000000000001
+   ], 
+   "offset_ft": [
+    -0.062, 
+    0.70499999999999996, 
+    -1.8540000000000001
+   ], 
+   "tgt_anchor_w": [
+    172.30600000000001, 
+    -62.469000000000001, 
+    3.3540000000000001
+   ], 
+   "tgt_dev_rot": 4.7123889999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 4.7123889999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352983, 
+   "anchor_id": 5008184, 
+   "equip_shift_ft": 1.8, 
+   "type": "Quad Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    171.98400000000001, 
+    -55.494, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Hypercom_1027619", 
+   "anchor_dist_ft": 0.84999999999999998, 
+   "src_anchor_w": [
+    172.24600000000001, 
+    -52.863999999999997, 
+    3.9860000000000002
+   ], 
+   "offset_ft": [
+    -0.002, 
+    -0.84799999999999998, 
+    -2.4860000000000002
+   ], 
+   "tgt_anchor_w": [
+    171.98599999999999, 
+    -54.646000000000001, 
+    3.9860000000000002
+   ], 
+   "tgt_dev_rot": 4.7123889999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 4.7123889999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352987, 
+   "anchor_id": 5008163, 
+   "equip_shift_ft": 1.29, 
+   "type": "Quad Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    171.851, 
+    -55.902999999999999, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "005_Workstation_PickUp_TAS_1038291", 
+   "anchor_dist_ft": 1.6299999999999999, 
+   "src_anchor_w": [
+    173.05199999999999, 
+    -53.253999999999998, 
+    0.0
+   ], 
+   "offset_ft": [
+    -0.80700000000000005, 
+    -1.4199999999999999, 
+    1.5
+   ], 
+   "tgt_anchor_w": [
+    172.65799999999999, 
+    -54.484000000000002, 
+    0.0
+   ], 
+   "tgt_dev_rot": 4.7123889999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 4.7123889999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352988, 
+   "anchor_id": 5008188, 
+   "equip_shift_ft": 1.3, 
+   "type": "Quad Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    180.87, 
+    -57.439, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Mat_Fatigue_3x16_1203707", 
+   "anchor_dist_ft": 5.7300000000000004, 
+   "src_anchor_w": [
+    175.916, 
+    -58.253999999999998, 
+    0.0
+   ], 
+   "offset_ft": [
+    5.3470000000000004, 
+    2.0499999999999998, 
+    1.5
+   ], 
+   "tgt_anchor_w": [
+    175.523, 
+    -59.488999999999997, 
+    0.0
+   ], 
+   "tgt_dev_rot": 4.7123889999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 4.7123889999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352990, 
+   "anchor_id": 5008188, 
+   "equip_shift_ft": 1.3, 
+   "type": "Quad Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    180.87, 
+    -56.710000000000001, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Mat_Fatigue_3x16_1203707", 
+   "anchor_dist_ft": 6.0300000000000002, 
+   "src_anchor_w": [
+    175.916, 
+    -58.253999999999998, 
+    0.0
+   ], 
+   "offset_ft": [
+    5.3470000000000004, 
+    2.7789999999999999, 
+    1.5
+   ], 
+   "tgt_anchor_w": [
+    175.523, 
+    -59.488999999999997, 
+    0.0
+   ], 
+   "tgt_dev_rot": 4.7123889999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 4.7123889999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352991, 
+   "anchor_id": 5008227, 
+   "equip_shift_ft": 1.27, 
+   "type": "Quad Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    180.899, 
+    -64.731999999999999, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Luxe_8500I_Payment_Terminal_1304743", 
+   "anchor_dist_ft": 7.1100000000000003, 
+   "src_anchor_w": [
+    174.15799999999999, 
+    -63.779000000000003, 
+    3.0
+   ], 
+   "offset_ft": [
+    7.1050000000000004, 
+    0.26600000000000001, 
+    -1.5
+   ], 
+   "tgt_anchor_w": [
+    173.79300000000001, 
+    -64.998000000000005, 
+    3.0
+   ], 
+   "tgt_dev_rot": 4.7123889999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 4.7123889999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352993, 
+   "anchor_id": 5008188, 
+   "equip_shift_ft": 1.3, 
+   "type": "Quad Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    180.87, 
+    -64.018000000000001, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Mat_Fatigue_3x16_1203707", 
+   "anchor_dist_ft": 7.0099999999999998, 
+   "src_anchor_w": [
+    175.916, 
+    -58.253999999999998, 
+    0.0
+   ], 
+   "offset_ft": [
+    5.3470000000000004, 
+    -4.5289999999999999, 
+    1.5
+   ], 
+   "tgt_anchor_w": [
+    175.523, 
+    -59.488999999999997, 
+    0.0
+   ], 
+   "tgt_dev_rot": 4.7123889999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 4.7123889999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352994, 
+   "anchor_id": 5008188, 
+   "equip_shift_ft": 1.3, 
+   "type": "Quad Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    180.87, 
+    -60.768000000000001, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Mat_Fatigue_3x16_1203707", 
+   "anchor_dist_ft": 5.5, 
+   "src_anchor_w": [
+    175.916, 
+    -58.253999999999998, 
+    0.0
+   ], 
+   "offset_ft": [
+    5.3470000000000004, 
+    -1.28, 
+    1.5
+   ], 
+   "tgt_anchor_w": [
+    175.523, 
+    -59.488999999999997, 
+    0.0
+   ], 
+   "tgt_dev_rot": 4.7123889999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 4.7123889999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352996, 
+   "anchor_id": 5008188, 
+   "equip_shift_ft": 1.3, 
+   "type": "Quad Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    180.87, 
+    -60.039000000000001, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Mat_Fatigue_3x16_1203707", 
+   "anchor_dist_ft": 5.3799999999999999, 
+   "src_anchor_w": [
+    175.916, 
+    -58.253999999999998, 
+    0.0
+   ], 
+   "offset_ft": [
+    5.3470000000000004, 
+    -0.55000000000000004, 
+    1.5
+   ], 
+   "tgt_anchor_w": [
+    175.523, 
+    -59.488999999999997, 
+    0.0
+   ], 
+   "tgt_dev_rot": 4.7123889999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352997, 
+   "anchor_id": 4353917, 
+   "equip_shift_ft": 3.3300000000000001, 
+   "type": "Quad Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    190.45500000000001, 
+    -32.825000000000003, 
+    4.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "NP.23.00.N01-50_AisleMarker", 
+   "anchor_dist_ft": 12.279999999999999, 
+   "src_anchor_w": [
+    176.42099999999999, 
+    -26.359999999999999, 
+    9.0
+   ], 
+   "offset_ft": [
+    10.744, 
+    -5.9450000000000003, 
+    -4.5
+   ], 
+   "tgt_anchor_w": [
+    179.71100000000001, 
+    -26.879000000000001, 
+    9.0
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9352999, 
+   "anchor_id": 4353917, 
+   "equip_shift_ft": 3.3300000000000001, 
+   "type": "Quad Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    191.53899999999999, 
+    -32.825000000000003, 
+    4.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "NP.23.00.N01-50_AisleMarker", 
+   "anchor_dist_ft": 13.24, 
+   "src_anchor_w": [
+    176.42099999999999, 
+    -26.359999999999999, 
+    9.0
+   ], 
+   "offset_ft": [
+    11.827999999999999, 
+    -5.9450000000000003, 
+    -4.5
+   ], 
+   "tgt_anchor_w": [
+    179.71100000000001, 
+    -26.879000000000001, 
+    9.0
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9353000, 
+   "anchor_id": 4353917, 
+   "equip_shift_ft": 3.3300000000000001, 
+   "type": "Quad Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    192.78899999999999, 
+    -32.825000000000003, 
+    4.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "NP.23.00.N01-50_AisleMarker", 
+   "anchor_dist_ft": 14.369999999999999, 
+   "src_anchor_w": [
+    176.42099999999999, 
+    -26.359999999999999, 
+    9.0
+   ], 
+   "offset_ft": [
+    13.077999999999999, 
+    -5.9450000000000003, 
+    -4.5
+   ], 
+   "tgt_anchor_w": [
+    179.71100000000001, 
+    -26.879000000000001, 
+    9.0
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 4.7123889999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9353001, 
+   "anchor_id": 5008144, 
+   "equip_shift_ft": 1.3700000000000001, 
+   "type": "Quad Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    168.066, 
+    -68.722999999999999, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "004_Monitor_Arm_1206176", 
+   "anchor_dist_ft": 0.81000000000000005, 
+   "src_anchor_w": [
+    167.90199999999999, 
+    -68.180000000000007, 
+    2.4430000000000001
+   ], 
+   "offset_ft": [
+    -0.439, 
+    0.68600000000000005, 
+    -0.94299999999999995
+   ], 
+   "tgt_anchor_w": [
+    168.506, 
+    -69.409000000000006, 
+    2.4430000000000001
+   ], 
+   "tgt_dev_rot": 4.7123889999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 4.7123889999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9353005, 
+   "anchor_id": 5008148, 
+   "equip_shift_ft": 1.4099999999999999, 
+   "type": "Quad Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    168.11000000000001, 
+    -69.528999999999996, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "005_Gate_3.5ft_Pharmacy_Roll_Down_Security_Grille_Custom_1037806", 
+   "anchor_dist_ft": 0.41999999999999998, 
+   "src_anchor_w": [
+    167.06200000000001, 
+    -68.411000000000001, 
+    2.0
+   ], 
+   "offset_ft": [
+    0.40000000000000002, 
+    0.13400000000000001, 
+    -0.5
+   ], 
+   "tgt_anchor_w": [
+    167.71000000000001, 
+    -69.662999999999997, 
+    2.0
+   ], 
+   "tgt_dev_rot": 4.7123889999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 1.5707960000000001, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9353360, 
+   "anchor_id": 5008302, 
+   "equip_shift_ft": 1.5700000000000001, 
+   "type": "Duplex Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    166.749, 
+    -76.292000000000002, 
+    6.0
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Shelf_Wall_Metro_2Tier_18x48Chrome_1033428", 
+   "anchor_dist_ft": 2.1600000000000001, 
+   "src_anchor_w": [
+    167.06200000000001, 
+    -72.631, 
+    4.5
+   ], 
+   "offset_ft": [
+    -0.503, 
+    -2.0990000000000002, 
+    1.5
+   ], 
+   "tgt_anchor_w": [
+    167.25200000000001, 
+    -74.192999999999998, 
+    4.5
+   ], 
+   "tgt_dev_rot": 1.5707960000000001
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9353521, 
+   "anchor_id": 5008239, 
+   "equip_shift_ft": 1.6799999999999999, 
+   "type": "Duplex Wall - Tamper Resistant", 
+   "tgt_dev_xyz": [
+    171.12700000000001, 
+    -43.115000000000002, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "005_Chair_Stack_1207054", 
+   "anchor_dist_ft": 1.4099999999999999, 
+   "src_anchor_w": [
+    170.09, 
+    -42.390000000000001, 
+    -0.0
+   ], 
+   "offset_ft": [
+    1.0369999999999999, 
+    0.95799999999999996, 
+    1.5
+   ], 
+   "tgt_anchor_w": [
+    170.09, 
+    -44.073, 
+    -0.0
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 1.5707960000000001, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9353525, 
+   "anchor_id": 5008240, 
+   "equip_shift_ft": 1.52, 
+   "type": "Quad Wall", 
+   "tgt_dev_xyz": [
+    190.934, 
+    -42.331000000000003, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Coat_Rack_1000108", 
+   "anchor_dist_ft": 15.67, 
+   "src_anchor_w": [
+    175.22900000000001, 
+    -42.090000000000003, 
+    5.0
+   ], 
+   "offset_ft": [
+    15.615, 
+    1.276, 
+    -3.5
+   ], 
+   "tgt_anchor_w": [
+    175.31999999999999, 
+    -43.606999999999999, 
+    5.0
+   ], 
+   "tgt_dev_rot": 1.5707960000000001
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 1.5707960000000001, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9353526, 
+   "anchor_id": 5008246, 
+   "equip_shift_ft": 1.0, 
+   "type": "Quad Wall", 
+   "tgt_dev_xyz": [
+    190.76400000000001, 
+    -48.719999999999999, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "FD.05.25.14_PharmacyAccess&Security", 
+   "anchor_dist_ft": 15.539999999999999, 
+   "src_anchor_w": [
+    175.38200000000001, 
+    -46.029000000000003, 
+    4.0
+   ], 
+   "offset_ft": [
+    15.445, 
+    -1.694, 
+    -2.5
+   ], 
+   "tgt_anchor_w": [
+    175.31999999999999, 
+    -47.027000000000001, 
+    4.0
+   ], 
+   "tgt_dev_rot": 1.5707960000000001
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 1.5707960000000001, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9353527, 
+   "anchor_id": 5008241, 
+   "equip_shift_ft": 1.02, 
+   "type": "Quad Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    190.934, 
+    -44.432000000000002, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "005_Coat_Hook_1206504", 
+   "anchor_dist_ft": 15.48, 
+   "src_anchor_w": [
+    175.39500000000001, 
+    -44.389000000000003, 
+    4.0
+   ], 
+   "offset_ft": [
+    15.449, 
+    0.97299999999999998, 
+    -2.5
+   ], 
+   "tgt_anchor_w": [
+    175.48599999999999, 
+    -45.405999999999999, 
+    4.0
+   ], 
+   "tgt_dev_rot": 1.5707960000000001
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 1.5707960000000001, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9353529, 
+   "anchor_id": 5008241, 
+   "equip_shift_ft": 1.02, 
+   "type": "Quad Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    190.934, 
+    -43.569000000000003, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "005_Coat_Hook_1206504", 
+   "anchor_dist_ft": 15.56, 
+   "src_anchor_w": [
+    175.39500000000001, 
+    -44.389000000000003, 
+    4.0
+   ], 
+   "offset_ft": [
+    15.449, 
+    1.837, 
+    -2.5
+   ], 
+   "tgt_anchor_w": [
+    175.48599999999999, 
+    -45.405999999999999, 
+    4.0
+   ], 
+   "tgt_dev_rot": 1.5707960000000001
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 1.5707960000000001, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9353530, 
+   "anchor_id": 5008240, 
+   "equip_shift_ft": 1.52, 
+   "type": "Quad Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    190.934, 
+    -40.914000000000001, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Coat_Rack_1000108", 
+   "anchor_dist_ft": 15.85, 
+   "src_anchor_w": [
+    175.22900000000001, 
+    -42.090000000000003, 
+    5.0
+   ], 
+   "offset_ft": [
+    15.615, 
+    2.6930000000000001, 
+    -3.5
+   ], 
+   "tgt_anchor_w": [
+    175.31999999999999, 
+    -43.606999999999999, 
+    5.0
+   ], 
+   "tgt_dev_rot": 1.5707960000000001
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 1.5707960000000001, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9353535, 
+   "anchor_id": 5008240, 
+   "equip_shift_ft": 1.52, 
+   "type": "Quad Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    190.934, 
+    -43.207999999999998, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Coat_Rack_1000108", 
+   "anchor_dist_ft": 15.619999999999999, 
+   "src_anchor_w": [
+    175.22900000000001, 
+    -42.090000000000003, 
+    5.0
+   ], 
+   "offset_ft": [
+    15.615, 
+    0.39900000000000002, 
+    -3.5
+   ], 
+   "tgt_anchor_w": [
+    175.31999999999999, 
+    -43.606999999999999, 
+    5.0
+   ], 
+   "tgt_dev_rot": 1.5707960000000001
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 1.5707960000000001, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9353537, 
+   "anchor_id": 5008246, 
+   "equip_shift_ft": 1.0, 
+   "type": "Quad Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    190.76400000000001, 
+    -47.302999999999997, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "FD.05.25.14_PharmacyAccess&Security", 
+   "anchor_dist_ft": 15.449999999999999, 
+   "src_anchor_w": [
+    175.38200000000001, 
+    -46.029000000000003, 
+    4.0
+   ], 
+   "offset_ft": [
+    15.445, 
+    -0.27700000000000002, 
+    -2.5
+   ], 
+   "tgt_anchor_w": [
+    175.31999999999999, 
+    -47.027000000000001, 
+    4.0
+   ], 
+   "tgt_dev_rot": 1.5707960000000001
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9374459, 
+   "anchor_id": 4353917, 
+   "equip_shift_ft": 3.3300000000000001, 
+   "type": "Duplex Wall - Isolated Ground", 
+   "tgt_dev_xyz": [
+    187.499, 
+    -32.816000000000003, 
+    4.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "NP.23.00.N01-50_AisleMarker", 
+   "anchor_dist_ft": 9.7899999999999991, 
+   "src_anchor_w": [
+    176.42099999999999, 
+    -26.359999999999999, 
+    9.0
+   ], 
+   "offset_ft": [
+    7.7880000000000003, 
+    -5.9359999999999999, 
+    -4.5
+   ], 
+   "tgt_anchor_w": [
+    179.71100000000001, 
+    -26.879000000000001, 
+    9.0
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9374485, 
+   "anchor_id": 4353917, 
+   "equip_shift_ft": 3.3300000000000001, 
+   "type": "Duplex Wall", 
+   "tgt_dev_xyz": [
+    186.559, 
+    -32.825000000000003, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "NP.23.00.N01-50_AisleMarker", 
+   "anchor_dist_ft": 9.0700000000000003, 
+   "src_anchor_w": [
+    176.42099999999999, 
+    -26.359999999999999, 
+    9.0
+   ], 
+   "offset_ft": [
+    6.8479999999999999, 
+    -5.9450000000000003, 
+    -7.5
+   ], 
+   "tgt_anchor_w": [
+    179.71100000000001, 
+    -26.879000000000001, 
+    9.0
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 1.5707960000000001, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9408899, 
+   "anchor_id": 4457262, 
+   "equip_shift_ft": 3.3900000000000001, 
+   "type": "Duplex Wall - GFCI", 
+   "tgt_dev_xyz": [
+    214.30000000000001, 
+    14.711, 
+    8.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "FD.07.07.01_More Choices. More Savings. More Texas.", 
+   "anchor_dist_ft": 28.25, 
+   "src_anchor_w": [
+    189.20500000000001, 
+    30.484999999999999, 
+    10.0
+   ], 
+   "offset_ft": [
+    25.384, 
+    -12.401999999999999, 
+    -2.5
+   ], 
+   "tgt_anchor_w": [
+    188.916, 
+    27.111999999999998, 
+    11.0
+   ], 
+   "tgt_dev_rot": 1.5707960000000001
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 1.5707960000000001, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9408913, 
+   "anchor_id": 4457262, 
+   "equip_shift_ft": 3.3900000000000001, 
+   "type": "Duplex Wall - GFCI", 
+   "tgt_dev_xyz": [
+    198.31, 
+    13.211, 
+    8.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "FD.07.07.01_More Choices. More Savings. More Texas.", 
+   "anchor_dist_ft": 16.780000000000001, 
+   "src_anchor_w": [
+    189.20500000000001, 
+    30.484999999999999, 
+    10.0
+   ], 
+   "offset_ft": [
+    9.3930000000000007, 
+    -13.901999999999999, 
+    -2.5
+   ], 
+   "tgt_anchor_w": [
+    188.916, 
+    27.111999999999998, 
+    11.0
+   ], 
+   "tgt_dev_rot": 1.5707960000000001
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 1.5707960000000001, 
+   "fam": "EF-U_Junction Box_CED", 
+   "id": 9409222, 
+   "anchor_id": 5008249, 
+   "equip_shift_ft": 1.6899999999999999, 
+   "type": "Wall - No Stem", 
+   "tgt_dev_xyz": [
+    174.38499999999999, 
+    -40.222000000000001, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "005_Chair_Stack_1207054", 
+   "anchor_dist_ft": 2.2400000000000002, 
+   "src_anchor_w": [
+    172.92599999999999, 
+    -39.753999999999998, 
+    -0.0
+   ], 
+   "offset_ft": [
+    1.917, 
+    1.1579999999999999, 
+    1.5
+   ], 
+   "tgt_anchor_w": [
+    172.46799999999999, 
+    -41.380000000000003, 
+    -0.0
+   ], 
+   "tgt_dev_rot": 1.5707960000000001
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 0.0, 
+   "fam": "CED-E-STUB-UP", 
+   "id": 9411422, 
+   "anchor_id": 5008227, 
+   "equip_shift_ft": 1.27, 
+   "type": "Stub Up", 
+   "tgt_dev_xyz": [
+    181.11500000000001, 
+    -69.710999999999999, 
+    0.0
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Luxe_8500I_Payment_Terminal_1304743", 
+   "anchor_dist_ft": 8.7100000000000009, 
+   "src_anchor_w": [
+    174.15799999999999, 
+    -63.779000000000003, 
+    3.0
+   ], 
+   "offset_ft": [
+    7.3220000000000001, 
+    -4.7130000000000001, 
+    -3.0
+   ], 
+   "tgt_anchor_w": [
+    173.79300000000001, 
+    -64.998000000000005, 
+    3.0
+   ], 
+   "tgt_dev_rot": 0.0
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 0.0, 
+   "fam": "CED-E-STUB-UP", 
+   "id": 9411630, 
+   "anchor_id": 5008221, 
+   "equip_shift_ft": 1.27, 
+   "type": "Stub Up", 
+   "tgt_dev_xyz": [
+    173.85400000000001, 
+    -67.676000000000002, 
+    0.0
+   ], 
+   "status": "matched", 
+   "anchor_fam": "005_Scanner_Code_wStand_1033825", 
+   "anchor_dist_ft": 2.6299999999999999, 
+   "src_anchor_w": [
+    173.87, 
+    -63.854999999999997, 
+    3.4119999999999999
+   ], 
+   "offset_ft": [
+    0.34899999999999998, 
+    -2.6019999999999999, 
+    -3.4119999999999999
+   ], 
+   "tgt_anchor_w": [
+    173.506, 
+    -65.073999999999998, 
+    3.4119999999999999
+   ], 
+   "tgt_dev_rot": 0.0
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 0.0, 
+   "fam": "CED-E-STUB-UP", 
+   "id": 9411763, 
+   "anchor_id": 5008288, 
+   "equip_shift_ft": 0.93000000000000005, 
+   "type": "Stub Up", 
+   "tgt_dev_xyz": [
+    175.929, 
+    -82.734999999999999, 
+    0.0
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Mat_Fatigue_3x6_1203713", 
+   "anchor_dist_ft": 4.8200000000000003, 
+   "src_anchor_w": [
+    171.291, 
+    -81.994, 
+    0.0
+   ], 
+   "offset_ft": [
+    4.8140000000000001, 
+    0.17599999999999999, 
+    -0.0
+   ], 
+   "tgt_anchor_w": [
+    171.114, 
+    -82.911000000000001, 
+    0.0
+   ], 
+   "tgt_dev_rot": 0.0
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 0.0, 
+   "fam": "CED-E-STUB-UP", 
+   "id": 9411764, 
+   "anchor_id": 5008280, 
+   "equip_shift_ft": 1.04, 
+   "type": "Stub Up", 
+   "tgt_dev_xyz": [
+    169.857, 
+    -79.790999999999997, 
+    0.0
+   ], 
+   "status": "matched", 
+   "anchor_fam": "005_FingerprintReader_URU_1027654", 
+   "anchor_dist_ft": 0.40999999999999998, 
+   "src_anchor_w": [
+    169.453, 
+    -79.177999999999997, 
+    3.52
+   ], 
+   "offset_ft": [
+    0.127, 
+    0.38700000000000001, 
+    -3.52
+   ], 
+   "tgt_anchor_w": [
+    169.72999999999999, 
+    -80.177999999999997, 
+    3.52
+   ], 
+   "tgt_dev_rot": 0.0
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 6.2831849999999996, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9639453, 
+   "anchor_id": 4353912, 
+   "equip_shift_ft": 3.98, 
+   "type": "Duplex Wall", 
+   "tgt_dev_xyz": [
+    180.66900000000001, 
+    22.012, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "NP.23.00.N01-50_AisleMarker", 
+   "anchor_dist_ft": 5.9400000000000004, 
+   "src_anchor_w": [
+    176.42099999999999, 
+    25.640000000000001, 
+    9.0
+   ], 
+   "offset_ft": [
+    0.95799999999999996, 
+    -5.859, 
+    -7.5
+   ], 
+   "tgt_anchor_w": [
+    179.71100000000001, 
+    27.870999999999999, 
+    9.0
+   ], 
+   "tgt_dev_rot": 6.2831849999999996
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 6.2831849999999996, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9639459, 
+   "anchor_id": 4353914, 
+   "equip_shift_ft": 3.3599999999999999, 
+   "type": "Duplex Wall", 
+   "tgt_dev_xyz": [
+    180.68700000000001, 
+    8.6159999999999997, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "NP.23.00.N01-50_AisleMarker", 
+   "anchor_dist_ft": 4.9699999999999998, 
+   "src_anchor_w": [
+    176.42099999999999, 
+    3.0569999999999999, 
+    9.0
+   ], 
+   "offset_ft": [
+    0.97599999999999998, 
+    4.8700000000000001, 
+    -7.5
+   ], 
+   "tgt_anchor_w": [
+    179.71100000000001, 
+    3.746, 
+    9.0
+   ], 
+   "tgt_dev_rot": 6.2831849999999996
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 6.2831849999999996, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9639465, 
+   "anchor_id": 4353915, 
+   "equip_shift_ft": 3.3199999999999998, 
+   "type": "Duplex Wall", 
+   "tgt_dev_xyz": [
+    180.63200000000001, 
+    -3.5089999999999999, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "NP.23.00.N01-50_AisleMarker", 
+   "anchor_dist_ft": 4.04, 
+   "src_anchor_w": [
+    176.42099999999999, 
+    -7.8600000000000003, 
+    9.0
+   ], 
+   "offset_ft": [
+    0.92100000000000004, 
+    3.9329999999999998, 
+    -7.5
+   ], 
+   "tgt_anchor_w": [
+    179.71100000000001, 
+    -7.4420000000000002, 
+    9.0
+   ], 
+   "tgt_dev_rot": 6.2831849999999996
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 6.2831849999999996, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9639471, 
+   "anchor_id": 4353916, 
+   "equip_shift_ft": 3.48, 
+   "type": "Duplex Wall", 
+   "tgt_dev_xyz": [
+    180.65199999999999, 
+    -13.843, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "NP.23.00.N01-50_AisleMarker", 
+   "anchor_dist_ft": 4.2699999999999996, 
+   "src_anchor_w": [
+    176.42099999999999, 
+    -16.859999999999999, 
+    9.0
+   ], 
+   "offset_ft": [
+    0.94099999999999995, 
+    4.1619999999999999, 
+    -7.5
+   ], 
+   "tgt_anchor_w": [
+    179.71100000000001, 
+    -18.004000000000001, 
+    9.0
+   ], 
+   "tgt_dev_rot": 6.2831849999999996
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 6.2831849999999996, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9639477, 
+   "anchor_id": 4353917, 
+   "equip_shift_ft": 3.3300000000000001, 
+   "type": "Duplex Wall", 
+   "tgt_dev_xyz": [
+    180.62799999999999, 
+    -22.655000000000001, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "NP.23.00.N01-50_AisleMarker", 
+   "anchor_dist_ft": 4.3200000000000003, 
+   "src_anchor_w": [
+    176.42099999999999, 
+    -26.359999999999999, 
+    9.0
+   ], 
+   "offset_ft": [
+    0.91700000000000004, 
+    4.2240000000000002, 
+    -7.5
+   ], 
+   "tgt_anchor_w": [
+    179.71100000000001, 
+    -26.879000000000001, 
+    9.0
+   ], 
+   "tgt_dev_rot": 6.2831849999999996
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 0.0, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9684796, 
+   "anchor_id": 5008265, 
+   "equip_shift_ft": 1.6799999999999999, 
+   "type": "Duplex Wall", 
+   "tgt_dev_xyz": [
+    162.39099999999999, 
+    -23.818999999999999, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "004_Monitor_Arm_1206176", 
+   "anchor_dist_ft": 13.76, 
+   "src_anchor_w": [
+    170.78200000000001, 
+    -33.039999999999999, 
+    2.7829999999999999
+   ], 
+   "offset_ft": [
+    -8.3919999999999995, 
+    10.904999999999999, 
+    -1.2829999999999999
+   ], 
+   "tgt_anchor_w": [
+    170.78200000000001, 
+    -34.723999999999997, 
+    2.7829999999999999
+   ], 
+   "tgt_dev_rot": 0.0
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 0.0, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9684798, 
+   "anchor_id": 4353917, 
+   "equip_shift_ft": 3.3300000000000001, 
+   "type": "Duplex Wall", 
+   "tgt_dev_xyz": [
+    173.76400000000001, 
+    -22.655000000000001, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "NP.23.00.N01-50_AisleMarker", 
+   "anchor_dist_ft": 7.29, 
+   "src_anchor_w": [
+    176.42099999999999, 
+    -26.359999999999999, 
+    9.0
+   ], 
+   "offset_ft": [
+    -5.9470000000000001, 
+    4.2240000000000002, 
+    -7.5
+   ], 
+   "tgt_anchor_w": [
+    179.71100000000001, 
+    -26.879000000000001, 
+    9.0
+   ], 
+   "tgt_dev_rot": 0.0
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Receptacle_CED", 
+   "id": 9684805, 
+   "anchor_id": 4353916, 
+   "equip_shift_ft": 3.48, 
+   "type": "Duplex Wall", 
+   "tgt_dev_xyz": [
+    170.71799999999999, 
+    -14.071999999999999, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "NP.23.00.N01-50_AisleMarker", 
+   "anchor_dist_ft": 9.8200000000000003, 
+   "src_anchor_w": [
+    176.42099999999999, 
+    -16.859999999999999, 
+    9.0
+   ], 
+   "offset_ft": [
+    -8.9930000000000003, 
+    3.9329999999999998, 
+    -7.5
+   ], 
+   "tgt_anchor_w": [
+    179.71100000000001, 
+    -18.004000000000001, 
+    9.0
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 0.0, 
+   "fam": "EF-U_Junction Box_CED", 
+   "id": 9688971, 
+   "anchor_id": 5008288, 
+   "equip_shift_ft": 0.93000000000000005, 
+   "type": "Wall - No Stem", 
+   "tgt_dev_xyz": [
+    173.292, 
+    -87.796000000000006, 
+    10.0
+   ], 
+   "status": "matched", 
+   "anchor_fam": "000_Mat_Fatigue_3x6_1203713", 
+   "anchor_dist_ft": 5.3499999999999996, 
+   "src_anchor_w": [
+    171.291, 
+    -81.994, 
+    0.0
+   ], 
+   "offset_ft": [
+    2.177, 
+    -4.8849999999999998, 
+    10.0
+   ], 
+   "tgt_anchor_w": [
+    171.114, 
+    -82.911000000000001, 
+    0.0
+   ], 
+   "tgt_dev_rot": 0.0
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Junction Box_CED", 
+   "id": 10612405, 
+   "anchor_id": 5008264, 
+   "equip_shift_ft": 1.6799999999999999, 
+   "type": "Wall - No Stem", 
+   "tgt_dev_xyz": [
+    175.95699999999999, 
+    -33.988999999999997, 
+    1.5
+   ], 
+   "status": "matched", 
+   "anchor_fam": "005_Scanner_Code_wStand_1033825", 
+   "anchor_dist_ft": 4.2599999999999998, 
+   "src_anchor_w": [
+    171.89400000000001, 
+    -33.576999999999998, 
+    3.3330000000000002
+   ], 
+   "offset_ft": [
+    4.0629999999999997, 
+    1.2709999999999999, 
+    -1.833
+   ], 
+   "tgt_anchor_w": [
+    171.89400000000001, 
+    -35.259999999999998, 
+    3.3330000000000002
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }, 
+  {
+   "dtheta_deg": 0.0, 
+   "src_dev_rot": 3.1415929999999999, 
+   "fam": "EF-U_Motor Rated Switch_CED", 
+   "id": 10612409, 
+   "anchor_id": 5008264, 
+   "equip_shift_ft": 1.6799999999999999, 
+   "type": "Motor Rated Switch - 208V, 2 Pole", 
+   "tgt_dev_xyz": [
+    177.39699999999999, 
+    -33.979999999999997, 
+    3.0
+   ], 
+   "status": "matched", 
+   "anchor_fam": "005_Scanner_Code_wStand_1033825", 
+   "anchor_dist_ft": 5.6500000000000004, 
+   "src_anchor_w": [
+    171.89400000000001, 
+    -33.576999999999998, 
+    3.3330000000000002
+   ], 
+   "offset_ft": [
+    5.5039999999999996, 
+    1.2809999999999999, 
+    -0.33300000000000002
+   ], 
+   "tgt_anchor_w": [
+    171.89400000000001, 
+    -35.259999999999998, 
+    3.3330000000000002
+   ], 
+   "tgt_dev_rot": 3.1415929999999999
+  }
+ ], 
+ "tgt_equip": "00000_Oakmont_v24_HEB_ARCH", 
+ "no_anchor": 0, 
+ "target": "CED_HEB Template_MEPR_R24_OkmntProfCorr", 
+ "src_equip": "Equip", 
+ "ambiguous": 0, 
+ "equip_shift_ft_max": 6.1299999999999999, 
+ "equip_shift_ft_avg": 1.96
+}

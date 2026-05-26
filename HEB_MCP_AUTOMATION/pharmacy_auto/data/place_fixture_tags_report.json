@@ -1,0 +1,118 @@
+{
+ "rows": [
+  {
+   "status": "ok", 
+   "text": "18\"", 
+   "id": 10662625, 
+   "tagged_dev": 9353525
+  }, 
+  {
+   "status": "ok", 
+   "text": "18\"", 
+   "id": 10662626, 
+   "tagged_dev": 9353530
+  }, 
+  {
+   "status": "ok", 
+   "text": "18\"", 
+   "id": 10662627, 
+   "tagged_dev": 9353535
+  }, 
+  {
+   "status": "ok", 
+   "text": "18\"", 
+   "id": 10662628, 
+   "tagged_dev": 9353529
+  }, 
+  {
+   "status": "ok", 
+   "text": "18\"", 
+   "id": 10662629, 
+   "tagged_dev": 9353527
+  }, 
+  {
+   "status": "ok", 
+   "text": "18\"", 
+   "id": 10662630, 
+   "tagged_dev": 9353537
+  }, 
+  {
+   "status": "ok", 
+   "text": "18\"", 
+   "id": 10662632, 
+   "tagged_dev": 9353526
+  }, 
+  {
+   "status": "ok", 
+   "text": "54\"", 
+   "id": 10662635, 
+   "tagged_dev": 9353000
+  }, 
+  {
+   "status": "ok", 
+   "text": "54\"", 
+   "id": 10662636, 
+   "tagged_dev": 9352999
+  }, 
+  {
+   "status": "ok", 
+   "text": "54\"", 
+   "id": 10662638, 
+   "tagged_dev": 9352997
+  }, 
+  {
+   "status": "ok", 
+   "text": "54\"", 
+   "id": 10662850, 
+   "tagged_dev": 9374459
+  }, 
+  {
+   "status": "ok", 
+   "text": "54\"", 
+   "id": 10662852, 
+   "tagged_dev": 9352937
+  }, 
+  {
+   "status": "ok", 
+   "text": "48\"", 
+   "id": 10662856, 
+   "tagged_dev": 9352943
+  }, 
+  {
+   "status": "ok", 
+   "text": "48\"", 
+   "id": 10662858, 
+   "tagged_dev": 9352940
+  }, 
+  {
+   "status": "ok", 
+   "text": "48\"", 
+   "id": 10662952, 
+   "tagged_dev": 9352935
+  }, 
+  {
+   "status": "ok", 
+   "text": "PH-3", 
+   "id": 10665931, 
+   "tagged_dev": 9408913
+  }, 
+  {
+   "status": "ok", 
+   "text": "PH-5", 
+   "id": 10665933, 
+   "tagged_dev": 9408899
+  }, 
+  {
+   "status": "ok", 
+   "text": "72\"", 
+   "id": 10832407, 
+   "tagged_dev": 9353360
+  }
+ ], 
+ "skipped": 0, 
+ "placed": 18, 
+ "target": "CED_HEB Template_MEPR_R24_OkmntProfCorr", 
+ "apply": true, 
+ "removed": 0, 
+ "count": 18
+}

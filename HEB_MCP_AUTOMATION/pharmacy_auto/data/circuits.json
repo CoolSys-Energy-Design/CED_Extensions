@@ -1,0 +1,2382 @@
+{
+ "view": "Power Callouts - PHARMACY", 
+ "source_doc": "RunUpdateProfilesHEBCarrollton95PercentCLOUDMODEL", 
+ "circuits": [
+  {
+   "voltage": "208 V", 
+   "ckt": "5", 
+   "load_name": "PANEL 'PH'", 
+   "panel": "LDP2", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "PANEL 'PH'", 
+   "sys_id": 7859937, 
+   "rating": "250 A", 
+   "wire_type": null, 
+   "poles": "3", 
+   "frame": "250 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "LDP - 208V/3Ph, 1200A, IG Bus", 
+    "id": 7855700
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Equipment", 
+     "id": 7855682
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "6", 
+   "load_name": "PHARMACY SIGN", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "PHARMACY SIGN", 
+   "sys_id": 9418892, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Lighting Devices", 
+     "id": 9418876
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "10", 
+   "load_name": "PHARMACY DRIVE-THRU SIGN", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "PHARMACY DRIVE-THRU SIGN", 
+   "sys_id": 9419073, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Lighting Devices", 
+     "id": 9419053
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "9", 
+   "load_name": "PHARMACY DRIVE-THRU SIGN", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "PHARMACY DRIVE-THRU SIGN", 
+   "sys_id": 9419217, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Lighting Devices", 
+     "id": 9419199
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "11", 
+   "load_name": "PHARMACY SIGN", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "PHARMACY SIGN", 
+   "sys_id": 9420462, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Lighting Devices", 
+     "id": 9420461
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "22", 
+   "load_name": "PHARMACY CABINET", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "PHARMACY CABINET", 
+   "sys_id": 10353312, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352935
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "55", 
+   "load_name": "GONDOLA RECPTS", 
+   "panel": "CS", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "GONDOLA RECPTS", 
+   "sys_id": 10353443, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855689
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9639476
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9639477
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9639478
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9639482
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9639483
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9639484
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "56", 
+   "load_name": "GONDOLA RECPTS", 
+   "panel": "CS", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "GONDOLA RECPTS", 
+   "sys_id": 10353446, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855689
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9639464
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9639465
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9639466
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9639470
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9639471
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9639472
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "63", 
+   "load_name": "GONDOLA RECPTS", 
+   "panel": "CS", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "GONDOLA RECPTS", 
+   "sys_id": 10353447, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855689
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9639452
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9639453
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9639454
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9639458
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9639459
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9639460
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "16", 
+   "load_name": "DROP - OFF/CONSLT RCPTS", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "DROP - OFF/CONSLT RCPTS", 
+   "sys_id": 10353496, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352954
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352957
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352959
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353001
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353360
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "13", 
+   "load_name": "LAB FRIDGE 1", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "LAB FRIDGE 1", 
+   "sys_id": 10353497, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352940
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "12", 
+   "load_name": "LAB FRIDGE 2", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "LAB FRIDGE 2", 
+   "sys_id": 10353498, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352943
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "32", 
+   "load_name": "GROUP 10 RECEPTS", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "GROUP 10 RECEPTS", 
+   "sys_id": 10353499, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352997
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352999
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353000
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "19", 
+   "load_name": "BLOOD PRESSURE MACHINE", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "BLOOD PRESSURE MACHINE", 
+   "sys_id": 10353500, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353521
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 10096446
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "31", 
+   "load_name": "GROUP 3 PICKUP", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "GROUP 3 PICKUP", 
+   "sys_id": 10353501, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352971
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352977
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352983
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "15", 
+   "load_name": "QTS #2 DIVERTER", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "QTS #2 DIVERTER", 
+   "sys_id": 10353502, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 10096450
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "24", 
+   "load_name": "WORKSTATION - PATIENT ED", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "WORKSTATION - PATIENT ED", 
+   "sys_id": 10353503, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352969
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "34", 
+   "load_name": "GROUP 2 RECEPTS", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "GROUP 2 RECEPTS", 
+   "sys_id": 10353505, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352946
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352949
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352952
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "52", 
+   "load_name": "GROUP 4,6, AND 6 RECEPTS", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "GROUP 4,6, AND 6 RECEPTS", 
+   "sys_id": 10353506, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352966
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352988
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352991
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352994
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "20", 
+   "load_name": "PATIENT EDUCATION RCPTS", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "PATIENT EDUCATION RCPTS", 
+   "sys_id": 10353507, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352967
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "27", 
+   "load_name": "DRIVE THRU 2 AV SYSTM HUB", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "DRIVE THRU 2 AV SYSTM HUB", 
+   "sys_id": 10353508, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353526
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "29", 
+   "load_name": "DRIVE THRU 2 AV SYSTM HUB", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "DRIVE THRU 2 AV SYSTM HUB", 
+   "sys_id": 10353509, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353525
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "25", 
+   "load_name": "DRIVE THRU 2 AV SYSTM HUB", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "DRIVE THRU 2 AV SYSTM HUB", 
+   "sys_id": 10353510, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353530
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "18", 
+   "load_name": "DRIVE THRU 2 AV SYSTM HUB", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "DRIVE THRU 2 AV SYSTM HUB", 
+   "sys_id": 10353511, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353527
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353529
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353535
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353537
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "33", 
+   "load_name": "WORKSTTN PRE-PAID/PICKP", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "WORKSTTN PRE-PAID/PICKP", 
+   "sys_id": 10353512, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352970
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352976
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352982
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "17", 
+   "load_name": "PRINTERS - PHARMACY", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "PRINTERS - PHARMACY", 
+   "sys_id": 10353513, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352937
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9374459
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "26", 
+   "load_name": "QTS #3 DIVERTER", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "QTS #3 DIVERTER", 
+   "sys_id": 10353514, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 10096442
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "28", 
+   "load_name": "QTS #4 DIVERTER", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "QTS #4 DIVERTER", 
+   "sys_id": 10353515, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 10096438
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "35", 
+   "load_name": "WORKSTTN PRE-PAID/PICKP", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "WORKSTTN PRE-PAID/PICKP", 
+   "sys_id": 10353516, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352975
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352981
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352987
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "30", 
+   "load_name": "QTS #5 DIVERTER", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "QTS #5 DIVERTER", 
+   "sys_id": 10353517, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 10096470
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "37", 
+   "load_name": "QTS #5 BLOWER", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "QTS #5 BLOWER", 
+   "sys_id": 10353518, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 10096468
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "40", 
+   "load_name": "QTS #4 BLOWER", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "QTS #4 BLOWER", 
+   "sys_id": 10353519, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 10096435
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "41", 
+   "load_name": "QTS #5 BLOWER", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "QTS #5 BLOWER", 
+   "sys_id": 10353520, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 10096469
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "42", 
+   "load_name": "QTS #4 BLOWER", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "QTS #4 BLOWER", 
+   "sys_id": 10353521, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 10096436
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "39", 
+   "load_name": "QTS #5 BLOWER", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "QTS #5 BLOWER", 
+   "sys_id": 10353522, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 10096467
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "38", 
+   "load_name": "QTS #4 BLOWER", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "QTS #4 BLOWER", 
+   "sys_id": 10353523, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 10096437
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "45", 
+   "load_name": "QTS #3 BLOWER", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "QTS #3 BLOWER", 
+   "sys_id": 10353524, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 10096439
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "46", 
+   "load_name": "QTS #2 BLOWER", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "QTS #2 BLOWER", 
+   "sys_id": 10353525, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 10096447
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "47", 
+   "load_name": "QTS #3 BLOWER", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "QTS #3 BLOWER", 
+   "sys_id": 10353526, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 10096440
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "44", 
+   "load_name": "QTS #2 BLOWER", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "QTS #2 BLOWER", 
+   "sys_id": 10353527, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 10096448
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "43", 
+   "load_name": "QTS #3 BLOWER", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "QTS #3 BLOWER", 
+   "sys_id": 10353528, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 10096441
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "48", 
+   "load_name": "QTS #2 BLOWER", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "QTS #2 BLOWER", 
+   "sys_id": 10353529, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 10096449
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "53", 
+   "load_name": "QTS #1 BLOWER", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "QTS #1 BLOWER", 
+   "sys_id": 10353530, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 10096444
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "51", 
+   "load_name": "QTS #1 BLOWER", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "QTS #1 BLOWER", 
+   "sys_id": 10353531, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 10096445
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "14", 
+   "load_name": "UC FREEZERS", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "UC FREEZERS", 
+   "sys_id": 10353532, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352934
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9374485
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "49", 
+   "load_name": "QTS #1 BLOWER", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "QTS #1 BLOWER", 
+   "sys_id": 10353533, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 10096443
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "2", 
+   "load_name": "U.C. FREEZER - SHRED BIN", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "U.C. FREEZER - SHRED BIN", 
+   "sys_id": 10353584, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352727
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "8", 
+   "load_name": "PHARMACY LTG", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "PHARMACY LTG", 
+   "sys_id": 10414713, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Lighting Fixtures", 
+     "id": 9650115
+    }, 
+    {
+     "cat": "Lighting Fixtures", 
+     "id": 9650135
+    }, 
+    {
+     "cat": "Lighting Fixtures", 
+     "id": 9650136
+    }, 
+    {
+     "cat": "Lighting Fixtures", 
+     "id": 9650137
+    }, 
+    {
+     "cat": "Lighting Fixtures", 
+     "id": 9650138
+    }, 
+    {
+     "cat": "Lighting Fixtures", 
+     "id": 9650140
+    }, 
+    {
+     "cat": "Lighting Fixtures", 
+     "id": 9650142
+    }, 
+    {
+     "cat": "Lighting Fixtures", 
+     "id": 9650143
+    }, 
+    {
+     "cat": "Lighting Fixtures", 
+     "id": 9650144
+    }, 
+    {
+     "cat": "Lighting Fixtures", 
+     "id": 9650145
+    }, 
+    {
+     "cat": "Lighting Fixtures", 
+     "id": 9650147
+    }, 
+    {
+     "cat": "Lighting Fixtures", 
+     "id": 9650149
+    }, 
+    {
+     "cat": "Lighting Fixtures", 
+     "id": 9650152
+    }, 
+    {
+     "cat": "Lighting Fixtures", 
+     "id": 9650153
+    }, 
+    {
+     "cat": "Lighting Fixtures", 
+     "id": 9650155
+    }, 
+    {
+     "cat": "Lighting Fixtures", 
+     "id": 9650158
+    }, 
+    {
+     "cat": "Lighting Fixtures", 
+     "id": 9650162
+    }, 
+    {
+     "cat": "Lighting Fixtures", 
+     "id": 9650167
+    }, 
+    {
+     "cat": "Lighting Fixtures", 
+     "id": 9650169
+    }, 
+    {
+     "cat": "Lighting Fixtures", 
+     "id": 9650170
+    }, 
+    {
+     "cat": "Lighting Fixtures", 
+     "id": 9650171
+    }, 
+    {
+     "cat": "Lighting Fixtures", 
+     "id": 9650172
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "14", 
+   "load_name": "BEAUTY GONDOLA LTG", 
+   "panel": "CL", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "BEAUTY GONDOLA LTG", 
+   "sys_id": 10559412, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855676
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9684794
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9684796
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9684798
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "15", 
+   "load_name": "BEAUTY GONDOLA LTG", 
+   "panel": "CL", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "BEAUTY GONDOLA LTG", 
+   "sys_id": 10559751, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph", 
+    "id": 7855676
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9684803
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9684804
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9684805
+    }
+   ]
+  }, 
+  {
+   "voltage": "208 V", 
+   "ckt": "21,23", 
+   "load_name": "EWH-1 - PHARMACY", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "EWH-1 - PHARMACY", 
+   "sys_id": 10612412, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "2", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 10612405
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 10612409
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "1", 
+   "load_name": "PHARMACY CANOPY LTG", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "PHARMACY CANOPY LTG", 
+   "sys_id": 10651478, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Lighting Fixtures", 
+     "id": 9911686
+    }, 
+    {
+     "cat": "Lighting Fixtures", 
+     "id": 9911687
+    }, 
+    {
+     "cat": "Lighting Fixtures", 
+     "id": 9911689
+    }, 
+    {
+     "cat": "Lighting Fixtures", 
+     "id": 9911691
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "4", 
+   "load_name": "PATIENT ED - ACCESS CNTRL", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "PATIENT ED - ACCESS CNTRL", 
+   "sys_id": 10651784, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9409222
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "54", 
+   "load_name": "GROUP 4,6, AND 7 RECEPTS", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "GROUP 4,6, AND 7 RECEPTS", 
+   "sys_id": 10663204, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352965
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352990
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352993
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352996
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "7", 
+   "load_name": "LCP2", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "LCP2", 
+   "sys_id": 10663698, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9688971
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "36", 
+   "load_name": "GROUP 2 RECEPTS", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "GROUP 2 RECEPTS", 
+   "sys_id": 10664166, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352945
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352948
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352951
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "50", 
+   "load_name": "DROP - OFF/CONSLT RCPTS", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "DROP - OFF/CONSLT RCPTS", 
+   "sys_id": 10665902, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352955
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352958
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352963
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353005
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "3", 
+   "load_name": "QTS CUSTOMER AV UNIT 1", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "QTS CUSTOMER AV UNIT 1", 
+   "sys_id": 10665958, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9408913
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "5", 
+   "load_name": "QTS CUSTOMER AV UNIT 2", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": "", 
+   "ckt_load_name_cedt": "QTS CUSTOMER AV UNIT 2", 
+   "sys_id": 10665995, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9408899
+    }
+   ]
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "55", 
+   "load_name": "SPARE", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10808713, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "57", 
+   "load_name": "SPARE", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10808714, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "59", 
+   "load_name": "SPARE", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10808715, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "56", 
+   "load_name": "SPARE", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10808716, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "58", 
+   "load_name": "SPARE", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10808717, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "60", 
+   "load_name": "SPARE", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10808718, 
+   "rating": "20 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "61", 
+   "load_name": "SPACE", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10808719, 
+   "rating": "0 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "63", 
+   "load_name": "SPACE", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10808720, 
+   "rating": "0 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "65", 
+   "load_name": "SPACE", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10808721, 
+   "rating": "0 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "67", 
+   "load_name": "SPACE", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10808722, 
+   "rating": "0 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "69", 
+   "load_name": "SPACE", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10808723, 
+   "rating": "0 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "71", 
+   "load_name": "SPACE", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10808724, 
+   "rating": "0 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "73", 
+   "load_name": "SPACE", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10808725, 
+   "rating": "0 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "75", 
+   "load_name": "SPACE", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10808726, 
+   "rating": "0 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "77", 
+   "load_name": "SPACE", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10808727, 
+   "rating": "0 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "79", 
+   "load_name": "SPACE", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10808728, 
+   "rating": "0 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "81", 
+   "load_name": "SPACE", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10808729, 
+   "rating": "0 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "83", 
+   "load_name": "SPACE", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10808730, 
+   "rating": "0 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "62", 
+   "load_name": "SPACE", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10808731, 
+   "rating": "0 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "64", 
+   "load_name": "SPACE", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10808732, 
+   "rating": "0 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "66", 
+   "load_name": "SPACE", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10808733, 
+   "rating": "0 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "68", 
+   "load_name": "SPACE", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10808734, 
+   "rating": "0 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "70", 
+   "load_name": "SPACE", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10808735, 
+   "rating": "0 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "72", 
+   "load_name": "SPACE", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10808736, 
+   "rating": "0 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "74", 
+   "load_name": "SPACE", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10808737, 
+   "rating": "0 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "76", 
+   "load_name": "SPACE", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10808738, 
+   "rating": "0 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "78", 
+   "load_name": "SPACE", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10808739, 
+   "rating": "0 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "80", 
+   "load_name": "SPACE", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10808740, 
+   "rating": "0 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "82", 
+   "load_name": "SPACE", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10808741, 
+   "rating": "0 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": []
+  }, 
+  {
+   "voltage": "120 V", 
+   "ckt": "84", 
+   "load_name": "SPACE", 
+   "panel": "PH", 
+   "ckt_schedule_notes_cedt": null, 
+   "ckt_load_name_cedt": null, 
+   "sys_id": 10808742, 
+   "rating": "0 A", 
+   "wire_type": null, 
+   "poles": "1", 
+   "frame": "400 A", 
+   "schedule_notes": "", 
+   "load_classification": null, 
+   "base_equipment": {
+    "name": "zPanelboard - 208V/3Ph, IG Bus", 
+    "id": 7855682
+   }, 
+   "members": []
+  }
+ ], 
+ "count": 89
+}

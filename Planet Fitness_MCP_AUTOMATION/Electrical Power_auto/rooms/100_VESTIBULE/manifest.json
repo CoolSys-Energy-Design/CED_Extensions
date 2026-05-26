@@ -1,0 +1,48 @@
+{
+  "distribution": "N/S/W walls per user image", 
+  "fixtures": [
+    {
+      "label": "ECH-1 vestibule heater JB", 
+      "id": 8221907, 
+      "note": "moved into actual vestibule alcove N of long wall", 
+      "load": "VESTIBULE", 
+      "y": -240.0, 
+      "x": 265.0
+    }, 
+    {
+      "id": 8221915, 
+      "room": "100", 
+      "load": "TV - BLACK CARD SUITE", 
+      "type": "Duplex Wall", 
+      "y": -263.97399999999999, 
+      "x": 264.0
+    }, 
+    {
+      "id": 8221916, 
+      "room": "100", 
+      "load": "RECEPTACLE - 100 VESTIBULE", 
+      "type": "Duplex Wall", 
+      "y": -263.97399999999999, 
+      "x": 266.0
+    }, 
+    {
+      "id": 8221935, 
+      "room": "100", 
+      "load": "TV - BLACK CARD SUITE", 
+      "wall": "S", 
+      "type": "Duplex Wall", 
+      "y": -263.97399999999999, 
+      "x": 264.0
+    }, 
+    {
+      "id": 8221936, 
+      "room": "100", 
+      "load": "RECEPTACLE - 100 VESTIBULE", 
+      "wall": "S", 
+      "type": "Duplex Wall", 
+      "y": -263.97399999999999, 
+      "x": 266.0
+    }
+  ], 
+  "asheville_n": 3
+}

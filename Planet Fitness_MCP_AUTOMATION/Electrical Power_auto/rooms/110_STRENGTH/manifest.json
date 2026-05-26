@@ -1,0 +1,39 @@
+{
+  "note": "Wall-verified: snapped to actual CAD wall segs within 1 ft tolerance, +0.1 ft inward offset.", 
+  "convenience_receps": [
+    {
+      "name": "STRENGTH", 
+      "room": "110", 
+      "rot": 3.1415926535897931, 
+      "id": 8221895, 
+      "wall": "N", 
+      "y": -189.71000000000001, 
+      "x": 120.0
+    }, 
+    {
+      "name": "STRENGTH", 
+      "room": "110", 
+      "rot": 3.1415926535897931, 
+      "id": 8221896, 
+      "wall": "N", 
+      "y": -189.71000000000001, 
+      "x": 160.0
+    }, 
+    {
+      "name": "STRENGTH", 
+      "room": "110", 
+      "rot": -1.5707963267948966, 
+      "id": 8221897, 
+      "wall": "W", 
+      "y": -215.0, 
+      "x": 99.149999999999991
+    }
+  ], 
+  "n_target": 3, 
+  "bbox": [
+    100, 
+    -240, 
+    180, 
+    -190
+  ]
+}

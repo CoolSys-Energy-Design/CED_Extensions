@@ -1,0 +1,27 @@
+{
+  "note": "Receps at orange-X positions (face south); keynotes 1 ft north of each.", 
+  "facing": "south (rotation=pi)", 
+  "last_shift": {
+    "dx_ft": 8.6666666666666661, 
+    "note": "user-specified +8'-8\" X, -1'-7\" Y", 
+    "dy_ft": -1.5833333333333335
+  }, 
+  "fixtures": [
+    {
+      "rec_id": 8221954, 
+      "kn_x": 252.66666666666666, 
+      "keynote_id": 8221955, 
+      "rec_x": 252.66666666666666, 
+      "rec_y": -256.58333333333331, 
+      "kn_y": -255.58333333333334
+    }, 
+    {
+      "rec_id": 8221956, 
+      "kn_x": 255.66666666666666, 
+      "keynote_id": 8221957, 
+      "rec_x": 255.66666666666666, 
+      "rec_y": -256.58333333333331, 
+      "kn_y": -255.58333333333334
+    }
+  ]
+}

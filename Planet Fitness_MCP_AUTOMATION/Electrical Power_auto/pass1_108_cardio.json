@@ -1,0 +1,557 @@
+{
+  "placed_receps": [
+    {
+      "sym_key": 8218208, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221708, 
+      "x": 164.00899999999999, 
+      "y": -230.37100000000001
+    }, 
+    {
+      "sym_key": 8218209, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221709, 
+      "x": 151.17500000000001, 
+      "y": -230.214
+    }, 
+    {
+      "sym_key": 8218215, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221710, 
+      "x": 147.739, 
+      "y": -253.07599999999999
+    }, 
+    {
+      "sym_key": 8218218, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221711, 
+      "x": 170.84200000000001, 
+      "y": -241.40899999999999
+    }, 
+    {
+      "sym_key": 8218274, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221712, 
+      "x": 180.238, 
+      "y": -221.87200000000001
+    }, 
+    {
+      "sym_key": 8218277, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221713, 
+      "x": 164.37200000000001, 
+      "y": -219.18299999999999
+    }, 
+    {
+      "sym_key": 8218278, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221714, 
+      "x": 174.56999999999999, 
+      "y": -217.983
+    }, 
+    {
+      "sym_key": 8218214, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221715, 
+      "x": 140.92500000000001, 
+      "y": -253.07599999999999
+    }, 
+    {
+      "sym_key": 8218214, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221716, 
+      "x": 144.34200000000001, 
+      "y": -253.07599999999999
+    }, 
+    {
+      "sym_key": 8218215, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221717, 
+      "x": 151.15600000000001, 
+      "y": -253.07599999999999
+    }, 
+    {
+      "sym_key": 8218215, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221718, 
+      "x": 147.739, 
+      "y": -241.27600000000001
+    }, 
+    {
+      "sym_key": 8218215, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221719, 
+      "x": 151.15600000000001, 
+      "y": -241.27600000000001
+    }, 
+    {
+      "sym_key": 8218215, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221720, 
+      "x": 140.90600000000001, 
+      "y": -241.27600000000001
+    }, 
+    {
+      "sym_key": 8218215, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221721, 
+      "x": 144.322, 
+      "y": -241.27600000000001
+    }, 
+    {
+      "sym_key": 8218215, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221722, 
+      "x": 137.489, 
+      "y": -241.27600000000001
+    }, 
+    {
+      "sym_key": 8218215, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221723, 
+      "x": 194.739, 
+      "y": -241.27600000000001
+    }, 
+    {
+      "sym_key": 8218215, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221724, 
+      "x": 187.90600000000001, 
+      "y": -241.27600000000001
+    }, 
+    {
+      "sym_key": 8218215, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221725, 
+      "x": 191.322, 
+      "y": -241.27600000000001
+    }, 
+    {
+      "sym_key": 8218215, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221726, 
+      "x": 181.072, 
+      "y": -241.27600000000001
+    }, 
+    {
+      "sym_key": 8218215, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221727, 
+      "x": 184.489, 
+      "y": -241.27600000000001
+    }, 
+    {
+      "sym_key": 8218215, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221728, 
+      "x": 174.239, 
+      "y": -241.27600000000001
+    }, 
+    {
+      "sym_key": 8218215, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221729, 
+      "x": 177.65600000000001, 
+      "y": -241.27600000000001
+    }, 
+    {
+      "sym_key": 8218215, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221730, 
+      "x": 194.739, 
+      "y": -253.07599999999999
+    }, 
+    {
+      "sym_key": 8218215, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221731, 
+      "x": 187.90600000000001, 
+      "y": -253.07599999999999
+    }, 
+    {
+      "sym_key": 8218215, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221732, 
+      "x": 191.322, 
+      "y": -253.07599999999999
+    }, 
+    {
+      "sym_key": 8218215, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221733, 
+      "x": 181.072, 
+      "y": -253.07599999999999
+    }, 
+    {
+      "sym_key": 8218215, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221734, 
+      "x": 184.489, 
+      "y": -253.07599999999999
+    }, 
+    {
+      "sym_key": 8218215, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221735, 
+      "x": 174.239, 
+      "y": -253.07599999999999
+    }, 
+    {
+      "sym_key": 8218215, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221736, 
+      "x": 177.65600000000001, 
+      "y": -253.07599999999999
+    }, 
+    {
+      "sym_key": 8218215, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221737, 
+      "x": 167.40600000000001, 
+      "y": -253.07599999999999
+    }, 
+    {
+      "sym_key": 8218215, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221738, 
+      "x": 170.822, 
+      "y": -253.07599999999999
+    }, 
+    {
+      "sym_key": 8218215, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221739, 
+      "x": 160.572, 
+      "y": -253.07599999999999
+    }, 
+    {
+      "sym_key": 8218215, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221740, 
+      "x": 163.989, 
+      "y": -253.07599999999999
+    }, 
+    {
+      "sym_key": 8218218, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221741, 
+      "x": 167.42500000000001, 
+      "y": -241.40899999999999
+    }, 
+    {
+      "sym_key": 8218218, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221742, 
+      "x": 164.00899999999999, 
+      "y": -241.40899999999999
+    }, 
+    {
+      "sym_key": 8218218, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221743, 
+      "x": 160.59200000000001, 
+      "y": -241.40899999999999
+    }, 
+    {
+      "sym_key": 8218297, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221744, 
+      "x": 174.249, 
+      "y": -230.083
+    }, 
+    {
+      "sym_key": 8218297, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221745, 
+      "x": 170.83199999999999, 
+      "y": -230.083
+    }, 
+    {
+      "sym_key": 8218297, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221746, 
+      "x": 167.41499999999999, 
+      "y": -230.083
+    }, 
+    {
+      "sym_key": 8218208, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221747, 
+      "x": 160.59200000000001, 
+      "y": -230.37100000000001
+    }, 
+    {
+      "sym_key": 8218212, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221748, 
+      "x": 191.33199999999999, 
+      "y": -230.083
+    }, 
+    {
+      "sym_key": 8218297, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221749, 
+      "x": 177.66499999999999, 
+      "y": -230.083
+    }, 
+    {
+      "sym_key": 8218297, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221750, 
+      "x": 180.66499999999999, 
+      "y": -230.083
+    }, 
+    {
+      "sym_key": 8218212, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221751, 
+      "x": 186.66499999999999, 
+      "y": -230.083
+    }, 
+    {
+      "sym_key": 8218212, 
+      "params_set": 8, 
+      "params_skipped": [
+        "Load Classification_CED", 
+        "Number of Poles_CED", 
+        "Voltage_CED"
+      ], 
+      "id": 8221752, 
+      "x": 183.66499999999999, 
+      "y": -230.083
+    }
+  ], 
+  "profile": {
+    "dev-Group ID": "Treadmill (T5X-5PL-PF)", 
+    "CKT_Rating_CED": 20, 
+    "CKT_Panel_CEDT": "L1", 
+    "Load Classification_CED": "NC", 
+    "FLA Input_CED": 0, 
+    "Number of Poles_CED": 1, 
+    "CKT_Schedule Notes_CEDT": "", 
+    "CKT_Circuit Number_CEDT": "DEDICATED", 
+    "Apparent Load Input_CED": 1500, 
+    "Voltage_CED": 120, 
+    "CKT_Load Name_CEDT": "TREADMILL - 108 CARDIO NEW"
+  }
+}

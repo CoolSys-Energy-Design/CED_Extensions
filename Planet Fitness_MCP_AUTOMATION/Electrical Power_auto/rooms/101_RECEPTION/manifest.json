@@ -1,0 +1,50 @@
+{
+  "distribution": "N/S/W walls per user image", 
+  "fixtures": [
+    {
+      "y": -245.19499999999999, 
+      "type": "Duplex Wall", 
+      "load": "ROOM", 
+      "room": "101", 
+      "id": 8221937, 
+      "wall": "N", 
+      "x": 254.0
+    }, 
+    {
+      "y": -263.97399999999999, 
+      "type": "Duplex Wall", 
+      "load": "ROOM", 
+      "room": "101", 
+      "id": 8221938, 
+      "wall": "S", 
+      "x": 250.0
+    }, 
+    {
+      "y": -263.97399999999999, 
+      "type": "Duplex Wall", 
+      "load": "ROOM", 
+      "room": "101", 
+      "id": 8221939, 
+      "wall": "S", 
+      "x": 254.0
+    }, 
+    {
+      "y": -263.97399999999999, 
+      "type": "Duplex Wall", 
+      "load": "RECEPTACLE - 101 RECEPTION", 
+      "room": "101", 
+      "id": 8221940, 
+      "wall": "S", 
+      "x": 258.0
+    }, 
+    {
+      "y": -263.97399999999999, 
+      "type": "Wall - With Stem", 
+      "load": "RECEPTION JB", 
+      "room": "101", 
+      "id": 8221941, 
+      "wall": "S", 
+      "x": 252.0
+    }
+  ]
+}

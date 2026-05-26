@@ -1,0 +1,478 @@
+{
+  "111": {
+    "room_name": "FREE WEIGHTS",
+    "block_bbox": [
+      189.6,
+      -219.8,
+      598.0,
+      307.1
+    ],
+    "block_bbox_perim_ft": 1870.9,
+    "asheville_n": 2,
+    "asheville_perim_est_ft": 100.3,
+    "scaled_n_convenience_receps": 37,
+    "spacing_ft_per_recep": 50.6
+  },
+  "110": {
+    "room_name": "STRENGTH",
+    "block_bbox": [
+      109.7,
+      -241.3,
+      179.0,
+      -190.6
+    ],
+    "block_bbox_perim_ft": 239.9,
+    "asheville_n": 3,
+    "asheville_perim_est_ft": 142.2,
+    "scaled_n_convenience_receps": 5,
+    "spacing_ft_per_recep": 48.0
+  },
+  "107A": {
+    "room_name": "EX'G ELECTRICAL ROOM",
+    "block_bbox": [
+      48.6,
+      -217.8,
+      201.0,
+      308.7
+    ],
+    "block_bbox_perim_ft": 1357.8,
+    "asheville_n": 0,
+    "asheville_perim_est_ft": 0,
+    "scaled_n_convenience_receps": 0,
+    "spacing_ft_per_recep": null
+  },
+  "108": {
+    "room_name": "CARDIO NEW",
+    "block_bbox": [
+      -1237.5,
+      -292.1,
+      194.7,
+      257.5
+    ],
+    "block_bbox_perim_ft": 3963.7,
+    "asheville_n": 2,
+    "asheville_perim_est_ft": 66.0,
+    "scaled_n_convenience_receps": 120,
+    "spacing_ft_per_recep": 33.0
+  },
+  "107": {
+    "room_name": "FUNCTIONAL TRAINING MOBILITY ROOM",
+    "block_bbox": [
+      23.2,
+      -312.5,
+      117.0,
+      -221.9
+    ],
+    "block_bbox_perim_ft": 368.8,
+    "asheville_n": 5,
+    "asheville_perim_est_ft": 141.2,
+    "scaled_n_convenience_receps": 13,
+    "spacing_ft_per_recep": 28.4
+  },
+  "105C": {
+    "room_name": "JANITOR",
+    "block_bbox": [
+      -41.1,
+      -967.8,
+      134.5,
+      -296.8
+    ],
+    "block_bbox_perim_ft": 1693.2,
+    "asheville_n": 2,
+    "asheville_perim_est_ft": 18.7,
+    "scaled_n_convenience_receps": 181,
+    "spacing_ft_per_recep": 9.4
+  },
+  "104A": {
+    "room_name": "TOILET",
+    "block_bbox": [
+      147.8,
+      -312.5,
+      151.8,
+      -292.5
+    ],
+    "block_bbox_perim_ft": 48.0,
+    "asheville_n": 1,
+    "asheville_perim_est_ft": 0,
+    "scaled_n_convenience_receps": 0,
+    "spacing_ft_per_recep": null
+  },
+  "101D": {
+    "room_name": "STORAGE ROOM",
+    "block_bbox": [
+      186.6,
+      -312.5,
+      196.6,
+      -288.1
+    ],
+    "block_bbox_perim_ft": 68.9,
+    "asheville_n": 0,
+    "asheville_perim_est_ft": 0,
+    "scaled_n_convenience_receps": 0,
+    "spacing_ft_per_recep": null
+  },
+  "103C": {
+    "room_name": "TANNING",
+    "block_bbox": [
+      224.9,
+      -832.2,
+      228.9,
+      -296.4
+    ],
+    "block_bbox_perim_ft": 1079.7,
+    "asheville_n": 2,
+    "asheville_perim_est_ft": 9.5,
+    "scaled_n_convenience_receps": 227,
+    "spacing_ft_per_recep": 4.8
+  },
+  "103F": {
+    "room_name": "HYBRID",
+    "block_bbox": [
+      249.7,
+      -847.1,
+      376.7,
+      -293.1
+    ],
+    "block_bbox_perim_ft": 1362.0,
+    "asheville_n": 2,
+    "asheville_perim_est_ft": 17.3,
+    "scaled_n_convenience_receps": 157,
+    "spacing_ft_per_recep": 8.7
+  },
+  "100": {
+    "room_name": "VESTIBULE",
+    "block_bbox": [
+      254.2,
+      -299.7,
+      1143.9,
+      -105.5
+    ],
+    "block_bbox_perim_ft": 2167.7,
+    "asheville_n": 2,
+    "asheville_perim_est_ft": 78.8,
+    "scaled_n_convenience_receps": 55,
+    "spacing_ft_per_recep": 39.4
+  },
+  "104C": {
+    "room_name": "JANITOR",
+    "block_bbox": [
+      151.8,
+      -738.9,
+      188.6,
+      -296.8
+    ],
+    "block_bbox_perim_ft": 957.9,
+    "asheville_n": 2,
+    "asheville_perim_est_ft": 16.3,
+    "scaled_n_convenience_receps": 118,
+    "spacing_ft_per_recep": 8.1
+  },
+  "103B": {
+    "room_name": "RED WAVE",
+    "block_bbox": [
+      197.5,
+      -769.8,
+      214.6,
+      -293.1
+    ],
+    "block_bbox_perim_ft": 987.8,
+    "asheville_n": 1,
+    "asheville_perim_est_ft": 0,
+    "scaled_n_convenience_receps": 0,
+    "spacing_ft_per_recep": null
+  },
+  "104D": {
+    "room_name": "STORAGE",
+    "block_bbox": [
+      141.8,
+      -285.8,
+      154.9,
+      -268.1
+    ],
+    "block_bbox_perim_ft": 61.5,
+    "asheville_n": 5,
+    "asheville_perim_est_ft": 34.9,
+    "scaled_n_convenience_receps": 9,
+    "spacing_ft_per_recep": 6.8
+  },
+  "101A": {
+    "room_name": "IT ROOM",
+    "block_bbox": [
+      256.4,
+      -273.2,
+      438.9,
+      -263.0
+    ],
+    "block_bbox_perim_ft": 385.4,
+    "asheville_n": 2,
+    "asheville_perim_est_ft": 4.5,
+    "scaled_n_convenience_receps": 171,
+    "spacing_ft_per_recep": 2.3
+  },
+  "105A": {
+    "room_name": "TOILET",
+    "block_bbox": [
+      130.9,
+      -294.9,
+      130.9,
+      -294.9
+    ],
+    "block_bbox_perim_ft": 0.0,
+    "asheville_n": 1,
+    "asheville_perim_est_ft": 0,
+    "scaled_n_convenience_receps": 0,
+    "spacing_ft_per_recep": null
+  },
+  "105B": {
+    "room_name": "SHOWER",
+    "block_bbox": [
+      74.9,
+      -294.2,
+      117.8,
+      -281.9
+    ],
+    "block_bbox_perim_ft": 110.3,
+    "asheville_n": 2,
+    "asheville_perim_est_ft": 38.9,
+    "scaled_n_convenience_receps": 6,
+    "spacing_ft_per_recep": 18.4
+  },
+  "105D": {
+    "room_name": "STORAGE",
+    "block_bbox": [
+      127.7,
+      -285.8,
+      140.8,
+      -253.1
+    ],
+    "block_bbox_perim_ft": 91.6,
+    "asheville_n": 8,
+    "asheville_perim_est_ft": 62.2,
+    "scaled_n_convenience_receps": 12,
+    "spacing_ft_per_recep": 7.6
+  },
+  "101C": {
+    "room_name": "EMPLOYEE BREAKROOM",
+    "block_bbox": [
+      182.5,
+      -285.7,
+      205.5,
+      -253.1
+    ],
+    "block_bbox_perim_ft": 111.1,
+    "asheville_n": 3,
+    "asheville_perim_est_ft": 50.6,
+    "scaled_n_convenience_receps": 7,
+    "spacing_ft_per_recep": 15.9
+  },
+  "104": {
+    "room_name": "WOMENS LOCKER ROOM",
+    "block_bbox": [
+      154.5,
+      -276.9,
+      174.4,
+      -267.1
+    ],
+    "block_bbox_perim_ft": 59.2,
+    "asheville_n": 2,
+    "asheville_perim_est_ft": 12.3,
+    "scaled_n_convenience_receps": 10,
+    "spacing_ft_per_recep": 5.9
+  },
+  "104B": {
+    "room_name": "SHOWER",
+    "block_bbox": [
+      164.8,
+      -294.2,
+      175.7,
+      -283.8
+    ],
+    "block_bbox_perim_ft": 42.6,
+    "asheville_n": 1,
+    "asheville_perim_est_ft": 0,
+    "scaled_n_convenience_receps": 0,
+    "spacing_ft_per_recep": null
+  },
+  "105": {
+    "room_name": "MENS LOCKER ROOM",
+    "block_bbox": [
+      98.4,
+      -278.1,
+      134.1,
+      -241.3
+    ],
+    "block_bbox_perim_ft": 145.0,
+    "asheville_n": 6,
+    "asheville_perim_est_ft": 101.2,
+    "scaled_n_convenience_receps": 9,
+    "spacing_ft_per_recep": 16.1
+  },
+  "103G": {
+    "room_name": "CRYOLOUNGE",
+    "block_bbox": [
+      324.7,
+      -392.6,
+      679.7,
+      -284.3
+    ],
+    "block_bbox_perim_ft": 926.3,
+    "asheville_n": 2,
+    "asheville_perim_est_ft": 2.3,
+    "scaled_n_convenience_receps": 806,
+    "spacing_ft_per_recep": 1.1
+  },
+  "103E": {
+    "room_name": "TANNING",
+    "block_bbox": [
+      238.6,
+      -1657.5,
+      278.8,
+      -293.3
+    ],
+    "block_bbox_perim_ft": 2808.7,
+    "asheville_n": 1,
+    "asheville_perim_est_ft": 0,
+    "scaled_n_convenience_receps": 0,
+    "spacing_ft_per_recep": null
+  },
+  "109": {
+    "room_name": "CIRCUIT EX'G",
+    "block_bbox": [
+      188.5,
+      -251.6,
+      244.9,
+      -217.7
+    ],
+    "block_bbox_perim_ft": 180.6,
+    "asheville_n": 2,
+    "asheville_perim_est_ft": 66.0,
+    "scaled_n_convenience_receps": 5,
+    "spacing_ft_per_recep": 36.1
+  },
+  "101": {
+    "room_name": "RECEPTION",
+    "block_bbox": [
+      252.5,
+      -257.6,
+      252.5,
+      -257.6
+    ],
+    "block_bbox_perim_ft": 0.0,
+    "asheville_n": 4,
+    "asheville_perim_est_ft": 36.2,
+    "scaled_n_convenience_receps": 0,
+    "spacing_ft_per_recep": null
+  },
+  "103K": {
+    "room_name": "TANNING",
+    "block_bbox": [
+      235.5,
+      -280.5,
+      235.5,
+      -280.5
+    ],
+    "block_bbox_perim_ft": 0.0,
+    "asheville_n": 0,
+    "asheville_perim_est_ft": 0,
+    "scaled_n_convenience_receps": 0,
+    "spacing_ft_per_recep": null
+  },
+  "103L": {
+    "room_name": "TANNING",
+    "block_bbox": [
+      209.1,
+      -280.5,
+      216.8,
+      -259.4
+    ],
+    "block_bbox_perim_ft": 57.8,
+    "asheville_n": 0,
+    "asheville_perim_est_ft": 0,
+    "scaled_n_convenience_receps": 0,
+    "spacing_ft_per_recep": null
+  },
+  "103H": {
+    "room_name": "SAUNA",
+    "block_bbox": [
+      250.2,
+      -293.3,
+      256.5,
+      -280.5
+    ],
+    "block_bbox_perim_ft": 38.2,
+    "asheville_n": 4,
+    "asheville_perim_est_ft": 36.0,
+    "scaled_n_convenience_receps": 4,
+    "spacing_ft_per_recep": 9.6
+  },
+  "103D": {
+    "room_name": "HYBRID",
+    "block_bbox": [
+      229.9,
+      -299.7,
+      234.4,
+      -296.4
+    ],
+    "block_bbox_perim_ft": 15.7,
+    "asheville_n": 0,
+    "asheville_perim_est_ft": 0,
+    "scaled_n_convenience_receps": 0,
+    "spacing_ft_per_recep": null
+  },
+  "103J": {
+    "room_name": "SPRAY TANNING",
+    "block_bbox": [
+      236.5,
+      -280.5,
+      236.5,
+      -280.5
+    ],
+    "block_bbox_perim_ft": 0.0,
+    "asheville_n": 0,
+    "asheville_perim_est_ft": 0,
+    "scaled_n_convenience_receps": 0,
+    "spacing_ft_per_recep": null
+  },
+  "103A": {
+    "room_name": "HYDROMASSAGE",
+    "block_bbox": [
+      198.1,
+      -300.0,
+      198.1,
+      -292.8
+    ],
+    "block_bbox_perim_ft": 14.3,
+    "asheville_n": 0,
+    "asheville_perim_est_ft": 0,
+    "scaled_n_convenience_receps": 0,
+    "spacing_ft_per_recep": null
+  },
+  "103": {
+    "room_name": "BLACK CARD SPA",
+    "block_bbox": [
+      238.6,
+      -272.7,
+      240.5,
+      -264.5
+    ],
+    "block_bbox_perim_ft": 20.3,
+    "asheville_n": 3,
+    "asheville_perim_est_ft": 31.2,
+    "scaled_n_convenience_receps": 2,
+    "spacing_ft_per_recep": 10.2
+  },
+  "102": {
+    "room_name": "CHECK-IN",
+    "block_bbox": [
+      239.2,
+      -250.7,
+      239.2,
+      -250.7
+    ],
+    "block_bbox_perim_ft": 0.0,
+    "asheville_n": 10,
+    "asheville_perim_est_ft": 75.5,
+    "scaled_n_convenience_receps": 0,
+    "spacing_ft_per_recep": null
+  }
+}

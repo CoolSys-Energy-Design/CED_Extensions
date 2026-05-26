@@ -1,0 +1,11 @@
+{
+  "note": "Cleared by user direction: do not place convenience receps until they can be snapped to actual walls (not bbox edges).", 
+  "convenience_receps": [], 
+  "n_target": 2, 
+  "bbox": [
+    180, 
+    -240, 
+    260, 
+    -215
+  ]
+}

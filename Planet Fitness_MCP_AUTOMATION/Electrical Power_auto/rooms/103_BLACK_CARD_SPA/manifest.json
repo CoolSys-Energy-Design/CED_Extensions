@@ -1,0 +1,142 @@
+{
+  "keynotes": [
+    {
+      "id": 8222168, 
+      "note": "20", 
+      "for_id": 8222086, 
+      "y": -272.90166666666664, 
+      "x": 252.30666666666664
+    }, 
+    {
+      "id": 8222169, 
+      "note": "20", 
+      "for_id": 8222087, 
+      "y": -272.90166666666664, 
+      "x": 255.69266666666667
+    }, 
+    {
+      "id": 8222170, 
+      "note": "20", 
+      "for_id": 8222088, 
+      "y": -272.90166666666664, 
+      "x": 248.91966666666664
+    }, 
+    {
+      "for_vm": true, 
+      "id": 8222263, 
+      "note": "16", 
+      "y": -268.32999999999998, 
+      "x": 214.94
+    }, 
+    {
+      "for_vm": true, 
+      "id": 8222265, 
+      "note": "16", 
+      "y": -268.32999999999998, 
+      "x": 211.63
+    }, 
+    {
+      "for_vm": true, 
+      "id": 8222267, 
+      "note": "16", 
+      "y": -273.74000000000001, 
+      "x": 213.49000000000001
+    }
+  ], 
+  "fixtures": [
+    {
+      "id": 8222086, 
+      "load": "MASSAGE CHAIRS - 103", 
+      "type": "Duplex Floor", 
+      "y": -271.90166666666664, 
+      "x": 252.30666666666664
+    }, 
+    {
+      "id": 8222087, 
+      "load": "MASSAGE CHAIRS - 103", 
+      "type": "Duplex Floor", 
+      "y": -271.90166666666664, 
+      "x": 255.69266666666667
+    }, 
+    {
+      "id": 8222088, 
+      "load": "MASSAGE CHAIRS - 103", 
+      "type": "Duplex Floor", 
+      "y": -271.90166666666664, 
+      "x": 248.91966666666664
+    }, 
+    {
+      "id": 8222090, 
+      "load": "TV - BLACK CARD SUITE", 
+      "type": "Duplex Wall", 
+      "y": -264.17400000000004, 
+      "x": 250.0
+    }, 
+    {
+      "id": 8222091, 
+      "type": "Keynote #11", 
+      "y": -265.17400000000004, 
+      "x": 250.0
+    }, 
+    {
+      "role": "convenience S wall", 
+      "id": 8222171, 
+      "load": "RECEPTACLE - 103 BLACK CARD SPA", 
+      "rot_applied": "0 (face north)", 
+      "type": "Duplex Wall", 
+      "y": -279.89999999999998, 
+      "x": 225.00000000000003
+    }, 
+    {
+      "role": "convenience S wall", 
+      "id": 8222172, 
+      "load": "RECEPTACLE - 103 BLACK CARD SPA", 
+      "rot_applied": "0 (face north)", 
+      "type": "Duplex Wall", 
+      "y": -279.89999999999992, 
+      "x": 245.00000000000003
+    }, 
+    {
+      "role": "treatment room chair", 
+      "id": 8222173, 
+      "load": "HYPER ICE", 
+      "rot_applied": "+pi", 
+      "type": "Duplex Wall", 
+      "y": -267.75, 
+      "x": 219.99999999999997
+    }, 
+    {
+      "role": "treatment room chair", 
+      "id": 8222174, 
+      "load": "HYPER ICE", 
+      "rot_applied": "+pi", 
+      "type": "Duplex Wall", 
+      "y": -267.75, 
+      "x": 223.99999999999997
+    }, 
+    {
+      "role": "vending", 
+      "id": 8222262, 
+      "load": "VENDING MACHINE", 
+      "type": "Duplex Wall", 
+      "y": -270.32999999999998, 
+      "x": 214.94
+    }, 
+    {
+      "role": "vending", 
+      "id": 8222264, 
+      "load": "VENDING MACHINE", 
+      "type": "Duplex Wall", 
+      "y": -270.32999999999998, 
+      "x": 211.63
+    }, 
+    {
+      "role": "vending", 
+      "id": 8222266, 
+      "load": "VENDING MACHINE", 
+      "type": "Duplex Wall", 
+      "y": -271.74000000000001, 
+      "x": 213.49000000000001
+    }
+  ]
+}

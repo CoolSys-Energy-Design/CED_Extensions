@@ -1,0 +1,2448 @@
+{
+ "view": "Power Callouts - PHARMACY", 
+ "elements": [
+  {
+   "vertices": [
+    [
+     176.0488, 
+     -32.805599999999998, 
+     0.0
+    ], 
+    [
+     176.5403, 
+     -33.296100000000003, 
+     0.0
+    ], 
+    [
+     177.3536, 
+     -32.877400000000002, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "21,23", 
+    "sys_id": 10612412
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 2, 
+    "Mark": null, 
+    "Neutral Conductors": 0, 
+    "Ground Conductors": 1, 
+    "Wire Size": "2-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 10612409
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 10612405
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10612410, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     177.35890000000001, 
+     -32.890000000000001, 
+     0.0
+    ], 
+    [
+     177.4564, 
+     -33.417400000000001, 
+     0.0
+    ], 
+    [
+     177.0711, 
+     -33.914999999999999, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "21,23", 
+    "sys_id": 10612412
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 2, 
+    "Mark": null, 
+    "Neutral Conductors": 0, 
+    "Ground Conductors": 1, 
+    "Wire Size": "2-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 10612409
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10612411, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     174.92679999999999, 
+     -38.595799999999997, 
+     0.0
+    ], 
+    [
+     174.43770000000001, 
+     -37.741500000000002, 
+     0.0
+    ], 
+    [
+     174.92679999999999, 
+     -37.213000000000001, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "4", 
+    "sys_id": 10651784
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9409222
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10651779, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     170.92259999999999, 
+     -32.945300000000003, 
+     0.0
+    ], 
+    [
+     170.25890000000001, 
+     -32.929299999999998, 
+     0.0
+    ], 
+    [
+     170.57249999999999, 
+     -34.050899999999999, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "24", 
+    "sys_id": 10353503
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352969
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10651780, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     171.9271, 
+     -32.212800000000001, 
+     0.0
+    ], 
+    [
+     171.39109999999999, 
+     -33.2408, 
+     0.0
+    ], 
+    [
+     171.81780000000001, 
+     -33.976100000000002, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "20", 
+    "sys_id": 10353507
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352967
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10651781, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     171.12719999999999, 
+     -41.348199999999999, 
+     1.6667000000000001
+    ], 
+    [
+     170.8526, 
+     -42.2667, 
+     0.0
+    ], 
+    [
+     171.3049, 
+     -43.380499999999998, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "19", 
+    "sys_id": 10353500
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#10, 1-#10, 1-#10"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353521
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10651788, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     182.29169999999999, 
+     -32.212800000000001, 
+     0.0
+    ], 
+    [
+     182.4648, 
+     -33.373800000000003, 
+     0.0
+    ], 
+    [
+     181.9734, 
+     -34.511099999999999, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "17", 
+    "sys_id": 10353513
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352937
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10662491, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     183.2687, 
+     -32.222000000000001, 
+     0.0
+    ], 
+    [
+     183.3982, 
+     -33.5642, 
+     0.0
+    ], 
+    [
+     183.1172, 
+     -35.175199999999997, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "14", 
+    "sys_id": 10353532
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9374485
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10662492, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     185.12289999999999, 
+     -32.222000000000001, 
+     0.0
+    ], 
+    [
+     185.2457, 
+     -33.327300000000001, 
+     0.0
+    ], 
+    [
+     185.12289999999999, 
+     -34.037500000000001, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "14", 
+    "sys_id": 10353532
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352934
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10662493, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     184.20830000000001, 
+     -32.212800000000001, 
+     0.0
+    ], 
+    [
+     184.60919999999999, 
+     -33.642400000000002, 
+     0.0
+    ], 
+    [
+     184.20830000000001, 
+     -35.106999999999999, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "17", 
+    "sys_id": 10353513
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9374459
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10662494, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     187.28389999999999, 
+     -32.550600000000003, 
+     0.0
+    ], 
+    [
+     187.7313, 
+     -31.483599999999999, 
+     0.0
+    ], 
+    [
+     188.1019, 
+     -32.569200000000002, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "32", 
+    "sys_id": 10353499
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352997
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352999
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10662504, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     188.37360000000001, 
+     -32.563200000000002, 
+     0.0
+    ], 
+    [
+     188.9453, 
+     -31.264099999999999, 
+     0.0
+    ], 
+    [
+     189.33799999999999, 
+     -32.559800000000003, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "32", 
+    "sys_id": 10353499
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353000
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352999
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10662505, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     187.16489999999999, 
+     -32.222000000000001, 
+     0.0
+    ], 
+    [
+     187.5478, 
+     -33.0749, 
+     0.0
+    ], 
+    [
+     187.16489999999999, 
+     -33.927799999999998, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "32", 
+    "sys_id": 10353499
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352997
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10662506, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     190.92679999999999, 
+     -39.397199999999998, 
+     0.0
+    ], 
+    [
+     189.86259999999999, 
+     -39.134900000000002, 
+     0.0
+    ], 
+    [
+     189.14490000000001, 
+     -39.215600000000002, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "25", 
+    "sys_id": 10353510
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353530
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10662508, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     190.92679999999999, 
+     -40.813800000000001, 
+     0.0
+    ], 
+    [
+     189.86340000000001, 
+     -39.963799999999999, 
+     0.0
+    ], 
+    [
+     188.93350000000001, 
+     -40.4024, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "29", 
+    "sys_id": 10353509
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353525
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10662509, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     190.92679999999999, 
+     -41.6907, 
+     0.0
+    ], 
+    [
+     189.7253, 
+     -41.5321, 
+     0.0
+    ], 
+    [
+     188.88480000000001, 
+     -41.581099999999999, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "18", 
+    "sys_id": 10353511
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#10, 1-#10, 1-#10"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353535
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10662510, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     190.92679999999999, 
+     -42.5518, 
+     0.0
+    ], 
+    [
+     189.17179999999999, 
+     -42.685600000000001, 
+     0.0
+    ], 
+    [
+     188.8604, 
+     -42.9467, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "18", 
+    "sys_id": 10353511
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#10, 1-#10, 1-#10"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353529
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10662511, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     190.92679999999999, 
+     -43.415500000000002, 
+     0.0
+    ], 
+    [
+     189.60220000000001, 
+     -42.915300000000002, 
+     0.0
+    ], 
+    [
+     188.85220000000001, 
+     -44.027799999999999, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "18", 
+    "sys_id": 10353511
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#10, 1-#10, 1-#10"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353527
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10662512, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     190.90989999999999, 
+     -46.306100000000001, 
+     0.0
+    ], 
+    [
+     189.7826, 
+     -45.9193, 
+     0.0
+    ], 
+    [
+     188.95689999999999, 
+     -46.386299999999999, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "18", 
+    "sys_id": 10353511
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#10, 1-#10, 1-#10"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353537
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10662513, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     190.90989999999999, 
+     -47.722799999999999, 
+     0.0
+    ], 
+    [
+     189.77699999999999, 
+     -47.641399999999997, 
+     0.0
+    ], 
+    [
+     188.98150000000001, 
+     -47.984400000000001, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "27", 
+    "sys_id": 10353508
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353526
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10662514, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     190.92679999999999, 
+     -49.2438, 
+     0.0
+    ], 
+    [
+     189.95529999999999, 
+     -49.087499999999999, 
+     0.0
+    ], 
+    [
+     189.03569999999999, 
+     -49.437899999999999, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "2", 
+    "sys_id": 10353584
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352727
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10662515, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     190.92679999999999, 
+     -54.531399999999998, 
+     0.0
+    ], 
+    [
+     189.48840000000001, 
+     -54.328400000000002, 
+     0.0
+    ], 
+    [
+     188.9143, 
+     -54.6599, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "12", 
+    "sys_id": 10353498
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352943
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10662861, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     190.92679999999999, 
+     -58.5319, 
+     0.0
+    ], 
+    [
+     189.59870000000001, 
+     -58.063200000000002, 
+     0.0
+    ], 
+    [
+     188.81700000000001, 
+     -58.5319, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "13", 
+    "sys_id": 10353497
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352940
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10662874, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     190.9085, 
+     -61.740200000000002, 
+     0.0
+    ], 
+    [
+     189.8519, 
+     -61.406100000000002, 
+     0.0
+    ], 
+    [
+     188.7953, 
+     -61.740200000000002, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "22", 
+    "sys_id": 10353312
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352935
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10662955, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     181.18000000000001, 
+     -55.475299999999997, 
+     0.0
+    ], 
+    [
+     179.727, 
+     -57.122500000000002, 
+     0.0
+    ], 
+    [
+     181.18000000000001, 
+     -58.804499999999997, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "54", 
+    "sys_id": 10663204
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352996
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352990
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10662973, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     181.18000000000001, 
+     -58.804499999999997, 
+     0.0
+    ], 
+    [
+     179.8955, 
+     -60.776699999999998, 
+     0.0
+    ], 
+    [
+     181.18000000000001, 
+     -62.783700000000003, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "54", 
+    "sys_id": 10663204
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352993
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352996
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10662986, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     181.18000000000001, 
+     -62.783700000000003, 
+     0.0
+    ], 
+    [
+     180.28700000000001, 
+     -64.860500000000002, 
+     0.0
+    ], 
+    [
+     181.18000000000001, 
+     -66.972300000000004, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "54", 
+    "sys_id": 10663204
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352993
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352965
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10663013, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     181.18000000000001, 
+     -67.897900000000007, 
+     0.0
+    ], 
+    [
+     187.48230000000001, 
+     -65.688100000000006, 
+     0.0
+    ], 
+    [
+     181.18000000000001, 
+     -63.513199999999998, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "52", 
+    "sys_id": 10353506
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352991
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352966
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10663026, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     181.18000000000001, 
+     -63.513199999999998, 
+     0.0
+    ], 
+    [
+     186.0008, 
+     -61.5062, 
+     0.0
+    ], 
+    [
+     181.18000000000001, 
+     -59.533999999999999, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "52", 
+    "sys_id": 10353506
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352991
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352994
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10663039, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     181.18000000000001, 
+     -59.533999999999999, 
+     0.0
+    ], 
+    [
+     184.72389999999999, 
+     -57.897599999999997, 
+     0.0
+    ], 
+    [
+     181.18000000000001, 
+     -56.204799999999999, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "52", 
+    "sys_id": 10353506
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352988
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352994
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10663052, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     181.18000000000001, 
+     -67.897900000000007, 
+     0.0
+    ], 
+    [
+     182.76429999999999, 
+     -67.712000000000003, 
+     0.0
+    ], 
+    [
+     183.40029999999999, 
+     -68.966999999999999, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "52", 
+    "sys_id": 10353506
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352966
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10663093, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     181.18000000000001, 
+     -66.972300000000004, 
+     0.0
+    ], 
+    [
+     180.7756, 
+     -65.6511, 
+     0.0
+    ], 
+    [
+     180.22659999999999, 
+     -66.478899999999996, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "54", 
+    "sys_id": 10663204
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352965
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10663106, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     173.30860000000001, 
+     -86.445599999999999, 
+     0.0
+    ], 
+    [
+     173.49350000000001, 
+     -86.126300000000001, 
+     0.0
+    ], 
+    [
+     172.84360000000001, 
+     -85.766800000000003, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "7", 
+    "sys_id": 10663698
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9688971
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10663674, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     172.16120000000001, 
+     -53.712400000000002, 
+     0.0
+    ], 
+    [
+     170.2638, 
+     -56.567599999999999, 
+     0.0
+    ], 
+    [
+     172.1643, 
+     -59.420699999999997, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "31", 
+    "sys_id": 10353501
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352983
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352971
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10663831, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     172.1643, 
+     -59.420699999999997, 
+     0.0
+    ], 
+    [
+     170.4221, 
+     -61.921100000000003, 
+     0.0
+    ], 
+    [
+     172.1643, 
+     -64.504000000000005, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "31", 
+    "sys_id": 10353501
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352971
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352977
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10663832, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     172.1643, 
+     -64.504000000000005, 
+     0.0
+    ], 
+    [
+     173.1643, 
+     -64.445099999999996, 
+     0.0
+    ], 
+    [
+     174.1643, 
+     -64.504000000000005, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "31", 
+    "sys_id": 10353501
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352977
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10663833, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     172.1643, 
+     -65.174199999999999, 
+     0.0
+    ], 
+    [
+     170.65690000000001, 
+     -62.674199999999999, 
+     0.0
+    ], 
+    [
+     172.1643, 
+     -60.174199999999999, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "35", 
+    "sys_id": 10353516
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352981
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352975
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10663834, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     172.24770000000001, 
+     -60.072800000000001, 
+     0.0
+    ], 
+    [
+     169.83590000000001, 
+     -57.486699999999999, 
+     0.0
+    ], 
+    [
+     172.50120000000001, 
+     -54.821300000000001, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "35", 
+    "sys_id": 10353516
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352975
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352987
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10663835, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     172.1643, 
+     -65.174199999999999, 
+     0.0
+    ], 
+    [
+     173.25049999999999, 
+     -65.144999999999996, 
+     0.0
+    ], 
+    [
+     174.3253, 
+     -65.304900000000004, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "35", 
+    "sys_id": 10353516
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352981
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10663836, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     172.16120000000001, 
+     -55.632599999999996, 
+     0.0
+    ], 
+    [
+     175.49199999999999, 
+     -58.276400000000002, 
+     0.0
+    ], 
+    [
+     172.1643, 
+     -60.924199999999999, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "33", 
+    "sys_id": 10353512
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352982
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352970
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10663949, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     172.1643, 
+     -60.924199999999999, 
+     0.0
+    ], 
+    [
+     175.44280000000001, 
+     -63.403399999999998, 
+     0.0
+    ], 
+    [
+     172.1643, 
+     -65.882599999999996, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "33", 
+    "sys_id": 10353512
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352970
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352976
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10663962, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     172.1643, 
+     -65.882599999999996, 
+     0.0
+    ], 
+    [
+     173.3278, 
+     -65.684899999999999, 
+     0.0
+    ], 
+    [
+     174.4888, 
+     -65.897099999999995, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "33", 
+    "sys_id": 10353512
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352976
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10663975, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     176.10849999999999, 
+     -72.383499999999998, 
+     0.0
+    ], 
+    [
+     177.52520000000001, 
+     -74.300700000000006, 
+     0.0
+    ], 
+    [
+     176.10849999999999, 
+     -76.050200000000004, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "34", 
+    "sys_id": 10353505
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352952
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352946
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10663999, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     176.10849999999999, 
+     -76.050200000000004, 
+     0.0
+    ], 
+    [
+     177.36609999999999, 
+     -77.7042, 
+     0.0
+    ], 
+    [
+     176.10849999999999, 
+     -79.716800000000006, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "34", 
+    "sys_id": 10353505
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352949
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352946
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10664010, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     176.10849999999999, 
+     -79.716800000000006, 
+     0.0
+    ], 
+    [
+     176.86070000000001, 
+     -79.256699999999995, 
+     0.0
+    ], 
+    [
+     177.1344, 
+     -79.303299999999993, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "34", 
+    "sys_id": 10353505
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352949
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10664023, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     176.10849999999999, 
+     -80.642499999999998, 
+     0.0
+    ], 
+    [
+     171.08940000000001, 
+     -78.809100000000001, 
+     0.0
+    ], 
+    [
+     176.10849999999999, 
+     -76.975800000000007, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "36", 
+    "sys_id": 10664166
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352945
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352948
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10664036, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     176.10849999999999, 
+     -76.975800000000007, 
+     0.0
+    ], 
+    [
+     173.024, 
+     -75.142499999999998, 
+     0.0
+    ], 
+    [
+     176.10849999999999, 
+     -73.309100000000001, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "36", 
+    "sys_id": 10664166
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352945
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352951
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10664051, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     176.10849999999999, 
+     -80.642499999999998, 
+     0.0
+    ], 
+    [
+     177.31399999999999, 
+     -79.806799999999996, 
+     0.0
+    ], 
+    [
+     177.91300000000001, 
+     -81.145700000000005, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "36", 
+    "sys_id": 10664166
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352948
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10664064, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     167.70330000000001, 
+     -67.624799999999993, 
+     0.0
+    ], 
+    [
+     164.58539999999999, 
+     -69.397900000000007, 
+     0.0
+    ], 
+    [
+     166.97890000000001, 
+     -71.7851, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "16", 
+    "sys_id": 10353496
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353001
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352957
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10665761, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     166.97890000000001, 
+     -71.7851, 
+     0.0
+    ], 
+    [
+     165.85669999999999, 
+     -73.826800000000006, 
+     0.0
+    ], 
+    [
+     166.97890000000001, 
+     -75.868499999999997, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "16", 
+    "sys_id": 10353496
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352954
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352957
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10665786, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     166.97890000000001, 
+     -75.868499999999997, 
+     0.0
+    ], 
+    [
+     164.88630000000001, 
+     -78.131, 
+     0.0
+    ], 
+    [
+     167.89490000000001, 
+     -79.514300000000006, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "16", 
+    "sys_id": 10353496
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352959
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352954
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10665799, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     167.56979999999999, 
+     -79.646500000000003, 
+     0.0
+    ], 
+    [
+     168.67179999999999, 
+     -79.4328, 
+     0.0
+    ], 
+    [
+     169.5438, 
+     -80.139600000000002, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "16", 
+    "sys_id": 10353496
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352959
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10665812, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     167.56979999999999, 
+     -80.428700000000006, 
+     0.0
+    ], 
+    [
+     168.6078, 
+     -79.957999999999998, 
+     0.0
+    ], 
+    [
+     169.4357, 
+     -80.927800000000005, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "50", 
+    "sys_id": 10665902
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352963
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10665825, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     167.56979999999999, 
+     -80.428700000000006, 
+     0.0
+    ], 
+    [
+     170.72989999999999, 
+     -78.049700000000001, 
+     0.0
+    ], 
+    [
+     166.97890000000001, 
+     -76.7941, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "50", 
+    "sys_id": 10665902
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352963
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352955
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10665838, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     166.97890000000001, 
+     -76.7941, 
+     0.0
+    ], 
+    [
+     177.9127, 
+     -74.752399999999994, 
+     0.0
+    ], 
+    [
+     166.97890000000001, 
+     -72.710800000000006, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "50", 
+    "sys_id": 10665902
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352955
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352958
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10665851, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     166.97890000000001, 
+     -72.710800000000006, 
+     0.0
+    ], 
+    [
+     172.381, 
+     -70.962800000000001, 
+     0.0
+    ], 
+    [
+     167.37889999999999, 
+     -68.276300000000006, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "50", 
+    "sys_id": 10665902
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353005
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352958
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10665864, 
+   "num_vertices": 3
+  }, 
+  {
+   "vertices": [
+    [
+     167.06229999999999, 
+     -75.767099999999999, 
+     0.0
+    ], 
+    [
+     166.03299999999999, 
+     -75.258700000000005, 
+     0.0
+    ], 
+    [
+     166.64279999999999, 
+     -74.729399999999998, 
+     0.0
+    ]
+   ], 
+   "circuit": {
+    "panel": "PH", 
+    "ckt": "16", 
+    "sys_id": 10353496
+   }, 
+   "params": {
+    "Comments": null, 
+    "Hot Conductors": 1, 
+    "Mark": null, 
+    "Neutral Conductors": 1, 
+    "Ground Conductors": 1, 
+    "Wire Size": "1-#12, 1-#12, 1-#12"
+   }, 
+   "connected_to": [
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9353360
+    }, 
+    {
+     "cat": "Electrical Fixtures", 
+     "id": 9352954
+    }
+   ], 
+   "wire_type": "THWN", 
+   "id": 10666058, 
+   "num_vertices": 3
+  }
+ ], 
+ "source_doc": "RunUpdateProfilesHEBCarrollton95PercentCLOUDMODEL", 
+ "count": 57
+}

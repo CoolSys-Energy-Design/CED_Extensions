@@ -1,0 +1,3396 @@
+{
+  "blocks": [
+    {
+      "world_xy": [
+        -161.06858274963017, 
+        -270.0505663499705
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": -7.016709298534876e-15, 
+      "layer": "A-N-PLUMB FIX"
+    }, 
+    {
+      "world_xy": [
+        -156.33213772059895, 
+        -270.5586215790342
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": -7.016709298534876e-15, 
+      "layer": "A-N-PLUMB FIX"
+    }, 
+    {
+      "world_xy": [
+        -147.74875846600381, 
+        -270.55858783472979
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": -7.016709298534876e-15, 
+      "layer": "A-N-PLUMB FIX"
+    }, 
+    {
+      "world_xy": [
+        197.47473115128827, 
+        -614.76255092055044
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 90.0, 
+      "layer": "A-N-PLUMB FIX"
+    }, 
+    {
+      "world_xy": [
+        198.96711775550634, 
+        -769.83683518413011
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 89.999999999999986, 
+      "layer": "A-N-LOCKERS"
+    }, 
+    {
+      "world_xy": [
+        151.67599140023506, 
+        -294.87980928665019
+      ], 
+      "room": "TOILET", 
+      "rotation_deg": 90.0, 
+      "layer": "A-N-PLUMB FIX"
+    }, 
+    {
+      "world_xy": [
+        459.96263620198999, 
+        -236.09978967779648
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-PLUMB FIX"
+    }, 
+    {
+      "world_xy": [
+        151.67599140023444, 
+        -285.73941483131091
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-PLUMB FIX"
+    }, 
+    {
+      "world_xy": [
+        443.66980773156092, 
+        -270.05057008648384
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-PLUMB FIX"
+    }, 
+    {
+      "world_xy": [
+        438.93336270252968, 
+        -270.55862531554754
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-PLUMB FIX"
+    }, 
+    {
+      "world_xy": [
+        430.35092048260992, 
+        -270.55861568610806
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-PLUMB FIX"
+    }, 
+    {
+      "world_xy": [
+        85.127549765662835, 
+        -614.76255271576474
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 89.999999999999986, 
+      "layer": "A-N-PLUMB FIX"
+    }, 
+    {
+      "world_xy": [
+        83.63516327782061, 
+        -769.83876908230604
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 90.0, 
+      "layer": "A-N-LOCKERS"
+    }, 
+    {
+      "world_xy": [
+        130.92451952221623, 
+        -294.87982321233932
+      ], 
+      "room": "TOILET", 
+      "rotation_deg": 89.999999999999986, 
+      "layer": "A-N-PLUMB FIX"
+    }, 
+    {
+      "world_xy": [
+        106.92002337234211, 
+        -294.15776538971232
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 89.999999999999986, 
+      "layer": "A-N-PLUMB FIX"
+    }, 
+    {
+      "world_xy": [
+        130.92451952221623, 
+        -285.73944268268934
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-PLUMB FIX"
+    }, 
+    {
+      "world_xy": [
+        590.90281896851889, 
+        -271.01894288844102
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-PLUMB FIX"
+    }, 
+    {
+      "world_xy": [
+        594.98801924550139, 
+        -271.01894288844102
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-PLUMB FIX"
+    }, 
+    {
+      "world_xy": [
+        142.46913793592333, 
+        174.55518711408232
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-LOCKER BENCH"
+    }, 
+    {
+      "world_xy": [
+        204.50838684454263, 
+        -731.66572578929208
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 90.0, 
+      "layer": "A-N-LOCKER BENCH"
+    }, 
+    {
+      "world_xy": [
+        171.76127635290007, 
+        -284.87610178269495
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-LOCKERS"
+    }, 
+    {
+      "world_xy": [
+        170.76127635290007, 
+        -284.87610178269495
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-LOCKERS"
+    }, 
+    {
+      "world_xy": [
+        169.76127635290007, 
+        -284.87610178269495
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-LOCKERS"
+    }, 
+    {
+      "world_xy": [
+        168.76127635290007, 
+        -284.87610178269495
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-LOCKERS"
+    }, 
+    {
+      "world_xy": [
+        167.76127635290007, 
+        -284.87610178269495
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-LOCKERS"
+    }, 
+    {
+      "world_xy": [
+        183.55208260285764, 
+        -276.32419704435426
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 90.0, 
+      "layer": "A-N-LOCKERS"
+    }, 
+    {
+      "world_xy": [
+        154.85588239712578, 
+        -283.74982566423751
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-LOCKERS"
+    }, 
+    {
+      "world_xy": [
+        174.41700279418953, 
+        -267.72946436006475
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-LOCKERS"
+    }, 
+    {
+      "world_xy": [
+        173.25933892116885, 
+        -283.74985377351817
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-LOCKERS"
+    }, 
+    {
+      "world_xy": [
+        154.54200125032619, 
+        -267.72946970643608
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-LOCKERS"
+    }, 
+    {
+      "world_xy": [
+        152.55594381529562, 
+        -276.93899605497819
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 90.0, 
+      "layer": "A-N-LOCKERS"
+    }, 
+    {
+      "world_xy": [
+        152.55594008600556, 
+        -285.84480745037484
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 90.0, 
+      "layer": "A-N-LOCKERS"
+    }, 
+    {
+      "world_xy": [
+        186.76225933202889, 
+        -731.66572758450639
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 90.0, 
+      "layer": "A-N-LOCKER BENCH"
+    }, 
+    {
+      "world_xy": [
+        139.62272044895641, 
+        174.55518691450155
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": -90.0, 
+      "layer": "A-N-LOCKER BENCH"
+    }, 
+    {
+      "world_xy": [
+        99.050212575452662, 
+        -276.32419903764389
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 89.999999999999986, 
+      "layer": "A-N-LOCKERS"
+    }, 
+    {
+      "world_xy": [
+        127.74639385818435, 
+        -283.74982566423745
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -7.016709298534876e-15, 
+      "layer": "A-N-LOCKERS"
+    }, 
+    {
+      "world_xy": [
+        108.83252999075593, 
+        -283.74985397309871
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -7.016709298534876e-15, 
+      "layer": "A-N-LOCKERS"
+    }, 
+    {
+      "world_xy": [
+        130.05196780987197, 
+        -276.93899605497813
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 89.999999999999986, 
+      "layer": "A-N-LOCKERS"
+    }, 
+    {
+      "world_xy": [
+        130.05196408058188, 
+        -285.84480745037479
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 89.999999999999986, 
+      "layer": "A-N-LOCKERS"
+    }, 
+    {
+      "world_xy": [
+        113.43541127171883, 
+        -284.87610198227549
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-LOCKERS"
+    }, 
+    {
+      "world_xy": [
+        112.43541127171883, 
+        -284.87610198227549
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-LOCKERS"
+    }, 
+    {
+      "world_xy": [
+        111.43541127171883, 
+        -284.87610198227549
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-LOCKERS"
+    }, 
+    {
+      "world_xy": [
+        110.43541127171883, 
+        -284.87610198227549
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-LOCKERS"
+    }, 
+    {
+      "world_xy": [
+        109.43541127171883, 
+        -284.87610198227549
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-LOCKERS"
+    }, 
+    {
+      "world_xy": [
+        100.09122458041398, 
+        -283.9589071639968
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -45.000000000000163, 
+      "layer": "A-N-TELEVISION"
+    }, 
+    {
+      "world_xy": [
+        182.51106313931624, 
+        -283.95890264031323
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 44.999999999999837, 
+      "layer": "A-N-TELEVISION"
+    }, 
+    {
+      "world_xy": [
+        175.67056779113526, 
+        -294.15854458847951
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 89.999999999999986, 
+      "layer": "A-N-PLUMB FIX"
+    }, 
+    {
+      "world_xy": [
+        -193.45282961749837, 
+        -224.23109274697637
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-BEVERAGE COOLER"
+    }, 
+    {
+      "world_xy": [
+        -196.76455230593302, 
+        -224.23109345164863
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-BEVERAGE COOLER"
+    }, 
+    {
+      "world_xy": [
+        621.88884539108369, 
+        -317.84194274492762
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-BEVERAGE COOLER"
+    }, 
+    {
+      "world_xy": [
+        -223.4496236751155, 
+        -278.79304068955258
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": -7.016709298534876e-15, 
+      "layer": "A-N-SPA EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        679.66446794200715, 
+        -316.62903332494494
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-SPA EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        -464.65208598247938, 
+        -286.10660369868123
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": -7.016709298534876e-15, 
+      "layer": "A-N-TELEVISION"
+    }, 
+    {
+      "world_xy": [
+        -488.11672965995291, 
+        -292.09376688137144
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": -7.016709298534876e-15, 
+      "layer": "A-N-TELEVISION"
+    }, 
+    {
+      "world_xy": [
+        278.79453098401922, 
+        -1657.4649518373558
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 89.999999999999986, 
+      "layer": "A-N-SPA EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        351.50457534337323, 
+        -160.7215665307879
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        164.00859870009376, 
+        -230.37149295214377
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        151.17526536676044, 
+        -230.2141806980031
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        376.6989204404162, 
+        -404.82678457519609
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 90.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        130.67526536676044, 
+        -230.08415828808887
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        204.99882995102118, 
+        -230.08340684585241
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        106.75884702084404, 
+        -229.98114152014074
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        106.7585987000918, 
+        -253.07560140034514
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        147.73915798510015, 
+        -253.07558676528041
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        95.718417218429437, 
+        -375.72733720933508
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 90.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        324.71828485291292, 
+        -305.92903510867495
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 89.999999999999986, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        170.8419320334271, 
+        -241.40932207507029
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        95.272741293026925, 
+        -212.89560631449098
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 90.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        145.36851888600134, 
+        -284.32066410321431
+      ], 
+      "room": "STORAGE", 
+      "rotation_deg": 0.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        147.81790820653217, 
+        -292.48567981604714
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        75.24788714687817, 
+        -190.98132850431165
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        72.41911495605757, 
+        -197.7023832351509
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -179.99999999999997, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        73.454839609481539, 
+        -284.20146524745576
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        159.99495700730589, 
+        -209.8226676088386
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        84.903897244018339, 
+        -490.38285817158112
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 89.999999999999986, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        86.598385271513706, 
+        -207.11429124687245
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000057, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        91.025199539655702, 
+        -207.11429124687245
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000057, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        95.452013807797897, 
+        -207.11429124687245
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000057, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        90.363139562020947, 
+        -287.1158790369937
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 90.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        90.363139562020947, 
+        -281.86063008136529
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 90.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        79.286028364425022, 
+        -216.08256075207615
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        77.500951931946446, 
+        -233.72370080150603
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -89.999999999999957, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        98.437861985129615, 
+        -278.09208981010266
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 90.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        98.433290147906305, 
+        -272.87653883945086
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 90.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        98.428718310683067, 
+        -267.66098786879911
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 90.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        98.424146473459786, 
+        -262.44543689814736
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 90.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        270.55771441253768, 
+        -72.486931324129202
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        264.27065456060262, 
+        -109.08496376309897
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        296.54989323657389, 
+        -110.53487727826534
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        78.082510503308427, 
+        -221.87126215562202
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        54.921368896252403, 
+        -273.57769480235339
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 90.000000000000043, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        57.110454840574512, 
+        -271.77404130045954
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        264.27065456060262, 
+        -114.87272926612515
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        215.08143182780958, 
+        -251.57736552815237
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        215.38951543298779, 
+        -247.2351382521189
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        220.92464470254566, 
+        -247.58330646433433
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 89.999999999999986, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        220.43377341738289, 
+        -251.59185430958746
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 89.999999999999986, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        214.94771955299609, 
+        -232.45302834846208
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        215.58894126924773, 
+        -236.30702547513107
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        220.63086753017944, 
+        -236.19260727905512
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        219.71261097022409, 
+        -232.63273875027036
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 89.999999999999929, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        229.64541370156371, 
+        -207.41954530400486
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 89.999999999999986, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        234.29971705090853, 
+        -224.03802019923722
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 90.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        244.87262145957175, 
+        -237.07736489959183
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        243.81103286822159, 
+        -225.04871329732035
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        253.98320114668127, 
+        -219.84476734476763
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        244.60510251402758, 
+        -232.56522940822302
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 89.999999999999986, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        229.89855927245259, 
+        -210.96708280445571
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        254.38080517957633, 
+        -236.18487197890116
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 90.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        263.24067407164137, 
+        -236.61060530393149
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        215.36451472557758, 
+        -223.49984008966183
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        225.37973635706771, 
+        -223.870153138522
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 90.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        -81.789662191547052, 
+        -305.05493560900624
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        19.719380221971999, 
+        -118.71641803681383
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        267.59233204821084, 
+        -198.1151681800439
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -179.99999999999997, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        226.28883135720861, 
+        -197.65031741807405
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -179.99999999999997, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        223.49094733411459, 
+        -190.93974761777105
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        157.6369258971709, 
+        -197.67079089713312
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -179.99999999999997, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        157.67276969178334, 
+        -199.10323528434688
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        95.272741293026925, 
+        -217.79850611141427
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 90.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        188.61524536349472, 
+        -398.58334635696178
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 90.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        77.969854359413418, 
+        -197.7023832351509
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -179.99999999999997, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        97.184129095624044, 
+        -284.52079103650118
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        188.61524536349594, 
+        -410.62858361201648
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 90.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        83.793290236989648, 
+        -203.55887099364131
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 90.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        79.622050517885896, 
+        -284.18871665029184
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 90.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        376.6989204404162, 
+        -392.56334968228771
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 90.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        64.476561047824461, 
+        -290.70699338054465
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        74.922984516032855, 
+        -290.70699338054465
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        85.369407984241249, 
+        -290.70699338054465
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        95.815831452449657, 
+        -290.70699338054465
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        296.54989323657389, 
+        -116.2895734185394
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        54.692734756046008, 
+        -283.36426124812874
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 179.99999999999994, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        98.362738831444261, 
+        -244.15057443692982
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        286.97924265377981, 
+        -92.209585190239451
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        286.97924265377975, 
+        -98.039924886758783
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        119.57621913897107, 
+        -207.07950228654278
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        168.27800200014104, 
+        -197.67079089713312
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -179.99999999999997, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        168.31384579475349, 
+        -199.10323528434688
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        178.91907810311119, 
+        -197.67079089713312
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -179.99999999999997, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        178.95492189772364, 
+        -199.10323528434688
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        189.56015420608134, 
+        -197.67079089713312
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -179.99999999999997, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        189.59599800069378, 
+        -199.10323528434688
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        345.88332296338473, 
+        -297.67965005873401
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        343.26365615354024, 
+        -305.76355018864115
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        235.49094733411459, 
+        -190.93974761777105
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        247.49094733411459, 
+        -190.93974761777105
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        259.49094733411459, 
+        -190.93974761777105
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        219.39304581537749, 
+        -197.67079089713323
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -179.99999999999997, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        233.19903417436177, 
+        -197.67079089713323
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -179.99999999999997, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        240.09481971619292, 
+        -197.65031741807405
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -179.99999999999997, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        247.00502253334608, 
+        -197.67079089713323
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -179.99999999999997, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        253.90080807517725, 
+        -197.65031741807405
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -179.99999999999997, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        260.81101089233044, 
+        -197.67079089713323
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -179.99999999999997, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        117.6696477062406, 
+        -215.82809144798759
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        143.09797109925759, 
+        -217.75374661831498
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 179.99999999999983, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        126.83345881571455, 
+        -216.26901422404845
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 179.99999999999994, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        197.61708796404108, 
+        -220.95517139205307
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        136.58415289419651, 
+        -217.88747350617942
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        180.23773097826833, 
+        -221.87156709265849
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        188.45872731750976, 
+        -217.69650938430499
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        109.69456770540673, 
+        -217.56383661848082
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        164.37239877021707, 
+        -219.18254414862844
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        174.56998888377777, 
+        -217.98296814131734
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        149.11938476002257, 
+        -217.32145073113199
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        205.29099298981552, 
+        -219.63533169729871
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        119.35469626452314, 
+        -190.57326012994562
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 90.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        97.581186383362549, 
+        -249.31689057814145
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        97.581186383362549, 
+        -254.66064057814145
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        593.35295342845075, 
+        111.63927354647669
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": -134.99999999999869, 
+      "layer": "A-N-FIXT-CHECK-IN"
+    }, 
+    {
+      "world_xy": [
+        593.35295342845075, 
+        111.63927354647669
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": -134.99999999999869, 
+      "layer": "A-N-FIXT-CHECK-IN"
+    }, 
+    {
+      "world_xy": [
+        593.35295342845075, 
+        111.63927354647669
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": -134.99999999999869, 
+      "layer": "A-N-FIXT-CHECK-IN"
+    }, 
+    {
+      "world_xy": [
+        593.35295342845075, 
+        111.63927354647669
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": -134.99999999999869, 
+      "layer": "A-N-FIXT-CHECK-IN"
+    }, 
+    {
+      "world_xy": [
+        598.01684811304222, 
+        111.64121593833298
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": -134.99999999999869, 
+      "layer": "A-N-FIXT-CHECK-IN"
+    }, 
+    {
+      "world_xy": [
+        598.01684811304222, 
+        111.64121593833298
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": -134.99999999999869, 
+      "layer": "A-N-FIXT-CHECK-IN"
+    }, 
+    {
+      "world_xy": [
+        598.01684811304222, 
+        111.64121593833298
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": -134.99999999999869, 
+      "layer": "A-N-FIXT-CHECK-IN"
+    }, 
+    {
+      "world_xy": [
+        598.01684811304222, 
+        111.64121593833298
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": -134.99999999999869, 
+      "layer": "A-N-FIXT-CHECK-IN"
+    }, 
+    {
+      "world_xy": [
+        185.40626225957004, 
+        -265.68899758737814
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 90.0, 
+      "layer": "A-N-LOCKERS"
+    }, 
+    {
+      "world_xy": [
+        254.27643010059415, 
+        -299.73828520070265
+      ], 
+      "room": "HYBRID", 
+      "rotation_deg": 89.999999999999986, 
+      "layer": "A-N-SPA EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        -291.63917843924759, 
+        -184.18676780913364
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        110.17526536675845, 
+        -253.07560140034514
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        -288.22251177258096, 
+        -184.18676780913364
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        113.59193203342512, 
+        -253.07560140034514
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        -284.80584510591427, 
+        -184.18676780913364
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        117.0085987000918, 
+        -253.07560140034514
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        -281.38917843924759, 
+        -184.18676780913364
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        120.42526536675845, 
+        -253.07560140034514
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        -277.97251177258096, 
+        -184.18676780913364
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        123.84193203342512, 
+        -253.07560140034514
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        -274.55584510591427, 
+        -184.18676780913364
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        127.2585987000918, 
+        -253.07560140034514
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        -271.13917843924759, 
+        -184.18676780913364
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        130.67526536675845, 
+        -253.07560140034514
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        -267.72251177258096, 
+        -184.18676780913364
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        134.09193203342514, 
+        -253.07560140034514
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        -264.30584510591427, 
+        -184.18676780913364
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        137.5085987000918, 
+        -253.07560140034514
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        -260.88917843924759, 
+        -184.18676780913364
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        140.92526536675845, 
+        -253.07560140034514
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        -257.47251177258096, 
+        -184.18676780913364
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        144.34193203342514, 
+        -253.07560140034514
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        -254.05584510591427, 
+        -184.18676780913364
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        -250.63917843924759, 
+        -184.18676780913364
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        151.15582465176681, 
+        -253.07558676528041
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        147.73915798510208, 
+        -241.27587699513754
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        -291.63917843924565, 
+        -172.3870580389908
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        -288.22251177257897, 
+        -172.3870580389908
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        -284.80584510591228, 
+        -172.3870580389908
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        -281.38917843924565, 
+        -172.3870580389908
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        -277.97251177257897, 
+        -172.3870580389908
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        -274.55584510591228, 
+        -172.3870580389908
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        -271.13917843924565, 
+        -172.3870580389908
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        -267.72251177257897, 
+        -172.3870580389908
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        -264.30584510591228, 
+        -172.3870580389908
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        -260.88917843924565, 
+        -172.3870580389908
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        -257.47251177257897, 
+        -172.3870580389908
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        -254.05584510591228, 
+        -172.3870580389908
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        -250.63917843924563, 
+        -172.3870580389908
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        151.15582465176877, 
+        -241.27587699513754
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        140.90582465176877, 
+        -241.27587699513754
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        144.32249131843543, 
+        -241.27587699513754
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        134.07249131843543, 
+        -241.27587699513754
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        137.48915798510208, 
+        -241.27587699513754
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        127.23915798510208, 
+        -241.27587699513754
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        130.65582465176877, 
+        -241.27587699513754
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        120.40582465176875, 
+        -241.27587699513754
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        123.82249131843543, 
+        -241.27587699513754
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        113.57249131843543, 
+        -241.27587699513754
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        116.98915798510208, 
+        -241.27587699513754
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        106.73915798510208, 
+        -241.27587699513754
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        110.15582465176875, 
+        -241.27587699513754
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        201.57249131843545, 
+        -241.27587699514632
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        -234.38917843924563, 
+        -172.38705803899958
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        -230.97251177257897, 
+        -172.38705803899958
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        -227.55584510591228, 
+        -172.38705803899958
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        -224.13917843924563, 
+        -172.38705803899958
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        -220.72251177257897, 
+        -172.38705803899958
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        -217.30584510591228, 
+        -172.38705803899958
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        -213.88917843924563, 
+        -172.38705803899958
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        -210.47251177257894, 
+        -172.38705803899958
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        -207.05584510591228, 
+        -172.38705803899958
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        -203.63917843924563, 
+        -172.38705803899958
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        -200.22251177257894, 
+        -172.38705803899958
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        -196.80584510591228, 
+        -172.38705803899958
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        204.98915798510214, 
+        -241.27587699514632
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        -193.38917843924563, 
+        -172.38705803899958
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        194.73915798510214, 
+        -241.27587699514632
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        198.1558246517688, 
+        -241.27587699514632
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        187.9058246517688, 
+        -241.27587699514632
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        191.32249131843545, 
+        -241.27587699514632
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        181.07249131843545, 
+        -241.27587699514632
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        184.48915798510214, 
+        -241.27587699514632
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        174.23915798510214, 
+        -241.27587699514632
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        177.6558246517688, 
+        -241.27587699514632
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        201.57249131843545, 
+        -253.07558676528913
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        -234.38917843924563, 
+        -184.18676780914242
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        -230.97251177257897, 
+        -184.18676780914242
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        -227.55584510591228, 
+        -184.18676780914242
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        -224.13917843924563, 
+        -184.18676780914242
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        -220.72251177257897, 
+        -184.18676780914242
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        -217.30584510591228, 
+        -184.18676780914242
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        -213.88917843924563, 
+        -184.18676780914242
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        -210.47251177257894, 
+        -184.18676780914242
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        -207.05584510591228, 
+        -184.18676780914242
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        -203.63917843924563, 
+        -184.18676780914242
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        -200.22251177257894, 
+        -184.18676780914242
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        -196.80584510591228, 
+        -184.18676780914242
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        204.98915798510214, 
+        -253.07558676528913
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        -193.38917843924563, 
+        -184.18676780914242
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-RACEWAY"
+    }, 
+    {
+      "world_xy": [
+        194.73915798510214, 
+        -253.07558676528913
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        198.1558246517688, 
+        -253.07558676528913
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        187.9058246517688, 
+        -253.07558676528913
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        191.32249131843545, 
+        -253.07558676528913
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        181.07249131843545, 
+        -253.07558676528913
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        184.48915798510214, 
+        -253.07558676528913
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        174.23915798510214, 
+        -253.07558676528913
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        177.6558246517688, 
+        -253.07558676528913
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        167.40582465176882, 
+        -253.07558676528913
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        170.82249131843545, 
+        -253.07558676528913
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        160.57249131843548, 
+        -253.07558676528913
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        163.98915798510214, 
+        -253.07558676528913
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        167.42526536676041, 
+        -241.40932207507029
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        164.00859870009376, 
+        -241.40932207507029
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        160.59193203342707, 
+        -241.40932207507029
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        201.58216328435452, 
+        -230.08340684585241
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        198.16549661768786, 
+        -230.08340684585241
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        109.7514814216336, 
+        -229.98114152014074
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        174.24882995102084, 
+        -230.08340684585241
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        170.83216328435418, 
+        -230.08340684585241
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        167.41549661768752, 
+        -230.08340684585241
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        147.75859870009376, 
+        -230.2141806980031
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        160.5919320334271, 
+        -230.37149295214377
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        140.92526536676044, 
+        -230.08415828808978
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        137.50859870009376, 
+        -230.08415828808978
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        134.0919320334271, 
+        -230.08415828808978
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        127.25859870009376, 
+        -230.08415828808887
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        123.8419320334271, 
+        -230.08415828808887
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        120.42526536676043, 
+        -230.08415828808887
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        194.74882995102118, 
+        -230.08340684585241
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        191.33216328435452, 
+        -230.08340684585241
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        234.18547820302496, 
+        -232.5519531348387
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 89.999999999999986, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        232.22518735527285, 
+        -252.41684731039106
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 89.999999999999986, 
+      "layer": "A-N-LOCKERS"
+    }, 
+    {
+      "world_xy": [
+        252.29903166999065, 
+        -207.29279607959486
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 89.999999999999986, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        241.25837406442889, 
+        -211.04567330210438
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        219.55590819991414, 
+        -211.1394081182554
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        164.38854662371494, 
+        -267.12530668929503
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 179.99999999999991, 
+      "layer": "A-N-LOCKERS"
+    }, 
+    {
+      "world_xy": [
+        198.08091831435522, 
+        -272.14485887795109
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 90.0, 
+      "layer": "A-N-PLUMB FIX"
+    }, 
+    {
+      "world_xy": [
+        152.25824621899625, 
+        -731.66572578929208
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 90.0, 
+      "layer": "A-N-LOCKER BENCH"
+    }, 
+    {
+      "world_xy": [
+        122.22654920097347, 
+        -267.7294643633586
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-LOCKERS"
+    }, 
+    {
+      "world_xy": [
+        102.22655386270411, 
+        -267.72946988786293
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-LOCKERS"
+    }, 
+    {
+      "world_xy": [
+        134.50650960157392, 
+        -731.66572758450639
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 90.0, 
+      "layer": "A-N-LOCKER BENCH"
+    }, 
+    {
+      "world_xy": [
+        -143.66542513266958, 
+        -270.55858783472979
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": -7.016709298534876e-15, 
+      "layer": "A-N-PLUMB FIX"
+    }, 
+    {
+      "world_xy": [
+        -139.58209179933536, 
+        -270.55858783472979
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": -7.016709298534876e-15, 
+      "layer": "A-N-PLUMB FIX"
+    }, 
+    {
+      "world_xy": [
+        -1237.5124399558779, 
+        255.90889024650386
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": -90.000000000001236, 
+      "layer": "A-N-FIXT-CHECK-IN"
+    }, 
+    {
+      "world_xy": [
+        81.674762677873005, 
+        -237.29150553439231
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        250.16962527265002, 
+        -293.27496260270033
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 89.999999999999986, 
+      "layer": "A-N-SPA EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        253.5564378759338, 
+        -293.27496260270033
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 89.999999999999986, 
+      "layer": "A-N-SPA EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        210.84230641202163, 
+        -197.67079089713317
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -179.99999999999997, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        210.87815020663407, 
+        -199.10323528434694
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        659.85196785278993, 
+        -316.62903332494494
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-SPA EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        234.42446899513178, 
+        -299.73828520070259
+      ], 
+      "room": "HYBRID", 
+      "rotation_deg": 89.999999999999986, 
+      "layer": "A-N-SPA EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        214.61296705771542, 
+        -299.73828520070276
+      ], 
+      "room": "RED WAVE", 
+      "rotation_deg": 89.999999999999986, 
+      "layer": "A-N-SPA EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        152.25824237307481, 
+        -738.93622506732322
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 90.0, 
+      "layer": "A-N-LOCKER BENCH"
+    }, 
+    {
+      "world_xy": [
+        186.76225933202889, 
+        -738.93622506732322
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 90.0, 
+      "layer": "A-N-LOCKER BENCH"
+    }, 
+    {
+      "world_xy": [
+        177.66549661768752, 
+        -230.08340684585241
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        180.66549661768752, 
+        -230.08340684585241
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        112.7514814216336, 
+        -229.98114152014074
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        117.0014814216336, 
+        -229.98114152014074
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        186.66549661768786, 
+        -230.08340684585247
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        183.66549661768786, 
+        -230.08340684585247
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        254.31173715024516, 
+        -232.56188355277544
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        233.67190221961778, 
+        -236.21060406222264
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        264.07551267852392, 
+        -232.13616750860814
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 89.999999999999986, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        215.38919398039209, 
+        -220.03074173915155
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 89.999999999999986, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        224.83878719823488, 
+        -219.66050494272864
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        233.82023876137583, 
+        -219.48994674397471
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        243.80865838161526, 
+        -218.55604589186936
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        252.57998134433333, 
+        -211.16009149818032
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        635.73097883744356, 
+        -247.4683777876543
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-TELEVISION"
+    }, 
+    {
+      "world_xy": [
+        645.73097883744356, 
+        -247.4683777876543
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-TELEVISION"
+    }, 
+    {
+      "world_xy": [
+        655.73097883744356, 
+        -247.4683777876543
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-TELEVISION"
+    }, 
+    {
+      "world_xy": [
+        665.73097883744356, 
+        -247.4683777876543
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-TELEVISION"
+    }, 
+    {
+      "world_xy": [
+        675.73097883744356, 
+        -247.4683777876543
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-TELEVISION"
+    }, 
+    {
+      "world_xy": [
+        685.73097883744379, 
+        -247.4683777876543
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-TELEVISION"
+    }, 
+    {
+      "world_xy": [
+        695.73097883744379, 
+        -247.4683777876543
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-TELEVISION"
+    }, 
+    {
+      "world_xy": [
+        705.73097883744379, 
+        -247.4683777876543
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-TELEVISION"
+    }, 
+    {
+      "world_xy": [
+        715.73097883744379, 
+        -247.4683777876543
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-TELEVISION"
+    }, 
+    {
+      "world_xy": [
+        725.73097883744379, 
+        -247.4683777876543
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-TELEVISION"
+    }, 
+    {
+      "world_xy": [
+        144.3419320334271, 
+        -230.08415828808978
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        200.20123030905148, 
+        -197.67079089713317
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -179.99999999999997, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        200.23707410366393, 
+        -199.10323528434694
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        219.46272706674688, 
+        -207.3134794595201
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 89.999999999999986, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        241.33658677948398, 
+        -207.40721427567101
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 89.999999999999986, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        254.22853654658471, 
+        -223.68580627224293
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 90.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        271.72681263234955, 
+        -1657.4649518373558
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 89.999999999999986, 
+      "layer": "A-N-SPA EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        246.78281266936622, 
+        -293.27496260270033
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 89.999999999999986, 
+      "layer": "A-N-SPA EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        -212.88301144503097, 
+        -278.79304068955258
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": -7.016709298534876e-15, 
+      "layer": "A-N-SPA EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        198.04966831435539, 
+        -299.97900553439268
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 179.99999999999997, 
+      "layer": "A-X-SPA EQUIP"
+    }, 
+    {
+      "world_xy": [
+        198.04966831435542, 
+        -285.66650553439268
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 179.99999999999997, 
+      "layer": "A-N-SPA EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        198.04966831435542, 
+        -278.51024367630595
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 179.99999999999997, 
+      "layer": "A-N-SPA EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        198.04966831435542, 
+        -292.82275553439268
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 179.99999999999997, 
+      "layer": "A-X-SPA EQUIP"
+    }, 
+    {
+      "world_xy": [
+        96.809068549693038, 
+        -239.99450775510016
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 90.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        344.58937760185125, 
+        -200.6617662662498
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        329.19047547886129, 
+        -193.33793484647191
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        337.04552915114209, 
+        -185.28441022991117
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        312.00058005982709, 
+        -176.74915445979903
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        320.17603777516797, 
+        -169.01369075922696
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-N-GYM EQUIPMENT"
+    }, 
+    {
+      "world_xy": [
+        135.58555276171904, 
+        -207.08339870879163
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        135.35617299095861, 
+        -190.56936370769685
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 90.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        264.25135029455095, 
+        -219.86935092147698
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": -90.000000000000014, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        264.37959598791741, 
+        -223.70644240785211
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 90.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        -276.10955973043195, 
+        -186.45744844300745
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-FAN"
+    }, 
+    {
+      "world_xy": [
+        -240.10955973043195, 
+        -186.45744844300745
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-FAN"
+    }, 
+    {
+      "world_xy": [
+        89.483319217183222, 
+        -460.13682797631657
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 90.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        62.496222195353887, 
+        -248.19029137888634
+      ], 
+      "room": "(unassigned_in_bldg)", 
+      "rotation_deg": 180.0, 
+      "layer": "A-X-GYM EQUIP"
+    }, 
+    {
+      "world_xy": [
+        -0.58152744317885663, 
+        -21.516515397616672
+      ], 
+      "room": "(outside_building)", 
+      "rotation_deg": 0.0, 
+      "layer": "A-N-SPA EQUIPMENT"
+    }
+  ], 
+  "building_bounds": [
+    39.493268619317291, 
+    -308.2555494038553, 
+    274.64768466499845, 
+    -182.95312499999994
+  ], 
+  "view_id": 2243920, 
+  "count": 376
+}

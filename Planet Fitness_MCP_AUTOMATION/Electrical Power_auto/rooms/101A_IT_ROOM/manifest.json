@@ -1,0 +1,31 @@
+{
+  "fixtures": [
+    {
+      "y": -278.12899999999996, 
+      "type": "Quad Wall", 
+      "load": "IT RACK", 
+      "room": "101A", 
+      "id": 8221997, 
+      "wall": "S", 
+      "x": 263.0
+    }, 
+    {
+      "y": -278.12899999999996, 
+      "type": "Quad Wall", 
+      "load": "IT RACK", 
+      "room": "101A", 
+      "id": 8221998, 
+      "wall": "S", 
+      "x": 266.0
+    }, 
+    {
+      "y": -271.0, 
+      "type": "Duplex Wall", 
+      "load": "RECEPTACLE - 101A IT ROOM", 
+      "room": "101A", 
+      "id": 8221999, 
+      "wall": "W", 
+      "x": 259.11799999999999
+    }
+  ]
+}

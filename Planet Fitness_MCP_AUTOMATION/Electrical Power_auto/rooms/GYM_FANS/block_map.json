@@ -1,0 +1,38 @@
+{
+  "n_blocks_in_cad": 2, 
+  "fixture_family": "EF-U_Disconnect Switch_CED", 
+  "params_str": {
+    "dev-Group ID": "PF_FAN 1", 
+    "CKT_Panel_CEDT": "L3", 
+    "CKT_Schedule Notes_CEDT": "", 
+    "CKT_Circuit Number_CEDT": "DEDICATED", 
+    "CKT_Load Name_CEDT": "BIG FAN"
+  }, 
+  "room_number": "(gym)", 
+  "room_name": "GYM FANS", 
+  "cad_block": "FAN 1", 
+  "fixture_type": "Non-Fused - 30A", 
+  "yaml_profile": "FAN 1", 
+  "params_dbl_disp": {
+    "CKT_Rating_CED": 30, 
+    "FLA Input_CED": 0, 
+    "Apparent Load Input_CED": 1500
+  }, 
+  "keynote": {
+    "params_str": {
+      "dev-Group ID": "E1", 
+      "CKT_Panel_CEDT": "L3", 
+      "CKT_Schedule Notes_CEDT": "", 
+      "CKT_Circuit Number_CEDT": "EMERGENCY", 
+      "CKT_Load Name_CEDT": "EMERGENCY - (Space)"
+    }, 
+    "ced_g_note_number": "18", 
+    "family": "Manual Key Note- All Shapes", 
+    "type": "Square", 
+    "params_dbl_disp": {
+      "CKT_Rating_CED": 20, 
+      "FLA Input_CED": 0, 
+      "Apparent Load Input_CED": 180
+    }
+  }
+}

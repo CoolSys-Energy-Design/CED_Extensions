@@ -1,0 +1,602 @@
+{
+ "rows": [
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9353666, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10612401
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9353022, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10617517
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352921, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10617519
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352922, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10617520
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352738, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10617693
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352887, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10617694
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352876, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10617781
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352883, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10617794
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352534, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10618526
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352533, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10618528
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352891, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10618529
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352577, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10618532
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9397175, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10618533
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352885, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10618534
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9397172, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10618535
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352881, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10618547
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352877, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10618549
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352875, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10618550
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352904, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10618739
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352902, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10618752
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352902, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10618769
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352896, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10618965
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352898, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10618976
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352900, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10618991
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352901, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10619004
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352906, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10619019
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352895, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10619090
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352872, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10619103
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352912, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10619120
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352912, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10619133
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352893, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10619239
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9438701, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10619269
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9438702, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10619282
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352918, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10619366
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9353697, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10619379
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9353697, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10619392
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9353696, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10619414
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352759, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10619521
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352737, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10619534
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352729, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10619583
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352529, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10619794
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352871, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10619809
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352529, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10619916
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9353698, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10619993
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352532, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10620147
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352528, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10620162
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352528, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10620178
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9353366, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10620415
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9353366, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10620430
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352736, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10620464
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9353764, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10620506
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9353376, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10620519
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9353763, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10620532
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9353764, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10620668
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9353460, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10620745
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9353374, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10620758
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9353438, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10620771
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9353437, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10620893
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9353761, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10620906
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9353762, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10620919
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9353552, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10621022
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9353555, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10621035
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9353551, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10621130
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9353551, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10621143
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9353554, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10621212
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9353558, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10621230
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9438257, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10621457
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352894, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10621676
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352607, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10621759
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9353020, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10666908
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352916, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10831311
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352917, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10831324
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352914, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10831511
+  }, 
+  {
+   "panel": "BA", 
+   "nverts": 3, 
+   "anchor_src_dev": 9352915, 
+   "bound": true, 
+   "status": "ok", 
+   "id": 10831524
+  }
+ ], 
+ "skipped": 0, 
+ "placed": 74, 
+ "target": "CED_HEB Template_MEPR_R24_OkmntProfCorr", 
+ "apply": true, 
+ "removed": 0, 
+ "count": 74
+}

@@ -1,0 +1,91 @@
+{
+ "moves": [
+  {
+   "id": 9352885, 
+   "dtheta_deg": 0.0, 
+   "src_table_dist": 1.3400000000000001, 
+   "pos_from": [
+    -38.756999999999998, 
+    69.912000000000006
+   ], 
+   "status": "ok", 
+   "rot_deg": 0.0, 
+   "move_ft": 0.43099999999999999, 
+   "table": "003_Donut_Table_Finish_SS_4_wSh_1", 
+   "pos_to": [
+    -39.082000000000001, 
+    70.194999999999993
+   ]
+  }, 
+  {
+   "id": 9397172, 
+   "dtheta_deg": 0.0, 
+   "src_table_dist": 1.75, 
+   "pos_from": [
+    -37.683, 
+    69.912000000000006
+   ], 
+   "status": "ok", 
+   "rot_deg": 0.0, 
+   "move_ft": 0.43099999999999999, 
+   "table": "003_Donut_Table_Finish_SS_4_wSh_1", 
+   "pos_to": [
+    -38.008000000000003, 
+    70.194999999999993
+   ]
+  }, 
+  {
+   "id": 9397175, 
+   "dtheta_deg": 0.0, 
+   "src_table_dist": 1.6399999999999999, 
+   "pos_from": [
+    -44.808, 
+    69.912999999999997
+   ], 
+   "status": "ok", 
+   "rot_deg": 0.0, 
+   "move_ft": 2.133, 
+   "table": "000_METRO SMARTLEVER_4ft_Workstati", 
+   "pos_to": [
+    -42.695999999999998, 
+    70.212999999999994
+   ]
+  }, 
+  {
+   "id": 9352922, 
+   "dtheta_deg": 0.0, 
+   "src_table_dist": 1.76, 
+   "pos_from": [
+    -57.564, 
+    74.736999999999995
+   ], 
+   "status": "ok", 
+   "rot_deg": -90.0, 
+   "move_ft": 0.47799999999999998, 
+   "table": "000_Table_SS_24x60_1028919", 
+   "pos_to": [
+    -57.085999999999999, 
+    74.736000000000004
+   ]
+  }, 
+  {
+   "id": 9352891, 
+   "dtheta_deg": 0.0, 
+   "src_table_dist": 1.8999999999999999, 
+   "pos_from": [
+    -46.911999999999999, 
+    69.912999999999997
+   ], 
+   "status": "ok", 
+   "rot_deg": 0.0, 
+   "move_ft": 2.1339999999999999, 
+   "table": "000_METRO SMARTLEVER_4ft_Workstati", 
+   "pos_to": [
+    -44.798999999999999, 
+    70.212999999999994
+   ]
+  }
+ ], 
+ "target": "CED_HEB Template_MEPR_R24_OkmntProfCorr", 
+ "apply": true
+}

@@ -1,0 +1,1227 @@
+{
+ "view": "Power Callout - BAKERY - L1", 
+ "family": "GA_Keynote Symbol_CED", 
+ "elements": [
+  {
+   "rel_to_equipment": {
+    "family": "003_Oven_Double_Rack_1027577", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 2.1389999999999998, 
+    "dxy_ft": [
+     1.2331000000000001, 
+     1.7477
+    ], 
+    "id": 3592126
+   }, 
+   "id": 9438245, 
+   "rel_to_device": {
+    "family": "EF-U_Balanced Power Connector_CED", 
+    "dist_ft": 4.0063000000000004, 
+    "dxy_ft": [
+     -3.9018999999999999, 
+     0.90849999999999997
+    ], 
+    "id": 9352901
+   }, 
+   "owner_view": 2243900, 
+   "rotation": null, 
+   "family": "GA_Keynote Symbol_CED", 
+   "world_xyz": [
+    -34.245899999999999, 
+    43.722700000000003, 
+    4.0
+   ], 
+   "params": {
+    "Category": -2000150, 
+    "Level": -1, 
+    "Volume": 0.0, 
+    "Family": 8119134, 
+    "Family Name": null, 
+    "Type Id": 8119134, 
+    "Symbol Text": "TYP", 
+    "Host Id": -1, 
+    "Keynote Value": "1", 
+    "Type Name": null, 
+    "Type": 8119134, 
+    "Keynote Description": "WIRE FAN VIA PROVING SWITCH. REFER TO MECHANICAL DRAWINGS.", 
+    "Edited by": "", 
+    "Workset": 4496, 
+    "Design Option": -1, 
+    "Family and Type": 8119134, 
+    "Keynote Category": "E-3.3", 
+    "Show Symbol Text": 0, 
+    "Area": 0.00084999999999999995
+   }, 
+   "type": "Standard - Electrical", 
+   "has_leader": null
+  }, 
+  {
+   "rel_to_equipment": {
+    "family": "003_Oven_Double_Rack_1027577", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 2.1534, 
+    "dxy_ft": [
+     0.95679999999999998, 
+     1.9292
+    ], 
+    "id": 3592125
+   }, 
+   "id": 9438246, 
+   "rel_to_device": {
+    "family": "EF-U_Balanced Power Connector_CED", 
+    "dist_ft": 4.3181000000000003, 
+    "dxy_ft": [
+     -4.1782000000000004, 
+     1.0902000000000001
+    ], 
+    "id": 9352898
+   }, 
+   "owner_view": 2243900, 
+   "rotation": null, 
+   "family": "GA_Keynote Symbol_CED", 
+   "world_xyz": [
+    -34.522199999999998, 
+    37.550199999999997, 
+    4.0
+   ], 
+   "params": {
+    "Category": -2000150, 
+    "Level": -1, 
+    "Volume": 0.0, 
+    "Family": 8119134, 
+    "Family Name": null, 
+    "Type Id": 8119134, 
+    "Symbol Text": "TYP", 
+    "Host Id": -1, 
+    "Keynote Value": "1", 
+    "Type Name": null, 
+    "Type": 8119134, 
+    "Keynote Description": "WIRE FAN VIA PROVING SWITCH. REFER TO MECHANICAL DRAWINGS.", 
+    "Edited by": "", 
+    "Workset": 4496, 
+    "Design Option": -1, 
+    "Family and Type": 8119134, 
+    "Keynote Category": "E-3.3", 
+    "Show Symbol Text": 0, 
+    "Area": 0.00084999999999999995
+   }, 
+   "type": "Standard - Electrical", 
+   "has_leader": null
+  }, 
+  {
+   "rel_to_equipment": {
+    "family": "Bakery Deli Free Standing Curb", 
+    "category": "Generic Models", 
+    "dist_ft": 3.4333999999999998, 
+    "dxy_ft": [
+     2.7942, 
+     -1.9951000000000001
+    ], 
+    "id": 2554786
+   }, 
+   "id": 9438247, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 2.1816, 
+    "dxy_ft": [
+     2.1812999999999998, 
+     0.0361
+    ], 
+    "id": 9353696
+   }, 
+   "owner_view": 2243900, 
+   "rotation": null, 
+   "family": "GA_Keynote Symbol_CED", 
+   "world_xyz": [
+    -61.1038, 
+    43.637900000000002, 
+    4.0
+   ], 
+   "params": {
+    "Category": -2000150, 
+    "Level": -1, 
+    "Volume": 0.0, 
+    "Family": 8119134, 
+    "Family Name": null, 
+    "Type Id": 8119134, 
+    "Symbol Text": "", 
+    "Host Id": -1, 
+    "Keynote Value": "2", 
+    "Type Name": null, 
+    "Type": 8119134, 
+    "Keynote Description": "CONNECT CIRCUIT TO INTEGRATED RECEPTACLE PROVIDED BY CASE MANUFACTURER. RE: 10/E-7.2.", 
+    "Edited by": "", 
+    "Workset": 4496, 
+    "Design Option": -1, 
+    "Family and Type": 8119134, 
+    "Keynote Category": "E-3.3", 
+    "Show Symbol Text": 0, 
+    "Area": 0.00084999999999999995
+   }, 
+   "type": "Standard - Electrical", 
+   "has_leader": null
+  }, 
+  {
+   "rel_to_equipment": {
+    "family": "HEB_Slicer_Gravity_1304240", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 0.94689999999999996, 
+    "dxy_ft": [
+     -0.58350000000000002, 
+     -0.74580000000000002
+    ], 
+    "id": 6167237
+   }, 
+   "id": 9438248, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 1.5758000000000001, 
+    "dxy_ft": [
+     -0.96430000000000005, 
+     1.2463
+    ], 
+    "id": 9352918
+   }, 
+   "owner_view": 2243900, 
+   "rotation": null, 
+   "family": "GA_Keynote Symbol_CED", 
+   "world_xyz": [
+    -58.295499999999997, 
+    48.373199999999997, 
+    4.0
+   ], 
+   "params": {
+    "Category": -2000150, 
+    "Level": -1, 
+    "Volume": 0.0, 
+    "Family": 8119134, 
+    "Family Name": null, 
+    "Type Id": 8119134, 
+    "Symbol Text": "", 
+    "Host Id": -1, 
+    "Keynote Value": "3", 
+    "Type Name": null, 
+    "Type": 8119134, 
+    "Keynote Description": "TYPE \"SJTO\" CORD, GRAY IN COLOR. PROVIDE PLUG TO MATCH RECEPTACLES. RE: 15/E-7.3.", 
+    "Edited by": "", 
+    "Workset": 4496, 
+    "Design Option": -1, 
+    "Family and Type": 8119134, 
+    "Keynote Category": "E-3.3", 
+    "Show Symbol Text": 0, 
+    "Area": 0.00084999999999999995
+   }, 
+   "type": "Standard - Electrical", 
+   "has_leader": null
+  }, 
+  {
+   "rel_to_equipment": {
+    "family": "Troffer Light - 2x4 Parabolic", 
+    "category": "Lighting Fixtures", 
+    "dist_ft": 1.7504999999999999, 
+    "dxy_ft": [
+     1.6364000000000001, 
+     -0.62160000000000004
+    ], 
+    "id": 5283893
+   }, 
+   "id": 9438249, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 3.1257999999999999, 
+    "dxy_ft": [
+     0.18360000000000001, 
+     3.1204000000000001
+    ], 
+    "id": 9352872
+   }, 
+   "owner_view": 2243900, 
+   "rotation": null, 
+   "family": "GA_Keynote Symbol_CED", 
+   "world_xyz": [
+    -46.835599999999999, 
+    51.037399999999998, 
+    4.0
+   ], 
+   "params": {
+    "Category": -2000150, 
+    "Level": -1, 
+    "Volume": 0.0, 
+    "Family": 8119134, 
+    "Family Name": null, 
+    "Type Id": 8119134, 
+    "Symbol Text": "", 
+    "Host Id": -1, 
+    "Keynote Value": "4", 
+    "Type Name": null, 
+    "Type": 8119134, 
+    "Keynote Description": "PROVIDE NEMA RATED RECEPTACLE TO MATCH EQUIPMENT PLUG.", 
+    "Edited by": "", 
+    "Workset": 4496, 
+    "Design Option": -1, 
+    "Family and Type": 8119134, 
+    "Keynote Category": "E-3.3", 
+    "Show Symbol Text": 0, 
+    "Area": 0.00084999999999999995
+   }, 
+   "type": "Standard - Electrical", 
+   "has_leader": null
+  }, 
+  {
+   "rel_to_equipment": {
+    "family": "003_Mixer_120L_Spiral_1026799", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 2.7932999999999999, 
+    "dxy_ft": [
+     -2.0988000000000002, 
+     -1.8431999999999999
+    ], 
+    "id": 3592124
+   }, 
+   "id": 9438250, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 2.3637999999999999, 
+    "dxy_ft": [
+     -1.3396999999999999, 
+     -1.9475
+    ], 
+    "id": 9352893
+   }, 
+   "owner_view": 2243900, 
+   "rotation": null, 
+   "family": "GA_Keynote Symbol_CED", 
+   "world_xyz": [
+    -46.290799999999997, 
+    36.712800000000001, 
+    4.0
+   ], 
+   "params": {
+    "Category": -2000150, 
+    "Level": -1, 
+    "Volume": 0.0, 
+    "Family": 8119134, 
+    "Family Name": null, 
+    "Type Id": 8119134, 
+    "Symbol Text": "", 
+    "Host Id": -1, 
+    "Keynote Value": "4", 
+    "Type Name": null, 
+    "Type": 8119134, 
+    "Keynote Description": "PROVIDE NEMA RATED RECEPTACLE TO MATCH EQUIPMENT PLUG.", 
+    "Edited by": "", 
+    "Workset": 4496, 
+    "Design Option": -1, 
+    "Family and Type": 8119134, 
+    "Keynote Category": "E-3.3", 
+    "Show Symbol Text": 0, 
+    "Area": 0.00084999999999999995
+   }, 
+   "type": "Standard - Electrical", 
+   "has_leader": null
+  }, 
+  {
+   "rel_to_equipment": {
+    "family": "FD.03.17.06B_Bread Process Chalkboard posters", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 2.9384999999999999, 
+    "dxy_ft": [
+     2.8285999999999998, 
+     0.79630000000000001
+    ], 
+    "id": 4267862
+   }, 
+   "id": 9438251, 
+   "rel_to_device": {
+    "family": "EF-U_Junction Box_CED", 
+    "dist_ft": 3.5672000000000001, 
+    "dxy_ft": [
+     1.1460999999999999, 
+     -3.3780000000000001
+    ], 
+    "id": 9352913
+   }, 
+   "owner_view": 2243900, 
+   "rotation": null, 
+   "family": "GA_Keynote Symbol_CED", 
+   "world_xyz": [
+    -62.859400000000001, 
+    54.1723, 
+    4.0
+   ], 
+   "params": {
+    "Category": -2000150, 
+    "Level": -1, 
+    "Volume": 0.0, 
+    "Family": 8119134, 
+    "Family Name": null, 
+    "Type Id": 8119134, 
+    "Symbol Text": "", 
+    "Host Id": -1, 
+    "Keynote Value": "5", 
+    "Type Name": null, 
+    "Type": 8119134, 
+    "Keynote Description": "SURFACE MOUNT RECEPTACLE ON CURB AS SHOWN. RE:2/E-7.1.", 
+    "Edited by": "", 
+    "Workset": 4496, 
+    "Design Option": -1, 
+    "Family and Type": 8119134, 
+    "Keynote Category": "E-3.3", 
+    "Show Symbol Text": 0, 
+    "Area": 0.00084999999999999995
+   }, 
+   "type": "Standard - Electrical", 
+   "has_leader": null
+  }, 
+  {
+   "rel_to_equipment": {
+    "family": "000_Dispenser_Soap_Manual_1212153", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 1.8705000000000001, 
+    "dxy_ft": [
+     -0.73899999999999999, 
+     1.7182999999999999
+    ], 
+    "id": 3573634
+   }, 
+   "id": 9438253, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 2.0550999999999999, 
+    "dxy_ft": [
+     -1.1114999999999999, 
+     1.7285999999999999
+    ], 
+    "id": 9352738
+   }, 
+   "owner_view": 2243900, 
+   "rotation": null, 
+   "family": "GA_Keynote Symbol_CED", 
+   "world_xyz": [
+    -45.131999999999998, 
+    62.443300000000001, 
+    4.0
+   ], 
+   "params": {
+    "Category": -2000150, 
+    "Level": -1, 
+    "Volume": 0.0, 
+    "Family": 8119134, 
+    "Family Name": null, 
+    "Type Id": 8119134, 
+    "Symbol Text": "", 
+    "Host Id": -1, 
+    "Keynote Value": "7", 
+    "Type Name": null, 
+    "Type": 8119134, 
+    "Keynote Description": "MOUNT RECEPTACLE HORIZONTAL ABOVE FLY ZAPPER. FIELD COORDINATE EXACT LOCATION AND MOUNTING HEIGHT TO ENSURE RECEPTACLE AND PIGTAIL ARE AS CONCEALED AS POSSIBLE.", 
+    "Edited by": "", 
+    "Workset": 4496, 
+    "Design Option": -1, 
+    "Family and Type": 8119134, 
+    "Keynote Category": "E-3.3", 
+    "Show Symbol Text": 0, 
+    "Area": 0.00084999999999999995
+   }, 
+   "type": "Standard - Electrical", 
+   "has_leader": null
+  }, 
+  {
+   "rel_to_equipment": {
+    "family": "Troffer Light - 2x4 Parabolic", 
+    "category": "Lighting Fixtures", 
+    "dist_ft": 3.0567000000000002, 
+    "dxy_ft": [
+     0.93049999999999999, 
+     -2.9116
+    ], 
+    "id": 5283879
+   }, 
+   "id": 9438255, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 5.3578999999999999, 
+    "dxy_ft": [
+     2.7320000000000002, 
+     4.6090999999999998
+    ], 
+    "id": 9353368
+   }, 
+   "owner_view": 2243900, 
+   "rotation": null, 
+   "family": "GA_Keynote Symbol_CED", 
+   "world_xyz": [
+    -59.541499999999999, 
+    4.7473999999999998, 
+    4.0
+   ], 
+   "params": {
+    "Category": -2000150, 
+    "Level": -1, 
+    "Volume": 0.0, 
+    "Family": 8119134, 
+    "Family Name": null, 
+    "Type Id": 8119134, 
+    "Symbol Text": "", 
+    "Host Id": -1, 
+    "Keynote Value": "9", 
+    "Type Name": null, 
+    "Type": 8119134, 
+    "Keynote Description": "MOUNT RECEPTACLES FOR DIGITAL MONITORS FLUSH IN BOTTOM OF HEADWALL. COORDINATE FINAL MOUNTING LOCATION AND DATA DROP ROUGH-IN.", 
+    "Edited by": "", 
+    "Workset": 4496, 
+    "Design Option": -1, 
+    "Family and Type": 8119134, 
+    "Keynote Category": "E-3.3", 
+    "Show Symbol Text": 0, 
+    "Area": 0.00084999999999999995
+   }, 
+   "type": "Standard - Electrical", 
+   "has_leader": null
+  }, 
+  {
+   "rel_to_equipment": {
+    "family": "000_Mccue_Bollard_FlexPost_3in_SS_1210578", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 1.4633, 
+    "dxy_ft": [
+     -0.76490000000000002, 
+     1.2474000000000001
+    ], 
+    "id": 5774933
+   }, 
+   "id": 9438256, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 2.8062999999999998, 
+    "dxy_ft": [
+     -2.7155999999999998, 
+     0.70760000000000001
+    ], 
+    "id": 9353666
+   }, 
+   "owner_view": 2243900, 
+   "rotation": null, 
+   "family": "GA_Keynote Symbol_CED", 
+   "world_xyz": [
+    -32.892899999999997, 
+    54.698399999999999, 
+    4.0
+   ], 
+   "params": {
+    "Category": -2000150, 
+    "Level": -1, 
+    "Volume": 0.0, 
+    "Family": 8119134, 
+    "Family Name": null, 
+    "Type Id": 8119134, 
+    "Symbol Text": "", 
+    "Host Id": -1, 
+    "Keynote Value": "10", 
+    "Type Name": null, 
+    "Type": 8119134, 
+    "Keynote Description": "COORDINATE EXACT ROUGH-IN LOCATION WITH PLUMBING CONTRACTOR.", 
+    "Edited by": "", 
+    "Workset": 4496, 
+    "Design Option": -1, 
+    "Family and Type": 8119134, 
+    "Keynote Category": "E-3.3", 
+    "Show Symbol Text": 0, 
+    "Area": 0.00084999999999999995
+   }, 
+   "type": "Standard - Electrical", 
+   "has_leader": null
+  }, 
+  {
+   "rel_to_equipment": {
+    "family": "000_Shelf_Metro_5Tier_18x48Metroseal_wCasters_1034016", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 2.3148, 
+    "dxy_ft": [
+     -2.1878000000000002, 
+     -0.75629999999999997
+    ], 
+    "id": 3767209
+   }, 
+   "id": 9438259, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 3.2357, 
+    "dxy_ft": [
+     -3.2345000000000002, 
+     -0.088400000000000006
+    ], 
+    "id": 9438257
+   }, 
+   "owner_view": 2243900, 
+   "rotation": null, 
+   "family": "GA_Keynote Symbol_CED", 
+   "world_xyz": [
+    -33.661799999999999, 
+    23.0947, 
+    4.0
+   ], 
+   "params": {
+    "Category": -2000150, 
+    "Level": -1, 
+    "Volume": 0.0, 
+    "Family": 8119134, 
+    "Family Name": null, 
+    "Type Id": 8119134, 
+    "Symbol Text": "TYP", 
+    "Host Id": -1, 
+    "Keynote Value": "11", 
+    "Type Name": null, 
+    "Type": 8119134, 
+    "Keynote Description": "HEAT TRACE RECEPTACLE. COORDINATE EXACT LOCATION WITH REFRIGERATION CONTRACTOR PRIOR TO INSTALLATION. RE: 11/E-7.2.", 
+    "Edited by": "", 
+    "Workset": 4496, 
+    "Design Option": -1, 
+    "Family and Type": 8119134, 
+    "Keynote Category": "E-3.3", 
+    "Show Symbol Text": 0, 
+    "Area": 0.00084999999999999995
+   }, 
+   "type": "Standard - Electrical", 
+   "has_leader": null
+  }, 
+  {
+   "rel_to_equipment": {
+    "family": "HEB sink procedures sign", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 1.6085, 
+    "dxy_ft": [
+     -0.6139, 
+     1.4866999999999999
+    ], 
+    "id": 3573623
+   }, 
+   "id": 9438544, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 2.1804999999999999, 
+    "dxy_ft": [
+     -1.9245000000000001, 
+     1.0249999999999999
+    ], 
+    "id": 9352887
+   }, 
+   "owner_view": 2243900, 
+   "rotation": null, 
+   "family": "GA_Keynote Symbol_CED", 
+   "world_xyz": [
+    -39.808900000000001, 
+    61.739699999999999, 
+    4.0
+   ], 
+   "params": {
+    "Category": -2000150, 
+    "Level": -1, 
+    "Volume": 0.0, 
+    "Family": 8119134, 
+    "Family Name": null, 
+    "Type Id": 8119134, 
+    "Symbol Text": "", 
+    "Host Id": -1, 
+    "Keynote Value": "13", 
+    "Type Name": null, 
+    "Type": 8119134, 
+    "Keynote Description": "ROUTE TO CIRCUIT INDICATED THROUGH SHUNT TRIP CONTACTOR CONNECTED TO HOOD SUPPRESSION SYSTEM.", 
+    "Edited by": "", 
+    "Workset": 4496, 
+    "Design Option": -1, 
+    "Family and Type": 8119134, 
+    "Keynote Category": "E-3.3", 
+    "Show Symbol Text": 0, 
+    "Area": 0.00084999999999999995
+   }, 
+   "type": "Standard - Electrical", 
+   "has_leader": null
+  }, 
+  {
+   "rel_to_equipment": {
+    "family": "Jug Holder Bracket", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 1.9466000000000001, 
+    "dxy_ft": [
+     1.0317000000000001, 
+     1.6507000000000001
+    ], 
+    "id": 3573626
+   }, 
+   "id": 9438545, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 1.2523, 
+    "dxy_ft": [
+     -0.71940000000000004, 
+     1.0249999999999999
+    ], 
+    "id": 9352883
+   }, 
+   "owner_view": 2243900, 
+   "rotation": null, 
+   "family": "GA_Keynote Symbol_CED", 
+   "world_xyz": [
+    -35.642299999999999, 
+    61.739699999999999, 
+    4.0
+   ], 
+   "params": {
+    "Category": -2000150, 
+    "Level": -1, 
+    "Volume": 0.0, 
+    "Family": 8119134, 
+    "Family Name": null, 
+    "Type Id": 8119134, 
+    "Symbol Text": "", 
+    "Host Id": -1, 
+    "Keynote Value": "13", 
+    "Type Name": null, 
+    "Type": 8119134, 
+    "Keynote Description": "ROUTE TO CIRCUIT INDICATED THROUGH SHUNT TRIP CONTACTOR CONNECTED TO HOOD SUPPRESSION SYSTEM.", 
+    "Edited by": "", 
+    "Workset": 4496, 
+    "Design Option": -1, 
+    "Family and Type": 8119134, 
+    "Keynote Category": "E-3.3", 
+    "Show Symbol Text": 0, 
+    "Area": 0.00084999999999999995
+   }, 
+   "type": "Standard - Electrical", 
+   "has_leader": null
+  }, 
+  {
+   "rel_to_equipment": {
+    "family": "003_Donut_Hopper_Pin_1026055", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 1.1493, 
+    "dxy_ft": [
+     -0.87990000000000002, 
+     -0.73929999999999996
+    ], 
+    "id": 3580651
+   }, 
+   "id": 9438546, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 1.2889999999999999, 
+    "dxy_ft": [
+     -0.78159999999999996, 
+     1.0249999999999999
+    ], 
+    "id": 9352876
+   }, 
+   "owner_view": 2243900, 
+   "rotation": null, 
+   "family": "GA_Keynote Symbol_CED", 
+   "world_xyz": [
+    -33.058900000000001, 
+    61.739699999999999, 
+    4.0
+   ], 
+   "params": {
+    "Category": -2000150, 
+    "Level": -1, 
+    "Volume": 0.0, 
+    "Family": 8119134, 
+    "Family Name": null, 
+    "Type Id": 8119134, 
+    "Symbol Text": "", 
+    "Host Id": -1, 
+    "Keynote Value": "13", 
+    "Type Name": null, 
+    "Type": 8119134, 
+    "Keynote Description": "ROUTE TO CIRCUIT INDICATED THROUGH SHUNT TRIP CONTACTOR CONNECTED TO HOOD SUPPRESSION SYSTEM.", 
+    "Edited by": "", 
+    "Workset": 4496, 
+    "Design Option": -1, 
+    "Family and Type": 8119134, 
+    "Keynote Category": "E-3.3", 
+    "Show Symbol Text": 0, 
+    "Area": 0.00084999999999999995
+   }, 
+   "type": "Standard - Electrical", 
+   "has_leader": null
+  }, 
+  {
+   "rel_to_equipment": {
+    "family": "Troffer Light - 2x4 Parabolic", 
+    "category": "Lighting Fixtures", 
+    "dist_ft": 3.2227000000000001, 
+    "dxy_ft": [
+     1.3062, 
+     -2.9462000000000002
+    ], 
+    "id": 5283890
+   }, 
+   "id": 9438547, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 2.9491999999999998, 
+    "dxy_ft": [
+     -2.2147000000000001, 
+     -1.9475
+    ], 
+    "id": 9352893
+   }, 
+   "owner_view": 2243900, 
+   "rotation": null, 
+   "family": "GA_Keynote Symbol_CED", 
+   "world_xyz": [
+    -47.165799999999997, 
+    36.712800000000001, 
+    4.0
+   ], 
+   "params": {
+    "Category": -2000150, 
+    "Level": -1, 
+    "Volume": 0.0, 
+    "Family": 8119134, 
+    "Family Name": null, 
+    "Type Id": 8119134, 
+    "Symbol Text": "", 
+    "Host Id": -1, 
+    "Keynote Value": "14", 
+    "Type Name": null, 
+    "Type": 8119134, 
+    "Keynote Description": "EC TO INSTALL IN-LINE GFCI LITTLE FUSE SHOCKBLOCK BY VILLA LIGHTING.", 
+    "Edited by": "", 
+    "Workset": 4496, 
+    "Design Option": -1, 
+    "Family and Type": 8119134, 
+    "Keynote Category": "E-3.3", 
+    "Show Symbol Text": 0, 
+    "Area": 0.00084999999999999995
+   }, 
+   "type": "Standard - Electrical", 
+   "has_leader": null
+  }, 
+  {
+   "rel_to_equipment": {
+    "family": "003_Shelf_Cake_Decorate_Bins_1029161", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 1.9252, 
+    "dxy_ft": [
+     -1.1276999999999999, 
+     -1.5604
+    ], 
+    "id": 3185920
+   }, 
+   "id": 9438548, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 1.9111, 
+    "dxy_ft": [
+     -1.3434999999999999, 
+     1.3591
+    ], 
+    "id": 9352894
+   }, 
+   "owner_view": 2243900, 
+   "rotation": null, 
+   "family": "GA_Keynote Symbol_CED", 
+   "world_xyz": [
+    -57.901699999999998, 
+    17.366599999999998, 
+    4.0
+   ], 
+   "params": {
+    "Category": -2000150, 
+    "Level": -1, 
+    "Volume": 0.0, 
+    "Family": 8119134, 
+    "Family Name": null, 
+    "Type Id": 8119134, 
+    "Symbol Text": "", 
+    "Host Id": -1, 
+    "Keynote Value": "14", 
+    "Type Name": null, 
+    "Type": 8119134, 
+    "Keynote Description": "EC TO INSTALL IN-LINE GFCI LITTLE FUSE SHOCKBLOCK BY VILLA LIGHTING.", 
+    "Edited by": "", 
+    "Workset": 4496, 
+    "Design Option": -1, 
+    "Family and Type": 8119134, 
+    "Keynote Category": "E-3.3", 
+    "Show Symbol Text": 0, 
+    "Area": 0.00084999999999999995
+   }, 
+   "type": "Standard - Electrical", 
+   "has_leader": null
+  }, 
+  {
+   "rel_to_equipment": {
+    "family": "000_Sink_1Comp_1320735", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 1.6423000000000001, 
+    "dxy_ft": [
+     -1.5711999999999999, 
+     0.47820000000000001
+    ], 
+    "id": 3573636
+   }, 
+   "id": 9438549, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 2.5741999999999998, 
+    "dxy_ft": [
+     -2.5741999999999998, 
+     -0.00059999999999999995
+    ], 
+    "id": 9352729
+   }, 
+   "owner_view": 2243900, 
+   "rotation": null, 
+   "family": "GA_Keynote Symbol_CED", 
+   "world_xyz": [
+    -47.0092, 
+    25.269200000000001, 
+    4.0
+   ], 
+   "params": {
+    "Category": -2000150, 
+    "Level": -1, 
+    "Volume": 0.0, 
+    "Family": 8119134, 
+    "Family Name": null, 
+    "Type Id": 8119134, 
+    "Symbol Text": "", 
+    "Host Id": -1, 
+    "Keynote Value": "7", 
+    "Type Name": null, 
+    "Type": 8119134, 
+    "Keynote Description": "MOUNT RECEPTACLE HORIZONTAL ABOVE FLY ZAPPER. FIELD COORDINATE EXACT LOCATION AND MOUNTING HEIGHT TO ENSURE RECEPTACLE AND PIGTAIL ARE AS CONCEALED AS POSSIBLE.", 
+    "Edited by": "", 
+    "Workset": 4496, 
+    "Design Option": -1, 
+    "Family and Type": 8119134, 
+    "Keynote Category": "E-3.3", 
+    "Show Symbol Text": 0, 
+    "Area": 0.00084999999999999995
+   }, 
+   "type": "Standard - Electrical", 
+   "has_leader": null
+  }, 
+  {
+   "rel_to_equipment": {
+    "family": "000_ADA_Single_Coat_Hook_1206504", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 3.4178000000000002, 
+    "dxy_ft": [
+     -3.3273999999999999, 
+     -0.78080000000000005
+    ], 
+    "id": 5775549
+   }, 
+   "id": 9438703, 
+   "rel_to_device": {
+    "family": "EF-U_Junction Box_CED", 
+    "dist_ft": 2.8879000000000001, 
+    "dxy_ft": [
+     -2.8877000000000002, 
+     0.028799999999999999
+    ], 
+    "id": 9438702
+   }, 
+   "owner_view": 2243900, 
+   "rotation": null, 
+   "family": "GA_Keynote Symbol_CED", 
+   "world_xyz": [
+    -47.325400000000002, 
+    31.787199999999999, 
+    4.0
+   ], 
+   "params": {
+    "Category": -2000150, 
+    "Level": -1, 
+    "Volume": 0.0, 
+    "Family": 8119134, 
+    "Family Name": null, 
+    "Type Id": 8119134, 
+    "Symbol Text": "", 
+    "Host Id": -1, 
+    "Keynote Value": "15", 
+    "Type Name": null, 
+    "Type": 8119134, 
+    "Keynote Description": "THRESHOLD HEAT. COORDINATE EXACT LOCATION WITH REFRIGERATION CONTRACTOR PRIOR TO INSTALLATION. RE: 3/E-7.3", 
+    "Edited by": "", 
+    "Workset": 4496, 
+    "Design Option": -1, 
+    "Family and Type": 8119134, 
+    "Keynote Category": "E-3.3", 
+    "Show Symbol Text": 0, 
+    "Area": 0.00084999999999999995
+   }, 
+   "type": "Standard - Electrical", 
+   "has_leader": null
+  }, 
+  {
+   "rel_to_equipment": {
+    "family": "Troffer Light - 2x4 Parabolic", 
+    "category": "Lighting Fixtures", 
+    "dist_ft": 1.0285, 
+    "dxy_ft": [
+     -0.32840000000000003, 
+     -0.97460000000000002
+    ], 
+    "id": 5283886
+   }, 
+   "id": 9438705, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 4.3391999999999999, 
+    "dxy_ft": [
+     -1.7276, 
+     3.9805000000000001
+    ], 
+    "id": 9352736
+   }, 
+   "owner_view": 2243900, 
+   "rotation": null, 
+   "family": "GA_Keynote Symbol_CED", 
+   "world_xyz": [
+    -42.800400000000003, 
+    6.6844000000000001, 
+    4.0
+   ], 
+   "params": {
+    "Category": -2000150, 
+    "Level": -1, 
+    "Volume": 0.0, 
+    "Family": 8119134, 
+    "Family Name": null, 
+    "Type Id": 8119134, 
+    "Symbol Text": "", 
+    "Host Id": -1, 
+    "Keynote Value": "7", 
+    "Type Name": null, 
+    "Type": 8119134, 
+    "Keynote Description": "MOUNT RECEPTACLE HORIZONTAL ABOVE FLY ZAPPER. FIELD COORDINATE EXACT LOCATION AND MOUNTING HEIGHT TO ENSURE RECEPTACLE AND PIGTAIL ARE AS CONCEALED AS POSSIBLE.", 
+    "Edited by": "", 
+    "Workset": 4496, 
+    "Design Option": -1, 
+    "Family and Type": 8119134, 
+    "Keynote Category": "E-3.3", 
+    "Show Symbol Text": 0, 
+    "Area": 0.00084999999999999995
+   }, 
+   "type": "Standard - Electrical", 
+   "has_leader": null
+  }, 
+  {
+   "rel_to_equipment": {
+    "family": "003_Twist_Tie_1033842", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 2.2128999999999999, 
+    "dxy_ft": [
+     2.0141, 
+     -0.91659999999999997
+    ], 
+    "id": 5774728
+   }, 
+   "id": 10095605, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 1.6673, 
+    "dxy_ft": [
+     1.3928, 
+     -0.91649999999999998
+    ], 
+    "id": 9352923
+   }, 
+   "owner_view": 2243900, 
+   "rotation": null, 
+   "family": "GA_Keynote Symbol_CED", 
+   "world_xyz": [
+    -55.544899999999998, 
+    31.006399999999999, 
+    4.0
+   ], 
+   "params": {
+    "Category": -2000150, 
+    "Level": -1, 
+    "Volume": 0.0, 
+    "Family": 8119134, 
+    "Family Name": null, 
+    "Type Id": 8119134, 
+    "Symbol Text": "", 
+    "Host Id": -1, 
+    "Keynote Value": "3", 
+    "Type Name": null, 
+    "Type": 8119134, 
+    "Keynote Description": "TYPE \"SJTO\" CORD, GRAY IN COLOR. PROVIDE PLUG TO MATCH RECEPTACLES. RE: 15/E-7.3.", 
+    "Edited by": "", 
+    "Workset": 4496, 
+    "Design Option": -1, 
+    "Family and Type": 8119134, 
+    "Keynote Category": "E-3.3", 
+    "Show Symbol Text": 0, 
+    "Area": 0.00084999999999999995
+   }, 
+   "type": "Standard - Electrical", 
+   "has_leader": null
+  }, 
+  {
+   "rel_to_equipment": {
+    "family": "Troffer Light - 2x4 Parabolic", 
+    "category": "Lighting Fixtures", 
+    "dist_ft": 1.4041999999999999, 
+    "dxy_ft": [
+     1.0820000000000001, 
+     0.89500000000000002
+    ], 
+    "id": 5283897
+   }, 
+   "id": 10095618, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 2.6240999999999999, 
+    "dxy_ft": [
+     -2.3580000000000001, 
+     1.1514
+    ], 
+    "id": 9352922
+   }, 
+   "owner_view": 2243900, 
+   "rotation": null, 
+   "family": "GA_Keynote Symbol_CED", 
+   "world_xyz": [
+    -59.390000000000001, 
+    76.554000000000002, 
+    4.0
+   ], 
+   "params": {
+    "Category": -2000150, 
+    "Level": -1, 
+    "Volume": 0.0, 
+    "Family": 8119134, 
+    "Family Name": null, 
+    "Type Id": 8119134, 
+    "Symbol Text": "", 
+    "Host Id": -1, 
+    "Keynote Value": "3", 
+    "Type Name": null, 
+    "Type": 8119134, 
+    "Keynote Description": "TYPE \"SJTO\" CORD, GRAY IN COLOR. PROVIDE PLUG TO MATCH RECEPTACLES. RE: 15/E-7.3.", 
+    "Edited by": "", 
+    "Workset": 4496, 
+    "Design Option": -1, 
+    "Family and Type": 8119134, 
+    "Keynote Category": "E-3.3", 
+    "Show Symbol Text": 0, 
+    "Area": 0.00084999999999999995
+   }, 
+   "type": "Standard - Electrical", 
+   "has_leader": null
+  }, 
+  {
+   "rel_to_equipment": {
+    "family": "000_Dispenser_Soap_Manual_1212153", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 1.9569000000000001, 
+    "dxy_ft": [
+     1.9434, 
+     0.2296
+    ], 
+    "id": 3185918
+   }, 
+   "id": 10619691, 
+   "rel_to_device": {
+    "family": "EF-U_Receptacle_CED", 
+    "dist_ft": 2.105, 
+    "dxy_ft": [
+     1.9431, 
+     0.80959999999999999
+    ], 
+    "id": 9352737
+   }, 
+   "owner_view": 2243900, 
+   "rotation": null, 
+   "family": "GA_Keynote Symbol_CED", 
+   "world_xyz": [
+    -60.067599999999999, 
+    24.386600000000001, 
+    4.0
+   ], 
+   "params": {
+    "Category": -2000150, 
+    "Level": -1, 
+    "Volume": 0.0, 
+    "Family": 8119134, 
+    "Family Name": null, 
+    "Type Id": 8119134, 
+    "Symbol Text": "", 
+    "Host Id": -1, 
+    "Keynote Value": "7", 
+    "Type Name": null, 
+    "Type": 8119134, 
+    "Keynote Description": "MOUNT RECEPTACLE HORIZONTAL ABOVE FLY ZAPPER. FIELD COORDINATE EXACT LOCATION AND MOUNTING HEIGHT TO ENSURE RECEPTACLE AND PIGTAIL ARE AS CONCEALED AS POSSIBLE.", 
+    "Edited by": "", 
+    "Workset": 4496, 
+    "Design Option": -1, 
+    "Family and Type": 8119134, 
+    "Keynote Category": "E-3.3", 
+    "Show Symbol Text": 0, 
+    "Area": 0.00084999999999999995
+   }, 
+   "type": "Standard - Electrical", 
+   "has_leader": null
+  }, 
+  {
+   "rel_to_equipment": {
+    "family": "000_Mccue_Box_Rail_End_Cap_1210571", 
+    "category": "Specialty Equipment", 
+    "dist_ft": 0.98919999999999997, 
+    "dxy_ft": [
+     0.97419999999999995, 
+     -0.17199999999999999
+    ], 
+    "id": 3254556
+   }, 
+   "id": 10621258, 
+   "rel_to_device": {
+    "family": "EF-U_Junction Box_CED", 
+    "dist_ft": 1.0804, 
+    "dxy_ft": [
+     1.0208999999999999, 
+     -0.3538
+    ], 
+    "id": 9353559
+   }, 
+   "owner_view": 2243900, 
+   "rotation": null, 
+   "family": "GA_Keynote Symbol_CED", 
+   "world_xyz": [
+    -60.989800000000002, 
+    11.025, 
+    4.0
+   ], 
+   "params": {
+    "Category": -2000150, 
+    "Level": -1, 
+    "Volume": 0.0, 
+    "Family": 8119134, 
+    "Family Name": null, 
+    "Type Id": 8119134, 
+    "Symbol Text": "", 
+    "Host Id": -1, 
+    "Keynote Value": "18", 
+    "Type Name": null, 
+    "Type": 8119134, 
+    "Keynote Description": "PROVIDE 1/2\" CONDUIT WITH PULLWIRE FROM JUNCTION BOX TO ANSUL CABINET. MOUNT OCTAGONAL JUNCTION BOX FLUSH IN WALL. ROUTE CONDUIT IN WALL AS SHOWN. RE: 17/E-7.1.", 
+    "Edited by": "", 
+    "Workset": 4496, 
+    "Design Option": -1, 
+    "Family and Type": 8119134, 
+    "Keynote Category": "E-3.3", 
+    "Show Symbol Text": 0, 
+    "Area": 0.00084999999999999995
+   }, 
+   "type": "Standard - Electrical", 
+   "has_leader": null
+  }
+ ], 
+ "source_doc": "RunUpdateProfilesHEBCarrollton95PercentCLOUDMODEL", 
+ "count": 23
+}

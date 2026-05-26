@@ -1,0 +1,91 @@
+{
+  "room_number": "108",
+  "room_name": "CARDIO NEW",
+  "match_strategy": "by_block_name_global",
+  "_comment": "Cardio receps are matched by block NAME across the whole CAD (not Voronoi-room) because the placeholder Spaces have 8x6ft loc_xy points and don't represent real room boundaries. ALL cardio-named blocks in the X_BG.dwg get a recep placed at their insertion XY.",
+  "blocks": [
+    {
+      "cad_name": "Treadmill (T5X-5PL-PF)",
+      "count_in_cad": 40,
+      "fixture_family": "EF-U_Receptacle_CED",
+      "fixture_type": "Duplex Wall",
+      "yaml_profile": "Treadmill (T5X-5PL-PF)",
+      "mount_height_in": 46,
+      "rotation_rad": 0,
+      "position_rule": "insertion_xy",
+      "params": {
+        "CKT_Panel_CEDT": "L1",
+        "CKT_Circuit Number_CEDT": "DEDICATED",
+        "CKT_Rating_CED": 20,
+        "Apparent Load Input_CED": 1500,
+        "CKT_Load Name_CEDT": "TREADMILL",
+        "FLA Input_CED": 0,
+        "dev-Group ID": "Treadmill (T5X-5PL-PF)"
+      }
+    },
+    {
+      "cad_name": "Stepmill (C5X-5PL-PF)",
+      "count_in_cad": 12,
+      "fixture_family": "EF-U_Receptacle_CED",
+      "fixture_type": "Duplex Wall",
+      "yaml_profile": "Stepmill (C5X-5PL-PF)",
+      "mount_height_in": 46,
+      "rotation_rad": 0,
+      "position_rule": "insertion_xy",
+      "params": {
+        "CKT_Panel_CEDT": "L1",
+        "CKT_Circuit Number_CEDT": "DEDICATED",
+        "CKT_Rating_CED": 20,
+        "Apparent Load Input_CED": 1200,
+        "CKT_Load Name_CEDT": "STAIRMASTER",
+        "FLA Input_CED": 0,
+        "dev-Group ID": "Stepmill (C5X-5PL-PF)"
+      }
+    },
+    {
+      "cad_name": "HM5A",
+      "count_in_cad": 4,
+      "fixture_family": "EF-U_Receptacle_CED",
+      "fixture_type": "Duplex Wall",
+      "yaml_profile": "HM5A (Indoor Cycle)",
+      "mount_height_in": 46,
+      "rotation_rad": 0,
+      "position_rule": "insertion_xy",
+      "params": {
+        "CKT_Panel_CEDT": "L1",
+        "CKT_Circuit Number_CEDT": "DEDICATED",
+        "CKT_Rating_CED": 20,
+        "Apparent Load Input_CED": 400,
+        "CKT_Load Name_CEDT": "POWERED BIKE",
+        "FLA Input_CED": 0,
+        "dev-Group ID": "HM5A"
+      }
+    }
+  ],
+  "keynotes": [
+    {
+      "type_family": "Manual Key Note- All Shapes",
+      "type_name": "Square",
+      "ced_g_note_number": "13",
+      "count": 2,
+      "positions": [
+        {"x": 156.0, "y": -241.0, "label": "Row 1 (north cardio row mid)"},
+        {"x": 156.0, "y": -253.0, "label": "Row 2 (south cardio row mid)"}
+      ],
+      "params": {
+        "dev-Group ID": "E1",
+        "CKT_Panel_CEDT": "L3",
+        "CKT_Circuit Number_CEDT": "EMERGENCY",
+        "CKT_Load Name_CEDT": "EMERGENCY - (Space)",
+        "CKT_Rating_CED": 20,
+        "Apparent Load Input_CED": 180
+      }
+    }
+  ],
+  "deferred": {
+    "tags": "panel/circuit fixture tags happen after Pass 2 circuiting",
+    "wires": "Pass 3 — homerun arcs",
+    "wire_tags": "Pass 4",
+    "convenience_receps": "TBD — perimeter-based placement using Asheville ratio"
+  }
+}

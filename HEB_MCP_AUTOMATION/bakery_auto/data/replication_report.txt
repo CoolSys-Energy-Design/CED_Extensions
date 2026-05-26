@@ -1,0 +1,23 @@
+
+=== PHASE A ===
+PANEL RC -> existing target panel id 7855685 (not duplicated)
+PANEL BA -> existing target panel id 7855687 (not duplicated)
+DUP TYPE created: EF-U_Receptacle_CED / Cord Drop - 208V/1Ph (from Specialty Wall - 208V/1Ph)
+DUP TYPE created: EF-U_Receptacle_CED / Cord Drop - 120V/1Ph 2 IG (from Specialty Wall - 208V/1Ph)
+FLAG: panel FS missing in target - skipped
+PHASE A done: placed=75 skipped=0 dup_types=2
+
+=== PHASE B ===
+PHASE B done: placed=23 skipped=0
+
+=== PHASE C ===
+PHASE C done: placed=74 skipped=0
+
+=== PHASE D ===
+PHASE D done: circuits made=52 failed=1 skipped=0 (FS/other panels not circuited)
+
+=== PHASE D ===
+PHASE D done: created=0 desc-updated=0 failed=1 (FS/other panels not circuited)
+
+=== PHASE D ===
+PHASE D done: created=52 desc-updated=0 failed=1 (FS/other panels not circuited)

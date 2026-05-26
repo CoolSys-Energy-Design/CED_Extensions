@@ -1,0 +1,185 @@
+{
+ "rows": [
+  {
+   "pos": [
+    -33.061, 
+    53.386000000000003
+   ], 
+   "status": "ok", 
+   "anchor_src_dev": 9353666, 
+   "leaders": 1, 
+   "text": "RO2", 
+   "id": 9397212
+  }, 
+  {
+   "pos": [
+    -44.758000000000003, 
+    18.613
+   ], 
+   "status": "ok", 
+   "anchor_src_dev": 9352871, 
+   "leaders": 0, 
+   "text": "H", 
+   "id": 9397788
+  }, 
+  {
+   "pos": [
+    -52.162999999999997, 
+    14.801
+   ], 
+   "status": "ok", 
+   "anchor_src_dev": 9353698, 
+   "leaders": 0, 
+   "text": "H", 
+   "id": 9397991
+  }, 
+  {
+   "pos": [
+    -31.190999999999999, 
+    24.440999999999999
+   ], 
+   "status": "ok", 
+   "anchor_src_dev": 9438257, 
+   "leaders": 0, 
+   "text": "WP", 
+   "id": 9438258
+  }, 
+  {
+   "pos": [
+    -43.950000000000003, 
+    36.951000000000001
+   ], 
+   "status": "ok", 
+   "anchor_src_dev": 9438701, 
+   "leaders": 1, 
+   "text": "DOOR HEAT", 
+   "id": 9438704
+  }, 
+  {
+   "pos": [
+    -36.210000000000001, 
+    66.760000000000005
+   ], 
+   "status": "ok", 
+   "anchor_src_dev": 9352881, 
+   "leaders": 0, 
+   "text": "(ON)", 
+   "id": 10618540
+  }, 
+  {
+   "pos": [
+    -40.198999999999998, 
+    66.466999999999999
+   ], 
+   "status": "ok", 
+   "anchor_src_dev": 9352885, 
+   "leaders": 0, 
+   "text": "(ON)", 
+   "id": 10618541
+  }, 
+  {
+   "pos": [
+    -43.447000000000003, 
+    66.358999999999995
+   ], 
+   "status": "ok", 
+   "anchor_src_dev": 9352577, 
+   "leaders": 0, 
+   "text": "(ON)", 
+   "id": 10618542
+  }, 
+  {
+   "pos": [
+    -60.134, 
+    28.488
+   ], 
+   "status": "ok", 
+   "anchor_src_dev": 9353697, 
+   "leaders": 0, 
+   "text": "(ON)", 
+   "id": 10619481
+  }, 
+  {
+   "pos": [
+    -58.225999999999999, 
+    44.659999999999997
+   ], 
+   "status": "ok", 
+   "anchor_src_dev": 9352918, 
+   "leaders": 0, 
+   "text": "(ON)", 
+   "id": 10619489
+  }, 
+  {
+   "pos": [
+    -62.472999999999999, 
+    41.197000000000003
+   ], 
+   "status": "ok", 
+   "anchor_src_dev": 9353696, 
+   "leaders": 0, 
+   "text": "(ON)", 
+   "id": 10619496
+  }, 
+  {
+   "pos": [
+    -59.634, 
+    21.452999999999999
+   ], 
+   "status": "ok", 
+   "anchor_src_dev": 9352759, 
+   "leaders": 0, 
+   "text": "(ON)", 
+   "id": 10620041
+  }, 
+  {
+   "pos": [
+    -60.090000000000003, 
+    23.265000000000001
+   ], 
+   "status": "ok", 
+   "anchor_src_dev": 9352737, 
+   "leaders": 0, 
+   "text": "(ON)", 
+   "id": 10620048
+  }, 
+  {
+   "pos": [
+    -48.012999999999998, 
+    24.097999999999999
+   ], 
+   "status": "ok", 
+   "anchor_src_dev": 9352729, 
+   "leaders": 0, 
+   "text": "(ON)", 
+   "id": 10620055
+  }, 
+  {
+   "pos": [
+    -53.792000000000002, 
+    18.398
+   ], 
+   "status": "ok", 
+   "anchor_src_dev": 9352894, 
+   "leaders": 0, 
+   "text": "(ON)", 
+   "id": 10620062
+  }, 
+  {
+   "pos": [
+    -44.183, 
+    64.328999999999994
+   ], 
+   "status": "ok", 
+   "anchor_src_dev": 9352738, 
+   "leaders": 0, 
+   "text": "(ON)", 
+   "id": 10621631
+  }
+ ], 
+ "skipped": 0, 
+ "placed": 16, 
+ "target": "CED_HEB Template_MEPR_R24_OkmntProfCorr", 
+ "apply": true, 
+ "count": 16
+}

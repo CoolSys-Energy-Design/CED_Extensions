@@ -1,0 +1,376 @@
+{
+  "spaces": [
+    {
+      "num": "108", 
+      "area": 0.0, 
+      "perim": 0.0, 
+      "loc": [
+        124.0, 
+        79.0
+      ], 
+      "name": "CARDIO", 
+      "id": 7684302, 
+      "bbox": null
+    }, 
+    {
+      "num": "109", 
+      "area": 0.0, 
+      "perim": 0.0, 
+      "loc": [
+        154.0, 
+        58.0
+      ], 
+      "name": "CIRCUIT", 
+      "id": 7684303, 
+      "bbox": null
+    }, 
+    {
+      "num": "105C", 
+      "area": 0.0, 
+      "perim": 0.0, 
+      "loc": [
+        71.0, 
+        137.0
+      ], 
+      "name": "JANITOR", 
+      "id": 7684304, 
+      "bbox": null
+    }, 
+    {
+      "num": "110", 
+      "area": 0.0, 
+      "perim": 0.0, 
+      "loc": [
+        168.0, 
+        97.0
+      ], 
+      "name": "STRENGTH", 
+      "id": 7684305, 
+      "bbox": null
+    }, 
+    {
+      "num": "106", 
+      "area": 0.0, 
+      "perim": 0.0, 
+      "loc": [
+        79.0, 
+        160.0
+      ], 
+      "name": "ELECTRICAL / STORAGE ROOM", 
+      "id": 7684306, 
+      "bbox": null
+    }, 
+    {
+      "num": "105D", 
+      "area": 0.0, 
+      "perim": 0.0, 
+      "loc": [
+        90.079999999999998, 
+        120.52
+      ], 
+      "name": "STORAGE", 
+      "id": 7684307, 
+      "bbox": null
+    }, 
+    {
+      "num": "103", 
+      "area": 0.0, 
+      "perim": 0.0, 
+      "loc": [
+        87.0, 
+        27.0
+      ], 
+      "name": "BLACK CARD SPA", 
+      "id": 7684308, 
+      "bbox": null
+    }, 
+    {
+      "num": "103A", 
+      "area": 0.0, 
+      "perim": 0.0, 
+      "loc": [
+        75.0, 
+        30.0
+      ], 
+      "name": "HYDROMASSAGE", 
+      "id": 7684309, 
+      "bbox": null
+    }, 
+    {
+      "num": "103H", 
+      "area": 0.0, 
+      "perim": 0.0, 
+      "loc": [
+        88.0, 
+        51.0
+      ], 
+      "name": "TANNING", 
+      "id": 7684310, 
+      "bbox": null
+    }, 
+    {
+      "num": "103D", 
+      "area": 0.0, 
+      "perim": 0.0, 
+      "loc": [
+        73.0, 
+        59.0
+      ], 
+      "name": "TANNING", 
+      "id": 7684311, 
+      "bbox": null
+    }, 
+    {
+      "num": "103F", 
+      "area": 0.0, 
+      "perim": 0.0, 
+      "loc": [
+        89.0, 
+        73.0
+      ], 
+      "name": "TANNING", 
+      "id": 7684312, 
+      "bbox": null
+    }, 
+    {
+      "num": "103E", 
+      "area": 0.0, 
+      "perim": 0.0, 
+      "loc": [
+        73.0, 
+        71.0
+      ], 
+      "name": "HYBRID TANNING", 
+      "id": 7684313, 
+      "bbox": null
+    }, 
+    {
+      "num": "103G", 
+      "area": 0.0, 
+      "perim": 0.0, 
+      "loc": [
+        89.0, 
+        61.0
+      ], 
+      "name": "TLT TANNING", 
+      "id": 7684314, 
+      "bbox": null
+    }, 
+    {
+      "num": "103B", 
+      "area": 0.0, 
+      "perim": 0.0, 
+      "loc": [
+        73.0, 
+        47.0
+      ], 
+      "name": "RED WAVE", 
+      "id": 7684315, 
+      "bbox": null
+    }, 
+    {
+      "num": "103C", 
+      "area": 0.0, 
+      "perim": 0.0, 
+      "loc": [
+        75.0, 
+        56.0
+      ], 
+      "name": "HYBRID", 
+      "id": 7684316, 
+      "bbox": null
+    }, 
+    {
+      "num": "104", 
+      "area": 0.0, 
+      "perim": 0.0, 
+      "loc": [
+        97.0, 
+        99.0
+      ], 
+      "name": "WOMENS LOCKER ROOM", 
+      "id": 7684317, 
+      "bbox": null
+    }, 
+    {
+      "num": "104B", 
+      "area": 0.0, 
+      "perim": 0.0, 
+      "loc": [
+        78.0, 
+        87.0
+      ], 
+      "name": "SHOWER", 
+      "id": 7684318, 
+      "bbox": null
+    }, 
+    {
+      "num": "104A", 
+      "area": 0.0, 
+      "perim": 0.0, 
+      "loc": [
+        80.0, 
+        108.0
+      ], 
+      "name": "TOILET", 
+      "id": 7684319, 
+      "bbox": null
+    }, 
+    {
+      "num": "104D", 
+      "area": 0.0, 
+      "perim": 0.0, 
+      "loc": [
+        89.0, 
+        107.0
+      ], 
+      "name": "STORAGE", 
+      "id": 7684320, 
+      "bbox": null
+    }, 
+    {
+      "num": "104C", 
+      "area": 0.0, 
+      "perim": 0.0, 
+      "loc": [
+        71.0, 
+        94.0
+      ], 
+      "name": "JANITOR", 
+      "id": 7684321, 
+      "bbox": null
+    }, 
+    {
+      "num": "105", 
+      "area": 0.0, 
+      "perim": 0.0, 
+      "loc": [
+        97.0, 
+        141.0
+      ], 
+      "name": "MENS LOCKER ROOM", 
+      "id": 7684322, 
+      "bbox": null
+    }, 
+    {
+      "num": "105B", 
+      "area": 0.0, 
+      "perim": 0.0, 
+      "loc": [
+        82.0, 
+        146.0
+      ], 
+      "name": "SHOWER", 
+      "id": 7684323, 
+      "bbox": null
+    }, 
+    {
+      "num": "105A", 
+      "area": 0.0, 
+      "perim": 0.0, 
+      "loc": [
+        77.0, 
+        128.0
+      ], 
+      "name": "TOILET", 
+      "id": 7684324, 
+      "bbox": null
+    }, 
+    {
+      "num": "111", 
+      "area": 0.0, 
+      "perim": 0.0, 
+      "loc": [
+        178.0, 
+        16.0
+      ], 
+      "name": "FREE WEIGHTS", 
+      "id": 7684325, 
+      "bbox": null
+    }, 
+    {
+      "num": "101B", 
+      "area": 0.0, 
+      "perim": 0.0, 
+      "loc": [
+        100.0, 
+        57.0
+      ], 
+      "name": "EMPLOYEE BREAKROOM", 
+      "id": 7684326, 
+      "bbox": null
+    }, 
+    {
+      "num": "101A", 
+      "area": 0.0, 
+      "perim": 0.0, 
+      "loc": [
+        88.0, 
+        5.0
+      ], 
+      "name": "IT ROOM", 
+      "id": 7684327, 
+      "bbox": null
+    }, 
+    {
+      "num": "100", 
+      "area": 0.0, 
+      "perim": 0.0, 
+      "loc": [
+        120.0, 
+        4.0
+      ], 
+      "name": "VESTIBULE", 
+      "id": 7684328, 
+      "bbox": null
+    }, 
+    {
+      "num": "101C", 
+      "area": 0.0, 
+      "perim": 0.0, 
+      "loc": [
+        100.0, 
+        71.0
+      ], 
+      "name": "MECHANICAL ROOM", 
+      "id": 7684329, 
+      "bbox": null
+    }, 
+    {
+      "num": "107", 
+      "area": 0.0, 
+      "perim": 0.0, 
+      "loc": [
+        150.0, 
+        142.0
+      ], 
+      "name": "FUNCTIONAL TRAINING/ MOBILITY ROOM", 
+      "id": 7684330, 
+      "bbox": null
+    }, 
+    {
+      "num": "102", 
+      "area": 0.0, 
+      "perim": 0.0, 
+      "loc": [
+        102.0, 
+        21.0
+      ], 
+      "name": "CHECK-IN", 
+      "id": 7684331, 
+      "bbox": null
+    }, 
+    {
+      "num": "101", 
+      "area": 0.0, 
+      "perim": 0.0, 
+      "loc": [
+        112.0, 
+        13.0
+      ], 
+      "name": "RECEPTION", 
+      "id": 7684332, 
+      "bbox": null
+    }
+  ]
+}

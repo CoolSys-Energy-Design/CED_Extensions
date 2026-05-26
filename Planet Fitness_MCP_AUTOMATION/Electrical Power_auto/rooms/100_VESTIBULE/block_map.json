@@ -1,0 +1,53 @@
+{
+  "asheville_pattern": "1 JB Ceiling (ECH-1 heater) + 2 Duplex Wall on east wall", 
+  "room_name": "VESTIBULE", 
+  "room_number": "100", 
+  "no_cad_block_match": true, 
+  "plan": [
+    {
+      "circuit": "DEDICATED", 
+      "mount_in": 96.0, 
+      "type": "Ceiling", 
+      "va": 1500, 
+      "dev_group": "ECH-1 Heater", 
+      "label": "ECH-1 vestibule heater JB", 
+      "rot": 0, 
+      "wall_snap": false, 
+      "load": "VESTIBULE", 
+      "panel": "L3", 
+      "y": -254.0, 
+      "family": "EF-U_Junction Box_CED", 
+      "x": 268.0
+    }, 
+    {
+      "dev_group": "tv", 
+      "mount_in": 18.0, 
+      "type": "Duplex Wall", 
+      "va": 180, 
+      "near_y": -250.0, 
+      "near_x": 269.5, 
+      "rot_after_snap": "face_west", 
+      "load": "TV - BLACK CARD SUITE", 
+      "wall_snap": true, 
+      "panel": "L3", 
+      "label": "TV-BCS recep on east wall", 
+      "family": "EF-U_Receptacle_CED", 
+      "circuit": "STANDARD"
+    }, 
+    {
+      "dev_group": "convenience", 
+      "mount_in": 18.0, 
+      "type": "Duplex Wall", 
+      "va": 180, 
+      "near_y": -258.0, 
+      "near_x": 269.5, 
+      "rot_after_snap": "face_west", 
+      "load": "RECEPTACLE - 100 VESTIBULE", 
+      "wall_snap": true, 
+      "panel": "L3", 
+      "label": "Convenience on east wall", 
+      "family": "EF-U_Receptacle_CED", 
+      "circuit": "STANDARD"
+    }
+  ]
+}
