@@ -10,9 +10,14 @@
       "Bash(claude mcp:*)",
       "Skill(update-config)",
       "Skill(update-config:*)",
-      "mcp__revit"
+      "mcp__revit",
+      "PowerShell($ts = Get-Date -Format \"yyyy-MM-dd_HHmmss\"; $dir = \"C:\\\\Users\\\\reed.pinterich\\\\.claude\\\\skills\\\\pf-power-plan\\\\reports\\\\run-$ts\"; New-Item -ItemType Directory -Path $dir -Force | Out-Null; Write-Output $dir)",
+      "Bash(mkdir -p \"C:\\\\Users\\\\reed.pinterich\\\\.claude\\\\skills\\\\pf-power-plan\\\\reports\\\\run-2026-05-27_164052\" && ls \"C:\\\\Users\\\\reed.pinterich\\\\.claude\\\\skills\\\\pf-power-plan\\\\reports\\\\run-2026-05-27_164052\")"
     ],
     "deny": [],
-    "ask": []
+    "ask": [],
+    "additionalDirectories": [
+      "C:\\Users\\reed.pinterich\\.claude\\skills\\pf-power-plan\\reports\\run-2026-05-27_164052"
+    ]
   }
 }
