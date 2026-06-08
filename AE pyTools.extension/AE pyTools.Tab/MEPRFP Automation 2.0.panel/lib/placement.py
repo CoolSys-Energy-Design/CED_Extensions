@@ -884,6 +884,35 @@ def _find_plan_view_for_level(doc, level_id_int):
     return None
 
 
+def active_view_is_level_plan(doc, level_id_int):
+    """True when ``doc.ActiveView`` is a plan view whose ``GenLevel``
+    ElementId equals ``level_id_int`` — i.e. the current view can already
+    bind this level's workplane-based instances, so the gateway needn't
+    switch the active view (and disturb the user's open view) at all.
+    """
+    if doc is None or level_id_int is None:
+        return False
+    try:
+        av = doc.ActiveView
+    except Exception:
+        return False
+    if av is None:
+        return False
+    try:
+        gen = getattr(av, "GenLevel", None)
+    except Exception:
+        gen = None
+    if gen is None:
+        return False
+    try:
+        gval = getattr(gen.Id, "Value", None)
+        if gval is None:
+            gval = getattr(gen.Id, "IntegerValue", None)
+        return int(gval) == int(level_id_int)
+    except Exception:
+        return False
+
+
 def _element_phase_id_value(elem):
     """Return the integer ElementId of the element's PHASE_CREATED, or
     ``None`` when the parameter is absent / has no value / is the

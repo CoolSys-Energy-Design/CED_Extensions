@@ -116,9 +116,15 @@ def _run_placement(doc, uidoc, matches, options, transaction_name):
             # the transaction. This is legal here (valid API context, no
             # txn open, no modal dialog) and is what binds the Level on
             # workplane-based families.
+            #
+            # Only switch when the user's CURRENT view can't already bind
+            # this level — i.e. it isn't a plan of this level. This keeps
+            # the tool from jumping to a view the user didn't have open
+            # whenever they're already working in the right level's plan.
             if (level_id is not None
                     and level_id is not placement._ALL_LEVELS
-                    and uidoc is not None):
+                    and uidoc is not None
+                    and not placement.active_view_is_level_plan(doc, level_id)):
                 plan_view = placement._find_plan_view_for_level(doc, level_id)
                 if plan_view is not None:
                     try:
