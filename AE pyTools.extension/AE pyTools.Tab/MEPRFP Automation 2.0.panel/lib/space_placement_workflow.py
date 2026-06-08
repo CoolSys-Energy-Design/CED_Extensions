@@ -340,13 +340,19 @@ class SpacePlacementRun(object):
         self.door_choices[space.element_id] = chosen
         return chosen
 
-    def apply(self, plans=None):
+    def apply(self, plans=None, uidoc=None):
         """Execute placement on Revit's main thread.
 
         ``plans`` lets the UI hand in a filtered subset (e.g. only
         rows the user ticked); when omitted, every plan from the
         last ``collect()`` is applied.
+
+        ``uidoc`` is forwarded to ``apply_plans`` so it can switch the
+        active view to each level's plan before placing — required for
+        the Level to bind on ``OneLevelBased`` families. MUST be called
+        from a valid API context (the pushbutton ``main()``), never from
+        inside a modal dialog handler.
         """
         import space_apply
         target = plans if plans is not None else self.plans
-        return space_apply.apply_plans(self.doc, target)
+        return space_apply.apply_plans(self.doc, target, uidoc=uidoc)

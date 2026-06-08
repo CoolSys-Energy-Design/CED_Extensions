@@ -36,7 +36,14 @@ from System.Windows.Controls import (  # noqa: E402
 )
 from System.Windows import GridUnitType, GridLength  # noqa: E402
 
+from Autodesk.Revit.DB import (  # noqa: E402
+    FilteredElementCollector,
+    Level,
+    Phase,
+)
+
 import placement
+import placement_apply
 import wpf as _wpf
 
 
@@ -62,6 +69,20 @@ class _SourceItem(object):
         return self.label
 
 
+class _PhaseItem(object):
+    """Wraps one Revit Phase for display in the phase combo. ``value`` is
+    the phase's ElementId integer — kept on the item so Match doesn't have
+    to re-resolve it."""
+
+    def __init__(self, label, phase_id_int, sequence_number):
+        self.label = label
+        self.value = phase_id_int
+        self.sequence_number = sequence_number
+
+    def __str__(self):
+        return self.label
+
+
 class _MatchRow(object):
     """Per-row UI state alongside a placement.Match."""
 
@@ -81,7 +102,7 @@ class _MatchRow(object):
 
 class PlacementController(object):
 
-    def __init__(self, doc, profile_data):
+    def __init__(self, doc, profile_data, uidoc=None, output=None):
         self.doc = doc
         self.profile_data = profile_data
         self.profiles = list(profile_data.get("equipment_definitions") or [])
@@ -92,6 +113,26 @@ class PlacementController(object):
         self._selected_profile_labels = set()  # survives search-filtering
         self._suppress_profile_selection = False
         self.committed = False
+        self._last_result = None
+        self._output = output
+        if uidoc is None:
+            try:
+                from pyrevit import revit
+                uidoc = getattr(revit, "uidoc", None)
+            except Exception:
+                uidoc = None
+        self.uidoc = uidoc
+        # Resolve the per-session modeless ExternalEvent gateway now,
+        # while we're in a valid Revit API context (pushbutton main()).
+        # The placement itself runs on Revit's main thread via this
+        # gateway so the active-view switch — which binds the Level on
+        # workplane-based families — is legal. Doing it from this modal-
+        # free, transaction-free context is the whole fix.
+        try:
+            self._gateway = placement_apply.get_or_create_gateway()
+        except Exception as exc:
+            self._gateway = None
+            self._gateway_error = str(exc)
         self.window = _wpf.load_xaml(_XAML_PATH)
         self._lookup_controls()
         self._populate_filters()
@@ -109,6 +150,8 @@ class PlacementController(object):
         self.src_label = f("SrcLabel")
         self.src_combo = f("SrcCombo")
         self.src_browse_btn = f("SrcBrowseButton")
+        self.phase_label = f("PhaseLabel")
+        self.phase_combo = f("PhaseCombo")
         self.category_list = f("CategoryList")
         self.profile_list = f("ProfileList")
         self.profile_search_box = f("ProfileSearchBox")
@@ -185,6 +228,10 @@ class PlacementController(object):
         # kept alive by the class itself.
         self.profile_search_box.TextChanged += self._on_profile_search
         self.profile_list.SelectionChanged += self._on_profile_selection
+        # Re-populate the phase combo whenever the linked-model picker
+        # changes. No-op for host_model (host doc was already populated
+        # in _switch_source) and CSV (no phase concept).
+        self.src_combo.SelectionChanged += self._on_source_combo_changed
 
     # ---- source handling -------------------------------------------
 
@@ -200,20 +247,28 @@ class PlacementController(object):
                 _SourceItem("(this document)", "host_model", self.doc)
             )
             self.src_combo.SelectedIndex = 0
+            self._show_phase_combo(True)
+            self._populate_phase_combo(self.doc)
         elif kind == "linked_revit":
             self.src_label.Text = "Linked model:"
             self.src_browse_btn.Visibility = Visibility.Collapsed
             self.src_combo.IsEnabled = True
+            self._show_phase_combo(True)
+            self._populate_phase_combo(None)
             for inst in placement.collect_linked_revit_link_instances(self.doc):
                 link_doc = inst.GetLinkDocument()
                 title = getattr(link_doc, "Title", "") or "(unnamed)"
                 self.src_combo.Items.Add(_SourceItem(title, "linked_revit", inst))
             if self.src_combo.Items.Count > 0:
+                # SelectedIndex assignment fires SelectionChanged, which
+                # populates the phase combo from the picked link's doc.
                 self.src_combo.SelectedIndex = 0
         elif kind == "csv":
             self.src_label.Text = "CSV file:"
             self.src_browse_btn.Visibility = Visibility.Visible
             self.src_combo.IsEnabled = True
+            self._show_phase_combo(False)
+            self._populate_phase_combo(None)
             if self._csv_path:
                 self.src_combo.Items.Add(
                     _SourceItem(self._csv_path, "csv", self._csv_path)
@@ -222,6 +277,74 @@ class PlacementController(object):
         # Clear preview when source changes.
         self._clear_match_rows()
         self._set_status("Source switched. Match again.")
+
+    def _show_phase_combo(self, visible):
+        vis = Visibility.Visible if visible else Visibility.Collapsed
+        self.phase_label.Visibility = vis
+        self.phase_combo.Visibility = vis
+
+    def _populate_phase_combo(self, phase_source_doc):
+        """Fill the phase combo from ``phase_source_doc``'s Phase list.
+
+        Sort by ``SequenceNumber`` so the order matches the project's
+        phase timeline. Default selection: an item named "New
+        Construction" (case-insensitive); otherwise the first item.
+        Pass ``None`` to clear the combo (e.g. between switching to
+        linked_revit and the user picking a specific link).
+        """
+        self.phase_combo.Items.Clear()
+        if phase_source_doc is None:
+            return
+        try:
+            phases = list(
+                FilteredElementCollector(phase_source_doc).OfClass(Phase)
+            )
+        except Exception:
+            phases = []
+        items = []
+        for phase in phases:
+            try:
+                name = phase.Name
+                eid = phase.Id
+                eid_val = (
+                    getattr(eid, "Value", None)
+                    or getattr(eid, "IntegerValue", None)
+                )
+                seq = int(getattr(phase, "SequenceNumber", 0) or 0)
+            except Exception:
+                continue
+            if eid_val is None:
+                continue
+            items.append(_PhaseItem(name, eid_val, seq))
+        items.sort(key=lambda it: (it.sequence_number, it.label.lower()))
+        for it in items:
+            self.phase_combo.Items.Add(it)
+        if self.phase_combo.Items.Count == 0:
+            return
+        default_idx = 0
+        for idx in range(self.phase_combo.Items.Count):
+            item = self.phase_combo.Items[idx]
+            if (item.label or "").strip().lower() == "new construction":
+                default_idx = idx
+                break
+        self.phase_combo.SelectedIndex = default_idx
+
+    def _on_source_combo_changed(self, sender, e):
+        """When the user picks a different link, re-populate the phase
+        combo from that link's doc. Host_model and CSV are no-ops
+        (host doc was already populated in _switch_source; CSV doesn't
+        use phases)."""
+        if self._source_kind != "linked_revit":
+            return
+        try:
+            item = self.src_combo.SelectedItem
+            if item is None or item.value is None:
+                self._populate_phase_combo(None)
+                return
+            link_doc = item.value.GetLinkDocument()
+            self._populate_phase_combo(link_doc)
+        except Exception as exc:
+            self._set_status("[phase-populate] error: {}".format(exc))
 
     def _on_browse_clicked(self, sender, e):
         if self._source_kind != "csv":
@@ -241,10 +364,17 @@ class PlacementController(object):
     def _populate_filters(self):
         # Categories come from each LED's ``category`` field across every
         # profile — i.e. the categories of the *fixture children*, not
-        # the profile's parent. Picking a category here keeps every
-        # profile that contains *any* LED of that category, and
-        # placement runs all of that profile's LEDs (not just the
-        # matching ones).
+        # the profile's parent. Selecting one or more categories:
+        #   1. Keeps every profile that contains AT LEAST ONE LED in a
+        #      selected category (profile-level filter in
+        #      ``_filtered_profiles``).
+        #   2. Restricts placement to LEDs whose category is in the
+        #      selected set (LED-level filter applied by
+        #      ``execute_placement`` via
+        #      ``PlacementOptions.category_filter``).
+        # So a profile mixing Data Devices + Mechanical Equipment LEDs,
+        # with "Data Devices" selected, places only its Data Devices
+        # LEDs — the Mechanical Equipment LEDs are skipped.
         cats = set()
         for p in self.profiles:
             if not isinstance(p, dict):
@@ -319,8 +449,12 @@ class PlacementController(object):
                 continue
             if selected_cats:
                 # Keep the profile if ANY of its LEDs is in a selected
-                # category. Once kept, all of the profile's LEDs are
-                # placement candidates — we don't filter LEDs by category.
+                # category. The LED-level filter (applied by
+                # ``execute_placement`` via ``PlacementOptions.category_filter``)
+                # then drops the LEDs of unselected categories — so a
+                # profile that mixes Electrical Fixtures + Mechanical
+                # Equipment only places the LEDs in the categories the
+                # user actually selected.
                 led_cats = set()
                 for s in p.get("linked_sets") or []:
                     if not isinstance(s, dict):
@@ -353,11 +487,20 @@ class PlacementController(object):
 
         targets = []
         mode = placement.MATCH_FAMILY_NAME_STRIP_SUFFIX
-        if self._source_kind == "host_model":
-            targets = placement.find_targets_in_host_model(self.doc)
-            mode = placement.MATCH_FAMILY_NAME_STRIP_SUFFIX
-        elif self._source_kind == "linked_revit":
-            targets = placement.find_targets_in_linked_revit(source_value)
+        if self._source_kind in ("host_model", "linked_revit"):
+            phase_item = self.phase_combo.SelectedItem
+            if phase_item is None:
+                self._set_status("Pick a phase first")
+                return
+            phase_id = phase_item.value
+            if self._source_kind == "host_model":
+                targets = placement.find_targets_in_host_model(
+                    self.doc, phase_id=phase_id,
+                )
+            else:
+                targets = placement.find_targets_in_linked_revit(
+                    source_value, phase_id=phase_id,
+                )
             mode = placement.MATCH_FAMILY_NAME_STRIP_SUFFIX
         elif self._source_kind == "csv":
             if not self._csv_path:
@@ -476,9 +619,6 @@ class PlacementController(object):
     # ---- place ------------------------------------------------------
 
     def _on_place_clicked(self, sender, e):
-        from pyrevit import revit
-        import active_yaml
-
         chosen = []
         for row in self._match_rows:
             if not row.checked:
@@ -488,32 +628,163 @@ class PlacementController(object):
             self._set_status("Nothing checked to place")
             return
 
+        if self._gateway is None:
+            self._set_status(
+                "Placement gateway unavailable: {}".format(
+                    getattr(self, "_gateway_error", "unknown error")
+                )
+            )
+            return
+
+        selected_cats = {str(item) for item in self.category_list.SelectedItems}
+        default_level_id = self._resolve_default_level_id()
         options = placement.PlacementOptions(
             skip_already_placed=bool(self.skip_placed_check.IsChecked),
             allow_type_substitution=bool(self.allow_type_sub_check.IsChecked),
+            default_level_id=default_level_id,
+            category_filter=selected_cats or None,
+            uidoc=self.uidoc,
         )
-        with revit.Transaction("Place from CAD or Linked Model (MEPRFP 2.0)", doc=self.doc):
-            result = placement.execute_placement(self.doc, chosen, options)
 
+        # Hand the run to Revit's main thread via the modeless
+        # ExternalEvent gateway. That context (no modal dialog, no open
+        # transaction) is the only place ``uidoc.ActiveView = view`` is
+        # legal — and switching the active view to each target level's
+        # plan before ``NewFamilyInstance`` is what binds the Level on
+        # workplane-based families. The dialog stays open; results arrive
+        # via ``_on_place_complete``.
+        self.place_btn.IsEnabled = False
+        self._set_status("Placing on Revit's main thread...")
+        self._gateway.request_placement(
+            self.doc, self.uidoc, chosen, options,
+            on_complete=self._on_place_complete,
+        )
+
+    def _on_place_complete(self, result):
+        """Runs on Revit's main thread after every level's transaction
+        commits. Re-enables Place, updates status, and prints the run
+        report to the pyRevit output window."""
         self.committed = True
         self._last_result = result
+        try:
+            self.place_btn.IsEnabled = True
+        except Exception:
+            pass
         self._set_status(
-            "Placed {} fixture(s); skipped {} already-placed; {} warning(s).".format(
+            "Placed {} fixture(s); skipped {} already-placed; "
+            "{} warning(s).".format(
                 result.placed_fixture_count,
                 result.skipped_already_placed,
                 len(result.warnings),
             )
         )
+        self._print_report(result)
+
+    def _print_report(self, result):
+        output = self._output
+        if output is None:
+            return
+        try:
+            output.print_md(
+                "**Placement run complete**\n\n"
+                "- Fixtures placed: {}\n"
+                "- Element_Linker writes: {}\n"
+                "- Static parameter writes: {}\n"
+                "- Already-placed (skipped): {}\n"
+                "- Normalized-name matches: {}\n"
+                "- Type substitutions: {}\n"
+                "- Warnings: {}\n".format(
+                    result.placed_fixture_count,
+                    result.element_linker_writes,
+                    getattr(result, "static_param_writes", 0),
+                    result.skipped_already_placed,
+                    getattr(result, "normalized_match_count", 0),
+                    getattr(result, "substituted_type_count", 0),
+                    len(result.warnings),
+                )
+            )
+            if result.errors:
+                output.print_md(
+                    "\n**Errors:**\n"
+                    + "\n".join("- {}".format(x) for x in result.errors[:50])
+                )
+            if result.warnings:
+                output.print_md(
+                    "\n**Warnings:**\n"
+                    + "\n".join("- {}".format(w) for w in result.warnings[:50])
+                )
+        except Exception:
+            pass
 
     # ---- misc -------------------------------------------------------
+
+    def _resolve_default_level_id(self):
+        """Pick a Level ElementId to feed Revit's level-bearing
+        ``NewFamilyInstance`` overload.
+
+        Why this exists: the no-level overload
+        ``NewFamilyInstance(point, symbol, NonStructural)`` produces
+        instances whose ``Level`` parameter is missing entirely from the
+        Properties palette for level-based families. Supplying a level
+        at creation time gives the user the editable ``Level`` dropdown
+        they expect. Face/workplane-hosted families ignore the level
+        arg — Revit raises, and ``_place_fixture``'s existing try/except
+        falls back to the no-level overload for them, so passing a level
+        is safe for every family kind.
+
+        Resolution order:
+            1. Active view's ``GenLevel`` (set on plan views).
+            2. Lowest-elevation real Level in the project — excluding
+               legend / placeholder levels (e.g. ``XX - Legend Level``
+               at -100 ft). Without this filter, non-plan active views
+               would default every placement to the legend level.
+            3. ``None`` if the project has no usable levels at all.
+        """
+        try:
+            active = self.doc.ActiveView
+            if active is not None:
+                gen = getattr(active, "GenLevel", None)
+                if gen is not None:
+                    eid = gen.Id
+                    val = getattr(eid, "Value", None)
+                    if val is None:
+                        val = getattr(eid, "IntegerValue", None)
+                    if val is not None:
+                        return val
+        except Exception:
+            pass
+        try:
+            levels = [
+                lv for lv in FilteredElementCollector(self.doc).OfClass(Level)
+                if placement._is_user_level(lv)
+            ]
+            levels.sort(key=lambda lv: getattr(lv, "Elevation", 0.0))
+            if levels:
+                eid = levels[0].Id
+                val = getattr(eid, "Value", None)
+                if val is None:
+                    val = getattr(eid, "IntegerValue", None)
+                return val
+        except Exception:
+            pass
+        return None
 
     def _set_status(self, text):
         self.status_label.Text = text or ""
 
-    def show(self):
-        self.window.ShowDialog()
+    def show_modeless(self):
+        # Modeless is REQUIRED, not cosmetic: the placement runs through
+        # an ExternalEvent, which Revit only services when its main
+        # thread is idle. A modal ShowDialog blocks that thread, so the
+        # event would never fire (and the active-view switch that binds
+        # the Level could never run). Show() returns immediately; the
+        # window stays alive because Revit roots modeless windows and the
+        # retained event delegates keep this controller referenced.
+        self.window.Show()
         return self
 
 
-def show_modal(doc, profile_data):
-    return PlacementController(doc, profile_data).show()
+def show_modeless(doc, profile_data, uidoc=None, output=None):
+    return PlacementController(
+        doc, profile_data, uidoc=uidoc, output=output
+    ).show_modeless()

@@ -47,33 +47,14 @@ def main():
         )
         return
 
-    controller = placement_window.show_modal(doc, profile_data)
-
-    result = getattr(controller, "_last_result", None)
-    if controller.committed and result is not None:
-        output.print_md(
-            "**Placement run complete**\n\n"
-            "- Fixtures placed: {}\n"
-            "- Element_Linker writes: {}\n"
-            "- Static parameter writes: {}\n"
-            "- Already-placed (skipped): {}\n"
-            "- Normalized-name matches: {}\n"
-            "- Type substitutions: {}\n"
-            "- Warnings: {}\n".format(
-                result.placed_fixture_count,
-                result.element_linker_writes,
-                getattr(result, "static_param_writes", 0),
-                result.skipped_already_placed,
-                getattr(result, "normalized_match_count", 0),
-                getattr(result, "substituted_type_count", 0),
-                len(result.warnings),
-            )
-        )
-        if result.warnings:
-            output.print_md(
-                "\n**Warnings:**\n"
-                + "\n".join("- {}".format(w) for w in result.warnings[:50])
-            )
+    # Modeless: the dialog runs the placement through an ExternalEvent so
+    # the active-view switch that binds the Level on workplane-based
+    # families is legal (see placement_apply). show_modeless returns
+    # immediately; the run report is printed to ``output`` by the
+    # controller's on-complete callback after the user clicks Place.
+    placement_window.show_modeless(
+        doc, profile_data, uidoc=revit.uidoc, output=output,
+    )
 
 
 if __name__ == "__main__":

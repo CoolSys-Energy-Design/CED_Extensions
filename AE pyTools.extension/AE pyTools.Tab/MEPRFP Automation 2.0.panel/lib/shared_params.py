@@ -24,11 +24,13 @@ so the parameter is recognised across projects.
 
 import os
 
+import clr  # noqa: F401
+
 from Autodesk.Revit.DB import (  # noqa: E402
     BuiltInCategory,
     BuiltInParameterGroup,
 )
-from System import Guid  # noqa: F401  (kept for API back-compat)
+from System import Enum, Guid  # noqa: F401  (Guid kept for API back-compat)
 
 from Snippets import param_binder
 from Snippets.param_binder import SharedParamError  # noqa: F401 (re-export)
@@ -43,24 +45,71 @@ SHARED_PARAM_FILE_PATH = os.path.join(_RESOURCES_DIR, "MEPRFP_2_SharedParams.txt
 
 
 # Instance categories that host equipment children placed by MEPRFP 2.0.
-# Add new builtins here when a new tool starts placing into a new
-# category — the next placement run will auto-extend the binding.
-_BINDING_CATEGORY_BUILTINS = (
-    BuiltInCategory.OST_ElectricalFixtures,
-    BuiltInCategory.OST_DataDevices,
-    BuiltInCategory.OST_IOSModelGroups,  # Model Groups
-    BuiltInCategory.OST_MechanicalEquipment,
-    BuiltInCategory.OST_PlumbingFixtures,
+# Stored as NAME STRINGS rather than direct ``BuiltInCategory`` enum
+# attributes because pythonnet 3 has been observed to fail to surface
+# some enum values via direct attribute access at module-import time —
+# specifically, ``BuiltInCategory.OST_ElectricalFixtures`` can raise
+# ``AttributeError`` even though the value exists in the underlying
+# .NET enum. Resolving via ``_resolve_bic`` (which falls back to
+# ``Enum.Parse``) at ``_spec()`` call time bypasses that quirk. Add
+# new BuiltInCategory names here when a new tool starts placing into a
+# new category — the next placement run auto-extends the binding.
+_BINDING_CATEGORY_NAMES = (
+    "OST_ElectricalFixtures",
+    "OST_DataDevices",
+    "OST_IOSModelGroups",  # Model Groups
+    "OST_MechanicalEquipment",
+    "OST_PlumbingFixtures",
 )
 
 
+def _resolve_bic(name):
+    """Resolve a ``BuiltInCategory`` enum value by string name.
+
+    Tries ``getattr`` first (cheap, works for most BICs), then falls
+    back to ``Enum.Parse`` against the CLR type. The fallback exists
+    because pythonnet 3 has been observed to skip some enum values
+    when surfacing the type as a Python class — a value that
+    ``Enum.Parse`` finds may show up as ``None`` via ``getattr``.
+    Returns the BIC enum value or ``None``.
+    """
+    bic = getattr(BuiltInCategory, name, None)
+    if bic is not None:
+        return bic
+    try:
+        return Enum.Parse(clr.GetClrType(BuiltInCategory), name)
+    except Exception:
+        return None
+
+
 def _spec():
-    """One-shot factory; cheap, no doc required."""
+    """One-shot factory; cheap, no doc required.
+
+    Resolves BIC names → enum values at call time so pythonnet's
+    attribute-access quirks don't blow up module import.
+    """
+    resolved = []
+    skipped = []
+    for n in _BINDING_CATEGORY_NAMES:
+        bic = _resolve_bic(n)
+        if bic is None:
+            skipped.append(n)
+        else:
+            resolved.append(bic)
+    if skipped:
+        # Should not happen in practice — every name above is a stable,
+        # well-known BIC — but if pythonnet can't resolve any of them,
+        # we don't want a silent partial binding. Better to fail loudly
+        # at call time than to bind an unexpectedly narrow category set.
+        raise RuntimeError(
+            "shared_params: failed to resolve BuiltInCategory name(s): "
+            + ", ".join(skipped)
+        )
     return param_binder.ProjectParameterSpec(
         name=ELEMENT_LINKER_PARAM_NAME,
         shared_param_file=SHARED_PARAM_FILE_PATH,
         group_name_in_spfile=SHARED_PARAM_GROUP_NAME,
-        builtin_categories=_BINDING_CATEGORY_BUILTINS,
+        builtin_categories=tuple(resolved),
         parameter_group=BuiltInParameterGroup.PG_DATA,
         instance=True,
     )

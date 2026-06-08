@@ -21,6 +21,9 @@ from Autodesk.Revit.DB import (  # noqa: E402
     BuiltInParameter,
     ElementId,
     ElementTransformUtils,
+    FamilySymbol,
+    FilteredElementCollector,
+    Level,
     Line,
     XYZ,
 )
@@ -53,8 +56,13 @@ class _ApplyResult(object):
         return len(self.failed)
 
 
-def apply_plans(doc, plans, action="Place Space Elements (MEPRFP 2.0)"):
+def apply_plans(doc, plans, action="Place Space Elements (MEPRFP 2.0)",
+                uidoc=None):
     """Materialise every plan inside one Revit transaction.
+
+    ``uidoc`` is accepted for caller compatibility but no longer used:
+    the Level now binds via the explicit ``NewFamilyInstance`` Level
+    overload (see ``_apply_one``), so no active-view switching is needed.
 
     Returns an ``_ApplyResult`` summarising successes and failures so
     the UI can render a per-row status without a second pass.
@@ -197,8 +205,8 @@ def _apply_one(doc, plan, result):
         return
 
     # Match the equipment-side ``placement._place_fixture`` byte-for-
-    # byte: 3-arg NewFamilyInstance, then rotate, then write the FULL
-    # captured params dict (including "Elevation from Level"). The
+    # byte: level-bearing NewFamilyInstance, then rotate, then write the
+    # FULL captured params dict (including "Elevation from Level"). The
     # parameter-write path is what actually moves the instance to its
     # captured elevation on level-based families — NewFamilyInstance
     # itself frequently clamps to ``level.Elevation +
@@ -210,15 +218,99 @@ def _apply_one(doc, plan, result):
     # because the subsequent parameter write does the heavy lifting.
     led_params = plan.led.parameters if plan.led is not None else None
 
+    # PER USER CONTRACT (mirrors ``placement._place_fixture``): a real
+    # Level is ALWAYS passed to NewFamilyInstance so the instance is
+    # bound to a Level — Host = "Level : X", FAMILY_LEVEL_PARAM
+    # populated, and the editable "Level" instance parameter present —
+    # exactly like an interactively (Create Similar) placed instance.
+    # The old 3-arg overload left the instance unbound (LevelId = -1,
+    # empty read-only Level, Host = None), which is the bug this fixes.
+    # Try the space's own level first, then the active view's level,
+    # then any real Level in the doc; only fall back to the no-level
+    # overload if the doc genuinely has no Level at all.
+    _seen_level_ids = set()
+    level_candidates = []
+
+    def _push_level(lv):
+        if lv is None or not isinstance(lv, Level):
+            return
+        try:
+            lvid = getattr(lv.Id, "Value", None)
+            if lvid is None:
+                lvid = getattr(lv.Id, "IntegerValue", None)
+        except Exception:
+            return
+        if lvid in _seen_level_ids:
+            return
+        _seen_level_ids.add(lvid)
+        level_candidates.append(lv)
+
+    _push_level(level)
     try:
-        inst = doc.Create.NewFamilyInstance(
-            target_pt, symbol, StructuralType.NonStructural,
-        )
-    except Exception as exc:
-        result.failed.append(
-            (plan, "create_failed", {"message": str(exc), **info})
-        )
-        return
+        active_view = doc.ActiveView
+        _push_level(getattr(active_view, "GenLevel", None) if active_view is not None else None)
+    except Exception:
+        pass
+    try:
+        for _lv in FilteredElementCollector(doc).OfClass(Level):
+            _push_level(_lv)
+            break
+    except Exception:
+        pass
+
+    # CRITICAL — pythonnet overload resolution. ``NewFamilyInstance`` has
+    # two 4-arg overloads: ``(XYZ, FamilySymbol, Level, StructuralType)``
+    # and ``(XYZ, FamilySymbol, Element host, StructuralType)``. Because a
+    # ``Level`` IS an ``Element``, pythonnet 3 (the CPython engine pyRevit
+    # runs under) binds our call to the Element-HOST overload — it hosts
+    # the instance ON the level instead of associating it WITH the level,
+    # yielding ``Host = "Level : X"`` but ``LevelId = -1`` and no editable
+    # Level parameter. (IronPython resolves the Level overload, which is
+    # why MCP probes always bound correctly.) We force the Level overload
+    # explicitly via ``Overloads[...]``. The 3-arg no-level fallback below
+    # is unambiguous so it needs no selector.
+    _level_ctor = None
+    try:
+        _level_ctor = doc.Create.NewFamilyInstance.Overloads[
+            XYZ, FamilySymbol, Level, StructuralType
+        ]
+    except Exception:
+        _level_ctor = None
+
+    inst = None
+    used_level = None
+    create_exc = None
+    for _lv in level_candidates:
+        try:
+            if _level_ctor is not None:
+                inst = _level_ctor(
+                    target_pt, symbol, _lv, StructuralType.NonStructural,
+                )
+            else:
+                inst = doc.Create.NewFamilyInstance(
+                    target_pt, symbol, _lv, StructuralType.NonStructural,
+                )
+            used_level = _lv
+            break
+        except Exception as exc:
+            create_exc = exc
+            inst = None
+            continue
+
+    if inst is None:
+        # No Level resolved / every level-bearing call threw — last-resort
+        # no-level overload so placement still proceeds (instance will be
+        # unbound, same as the legacy behaviour).
+        try:
+            inst = doc.Create.NewFamilyInstance(
+                target_pt, symbol, StructuralType.NonStructural,
+            )
+        except Exception as exc:
+            result.failed.append(
+                (plan, "create_failed",
+                 {"message": str(create_exc or exc), **info})
+            )
+            return
 
     if inst is None:
         result.failed.append((plan, "create_failed", info))
@@ -237,59 +329,6 @@ def _apply_one(doc, plan, result):
         except Exception:
             pass  # non-fatal; element is still placed
 
-    # ---------------------------------------------------------------
-    # DIAGNOSTIC: dump everything we know about the elevation pipeline
-    # right before _apply_static_parameters runs, then again after.
-    # If the parameter still doesn't take, this surfaces exactly where
-    # the disconnect is: missing from params dict, write returned
-    # False, write returned True but readback is wrong, etc.
-    # ---------------------------------------------------------------
-    try:
-        led_data = plan.led._data if plan.led is not None else {}
-        offsets_raw = led_data.get("offsets") or []
-        offset0_z = ""
-        if offsets_raw and isinstance(offsets_raw[0], dict):
-            offset0_z = offsets_raw[0].get("z_inches", "")
-        params_raw = led_data.get("parameters") or {}
-        elev_in_dict = params_raw.get("Elevation from Level", "<missing>")
-
-        # What's the parameter on the placed instance look like BEFORE
-        # we write?
-        pre_elev_str = "?"
-        pre_elev_double = "?"
-        try:
-            ep = inst.LookupParameter("Elevation from Level")
-            if ep is not None:
-                try:
-                    pre_elev_str = ep.AsValueString() or "<empty>"
-                except Exception:
-                    pre_elev_str = "<no AsValueString>"
-                try:
-                    pre_elev_double = "{:.4f}".format(ep.AsDouble())
-                except Exception:
-                    pass
-                pre_elev_str += " (storage={}, readonly={})".format(
-                    getattr(ep.StorageType, "ToString", lambda: "?")(),
-                    ep.IsReadOnly,
-                )
-            else:
-                pre_elev_str = "<param not on instance>"
-        except Exception as exc:
-            pre_elev_str = "<lookup error: {}>".format(exc)
-
-        result.warnings.append(
-            "[diag/pre] LED {} | offset[0].z_inches={!r} | "
-            "params['Elevation from Level']={!r} | "
-            "instance.Elevation from Level (pre-write)={} "
-            "AsDouble(pre)={}".format(
-                plan.led_id or "?",
-                offset0_z, elev_in_dict,
-                pre_elev_str, pre_elev_double,
-            )
-        )
-    except Exception:
-        pass
-
     # Write LED-captured parameters straight through, byte-for-byte
     # like the equipment-side ``execute_placement`` does at
     # ``placement.py:_apply_static_parameters(placed,
@@ -306,83 +345,31 @@ def _apply_one(doc, plan, result):
                 )
             )
 
-    # Also try writing the parameter directly here, two ways, with
-    # explicit return-value capture, so we can see exactly what each
-    # API call returns. If _apply_static_parameters' SetValueString
-    # silently fails, this redundant attempt will tell us.
-    try:
-        z_inches_val = 0.0
-        if offsets_raw and isinstance(offsets_raw[0], dict):
-            try:
-                z_inches_val = float(offsets_raw[0].get("z_inches") or 0.0)
-            except Exception:
-                z_inches_val = 0.0
-        elev_ft = float(z_inches_val) / 12.0
-        ep = inst.LookupParameter("Elevation from Level")
-        svs_result = "<no param>"
-        set_result = "<no param>"
-        bip_set_result = "<no param>"
-        if ep is not None and not ep.IsReadOnly:
-            try:
-                feet_int = int(elev_ft)
-                inches_part = (elev_ft - feet_int) * 12
-                if abs(inches_part - round(inches_part)) < 1e-6:
-                    inches_str = '{}"'.format(int(round(inches_part)))
-                else:
-                    inches_str = '{:g}"'.format(inches_part)
-                ftin = "{}' - {}".format(feet_int, inches_str)
-                svs_result = repr(ep.SetValueString(ftin))
-            except Exception as exc:
-                svs_result = "<exception: {}>".format(exc)
-            try:
-                set_result = repr(ep.Set(float(elev_ft)))
-            except Exception as exc:
-                set_result = "<exception: {}>".format(exc)
-        # Try the BuiltIn slot too
+    # Post-creation Level writeback — set the editable "Level" instance
+    # parameter (SCHEDULE_LEVEL_PARAM / family-defined "Level") to the
+    # SAME Level we placed against, so FAMILY_LEVEL_PARAM and the
+    # schedule Level agree. Mirrors the equipment side's
+    # ``_ensure_instance_level_param`` call in ``execute_placement``.
+    writeback_level_id = level_id
+    if used_level is not None:
         try:
-            bip_param = inst.get_Parameter(
-                BuiltInParameter.INSTANCE_FREE_HOST_OFFSET_PARAM,
+            writeback_level_id = (
+                getattr(used_level.Id, "Value", None)
+                or getattr(used_level.Id, "IntegerValue", None)
             )
-            if bip_param is not None and not bip_param.IsReadOnly:
-                bip_set_result = repr(bip_param.Set(float(elev_ft)))
-            elif bip_param is None:
-                bip_set_result = "<INSTANCE_FREE_HOST_OFFSET_PARAM None>"
-            else:
-                bip_set_result = "<INSTANCE_FREE_HOST_OFFSET_PARAM read-only>"
-        except Exception as exc:
-            bip_set_result = "<exception: {}>".format(exc)
-        # Read back
-        post_elev_str = "?"
-        post_elev_double = "?"
-        try:
-            ep2 = inst.LookupParameter("Elevation from Level")
-            if ep2 is not None:
-                try:
-                    post_elev_str = ep2.AsValueString() or "<empty>"
-                except Exception:
-                    pass
-                try:
-                    post_elev_double = "{:.4f}".format(ep2.AsDouble())
-                except Exception:
-                    pass
         except Exception:
-            pass
-        result.warnings.append(
-            "[diag/post] LED {} | elev_ft={:.4f} | "
-            "SetValueString={} | Set(double)={} | "
-            "BuiltIn.Set(double)={} | "
-            "Elevation from Level (post)={} AsDouble(post)={}".format(
-                plan.led_id or "?",
-                elev_ft, svs_result, set_result, bip_set_result,
-                post_elev_str, post_elev_double,
+            writeback_level_id = level_id
+    if writeback_level_id is not None:
+        try:
+            _placement._ensure_instance_level_param(
+                doc, inst, writeback_level_id,
             )
-        )
-    except Exception as exc:
-        result.warnings.append(
-            "[diag/post] LED {} | exception: {}".format(
-                plan.led_id or "?", exc,
+        except Exception as exc:
+            result.warnings.append(
+                "Level writeback failed for ElementId {}: {}".format(
+                    inst.Id, exc
+                )
             )
-        )
 
     # Stamp Element_Linker with full Spaces lineage.
     try:

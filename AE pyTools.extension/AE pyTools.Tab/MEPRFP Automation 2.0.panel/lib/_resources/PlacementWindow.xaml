@@ -55,6 +55,18 @@
           <Button   Grid.Column="2" x:Name="SrcBrowseButton" Content="Browse..."
                     Margin="8,0,0,0" Padding="8,2" Visibility="Collapsed"/>
         </Grid>
+        <Grid Margin="0,8,0,0">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+          </Grid.ColumnDefinitions>
+          <TextBlock Grid.Column="0" x:Name="PhaseLabel" Text="Phase:"
+                     VerticalAlignment="Center" Margin="0,0,8,0"
+                     Visibility="Collapsed"/>
+          <ComboBox Grid.Column="1" x:Name="PhaseCombo"
+                    Visibility="Collapsed"
+                    ToolTip="Only targets created in this phase will be matched."/>
+        </Grid>
       </StackPanel>
     </GroupBox>
 

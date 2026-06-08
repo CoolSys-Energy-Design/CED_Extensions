@@ -38,7 +38,11 @@ _LIB_MODULE_NAMES = frozenset({
     "merge_workflow",
     # editor (Manage Profiles depends on alias data shape)
     "manage_profiles_window",
-    # placement
+    # placement — note: ``placement_apply`` is intentionally NOT purged
+    # (same reason as ``circuit_apply`` below): it registers an
+    # ``IExternalEventHandler`` .NET type, and re-importing it would raise
+    # "Duplicate type name within an assembly". Its gateway singleton
+    # survives across runs by design.
     "placement",
     "placement_window",
     "annotation_placement",
@@ -84,6 +88,11 @@ _LIB_MODULE_NAMES = frozenset({
     "space_placement",
     "space_placement_workflow",
     "space_apply",
+    # ``space_apply_gateway`` is intentionally NOT purged — same reason as
+    # ``placement_apply`` / ``circuit_apply``: it registers an
+    # ``IExternalEventHandler`` .NET type, and re-importing it would raise
+    # "Duplicate type name within an assembly". Its gateway singleton
+    # survives across runs by design.
     "space_workflow",
     "space_annotation_workflow",
     "space_capture_workflow",

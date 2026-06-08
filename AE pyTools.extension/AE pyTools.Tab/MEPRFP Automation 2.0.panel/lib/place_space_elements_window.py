@@ -1,17 +1,22 @@
 # -*- coding: utf-8 -*-
 """
-Modal preview UI for the Place Space Elements pushbutton.
+Modeless preview UI for the Place Space Elements pushbutton.
 
 Renders every placement plan from the workflow as a flat row, then
-hands the lot to ``space_apply.apply_plans`` when the user clicks
-*Place all*. Status (placed / failed / skipped) lands back into each
-row so the user can see in-line which Family/Type names didn't
-resolve.
+hands the selected rows to ``space_apply.apply_plans`` via the
+``space_apply_gateway`` ExternalEvent when the user clicks *Place all*.
+Status (placed / failed / skipped) lands back into each row so the user
+can see in-line which Family/Type names didn't resolve.
 
-Modal — NOT modeless. Spaces placement runs inside a single
-transaction kicked off from a button click while the dialog still
-holds the API context, so the ExternalEvent gateway used by
-SuperCircuit isn't necessary here.
+Modeless — NOT modal. This is REQUIRED, not cosmetic: for
+``OneLevelBased`` / workplane-based families, ``NewFamilyInstance`` only
+binds the Level when it runs on Revit's main thread via an
+``ExternalEvent``, with the active view switched to the target level's
+plan. Revit only services that event when its main thread is idle — a
+modal ``ShowDialog`` (and even the pushbutton ``main()`` body) blocks
+that, so the Level never binds and instances land at ``LevelId = -1``
+with no adjustable Level parameter. Mirrors the equipment side's
+``placement_window`` / ``placement_apply`` design.
 """
 
 import os
@@ -27,6 +32,7 @@ from System.Windows import RoutedEventHandler  # noqa: E402
 
 import wpf as _wpf  # noqa: E402
 import space_placement_workflow as _spw  # noqa: E402
+import space_apply_gateway  # noqa: E402
 
 
 _XAML_PATH = os.path.join(
@@ -149,14 +155,34 @@ def _fmt_float(v):
 
 class PlaceSpaceElementsController(object):
 
-    def __init__(self, doc, profile_data=None, door_choices=None):
+    def __init__(self, doc, profile_data=None, door_choices=None,
+                 uidoc=None, output=None):
         self.doc = doc
         self.profile_data = profile_data or {}
-        # Populated by ``_on_place`` so the calling pushbutton script
-        # can read ``result.warnings`` after the modal closes and
-        # surface them to the pyRevit output panel.
+        self.output = output
+        if uidoc is None:
+            try:
+                from pyrevit import revit
+                uidoc = getattr(revit, "uidoc", None)
+            except Exception:
+                uidoc = None
+        self.uidoc = uidoc
+        # ``last_result`` is set by ``_on_place_complete`` after the
+        # ExternalEvent run commits; ``committed`` flips True then too.
         self.last_result = None
         self.committed = False
+
+        # Resolve the per-session modeless ExternalEvent gateway now, while
+        # we're in a valid Revit API context (pushbutton main()). The
+        # placement runs on Revit's main thread via this gateway so the
+        # active-view switch — which binds the Level on OneLevelBased /
+        # workplane-based families — is legal.
+        try:
+            self._gateway = space_apply_gateway.get_or_create_gateway()
+            self._gateway_error = None
+        except Exception as exc:
+            self._gateway = None
+            self._gateway_error = str(exc)
 
         self.window = _wpf.load_xaml(_XAML_PATH)
         self._rows = ObservableCollection[_NetObject]()
@@ -295,6 +321,12 @@ class PlaceSpaceElementsController(object):
         ]
 
     def _on_place(self):
+        # We do NOT place inline here. For OneLevelBased / workplane-based
+        # families the Level only binds when ``NewFamilyInstance`` runs on
+        # Revit's main thread via the ExternalEvent gateway (a modal
+        # handler — and the pushbutton main() body — leave instances at
+        # ``LevelId = -1``). We hand the selected rows to the gateway; the
+        # dialog stays open and results arrive via ``_on_place_complete``.
         if not self._rows.Count:
             self._set_status("Nothing to place.")
             return
@@ -302,22 +334,35 @@ class PlaceSpaceElementsController(object):
         if not selected_plans:
             self._set_status("No rows selected — nothing to place.")
             return
-        self._set_status("Placing {} of {} row(s)... (one transaction)".format(
-            len(selected_plans), self._rows.Count,
-        ))
-        # Disable the buttons during the run to avoid a double-click.
+        if self._gateway is None:
+            self._set_status(
+                "Placement gateway unavailable: {}".format(
+                    self._gateway_error or "unknown error"
+                )
+            )
+            return
         self.place_btn.IsEnabled = False
         self.refresh_btn.IsEnabled = False
+        self._set_status(
+            "Placing {} of {} row(s) on Revit's main thread...".format(
+                len(selected_plans), self._rows.Count,
+            )
+        )
+        self._gateway.request_apply(
+            self.doc, self.uidoc, selected_plans,
+            on_complete=self._on_place_complete,
+        )
+
+    def _on_place_complete(self, result):
+        """Runs on Revit's main thread after the placement transaction(s)
+        commit. Updates row status, prints the report, re-enables Place."""
+        self.committed = True
+        self.last_result = result
         try:
-            result = self.run.apply(plans=selected_plans)
-        finally:
             self.place_btn.IsEnabled = True
             self.refresh_btn.IsEnabled = True
-        # Stash the result on the controller so the calling script can
-        # surface ``result.warnings`` (parameter write failures, etc.)
-        # to the output panel after the modal closes.
-        self.last_result = result
-        self.committed = True
+        except Exception:
+            pass
         # Map plan -> row for status writeback.
         plan_to_row = {id(r.plan): r for r in self._rows}
         for plan, _elem in result.placed:
@@ -342,27 +387,67 @@ class PlaceSpaceElementsController(object):
                 row.Status = "Exception: {}".format(info.get("message", ""))
             else:
                 row.Status = status
-
-        self.preview_grid.Items.Refresh()
+        try:
+            self.preview_grid.Items.Refresh()
+        except Exception:
+            pass
         self._set_status(
-            "Done. Placed {} / Failed {}.".format(result.n_placed, result.n_failed)
+            "Done. Placed {} / Failed {}. {} warning(s).".format(
+                result.n_placed, result.n_failed, len(result.warnings),
+            )
         )
+        self._print_report(result)
+
+    def _print_report(self, result):
+        output = self.output
+        if output is None:
+            return
+        try:
+            output.print_md(
+                "**Place Space Elements complete**\n\n"
+                "- Placed: `{}`\n"
+                "- Failed: `{}`\n"
+                "- Warnings: `{}`\n".format(
+                    result.n_placed, result.n_failed, len(result.warnings),
+                )
+            )
+            if result.warnings:
+                output.print_md(
+                    "\n**Warnings:**\n\n"
+                    + "\n".join("- {}".format(w) for w in result.warnings)
+                )
+        except Exception:
+            pass
+
+    def show_modeless(self):
+        # Modeless is REQUIRED, not cosmetic: placement runs through an
+        # ExternalEvent, which Revit only services when its main thread is
+        # idle. A modal ShowDialog blocks that thread, so the event would
+        # never fire (and the active-view switch that binds the Level could
+        # never run). Show() returns immediately; the window stays alive
+        # because Revit roots modeless windows and the retained event
+        # delegates keep this controller referenced.
+        self.window.Show()
+        return self
 
 
 # ---------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------
 
-def show_modal(doc, profile_data=None, door_choices=None):
-    """Open the placement modal.
+def show_modeless(doc, profile_data=None, door_choices=None,
+                  uidoc=None, output=None):
+    """Open the placement window modeless and return the live controller.
 
-    ``door_choices`` is a ``{space_element_id: (origin_xy, inward_xy)}``
-    map — typically built by ``space_door_picker.pre_pick_doors`` in
-    the calling script before this modal opens. Spaces without an
-    entry default to the first door in the workflow.
+    Modeless is required so the placement can run through the
+    ``space_apply_gateway`` ExternalEvent (the only context where the
+    active-view switch + Level binding work). ``door_choices`` is a
+    ``{space_element_id: (origin_xy, inward_xy)}`` map built by
+    ``space_door_picker.pre_pick_doors`` in the calling script BEFORE this
+    window opens. Spaces without an entry default to the first door.
     """
     controller = PlaceSpaceElementsController(
         doc=doc, profile_data=profile_data, door_choices=door_choices,
+        uidoc=uidoc, output=output,
     )
-    controller.window.ShowDialog()
-    return controller
+    return controller.show_modeless()

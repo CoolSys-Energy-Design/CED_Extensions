@@ -23,7 +23,10 @@ Matching modes:
     * ``cad_aliases`` — for CSV / DWG. Each profile may declare a
       comma-separated alias list under ``equipment_properties.cad_aliases``;
       a target whose name matches any alias is placed against that profile.
-      Same trailing-``_NNN`` strip applies.
+      The profile's own ``name`` (plus ``parent_filter.family_name_pattern``
+      and any ``merged_aliases``) is treated as an implicit alias, so a YAML
+      that omits ``cad_aliases`` still matches when the CSV ``Name`` equals
+      the profile name. Same trailing-``_NNN`` strip applies.
 """
 
 import io
@@ -32,6 +35,8 @@ import os
 import re
 
 import clr  # noqa: F401
+
+from System import Enum  # noqa: E402
 
 from Autodesk.Revit.DB import (  # noqa: E402
     BuiltInParameter,
@@ -42,10 +47,14 @@ from Autodesk.Revit.DB import (  # noqa: E402
     Group,
     GroupType,
     ImportInstance,
+    Level,
     LocationPoint,
     Options,
+    Phase,
     RevitLinkInstance,
+    SubTransaction,
     Transform,
+    ViewPlan,
     XYZ,
 )
 from Autodesk.Revit.DB.Structure import StructuralType  # noqa: E402
@@ -318,7 +327,15 @@ def _match_one_linked_revit(target, profiles):
 
 def _match_one_cad(target, profiles):
     """A CAD target's ``name`` is the block name. Same two-tier rule as
-    linked-Revit: prefer exact-name aliases over suffix-stripped ones."""
+    linked-Revit: prefer exact-name aliases over suffix-stripped ones.
+
+    Alias source is the union of explicit ``equipment_properties.cad_aliases``
+    and the implicit aliases derived from the profile itself (its ``name``,
+    ``parent_filter.family_name_pattern``, and ``merged_aliases``) — same
+    set the linked-Revit matcher uses. That way a YAML with no
+    ``cad_aliases`` declared still matches a CSV ``Name`` that equals the
+    profile name.
+    """
     target_name_lower = (target.name or "").strip().lower()
     target_key = normalize_name(target.name)
     if not target_key:
@@ -328,6 +345,7 @@ def _match_one_cad(target, profiles):
         strict = [
             p for p in profiles
             if target_name_lower in collect_profile_aliases_raw(p)
+            or target_name_lower in profile_family_names_raw(p)
         ]
         if strict:
             return strict
@@ -335,6 +353,7 @@ def _match_one_cad(target, profiles):
     return [
         p for p in profiles
         if target_key in collect_profile_aliases(p)
+        or target_key in profile_family_names(p)
     ]
 
 
@@ -428,52 +447,37 @@ def dedupe_matches_per_target(matches):
 # Skip-already-placed
 # ---------------------------------------------------------------------
 
-def _placed_set_anchor_signatures(doc):
-    """Return a set of ``(set_id, anchor_signature)`` for every placed
-    fixture in the active document. Anchor signature is a coarse
-    rounded-XY tuple — used to skip re-placing onto an anchor that
-    already has the profile present."""
+def _placed_led_anchor_signatures(doc):
+    """Return a set of ``(led_id, anchor_x_rounded, anchor_y_rounded)``
+    for every placed fixture in the active document.
+
+    Used by ``execute_placement`` to skip re-placing the **same LED**
+    onto the **same anchor**. The key is per-LED, not per-set, so a
+    later run that selects a new category (e.g. Data Devices) can land
+    its LEDs at anchors where other LEDs from the same set were placed
+    in a prior run — the bug being fixed here is that the old per-set
+    key skipped the entire match as soon as any LED from that set
+    existed at the anchor.
+    """
     signatures = set()
     for klass in (FamilyInstance, Group):
         collector = FilteredElementCollector(doc).OfClass(klass).WhereElementIsNotElementType()
         for elem in collector:
             linker = _el_io.read_from_element(elem)
-            if linker is None or not linker.set_id:
+            if linker is None:
+                continue
+            led_id = getattr(linker, "led_id", None)
+            if not led_id:
                 continue
             anchor_pt = linker.parent_location_ft
             if anchor_pt and len(anchor_pt) >= 2:
                 key = (
-                    linker.set_id,
+                    led_id,
                     round(float(anchor_pt[0]), 1),
                     round(float(anchor_pt[1]), 1),
                 )
                 signatures.add(key)
     return signatures
-
-
-def filter_already_placed(doc, matches):
-    """Drop matches whose target+profile pair already has a placement.
-
-    Returns ``(kept, skipped_count)``.
-    """
-    sigs = _placed_set_anchor_signatures(doc)
-    kept = []
-    skipped = 0
-    for m in matches:
-        target_set_ids = [
-            s.get("id") for s in (m.profile.get("linked_sets") or [])
-            if isinstance(s, dict) and s.get("id")
-        ]
-        target_xy = (round(m.target.world_pt[0], 1), round(m.target.world_pt[1], 1))
-        already = any(
-            (sid, target_xy[0], target_xy[1]) in sigs
-            for sid in target_set_ids
-        )
-        if already:
-            skipped += 1
-            continue
-        kept.append(m)
-    return kept, skipped
 
 
 # ---------------------------------------------------------------------
@@ -495,10 +499,435 @@ def collect_linked_revit_link_instances(doc):
     return out
 
 
-def find_targets_in_host_model(doc):
+def _build_host_level_index(host_doc):
+    """Return ``[(elevation_ft, level_id_int), ...]`` sorted by elevation
+    for every Level in ``host_doc``. Used to map a linked element's
+    elevation to the host doc's nearest Level by elevation rather than
+    by name — so the placement engine respects elevation alignment even
+    when the host and link use different naming conventions
+    (e.g. ``L1`` vs ``LEVEL 1`` vs ``Finished Floor``).
+    """
+    out = []
+    if host_doc is None:
+        return out
+    try:
+        collector = FilteredElementCollector(host_doc).OfClass(Level)
+    except Exception:
+        return out
+    for lv in collector:
+        try:
+            eid = lv.Id
+            val = getattr(eid, "Value", None)
+            if val is None:
+                val = getattr(eid, "IntegerValue", None)
+            if val is None:
+                continue
+            out.append((float(lv.Elevation), val))
+        except Exception:
+            continue
+    out.sort()
+    return out
+
+
+def _resolve_level_by_elevation(elevation_ft, host_index, tolerance_ft=1.0):
+    """Return the host-doc Level ElementId integer whose elevation is
+    closest to ``elevation_ft``, provided the gap is within
+    ``tolerance_ft``. Returns ``None`` when ``host_index`` is empty or
+    no level is within tolerance — caller falls back to
+    ``options.default_level_id``.
+
+    Default tolerance is 1 ft: typical floor-to-floor is 10-14 ft, so
+    a 1-ft window safely identifies the same level across host/link
+    pairings without absorbing the adjacent floor.
+    """
+    if not host_index:
+        return None
+    best = min(host_index, key=lambda pair: abs(pair[0] - elevation_ft))
+    if abs(best[0] - elevation_ft) <= tolerance_ft:
+        return best[1]
+    return None
+
+
+# Ordered list of Level-related BuiltInParameter NAMES. Resolution is
+# robust: tried via ``getattr`` first (fast, works for most BIPs), then
+# via ``Enum.Parse`` as a fallback for the pythonnet quirk where some
+# enum values don't surface as Python attributes even though they
+# exist in the underlying .NET enum. ``INSTANCE_LEVEL_PARAM`` is the
+# primary candidate for the CED MEP family catalog and was the key
+# missing piece from the legacy engine.
+_INSTANCE_LEVEL_BIP_NAMES = (
+    "INSTANCE_LEVEL_PARAM",
+    "FAMILY_LEVEL_PARAM",
+    "SCHEDULE_LEVEL_PARAM",
+    "INSTANCE_REFERENCE_LEVEL_PARAM",
+    "INSTANCE_SCHEDULE_ONLY_LEVEL_PARAM",
+)
+
+
+def _resolve_bip(name):
+    """Resolve a ``BuiltInParameter`` enum value by string name.
+
+    Tries ``getattr`` first (cheap), then falls back to ``Enum.Parse``
+    against the CLR type. The fallback exists because pythonnet 3 has
+    been observed to skip some enum values when surfacing the type as
+    a Python class — a value that ``Enum.Parse`` finds may show up as
+    ``None`` via ``getattr``. Returns the BIP enum value or ``None``.
+    """
+    bip = getattr(BuiltInParameter, name, None)
+    if bip is not None:
+        return bip
+    try:
+        return Enum.Parse(clr.GetClrType(BuiltInParameter), name)
+    except Exception:
+        return None
+
+
+_LINKER_LEVEL_ID_RE = re.compile(r"LevelId\s*:\s*(-?\d+)")
+
+
+def _captured_led_level_id(doc, led, return_source=False):
+    """Extract the captured ``LevelId`` integer from the LED's YAML
+    parameters and verify it resolves to a real Level in ``doc``.
+
+    Looks in two places, matching the legacy MEP Automation panel's
+    ``_get_linker_template`` behavior because the YAML capture format
+    is inconsistent across LED records:
+
+        1. ``parameters['LevelId']`` — top-level integer key. Newer
+           captures use this.
+        2. ``parameters['Element_Linker Parameter']`` or
+           ``parameters['Element_Linker']`` — a single string of
+           ``key: value, ...`` pairs that embeds ``LevelId: NNN``.
+           Older captures store the LevelId only inside this string.
+
+    Returns the integer ElementId value if the captured id resolves to
+    a Level in ``doc``; otherwise ``None``. When ``return_source`` is
+    True, returns ``(level_id, source_str)`` where ``source_str`` is
+    ``'top-key'``, ``'linker-payload'``, or one of the failure tags
+    (``'no-params'``, ``'no-value'``, ``'parse-fail'``, ``'negative'``,
+    ``'get-failed'``, ``'not-a-level'``).
+    """
+    if doc is None or not isinstance(led, dict):
+        return (None, "no-params") if return_source else None
+    params = led.get("parameters") or {}
+    if not isinstance(params, dict):
+        return (None, "no-params") if return_source else None
+
+    source = "top-key"
+    raw = params.get("LevelId")
+    if raw in (None, "", "None"):
+        # Fallback: extract LevelId from the Element_Linker Parameter
+        # payload string. ELDs captured under the older serialization
+        # only stored the LevelId there.
+        source = "linker-payload"
+        raw = None
+        for key in ("Element_Linker Parameter", "Element_Linker"):
+            payload = params.get(key)
+            if isinstance(payload, str) and payload:
+                m = _LINKER_LEVEL_ID_RE.search(payload)
+                if m:
+                    raw = m.group(1)
+                    break
+        if raw in (None, "", "None"):
+            return (None, "no-value") if return_source else None
+
+    try:
+        level_id = int(raw)
+    except (TypeError, ValueError):
+        return (None, "parse-fail") if return_source else None
+    if level_id < 0:
+        return (None, "negative") if return_source else None
+    try:
+        elem = doc.GetElement(ElementId(level_id))
+    except Exception:
+        return (None, "get-failed") if return_source else None
+    if elem is None or not isinstance(elem, Level):
+        return (None, "not-a-level") if return_source else None
+    return (level_id, source) if return_source else level_id
+
+
+def _is_user_level(level):
+    """Filter out legend / placeholder Levels from fallback chains.
+
+    Many Revit projects carry a special Level at very negative elevation
+    (commonly named ``XX - Legend Level`` at -100 ft) used purely as the
+    workplane for legend views. If our engine falls back to "lowest
+    elevation Level in the doc" without filtering, every placed fixture
+    ends up bound to that legend level — visually invisible on the
+    floor plans but wrong everywhere else. This helper screens those
+    out: a Level is "user" only if its elevation is plausibly within a
+    building's normal range AND its name doesn't look like a legend /
+    placeholder marker.
+    """
+    if level is None:
+        return False
+    try:
+        elev = float(getattr(level, "Elevation", 0.0))
+    except Exception:
+        return False
+    # -10 ft lower bound covers basements; anything below is a placeholder.
+    if elev < -10.0:
+        return False
+    name = (getattr(level, "Name", "") or "").strip().lower()
+    if not name:
+        return False
+    if name.startswith("xx") or name.startswith("zz"):
+        return False
+    if "legend" in name or "template" in name or "placeholder" in name:
+        return False
+    return True
+
+
+def _first_level_id_from_active_view(uidoc, doc):
+    """Return the integer ElementId value of a real Level to use as a
+    fallback when the LED's captured ``LevelId`` is missing or doesn't
+    resolve. Priority:
+
+        1. Active view's ``GenLevel`` (when the active view is a plan).
+        2. Lowest-elevation Level that passes ``_is_user_level`` —
+           legend / placeholder levels are excluded so a non-plan
+           active view doesn't silently park every fixture at the
+           legend.
+
+    Returns ``None`` if no usable Level exists.
+    """
+    if uidoc is not None:
+        try:
+            active = uidoc.ActiveView
+            if active is not None:
+                gen = getattr(active, "GenLevel", None)
+                if gen is not None:
+                    eid = gen.Id
+                    val = getattr(eid, "Value", None)
+                    if val is None:
+                        val = getattr(eid, "IntegerValue", None)
+                    if val is not None:
+                        return val
+        except Exception:
+            pass
+    if doc is None:
+        return None
+    try:
+        levels = [
+            lv for lv in FilteredElementCollector(doc).OfClass(Level)
+            if _is_user_level(lv)
+        ]
+        levels.sort(key=lambda lv: getattr(lv, "Elevation", 0.0))
+        if levels:
+            eid = levels[0].Id
+            val = getattr(eid, "Value", None)
+            if val is None:
+                val = getattr(eid, "IntegerValue", None)
+            return val
+    except Exception:
+        pass
+    return None
+
+
+def _ensure_instance_level_param(doc, inst, level_id, uidoc=None, diagnostics_by_family=None):
+    """Set the first writeable Level-related instance parameter on
+    ``inst`` to the live Level element's ``ElementId``. Returns True
+    if a write succeeded.
+
+    Mirrors the legacy engine's ``_apply_recorded_level`` exactly:
+        1. Look up the Level via ``doc.GetElement(ElementId(int(...)))``.
+           If the lookup fails or returns a non-Level, bail out — we
+           don't want to point a Level parameter at a non-Level
+           element by mistake.
+        2. Use the live element's ``.Id`` rather than a freshly
+           constructed ``ElementId(int)``. In Revit 2024+ where
+           ElementId is 64-bit, the constructor variant can produce a
+           subtly different value than the live property; using ``.Id``
+           is the canonical way and is what the legacy engine uses.
+        3. Try each ``BuiltInParameter`` in priority order. **Stop at
+           the first successful write** — fanning out across multiple
+           Level BIPs has been observed to confuse Revit on families
+           that expose more than one.
+        4. Tier 2: ``LookupParameter`` by display name (``"Level"``,
+           ``"Reference Level"``, ``"Schedule Level"``) as a safety
+           net for families whose Level parameter is a shared /
+           family-defined parameter rather than a BIP.
+    """
+    if doc is None or inst is None or level_id is None:
+        return False
+    try:
+        level_element = doc.GetElement(ElementId(int(level_id)))
+    except Exception:
+        level_element = None
+    if level_element is None:
+        return False
+    try:
+        live_eid = level_element.Id
+    except Exception:
+        return False
+
+    # Diagnostic record key — one entry per family so 100 placements of
+    # the same family produce 1 line, not 100.
+    fam_key = None
+    if diagnostics_by_family is not None:
+        try:
+            sym = getattr(inst, "Symbol", None)
+            fam = getattr(sym, "Family", None) if sym is not None else None
+            fam_key = getattr(fam, "Name", None) if fam is not None else None
+        except Exception:
+            fam_key = None
+
+    attempts = []
+
+    def _record(label, outcome):
+        if diagnostics_by_family is None or fam_key is None:
+            return
+        attempts.append("{}={}".format(label, outcome))
+
+    any_write = False
+
+    # Tier 1 — BIPs. Try every candidate, set every writeable one. We
+    # used to return on the first success (mirroring the legacy
+    # ``_apply_recorded_level``), but that meant the parameter the user
+    # actually sees in the Properties palette might never be written
+    # if a different BIP succeeded first. Setting all writeable Level
+    # BIPs to the same level keeps every Level-shaped instance
+    # parameter consistent.
+    for name in _INSTANCE_LEVEL_BIP_NAMES:
+        bip = _resolve_bip(name)
+        if bip is None:
+            _record(name, "BIP-missing")
+            continue
+        try:
+            param = inst.get_Parameter(bip)
+        except Exception as exc:
+            _record(name, "get-threw:{}".format(exc))
+            continue
+        if param is None:
+            _record(name, "not-on-family")
+            continue
+        try:
+            ro = param.IsReadOnly
+        except Exception:
+            ro = True
+        if ro:
+            _record(name, "read-only")
+            continue
+        try:
+            param.Set(live_eid)
+            _record(name, "SET-OK")
+            any_write = True
+        except Exception as exc:
+            _record(name, "set-threw:{}".format(exc))
+            continue
+    # Tier 2 — LookupParameter by display name. ALWAYS runs (even if a
+    # BIP succeeded) to catch family-defined / shared Level parameters
+    # that aren't backed by a BIP. Common name on CED families is just
+    # "Level" exposed under Constraints.
+    for label in ("Level", "Reference Level", "Schedule Level"):
+        try:
+            param = inst.LookupParameter(label)
+        except Exception:
+            param = None
+        if param is None:
+            _record("Lookup({})".format(label), "not-found")
+            continue
+        try:
+            ro = param.IsReadOnly
+        except Exception:
+            ro = True
+        if ro:
+            _record("Lookup({})".format(label), "read-only")
+            continue
+        try:
+            param.Set(live_eid)
+            _record("Lookup({})".format(label), "SET-OK")
+            any_write = True
+        except Exception as exc:
+            _record("Lookup({})".format(label), "set-threw:{}".format(exc))
+            continue
+    if diagnostics_by_family is not None and fam_key is not None:
+        prefix = "[{}]{} ".format(
+            fam_key, "" if any_write else " no-write:"
+        )
+        diagnostics_by_family.setdefault(fam_key, prefix + ", ".join(attempts))
+    return any_write
+
+
+def _find_plan_view_for_level(doc, level_id_int):
+    """Return a non-template ``ViewPlan`` whose ``GenLevel`` ElementId
+    equals ``level_id_int`` — or ``None`` when no such view exists.
+
+    Used by ``execute_placement`` to switch the active view to the
+    target level's plan before each ``NewFamilyInstance`` call. That's
+    the only way to make Revit populate the ``Level`` instance
+    parameter on workplane-based families (which is most of the CED
+    MEP catalog); the level-bearing ``NewFamilyInstance`` overload
+    leaves Level absent for those families.
+    """
+    if doc is None or level_id_int is None:
+        return None
+    try:
+        collector = FilteredElementCollector(doc).OfClass(ViewPlan)
+    except Exception:
+        return None
+    for v in collector:
+        try:
+            if v.IsTemplate:
+                continue
+            gen = v.GenLevel
+            if gen is None:
+                continue
+            gid = gen.Id
+            gval = getattr(gid, "Value", None)
+            if gval is None:
+                gval = getattr(gid, "IntegerValue", None)
+            if gval == level_id_int:
+                return v
+        except Exception:
+            continue
+    return None
+
+
+def _element_phase_id_value(elem):
+    """Return the integer ElementId of the element's PHASE_CREATED, or
+    ``None`` when the parameter is absent / has no value / is the
+    ``ElementId(-1)`` "none" sentinel.
+
+    Phase ElementIds are document-local — callers must compare against
+    a phase id pulled from the same document the element lives in.
+    """
+    if elem is None:
+        return None
+    try:
+        param = elem.get_Parameter(BuiltInParameter.PHASE_CREATED)
+    except Exception:
+        return None
+    if param is None:
+        return None
+    try:
+        eid = param.AsElementId()
+    except Exception:
+        return None
+    if eid is None:
+        return None
+    val = getattr(eid, "Value", None)
+    if val is None:
+        val = getattr(eid, "IntegerValue", None)
+    if val is None or val == -1:
+        return None
+    return val
+
+
+def find_targets_in_host_model(doc, phase_id=None):
     """Walk the host doc's FamilyInstances + Groups and produce
     one Target per element. Anchors are matched by family name
-    (same suffix-strip rules as linked Revit)."""
+    (same suffix-strip rules as linked Revit).
+
+    ``phase_id`` (optional) restricts the walk to elements whose
+    ``PHASE_CREATED`` ElementId equals this value. Elements with no
+    PHASE_CREATED parameter — or with ``ElementId(-1)`` — are dropped
+    when a phase filter is active.
+
+    Each ``Target.level_id`` is the source element's own Level
+    ElementId (host-doc namespace) when readable — so the placed child
+    inherits its parent's level rather than the active view's level.
+    """
     if doc is None:
         return []
     out = []
@@ -510,6 +939,9 @@ def find_targets_in_host_model(doc):
             .WhereElementIsNotElementType()
         )
         for elem in collector:
+            if phase_id is not None:
+                if _element_phase_id_value(elem) != phase_id:
+                    continue
             name = _element_family_name(elem)
             if not name:
                 continue
@@ -524,22 +956,49 @@ def find_targets_in_host_model(doc):
                 name=name,
                 world_pt=(pt.X, pt.Y, pt.Z),
                 rotation_deg=rot_deg,
-                level_id=None,
+                level_id=_element_level_id_value(elem),
                 link_inst=None,
                 link_elem_id=eid_val,
             ))
     return out
 
 
-def find_targets_in_linked_revit(link_inst):
+def find_targets_in_linked_revit(link_inst, phase_id=None):
     """Walk the linked doc's FamilyInstances + Groups and produce
-    one Target per element."""
+    one Target per element.
+
+    ``phase_id`` (optional) is the linked doc's Phase ElementId value;
+    elements whose ``PHASE_CREATED`` doesn't match are dropped. Phase
+    ids are document-local — the caller must source ``phase_id`` from
+    the same link's GetLinkDocument().
+
+    Each ``Target.level_id`` is the **host** doc's Level whose elevation
+    is closest to the linked element's level (after adding the link
+    transform's Z offset). Match is by elevation, not by name — so
+    host/link naming mismatches don't break the inheritance. When no
+    host level is within the elevation tolerance, ``level_id`` is
+    ``None`` and ``execute_placement`` falls back to
+    ``options.default_level_id``.
+    """
     if link_inst is None:
         return []
     link_doc = link_inst.GetLinkDocument()
     if link_doc is None:
         return []
     transform = links.get_link_transform(link_inst) or Transform.Identity
+    host_doc = getattr(link_inst, "Document", None)
+    host_level_index = _build_host_level_index(host_doc)
+    # Link transform's Z translation — added to a linked-doc Level's
+    # ``Elevation`` to get the equivalent host-world elevation. Assumes
+    # the link isn't rotated around X/Y (always true in practice for
+    # building models — they're only rotated around Z and offset).
+    try:
+        z_offset = float(transform.Origin.Z)
+    except Exception:
+        z_offset = 0.0
+    # Per-linked-doc-level-id cache: avoid re-resolving the same level
+    # for every element on that level.
+    linked_to_host_level = {}
     out = []
     for klass in (FamilyInstance, Group):
         collector = (
@@ -548,6 +1007,9 @@ def find_targets_in_linked_revit(link_inst):
             .WhereElementIsNotElementType()
         )
         for elem in collector:
+            if phase_id is not None:
+                if _element_phase_id_value(elem) != phase_id:
+                    continue
             name = _element_family_name(elem)
             if not name:
                 continue
@@ -558,12 +1020,30 @@ def find_targets_in_linked_revit(link_inst):
             rot_deg = _element_rotation_deg(elem, transform)
             eid = elem.Id
             eid_val = getattr(eid, "Value", None) or getattr(eid, "IntegerValue", None)
+            host_level_id = None
+            linked_level_id = _element_level_id_value(elem)
+            if linked_level_id is not None:
+                if linked_level_id in linked_to_host_level:
+                    host_level_id = linked_to_host_level[linked_level_id]
+                else:
+                    try:
+                        linked_level = link_doc.GetElement(
+                            ElementId(int(linked_level_id))
+                        )
+                        if linked_level is not None:
+                            target_elev = float(linked_level.Elevation) + z_offset
+                            host_level_id = _resolve_level_by_elevation(
+                                target_elev, host_level_index
+                            )
+                    except Exception:
+                        host_level_id = None
+                    linked_to_host_level[linked_level_id] = host_level_id
             out.append(Target(
                 source=SOURCE_LINKED_REVIT,
                 name=name,
                 world_pt=(world_pt.X, world_pt.Y, world_pt.Z),
                 rotation_deg=rot_deg,
-                level_id=None,
+                level_id=host_level_id,
                 link_inst=link_inst,
                 link_elem_id=eid_val,
             ))
@@ -851,6 +1331,14 @@ class PlacementResult(object):
         self.substituted_type_count = 0
 
 
+# Sentinel for ``PlacementOptions.only_level_id`` meaning "no per-level
+# filter — place every LED regardless of its resolved level." Distinct
+# from ``None``, which the modeless gateway uses to mean "place only the
+# LEDs that have no resolvable level." A plain object() can't collide
+# with any real ElementId integer.
+_ALL_LEVELS = object()
+
+
 class PlacementOptions(object):
     """Knobs the dialog feeds into ``execute_placement``."""
 
@@ -858,11 +1346,40 @@ class PlacementOptions(object):
                  skip_already_placed=True,
                  default_level_id=None,
                  transaction_action="Place from CAD or Linked Model",
-                 allow_type_substitution=False):
+                 allow_type_substitution=False,
+                 category_filter=None,
+                 uidoc=None,
+                 only_level_id=_ALL_LEVELS):
         self.skip_already_placed = skip_already_placed
         self.default_level_id = default_level_id
         self.transaction_action = transaction_action
         self.allow_type_substitution = allow_type_substitution
+        # Per-level placement filter. ``_ALL_LEVELS`` (default) places
+        # every matched LED. When set to an int (a Level ElementId) or
+        # ``None``, ``execute_placement`` places ONLY the LEDs whose
+        # resolved level equals this value — the modeless gateway drives
+        # one pass per level so it can switch the active view to that
+        # level's plan (outside any transaction) before each pass, which
+        # is the only way Revit binds the Level on workplane-based
+        # families. See ``collect_target_levels`` and ``placement_apply``.
+        self.only_level_id = only_level_id
+        # Set of LED category names the user chose in the dialog. When
+        # non-empty, ``execute_placement`` skips any LED whose
+        # ``category`` field isn't in this set — so a profile that mixes
+        # Electrical Fixtures + Mechanical Equipment LEDs only places
+        # the LEDs in the categories the user actually selected.
+        # ``None`` or empty set means "no LED-level filter."
+        self.category_filter = (
+            set(category_filter) if category_filter else None
+        )
+        # ``UIDocument`` — needed for the active-view-switching trick
+        # that makes the placed instance's ``Level`` parameter exist
+        # and be populated correctly for workplane-based families. When
+        # ``None``, placement still works but the Level parameter may
+        # not appear on the placed instance for workplane-based
+        # families (the level-bearing ``NewFamilyInstance`` overload
+        # is unreliable for those).
+        self.uidoc = uidoc
 
 
 def _activate_symbol(symbol):
@@ -1007,7 +1524,8 @@ def _split_label(label):
 
 
 def _place_fixture(doc, led, anchor_world_pt, anchor_rotation_deg, level_id,
-                   allow_type_substitution=False, group_index=None):
+                   allow_type_substitution=False, group_index=None,
+                   uidoc=None):
     """Place one LED at the resolved world point.
 
     Returns ``(placed_elem_or_None, status, info)`` where ``status`` is
@@ -1016,6 +1534,23 @@ def _place_fixture(doc, led, anchor_world_pt, anchor_rotation_deg, level_id,
     ``'no_label'``, or ``'create_failed'``. ``info`` is a dict with
     extra context (available_types, requested_family, requested_type,
     requested_group) used by the caller to build warnings.
+
+    Level handling, three-layer:
+        1. The caller sets the active view to a plan whose ``GenLevel``
+           is ``level_id`` before invoking us. That populates the
+           workplane / level reference for workplane-based families.
+        2. ``NewFamilyInstance`` is called via the level-bearing
+           overload — ``(point, symbol, level, NonStructural)`` — so
+           level-based families get bound directly. Falls back to the
+           no-level overload only when Revit rejects the level arg
+           (rare, but happens for some hosted families).
+        3. After placement and ``doc.Regenerate()``, the instance's
+           Level-related instance parameters
+           (``FAMILY_LEVEL_PARAM`` / ``INSTANCE_REFERENCE_LEVEL_PARAM``
+           / ``INSTANCE_SCHEDULE_ONLY_LEVEL_PARAM`` /
+           ``SCHEDULE_LEVEL_PARAM``) are explicitly set to the target
+           level. Belt-and-suspenders for families where the
+           constructor didn't auto-bind.
 
     Group-vs-family resolution: the YAML ``is_group`` flag is
     unreliable (V5 capture flagged real model groups as
@@ -1088,6 +1623,10 @@ def _place_fixture(doc, led, anchor_world_pt, anchor_rotation_deg, level_id,
                         )
                     except Exception:
                         pass
+                try:
+                    doc.Regenerate()
+                except Exception:
+                    pass
                 return group, gstatus, {"requested_group": family_name or label}
         # Group lookup failed (or PlaceGroup rejected). If the YAML
         # explicitly said is_group AND we have nothing else to try,
@@ -1112,24 +1651,124 @@ def _place_fixture(doc, led, anchor_world_pt, anchor_rotation_deg, level_id,
         return None, status, info
 
     _activate_symbol(symbol)
-    level = doc.GetElement(ElementId(int(level_id))) if level_id else None
-    try:
-        if level is not None:
-            inst = doc.Create.NewFamilyInstance(
-                target_pt, symbol, level, StructuralType.NonStructural
-            )
-        else:
-            inst = doc.Create.NewFamilyInstance(
-                target_pt, symbol, StructuralType.NonStructural
-            )
-    except Exception:
+    # PER USER CONTRACT: a real Level is ALWAYS passed to
+    # NewFamilyInstance. The no-level overload is never used because
+    # it leaves the placed instance unbound (LevelId=-1, no
+    # FAMILY_LEVEL_PARAM). If the originally-requested level throws,
+    # we retry against the active view's GenLevel, then against the
+    # first Level we can find in the doc. Each path records what it
+    # did in ``info["overload"]`` so the diagnostic surfaced by
+    # ``execute_placement`` shows conclusively which fallback ran.
+    info["level_throw"] = None
+    info["overload"] = "?"
+
+    def _resolve_level_obj(lid):
+        """Return a Level element for ``lid`` (int) or None."""
+        if not lid:
+            return None
         try:
-            inst = doc.Create.NewFamilyInstance(
-                target_pt, symbol, StructuralType.NonStructural
-            )
+            el = doc.GetElement(ElementId(int(lid)))
         except Exception:
-            return None, "create_failed", info
-    if inst is not None and abs(target_rot_deg) > geometry.Tolerances.ROTATION_DEG:
+            return None
+        return el if isinstance(el, Level) else None
+
+    def _active_view_level():
+        if uidoc is None:
+            return None
+        try:
+            av = uidoc.ActiveView
+        except Exception:
+            return None
+        if av is None:
+            return None
+        try:
+            return getattr(av, "GenLevel", None)
+        except Exception:
+            return None
+
+    def _any_real_level():
+        try:
+            for lv in FilteredElementCollector(doc).OfClass(Level):
+                if isinstance(lv, Level):
+                    return lv
+        except Exception:
+            return None
+        return None
+
+    # Build the ordered list of Level candidates to try. The requested
+    # level wins if it resolves; otherwise we open with the active
+    # view's level so the very first call still has a valid arg.
+    candidates = []
+    seen_ids = set()
+
+    def _push(lv, source_tag):
+        if lv is None:
+            return
+        try:
+            lvid = lv.Id.Value if hasattr(lv.Id, "Value") else lv.Id.IntegerValue
+        except Exception:
+            return
+        if lvid in seen_ids:
+            return
+        seen_ids.add(lvid)
+        candidates.append((lv, source_tag))
+
+    _push(_resolve_level_obj(level_id), "requested")
+    _push(_active_view_level(), "active-view")
+    _push(_any_real_level(), "any-doc-level")
+
+    if not candidates:
+        # No Level exists in the doc at all — placement genuinely can't
+        # proceed with the "always level-bearing" contract.
+        info["level_throw"] = "no-level-available"
+        return None, "create_failed", info
+
+    # CRITICAL — pythonnet overload resolution. ``NewFamilyInstance`` has
+    # two 4-arg overloads: ``(XYZ, FamilySymbol, Level, StructuralType)``
+    # and ``(XYZ, FamilySymbol, Element host, StructuralType)``. Because a
+    # ``Level`` IS an ``Element``, pythonnet 3 (the CPython engine pyRevit
+    # runs under) binds the bare call to the Element-HOST overload — it
+    # hosts the instance ON the level instead of associating it WITH the
+    # level, yielding ``Host = "Level : X"`` but ``LevelId = -1`` and no
+    # editable Level parameter. Workplane-based families dodge this because
+    # they bind the Level from the active view, but ``OneLevelBased``
+    # families are left unbound. Force the Level overload explicitly. (The
+    # no-level fallback elsewhere is unambiguous and needs no selector.)
+    _level_ctor = None
+    try:
+        _level_ctor = doc.Create.NewFamilyInstance.Overloads[
+            XYZ, FamilySymbol, Level, StructuralType
+        ]
+    except Exception:
+        _level_ctor = None
+
+    inst = None
+    used_source = None
+    for lv, source_tag in candidates:
+        try:
+            if _level_ctor is not None:
+                inst = _level_ctor(
+                    target_pt, symbol, lv, StructuralType.NonStructural
+                )
+            else:
+                inst = doc.Create.NewFamilyInstance(
+                    target_pt, symbol, lv, StructuralType.NonStructural
+                )
+            used_source = source_tag
+            break
+        except Exception as exc:
+            # Remember the FIRST throw (the one against the requested
+            # level) for diagnostic purposes — subsequent throws are
+            # just fallback failures.
+            if info["level_throw"] is None:
+                info["level_throw"] = "{}: {}".format(type(exc).__name__, exc)
+            inst = None
+            continue
+
+    if inst is None:
+        return None, "create_failed", info
+    info["overload"] = "level-bearing:" + used_source
+    if abs(target_rot_deg) > geometry.Tolerances.ROTATION_DEG:
         try:
             from Autodesk.Revit.DB import ElementTransformUtils, Line
             axis = Line.CreateBound(target_pt, XYZ(target_pt.X, target_pt.Y, target_pt.Z + 1.0))
@@ -1138,6 +1777,16 @@ def _place_fixture(doc, led, anchor_world_pt, anchor_rotation_deg, level_id,
             )
         except Exception:
             pass
+    try:
+        doc.Regenerate()
+    except Exception:
+        pass
+    # Note: the editable "Level" instance-parameter write is performed
+    # by the caller (``execute_placement``) AFTER the captured-static
+    # parameters have been applied — matches the legacy
+    # ``placement_engine`` order so a captured parameter can't shadow
+    # the level write. ``level_id`` is kept on the signature so
+    # callers don't have to change shape if the order ever moves back.
     return inst, status, info
 
 
@@ -1225,6 +1874,7 @@ _STAMP_ONLY_PARAM_KEYS = frozenset({
     "Location XYZ (ft)",
     "Rotation (deg)",
     "FacingOrientation",
+    "Level",
     "LevelId",
     "Level Id",
     "ElementId",
@@ -1761,8 +2411,122 @@ def _element_facing(elem):
     return [facing.X, facing.Y, facing.Z]
 
 
+def _validate_level_id(doc, level_id_int):
+    """Return ``level_id_int`` (as int) only if it resolves to a real
+    Level in ``doc``. Filters out the ``-1`` invalid sentinel and any id
+    that doesn't actually point at a Level — both of which cause
+    ``NewFamilyInstance`` to silently degrade to the no-level overload
+    and leave the placed instance unbound (``LevelId=-1``, no
+    ``FAMILY_LEVEL_PARAM``). Returns ``None`` when invalid.
+    """
+    if level_id_int is None:
+        return None
+    try:
+        v = int(level_id_int)
+    except (TypeError, ValueError):
+        return None
+    if v < 0:
+        return None
+    try:
+        el = doc.GetElement(ElementId(v))
+    except Exception:
+        return None
+    if el is None or not isinstance(el, Level):
+        return None
+    return v
+
+
+def _resolve_led_level_id(doc, led, target_level_id):
+    """Resolve the Level ElementId int one LED will bind to. Priority:
+
+        1. The LED's captured ``LevelId`` (validated against ``doc``).
+        2. ``target_level_id`` — the per-target fallback the caller
+           already validated (host element level / elevation match /
+           dialog default).
+        3. ``None`` when neither resolves.
+
+    Returns ``(level_id_or_None, source_str)``. Shared by the placement
+    loop and the ``collect_target_levels`` pre-pass so the level the
+    gateway switches the view to always matches the level the loop binds.
+    """
+    captured_id, captured_src = _captured_led_level_id(doc, led, return_source=True)
+    if captured_id is not None:
+        return captured_id, captured_src
+    if target_level_id is not None:
+        return target_level_id, "target-fallback"
+    return None, "none:" + (captured_src or "?")
+
+
+def _match_target_level_id(doc, match, options):
+    """The validated per-target fallback level for one match — host
+    element level / elevation match, else the dialog default."""
+    target_level_id = _validate_level_id(doc, match.target.level_id)
+    if target_level_id is None:
+        target_level_id = _validate_level_id(doc, options.default_level_id)
+    return target_level_id
+
+
+def _iter_match_leds(match, options):
+    """Yield each ``led`` dict under ``match`` that passes the active
+    ``category_filter``. Centralises the match -> set -> LED walk +
+    category gate so the pre-pass and the placement loop agree exactly
+    on which LEDs are in scope."""
+    for set_dict in match.profile.get("linked_sets") or []:
+        if not isinstance(set_dict, dict):
+            continue
+        for led in set_dict.get("linked_element_definitions") or []:
+            if not isinstance(led, dict):
+                continue
+            if options.category_filter:
+                led_cat = (led.get("category") or "").strip()
+                if led_cat not in options.category_filter:
+                    continue
+            yield led
+
+
+def collect_target_levels(doc, matches, options=None):
+    """Read-only pre-pass: the ordered, de-duplicated list of Level
+    ElementId values ``execute_placement`` will bind across all
+    non-skipped matches, ascending. A trailing ``None`` entry is appended
+    when at least one in-scope LED has no resolvable level.
+
+    The modeless gateway (``placement_apply``) calls this BEFORE opening
+    any transaction so it can switch the active view to each level's plan
+    — the active view at ``NewFamilyInstance`` time is what actually binds
+    the Level on workplane-based families, and the view can't be switched
+    once a transaction is open. Touches the document read-only only
+    (level + LED-parameter lookups), so it's safe outside a transaction.
+    """
+    if options is None:
+        options = PlacementOptions()
+    levels = []
+    seen = set()
+    has_none = False
+    for m in matches:
+        if m.skip:
+            continue
+        target_level_id = _match_target_level_id(doc, m, options)
+        for led in _iter_match_leds(m, options):
+            lid, _src = _resolve_led_level_id(doc, led, target_level_id)
+            if lid is None:
+                has_none = True
+            elif lid not in seen:
+                seen.add(lid)
+                levels.append(lid)
+    levels.sort()
+    if has_none:
+        levels.append(None)
+    return levels
+
+
 def execute_placement(doc, matches, options=None):
     """Place every non-skipped match. Caller manages the transaction.
+
+    When ``options.only_level_id`` is set (an int Level id or ``None``),
+    only the LEDs whose resolved level equals it are placed — the
+    modeless gateway uses this to do one view-switched pass per level.
+    The default (``_ALL_LEVELS``) places everything, preserving the
+    single-transaction behaviour for callers that manage their own view.
 
     Failures and substitutions are reported as deduped warnings — one
     line per (LED id, status) regardless of how many anchors hit it.
@@ -1771,82 +2535,289 @@ def execute_placement(doc, matches, options=None):
         options = PlacementOptions()
     result = PlacementResult()
 
+    kept = [m for m in matches if not m.skip]
+
+    # Per-LED already-placed signature set: ``(led_id, target_x, target_y)``.
+    # Replaces the old per-set / per-match dedup which silently dropped
+    # entire matches once any LED from the set existed at the anchor.
     if options.skip_already_placed:
-        kept, skipped = filter_already_placed(doc, [m for m in matches if not m.skip])
-        result.skipped_already_placed = skipped
+        placed_led_sigs = _placed_led_anchor_signatures(doc)
     else:
-        kept = [m for m in matches if not m.skip]
+        placed_led_sigs = set()
 
     # (led_id, status) -> info dict from the first occurrence. Used to
     # collapse "same LED, same problem, 27 anchors" into one warning.
     failure_keys = {}
     substitution_keys = {}
+    # Per-LED level diagnostic trace. Keyed by
+    # ``(led_id, captured_src, view_outcome, overload, level_match)``
+    # so each distinct outcome shows up exactly once with the count of
+    # anchors that hit it. Surfaced via result.warnings at end of run.
+    level_debug = {}
 
     # Build the GroupType cache once per run so the group-vs-family
     # decision inside _place_fixture is O(1) per LED.
     group_index = build_group_type_index(doc)
 
-    for m in kept:
-        anchor = m.target.world_pt
-        anchor_rot = m.target.rotation_deg
-        # Resolve the live Revit parent ONCE per target — every LED in
-        # this profile inherits BYPARENT directive values from the same
-        # parent element. ``None`` for CSV / CAD / picked-point sources
-        # (no Revit parent to read), in which case parent directives
-        # are reported as skipped per-LED.
-        parent_elem = _resolve_target_parent_element(doc, m.target)
-        for set_dict in m.profile.get("linked_sets") or []:
-            if not isinstance(set_dict, dict):
-                continue
-            for led in set_dict.get("linked_element_definitions") or []:
-                if not isinstance(led, dict):
-                    continue
-                placed, status, info = _place_fixture(
-                    doc, led, anchor, anchor_rot, options.default_level_id,
-                    allow_type_substitution=options.allow_type_substitution,
-                    group_index=group_index,
+    # Active-view tracking. NOTE: ``uidoc.ActiveView = view`` throws
+    # ``InvalidOperationException`` while a Revit Transaction is open
+    # (and the dialog wraps execute_placement in one). To work around
+    # that, the dialog pre-switches the active view BEFORE opening
+    # the transaction, picking a plan view for the most-common target
+    # level. Inside the loop we still attempt to switch when an LED
+    # needs a different level — it'll throw and we record the throw
+    # so the diagnostic shows the cause. The binding works when the
+    # currently-active view's GenLevel already matches the LED's
+    # level (the common case after the dialog's pre-switch).
+    uidoc = getattr(options, "uidoc", None)
+    plan_view_by_level = {}
+    original_active_view = None
+    last_activated_level = None
+    if uidoc is not None:
+        try:
+            original_active_view = uidoc.ActiveView
+            # Seed last_activated_level from the active view's GenLevel
+            # so the diagnostic correctly reports "cached" when the LED
+            # already matches the pre-switched view (instead of trying
+            # to re-switch and recording a spurious "switch-threw").
+            gl = getattr(original_active_view, "GenLevel", None)
+            if gl is not None:
+                gid = gl.Id
+                last_activated_level = (
+                    getattr(gid, "Value", None)
+                    or getattr(gid, "IntegerValue", None)
                 )
-                led_id = led.get("id") or "?"
-                led_label = led.get("label") or "?"
-                if placed is None:
-                    failure_keys.setdefault(
-                        (led_id, status),
-                        {"label": led_label, "info": info},
-                    )
-                    continue
-                result.placed_fixture_count += 1
-                if status == "normalized":
-                    result.normalized_match_count += 1
-                elif status == "substituted":
-                    result.substituted_type_count += 1
-                    substitution_keys.setdefault(
-                        (led_id, status),
-                        {"label": led_label, "info": info},
-                    )
-                # Apply the LED's captured static parameters (CKT_*,
-                # Voltage_CED, Number of Poles_CED, Apparent Load
-                # Input_CED, etc.) to the new instance before stamping
-                # the Element_Linker so the linker write picks up the
-                # CKT_* fields fresh from the same source. Order matters:
-                # _apply_static_parameters must run before _write_linker.
-                written, _skipped = _apply_static_parameters(
-                    placed, led.get("parameters")
-                )
-                result.static_param_writes += written
-                # Resolve BYPARENT directives against the live parent
-                # and write the inherited (unit-bearing) values onto
-                # the child. Runs AFTER static params so an inherited
-                # value always wins over any stale captured static for
-                # the same parameter, and BEFORE _write_linker so the
-                # linker's CKT_* snapshot reflects inherited circuiting.
-                dir_written, _dir_skipped = _apply_parent_directives(
-                    placed, parent_elem, led.get("parameters"),
-                    warnings=result.warnings,
-                )
-                result.parent_directive_writes += dir_written
-                if _write_linker(placed, led, m.profile, m.target):
-                    result.element_linker_writes += 1
+        except Exception:
+            original_active_view = None
 
+    try:
+        for m in kept:
+            anchor = m.target.world_pt
+            anchor_rot = m.target.rotation_deg
+            # Per-target level used as a fallback for any LED whose own
+            # captured ``LevelId`` is missing. Validated so a broken
+            # parent (e.g. one whose own ``LevelId=-1``) doesn't
+            # propagate the broken value down to ``NewFamilyInstance``.
+            target_level_id = _match_target_level_id(doc, m, options)
+            target_xy = (
+                round(float(anchor[0]), 1),
+                round(float(anchor[1]), 1),
+            )
+            # Resolve the live Revit parent ONCE per target — every LED
+            # in this profile inherits BYPARENT directive values from
+            # the same parent element. ``None`` for CSV / CAD / picked-
+            # point sources (no Revit parent to read), in which case
+            # parent directives are reported as skipped per-LED.
+            parent_elem = _resolve_target_parent_element(doc, m.target)
+            for set_dict in m.profile.get("linked_sets") or []:
+                if not isinstance(set_dict, dict):
+                    continue
+                for led in set_dict.get("linked_element_definitions") or []:
+                    if not isinstance(led, dict):
+                        continue
+                    if options.category_filter:
+                        led_cat = (led.get("category") or "").strip()
+                        if led_cat not in options.category_filter:
+                            continue
+                    led_id_for_sig = led.get("id")
+                    if (
+                        placed_led_sigs
+                        and led_id_for_sig
+                        and (led_id_for_sig, target_xy[0], target_xy[1])
+                            in placed_led_sigs
+                    ):
+                        result.skipped_already_placed += 1
+                        continue
+                    # Per-LED level resolution, computed BEFORE
+                    # ``_place_fixture`` so the level-bearing
+                    # ``NewFamilyInstance`` overload writes the right
+                    # FAMILY_LEVEL_PARAM value into the instance at
+                    # creation time. Priority:
+                    #   1. Captured ``LevelId`` from the LED's YAML
+                    #      parameters (validated to resolve to a real
+                    #      Level in the target doc). This is the legacy
+                    #      ``_apply_recorded_level`` source.
+                    #   2. ``target_level_id`` — the per-target level
+                    #      resolved by ``find_targets_*`` (host element
+                    #      level / elevation-matched / dialog default),
+                    #      already validated to resolve to a real Level.
+                    led_level_id, led_level_src = _resolve_led_level_id(
+                        doc, led, target_level_id,
+                    )
+                    # Per-level gate. When the gateway drives one pass per
+                    # level (``only_level_id`` set), skip every LED that
+                    # doesn't belong to the level whose plan view is
+                    # currently active — those are placed by their own
+                    # pass. ``_ALL_LEVELS`` (default) disables the gate.
+                    if (options.only_level_id is not _ALL_LEVELS
+                            and led_level_id != options.only_level_id):
+                        continue
+                    # Active-view switch — keyed on the actual level
+                    # value about to be handed to NewFamilyInstance, NOT
+                    # the per-target level. (The Revit API quirk that
+                    # forces this: NewFamilyInstance(point, sym, level,
+                    # NonStructural) silently degrades to the no-level
+                    # overload — leaving LevelId=-1 and FAMILY_LEVEL_PARAM
+                    # absent — when the active view isn't a plan whose
+                    # GenLevel matches the target Level. Keying on
+                    # ``target_level_id`` instead of ``led_level_id``
+                    # missed every LED whose captured LevelId differed
+                    # from its parent's broken LevelId, which is what
+                    # produced 415 unbound placements in the last run.)
+                    view_outcome = "skipped:no-uidoc"
+                    if uidoc is None:
+                        view_outcome = "skipped:no-uidoc"
+                    elif led_level_id is None:
+                        view_outcome = "skipped:no-level-id"
+                    elif led_level_id == last_activated_level:
+                        view_outcome = "cached"
+                    else:
+                        plan_view = plan_view_by_level.get(led_level_id)
+                        if plan_view is None:
+                            plan_view = _find_plan_view_for_level(
+                                doc, led_level_id
+                            )
+                            plan_view_by_level[led_level_id] = plan_view
+                        if plan_view is None:
+                            view_outcome = "no-plan-view-for-level"
+                        else:
+                            try:
+                                uidoc.ActiveView = plan_view
+                                last_activated_level = led_level_id
+                                view_outcome = "switched"
+                            except Exception as exc:
+                                view_outcome = "switch-threw:{}".format(
+                                    type(exc).__name__
+                                )
+                    placed, status, info = _place_fixture(
+                        doc, led, anchor, anchor_rot, led_level_id,
+                        allow_type_substitution=options.allow_type_substitution,
+                        group_index=group_index,
+                        uidoc=uidoc,
+                    )
+                    led_id = led.get("id") or "?"
+                    led_label = led.get("label") or "?"
+                    # Verify the placed instance actually got bound to
+                    # the level we intended. ``actual_level_id`` is what
+                    # Revit ended up with on FamilyInstance.LevelId.
+                    actual_level_id = None
+                    if placed is not None:
+                        try:
+                            alid = placed.LevelId
+                            if alid is not None:
+                                actual_level_id = (
+                                    getattr(alid, "Value", None)
+                                    or getattr(alid, "IntegerValue", None)
+                                )
+                        except Exception:
+                            actual_level_id = None
+                    # Diagnostic key — collapses identical outcomes
+                    # across many anchors. We sample the FIRST anchor's
+                    # full context per key.
+                    overload_used = (info or {}).get("overload", "?")
+                    dbg_key = (
+                        led_id,
+                        led_level_src,
+                        view_outcome,
+                        overload_used,
+                        "match" if (actual_level_id == led_level_id
+                                    and led_level_id is not None)
+                        else "mismatch:{}->{}".format(led_level_id, actual_level_id),
+                    )
+                    entry = level_debug.get(dbg_key)
+                    if entry is None:
+                        entry = {
+                            "led_id": led_id,
+                            "led_label": led_label,
+                            "intended_level": led_level_id,
+                            "actual_level": actual_level_id,
+                            "src": led_level_src,
+                            "view": view_outcome,
+                            "overload": overload_used,
+                            "level_throw": (info or {}).get("level_throw"),
+                            "count": 0,
+                        }
+                        level_debug[dbg_key] = entry
+                    entry["count"] += 1
+                    if placed is None:
+                        failure_keys.setdefault(
+                            (led_id, status),
+                            {"label": led_label, "info": info},
+                        )
+                        continue
+                    result.placed_fixture_count += 1
+                    if status == "normalized":
+                        result.normalized_match_count += 1
+                    elif status == "substituted":
+                        result.substituted_type_count += 1
+                        substitution_keys.setdefault(
+                            (led_id, status),
+                            {"label": led_label, "info": info},
+                        )
+                    # Stamp the just-placed LED into the dedup set so
+                    # within the same run we don't re-attempt the same
+                    # LED at the same anchor (e.g. multiple matches
+                    # collapsed to one target).
+                    if led_id_for_sig:
+                        placed_led_sigs.add(
+                            (led_id_for_sig, target_xy[0], target_xy[1])
+                        )
+                    # Apply the LED's captured static parameters (CKT_*,
+                    # Voltage_CED, Number of Poles_CED, Apparent Load
+                    # Input_CED, etc.) to the new instance before stamping
+                    # the Element_Linker so the linker write picks up the
+                    # CKT_* fields fresh from the same source. Order matters:
+                    # _apply_static_parameters must run before _write_linker.
+                    written, _skipped = _apply_static_parameters(
+                        placed, led.get("parameters")
+                    )
+                    result.static_param_writes += written
+                    # Resolve BYPARENT directives against the live parent
+                    # and write the inherited (unit-bearing) values onto
+                    # the child. Runs AFTER static params so an inherited
+                    # value always wins over any stale captured static for
+                    # the same parameter, and BEFORE _write_linker so the
+                    # linker's CKT_* snapshot reflects inherited circuiting.
+                    dir_written, _dir_skipped = _apply_parent_directives(
+                        placed, parent_elem, led.get("parameters"),
+                        warnings=result.warnings,
+                    )
+                    result.parent_directive_writes += dir_written
+                    # Post-creation Level writeback to SCHEDULE_LEVEL_PARAM
+                    # (and any other writeable Level-shaped BIP /
+                    # LookupParameter the family exposes). Uses the
+                    # SAME ``led_level_id`` we passed to
+                    # ``NewFamilyInstance`` so FAMILY_LEVEL_PARAM and
+                    # SCHEDULE_LEVEL_PARAM agree on the same Level.
+                    if led_level_id is not None:
+                        _ensure_instance_level_param(
+                            doc, placed, led_level_id,
+                            uidoc=uidoc,
+                        )
+                    if _write_linker(placed, led, m.profile, m.target):
+                        result.element_linker_writes += 1
+    finally:
+        # Restore the user's original active view so the placement run
+        # doesn't leave them stranded on a different level's plan.
+        if uidoc is not None and original_active_view is not None:
+            try:
+                uidoc.ActiveView = original_active_view
+            except Exception:
+                pass
+
+    # Per-LED level diagnostic — one line per unique outcome with the
+    # anchor count, so a clean run shows few lines and any failure
+    # mode pinpoints itself (which LED, where the LevelId came from,
+    # whether the view switched, which overload ran, what the placed
+    # instance actually got).
+    for dbg_key, entry in level_debug.items():
+        line = (
+            "LVL_DBG led={led_id} intended={intended_level} got={actual_level} "
+            "src={src} view={view} overload={overload} n={count}"
+        ).format(**entry)
+        if entry.get("level_throw"):
+            line += " throw=({})".format(entry["level_throw"])
+        result.warnings.append(line)
     for (led_id, status), entry in failure_keys.items():
         result.warnings.append(_format_failure_warning(led_id, entry, status))
     for (led_id, status), entry in substitution_keys.items():

@@ -72,31 +72,20 @@ def main():
         else:
             raise
 
-    controller = place_space_elements_window.show_modal(
+    # Modeless: the placement runs through ``space_apply_gateway``'s
+    # ExternalEvent so the active-view switch that binds the Level on
+    # OneLevelBased / workplane-based families is legal (a modal dialog —
+    # and the pushbutton main() body — both leave instances at
+    # ``LevelId = -1``). ``show_modeless`` returns immediately; the run
+    # report is printed to ``output`` by the controller's on-complete
+    # callback after the user clicks Place.
+    place_space_elements_window.show_modeless(
         doc=doc,
         profile_data=profile_data,
         door_choices=door_choices,
+        uidoc=uidoc,
+        output=output,
     )
-
-    # Surface the placement result + any warnings (parameter writes
-    # that didn't apply, exceptions during placement, etc.) so the
-    # user can see WHY a captured "Elevation from Level" / "Mark"
-    # / etc. didn't land on the placed instance.
-    result = getattr(controller, "last_result", None)
-    if controller is not None and getattr(controller, "committed", False) and result is not None:
-        output.print_md(
-            "**Place Space Elements complete**\n\n"
-            "- Placed: `{}`\n"
-            "- Failed: `{}`\n"
-            "- Warnings: `{}`\n".format(
-                result.n_placed, result.n_failed, len(result.warnings),
-            )
-        )
-        if result.warnings:
-            output.print_md(
-                "\n**Warnings:**\n\n"
-                + "\n".join("- {}".format(w) for w in result.warnings)
-            )
 
 
 if __name__ == "__main__":
