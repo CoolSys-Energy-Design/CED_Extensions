@@ -212,7 +212,12 @@ def collect_candidates(doc, view, profile_data, filters):
                     profile.get("id") not in filters.profile_ids:
                 continue
             if filters.categories is not None:
-                cat = (profile.get("parent_filter") or {}).get("category") or ""
+                # Filter on the LED's own category (the element actually
+                # being tagged), NOT the parent fixture's category. Most
+                # parents are classed "Specialty Equipment" while their
+                # LEDs are Electrical Fixtures / Mechanical Equipment /
+                # Data Devices / etc. — and the tag belongs to the LED.
+                cat = (led.get("category") or "").strip()
                 if cat not in filters.categories:
                     continue
             annotations = led.get("annotations") or []

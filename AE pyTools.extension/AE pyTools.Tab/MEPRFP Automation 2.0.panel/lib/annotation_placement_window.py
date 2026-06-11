@@ -143,14 +143,27 @@ class AnnotationPlacementController(object):
         self.profile_list.SelectionChanged += self._on_profile_selection
 
     def _populate_filters(self):
-        cats = sorted({
-            (p.get("parent_filter") or {}).get("category") or ""
-            for p in self.profiles
-            if isinstance(p, dict)
-        })
-        cats = [c for c in cats if c]
+        # Category dropdown lists the categories of the LEDs (the
+        # elements we actually drop tags on) — Electrical Fixtures,
+        # Mechanical Equipment, Data Devices, etc. — NOT the parent
+        # fixture's category (which is almost always "Specialty
+        # Equipment"). Walk every LED so the filter matches what
+        # collect_candidates() filters on.
+        cats = set()
+        for p in self.profiles:
+            if not isinstance(p, dict):
+                continue
+            for set_dict in p.get("linked_sets") or []:
+                if not isinstance(set_dict, dict):
+                    continue
+                for led in set_dict.get("linked_element_definitions") or []:
+                    if not isinstance(led, dict):
+                        continue
+                    cat = (led.get("category") or "").strip()
+                    if cat:
+                        cats.add(cat)
         self.category_list.Items.Clear()
-        for c in cats:
+        for c in sorted(cats):
             self.category_list.Items.Add(c)
 
         labels = []
