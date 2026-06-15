@@ -18,7 +18,10 @@ False if the user cancelled or Revit refused.
 Compatibility: IronPython 2.7 and CPython 3 via PythonNet.
 """
 
-from Autodesk.Revit.DB import BuiltInCategory, BuiltInParameterGroup
+# BuiltInParameterGroup was removed in Revit 2025+; the parameter group
+# is passed to param_binder as a string token ("PG_IDENTITY_DATA"),
+# resolved there to the right API object per Revit version.
+from Autodesk.Revit.DB import BuiltInCategory
 
 from Snippets import param_binder
 
@@ -46,7 +49,7 @@ def make_spec(shared_param_file, builtin_categories=None):
         shared_param_file=shared_param_file,
         group_name_in_spfile=IDENTITY_MARK_SP_GROUP,
         builtin_categories=builtin_categories or DEFAULT_BUILTIN_CATEGORIES,
-        parameter_group=BuiltInParameterGroup.PG_IDENTITY_DATA,
+        parameter_group="PG_IDENTITY_DATA",
         instance=True,
     )
 

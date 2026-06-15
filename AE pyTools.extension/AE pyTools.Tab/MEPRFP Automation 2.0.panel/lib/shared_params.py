@@ -26,10 +26,11 @@ import os
 
 import clr  # noqa: F401
 
-from Autodesk.Revit.DB import (  # noqa: E402
-    BuiltInCategory,
-    BuiltInParameterGroup,
-)
+# Only BuiltInCategory is needed here. The parameter group is passed to
+# param_binder as the string token "PG_DATA" (resolved there to the
+# right API object per Revit version) so this module no longer imports
+# BuiltInParameterGroup, which was removed in Revit 2025+.
+from Autodesk.Revit.DB import BuiltInCategory  # noqa: E402
 from System import Enum, Guid  # noqa: F401  (Guid kept for API back-compat)
 
 from Snippets import param_binder
@@ -110,7 +111,7 @@ def _spec():
         shared_param_file=SHARED_PARAM_FILE_PATH,
         group_name_in_spfile=SHARED_PARAM_GROUP_NAME,
         builtin_categories=tuple(resolved),
-        parameter_group=BuiltInParameterGroup.PG_DATA,
+        parameter_group="PG_DATA",
         instance=True,
     )
 
