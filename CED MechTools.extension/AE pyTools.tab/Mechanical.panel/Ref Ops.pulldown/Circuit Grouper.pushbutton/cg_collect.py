@@ -5,6 +5,24 @@ from pyrevit import DB
 
 import cg_core
 
+
+def element_id_value(eid):
+    """Numeric value of an ``ElementId``, compatible across Revit versions.
+
+    Revit 2024+ exposes ``ElementId.Value`` (Int64) and deprecates
+    ``IntegerValue`` (which is removed in newer builds, so it can't be
+    relied on for 2025 / 2026). Prefer ``Value`` and fall back to
+    ``IntegerValue`` on pre-2024 builds. Returns ``None`` for a missing
+    id.
+    """
+    if eid is None:
+        return None
+    v = getattr(eid, "Value", None)
+    if v is None:
+        v = getattr(eid, "IntegerValue", None)
+    return v
+
+
 # ---------------------------------------------------------------------------
 # Source parameters
 # ---------------------------------------------------------------------------
@@ -185,7 +203,7 @@ def collect_devices(doc, spec_key=None):
             .WhereElementIsNotElementType()
         )
         for elem in collector:
-            eid = elem.Id.IntegerValue
+            eid = element_id_value(elem.Id)
             if eid in seen:
                 continue
 
@@ -252,5 +270,5 @@ def collect_panels(doc):
         if not name:
             continue
         # first instance wins on duplicate display names
-        name_to_id.setdefault(name, elem.Id.IntegerValue)
+        name_to_id.setdefault(name, element_id_value(elem.Id))
     return sorted(name_to_id.keys()), name_to_id

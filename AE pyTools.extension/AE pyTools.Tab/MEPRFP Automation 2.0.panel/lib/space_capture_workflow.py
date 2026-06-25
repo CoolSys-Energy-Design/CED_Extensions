@@ -48,6 +48,7 @@ from Autodesk.Revit.DB import (  # noqa: E402
 )
 
 import geometry
+import hosted_annotations
 import space_placement as _placement
 import space_profile_model as _profile_model
 
@@ -73,6 +74,7 @@ class CapturedChild(object):
         "wall_role", "distance_from_wall_inches",
         "z_inches", "rotation_deg",
         "parameters",
+        "annotations",   # list[dict] — tags swept off the fixture
     )
 
     def __init__(self, **kw):
@@ -335,6 +337,70 @@ def _collect_element_parameters(elem):
     return out
 
 
+def _capture_fixture_tag_annotations(elem, transform, fixture_world_pt,
+                                     fixture_world_rot):
+    """Sweep IndependentTags hosted on ``elem`` and return a list of
+    annotation descriptor dicts (``kind='tag'``) with offsets relative
+    to the fixture.
+
+    Mirrors the equipment-side auto-sweep
+    (``capture._build_annotation_entries``) so a captured fixture that
+    has tags on it carries those tags straight into the space profile's
+    LED ``annotations`` list — which is what the Edit LED Details ->
+    Annotations tab renders and what
+    ``space_annotation_workflow.collect_space_candidates`` re-places.
+
+    Scope is intentionally tags-only: picked keynotes / text notes are
+    still captured as their own standalone LEDs (existing space-capture
+    behaviour), so sweeping them here too would double-capture them.
+
+    Ids are assigned later in ``_build_profile_dict`` once the owning
+    LED id is known.
+    """
+    if elem is None:
+        return []
+    try:
+        dependents = hosted_annotations.collect_hosted_dependents(elem)
+    except Exception:
+        dependents = []
+    out = []
+    seen = set()
+    for dep_elem, kind in dependents:
+        if kind != "tag":
+            continue
+        eid = _id_value(dep_elem)
+        if eid is not None:
+            if eid in seen:
+                continue
+            seen.add(eid)
+        descriptor = hosted_annotations.annotation_descriptor(dep_elem, "tag")
+        if descriptor is None:
+            continue
+        ann_pt = hosted_annotations.annotation_world_point(dep_elem)
+        ann_rot = hosted_annotations.annotation_rotation_deg(dep_elem)
+        # Host-doc fixtures have no transform; apply one only if the
+        # picked fixture happened to resolve through a link.
+        if transform is not None and ann_pt is not None:
+            try:
+                from Autodesk.Revit.DB import XYZ as _XYZ
+                tp = transform.OfPoint(_XYZ(ann_pt[0], ann_pt[1], ann_pt[2]))
+                ann_pt = (tp.X, tp.Y, tp.Z)
+            except Exception:
+                pass
+        if ann_pt is not None and fixture_world_pt is not None:
+            descriptor["offsets"] = geometry.compute_offsets_from_points(
+                fixture_world_pt, fixture_world_rot or 0.0,
+                ann_pt, ann_rot or 0.0,
+            )
+        else:
+            descriptor["offsets"] = {
+                "x_inches": 0.0, "y_inches": 0.0,
+                "z_inches": 0.0, "rotation_deg": 0.0,
+            }
+        out.append(descriptor)
+    return out
+
+
 # ---------------------------------------------------------------------
 # Capture
 # ---------------------------------------------------------------------
@@ -386,6 +452,11 @@ def run_capture(doc, request):
         elem, transform = _resolve_reference(doc, ref)
         if elem is None:
             result.skipped.append((ref, "Could not resolve picked reference."))
+            continue
+        # A directly-picked tag isn't a standalone LED — it's auto-filed
+        # as an annotation onto the fixture it tags (see below). Drop it
+        # quietly rather than logging a "not captured" skip.
+        if hosted_annotations.annotation_kind(elem) == "tag":
             continue
         child_kind, family_name, type_name, cat_name = _classify_child(elem)
         if child_kind is None:
@@ -449,6 +520,18 @@ def run_capture(doc, request):
         else:
             label = cat_name or child_kind or "(unnamed)"
 
+        # Auto-sweep any tags hosted on this fixture into the LED's
+        # annotations. Offsets are relative to the fixture's WORLD pose
+        # (raw rotation, not the wall-relative delta) because placement
+        # re-derives annotation positions from each placed fixture's
+        # live point + rotation. Tags-only, fixtures-only.
+        if child_kind == "fixture":
+            tag_annotations = _capture_fixture_tag_annotations(
+                elem, transform, (wx, wy, wz), rot_deg,
+            )
+        else:
+            tag_annotations = []
+
         captured = CapturedChild(
             element_id=_id_value(elem),
             label=label,
@@ -463,6 +546,7 @@ def run_capture(doc, request):
             z_inches=z_inches,
             rotation_deg=rot_delta,
             parameters=_collect_element_parameters(elem),
+            annotations=tag_annotations,
         )
         result.captured.append(captured)
 
@@ -669,6 +753,15 @@ def _build_profile_dict(request, captured):
             }],
             "parameters": dict(c.parameters or {}),
         }
+        # Tags swept off the fixture become the LED's annotations. Id
+        # them off the owning LED id so they read like equipment-side
+        # annotation ids (e.g. SP-LED-001-ANN-001).
+        anns = list(c.annotations or [])
+        if anns:
+            for a_idx, ann in enumerate(anns, start=1):
+                if isinstance(ann, dict):
+                    ann["id"] = "{}-ANN-{:03d}".format(led["id"], a_idx)
+            led["annotations"] = anns
         if c.kind == "keynote":
             led["is_keynote"] = True
         leds.append(led)

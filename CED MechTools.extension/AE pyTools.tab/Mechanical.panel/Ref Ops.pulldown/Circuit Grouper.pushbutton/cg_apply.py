@@ -295,7 +295,9 @@ def run(doc, plans, name_to_id, logger=None):
                 if _has_power_connector(el):
                     circuitable.append(el)
                 else:
-                    report["skipped_no_connector"].append(el.Id.IntegerValue)
+                    report["skipped_no_connector"].append(
+                        cg_collect.element_id_value(el.Id)
+                    )
 
             # mirror CKT_* onto every member regardless of connector status
             for el in elems:

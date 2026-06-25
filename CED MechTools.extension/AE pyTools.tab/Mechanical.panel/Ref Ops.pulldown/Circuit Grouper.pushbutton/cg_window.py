@@ -8,13 +8,35 @@ rows are read-only info + an include checkbox + a status.
 
 import os
 
+import clr
+
+# ``ListSortDirection`` / ``SortDescription`` and the ``System.Windows.*``
+# WPF types live in assemblies that pyRevit auto-references on .NET
+# Framework (Revit <= 2024) but NOT on .NET 8 (Revit 2025 / 2026), where
+# the import otherwise fails with "Cannot import name ListSortDirection".
+# Reference every candidate assembly explicitly (idempotent, and any name
+# that doesn't exist on a given runtime is ignored) BEFORE the imports
+# below so they resolve on all three Revit versions.
+for _asm in ("WindowsBase", "PresentationFramework", "PresentationCore",
+             "System", "System.ObjectModel"):
+    try:
+        clr.AddReference(_asm)
+    except Exception:
+        pass
+
 from System import Math
 from System.Collections.Generic import List
 from System.Collections.ObjectModel import ObservableCollection
 from System.ComponentModel import (
     INotifyPropertyChanged, PropertyChangedEventArgs,
-    ListSortDirection, SortDescription,
 )
+try:
+    from System.ComponentModel import ListSortDirection, SortDescription
+except ImportError:
+    # Last-resort fallback: the group sort below is skipped, but the
+    # window still loads and groups correctly.
+    ListSortDirection = None
+    SortDescription = None
 from System.Windows import DataObject, DragDrop, DragDropEffects, Visibility
 from System.Windows.Controls import DataGridRow
 from System.Windows.Data import CollectionViewSource, PropertyGroupDescription
@@ -172,7 +194,10 @@ class CircuitGrouperWindow(forms.WPFWindow):
         self._cvs = CollectionViewSource()
         self._cvs.Source = self._items
         self._cvs.GroupDescriptions.Add(PropertyGroupDescription("group"))
-        self._cvs.SortDescriptions.Add(SortDescription("group_key", ListSortDirection.Ascending))
+        if SortDescription is not None and ListSortDirection is not None:
+            self._cvs.SortDescriptions.Add(
+                SortDescription("group_key", ListSortDirection.Ascending)
+            )
         self._view = self._cvs.View
         self.Grid.ItemsSource = self._view
 
