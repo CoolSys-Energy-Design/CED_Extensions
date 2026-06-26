@@ -588,16 +588,16 @@
                       <ColumnDefinition Width="8"/>
                       <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <Border Grid.Column="0" Style="{StaticResource PreviewValueBox}">
+                    <Border Grid.Column="0" Name="PreviewCurrentConduitSummaryBox" Style="{StaticResource PreviewValueBox}">
                       <StackPanel>
-                        <TextBlock Text="Conduit &amp; Wire String" Style="{DynamicResource CED.Text.CaptionStrong}"/>
-                        <TextBlock Name="PreviewConduitSummaryText" Text="-" Style="{DynamicResource CED.Text.Primary}" TextWrapping="Wrap"/>
+                        <TextBlock Text="Current Conduit &amp; Wire Size" Style="{DynamicResource CED.Text.CaptionStrong}" TextWrapping="Wrap"/>
+                        <TextBlock Name="PreviewCurrentConduitSummaryText" Text="-" Style="{DynamicResource CED.Text.Primary}" TextWrapping="Wrap"/>
                       </StackPanel>
                     </Border>
-                    <Border Grid.Column="2" Style="{StaticResource PreviewValueBox}">
+                    <Border Grid.Column="2" Name="PreviewNewConduitSummaryBox" Style="{StaticResource PreviewValueBox}">
                       <StackPanel>
-                        <TextBlock Text="Wire String" Style="{DynamicResource CED.Text.CaptionStrong}"/>
-                        <TextBlock Name="PreviewWireSummaryText" Text="-" Style="{DynamicResource CED.Text.Primary}" TextWrapping="Wrap"/>
+                        <TextBlock Text="New Conduit &amp; Wire Size" Style="{DynamicResource CED.Text.CaptionStrong}" TextWrapping="Wrap"/>
+                        <TextBlock Name="PreviewNewConduitSummaryText" Text="-" Style="{DynamicResource CED.Text.Primary}" TextWrapping="Wrap"/>
                       </StackPanel>
                     </Border>
                   </Grid>

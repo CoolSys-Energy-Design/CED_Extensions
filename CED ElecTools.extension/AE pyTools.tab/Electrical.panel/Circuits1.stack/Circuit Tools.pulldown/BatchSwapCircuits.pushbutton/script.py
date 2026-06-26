@@ -2,6 +2,8 @@
 """Batch Swap Circuits - staged planner (no apply transaction yet)."""
 
 import copy
+import hashlib
+import json
 import os
 
 import clr
@@ -14,6 +16,7 @@ for _wpf_asm in ("PresentationFramework", "PresentationCore", "WindowsBase"):
         pass
 
 from System.Windows import DataObject, DragDrop, DragDropEffects
+from System.Windows import FontStyles
 from System.Windows import FontWeights
 from System.Windows import Visibility
 from System.Windows.Controls import ListViewItem
@@ -313,6 +316,8 @@ class BatchSwapWindow(forms.WPFWindow):
         self._right_preview_slots = set()
         self._preview_signature = None
         self._preview_moving_keys = set()
+        self._preview_currents_cache_by_panel = {}
+        self._last_preview_signature = ""
         self._slot_cells_cache = {}
         self._layout_context_cache = {}
         self._operation_history = []
@@ -376,6 +381,8 @@ class BatchSwapWindow(forms.WPFWindow):
         self.LeftPanelCurrentDemandText = self.FindName("LeftPanelCurrentDemandText")
         self.RightPanelCurrentConnectedText = self.FindName("RightPanelCurrentConnectedText")
         self.RightPanelCurrentDemandText = self.FindName("RightPanelCurrentDemandText")
+        self.LeftPanelMainsText = self.FindName("LeftPanelMainsText")
+        self.RightPanelMainsText = self.FindName("RightPanelMainsText")
         self.LeftMissingSchedulePanel = self.FindName("LeftMissingSchedulePanel")
         self.RightMissingSchedulePanel = self.FindName("RightMissingSchedulePanel")
         self.LeftMissingScheduleText = self.FindName("LeftMissingScheduleText")
@@ -399,6 +406,8 @@ class BatchSwapWindow(forms.WPFWindow):
         self.AddSpareButton = self.FindName("AddSpareButton")
         self.AddSpaceButton = self.FindName("AddSpaceButton")
         self.RemoveSpecialButton = self.FindName("RemoveSpecialButton")
+        self.LoadPreviewRefreshButton = self.FindName("LoadPreviewRefreshButton")
+        self.LoadPreviewHintText = self.FindName("LoadPreviewHintText")
         self.AddPole1Radio = self.FindName("AddPole1Radio")
         self.AddPole2Radio = self.FindName("AddPole2Radio")
         self.AddPole3Radio = self.FindName("AddPole3Radio")
@@ -728,13 +737,14 @@ class BatchSwapWindow(forms.WPFWindow):
                 pass
             return
         secondary = self._resource("CED.Brush.TextSecondary")
+        primary = self._resource("CED.Brush.PrimaryText")
         for text, is_value in list(parts or []):
             run = Run(str(text or ""))
             try:
                 if bool(is_value):
                     run.FontWeight = FontWeights.SemiBold
-                    if secondary is not None:
-                        run.Foreground = secondary
+                    if primary is not None:
+                        run.Foreground = primary
                 elif secondary is not None:
                     run.Foreground = secondary
             except Exception:
@@ -761,34 +771,277 @@ class BatchSwapWindow(forms.WPFWindow):
             ],
         )
 
-    def _set_currents_rich_text(self, option, connected_textblock, demand_textblock):
-        """Render two-row current summary with aligned labels and black values."""
-        model = (option or {}).get("equipment_model")
-        conn = self._format_amp_value(getattr(model, "current_connected_total", None) if model is not None else None)
-        dmd = self._format_amp_value(getattr(model, "current_demand_total", None) if model is not None else None)
-        ia = self._format_amp_value(getattr(model, "branch_current_phase_a", None) if model is not None else None)
-        ib = self._format_amp_value(getattr(model, "branch_current_phase_b", None) if model is not None else None)
-        ic = self._format_amp_value(getattr(model, "branch_current_phase_c", None) if model is not None else None)
+    def _current_model_value(self, model, field_name, default=None):
+        """Return current-summary field from object or dict-like model."""
+        if model is None:
+            return default
+        if isinstance(model, dict):
+            return model.get(field_name, default)
+        try:
+            return getattr(model, field_name, default)
+        except Exception:
+            return default
 
-        def _amp_text(value_text):
-            return "{0} A".format(value_text) if str(value_text or "-") != "-" else "-"
+    def _snapshot_current_model(self, model):
+        """Return lightweight snapshot for panel current header rendering."""
+        return {
+            "current_connected_total": self._current_model_value(model, "current_connected_total"),
+            "current_demand_total": self._current_model_value(model, "current_demand_total"),
+            "branch_current_phase_a": self._current_model_value(model, "branch_current_phase_a"),
+            "branch_current_phase_b": self._current_model_value(model, "branch_current_phase_b"),
+            "branch_current_phase_c": self._current_model_value(model, "branch_current_phase_c"),
+        }
+
+    def _parameter_display_text(self, param):
+        """Return display text for a parameter using value-string first."""
+        if param is None:
+            return "-"
+        try:
+            value_text = str(param.AsValueString() or "").strip()
+            if value_text:
+                return value_text
+        except Exception:
+            pass
+        try:
+            raw = revit_helpers.get_parameter_value(param, default=None)
+        except Exception:
+            raw = None
+        if raw is None:
+            return "-"
+        try:
+            numeric = float(raw)
+            if abs(numeric - round(numeric)) < 0.05:
+                return "{0:.0f}".format(numeric)
+            return "{0:.2f}".format(numeric)
+        except Exception:
+            pass
+        text = str(raw or "").strip()
+        return text or "-"
+
+    def _parameter_text_from_bip(self, element, bip):
+        """Return display text for built-in parameter."""
+        if element is None:
+            return "-"
+        try:
+            param = element.get_Parameter(bip)
+        except Exception:
+            param = None
+        return self._parameter_display_text(param)
+
+    def _parameter_text_by_name(self, element, name):
+        """Return display text for named/shared parameter."""
+        if element is None:
+            return "-"
+        try:
+            param = revit_helpers.get_parameter(
+                element,
+                name,
+                include_type=True,
+                case_insensitive=False,
+            )
+        except Exception:
+            param = None
+        return self._parameter_display_text(param)
+
+    def _mains_summary_parts(self, option):
+        """Return formatted mains/mcb summary parts for selected panel option."""
+        panel = (option or {}).get("panel")
+        mains_text = self._parameter_text_from_bip(panel, DB.BuiltInParameter.RBS_ELEC_MAINS)
+        mcb_text = self._parameter_text_from_bip(panel, DB.BuiltInParameter.RBS_ELEC_PANEL_MCB_RATING_PARAM)
+        mains_type = self._parameter_text_by_name(panel, "Mains Type_CEDT")
+        mains_type_lower = str(mains_type or "").strip().lower()
+        if mains_type != "-" and "mlo" in mains_type_lower:
+            return [
+                ("Mains: ", False), (mains_text, True),
+                ("  ", False), (mains_type, True),
+            ]
+        return [
+            ("Mains: ", False), (mains_text, True),
+            ("  Mains Type: ", False), (mains_type, True),
+            ("  MCB Rating: ", False), (mcb_text, True),
+        ]
+
+    def _set_mains_rich_text(self, option, textblock):
+        """Render mains/mcb summary with descriptor/value styling."""
+        self._set_rich_text(textblock, self._mains_summary_parts(option))
+
+    def _placement_signature_payload(self, placement):
+        """Return deterministic payload for one staged placement signature."""
+        payload = {}
+        for key, value in dict(placement or {}).items():
+            key_text = str(key or "")
+            if key_text.startswith("_"):
+                continue
+            payload[key_text] = value
+        return payload
+
+    def _pending_operations_signature(self):
+        """Return signature for current pending staged-operation state."""
+        pending = sorted(list(self._iter_pending_operations()), key=lambda x: int(x.get("seq", 0) or 0))
+        if not pending:
+            return ""
+        data = []
+        for operation in pending:
+            placements = []
+            for placement in list(operation.get("placements") or []):
+                placements.append(self._placement_signature_payload(placement))
+            data.append(
+                {
+                    "seq": int(operation.get("seq", 0) or 0),
+                    "placements": placements,
+                }
+            )
+        try:
+            serialized = json.dumps(data, sort_keys=True, separators=(",", ":"), default=lambda x: str(x))
+        except Exception:
+            serialized = str(data)
+        try:
+            return hashlib.sha1(serialized.encode("utf-8")).hexdigest()
+        except Exception:
+            try:
+                return hashlib.sha1(str(serialized)).hexdigest()
+            except Exception:
+                return str(serialized)
+
+    def _compute_placement_has_nonzero_load(self, placement):
+        """Best-effort detection of whether placement adds/removes non-zero circuit load."""
+        circuit_id = int((placement or {}).get("circuit_id", 0) or 0)
+        if circuit_id <= 0:
+            return False
+        doc = self._active_doc()
+        if doc is None:
+            return False
+        circuit = self._element_by_id_value(doc, circuit_id)
+        if not isinstance(circuit, ps_repo.DBE.ElectricalSystem):
+            return False
+        try:
+            apparent = float(getattr(circuit, "ApparentLoad", 0.0) or 0.0)
+            return bool(abs(apparent) > 1e-6)
+        except Exception:
+            return False
+
+    def _placement_has_nonzero_load(self, placement):
+        """Return cached non-zero-load flag for a staged placement."""
+        if placement is None:
+            return False
+        if "has_nonzero_load" in placement:
+            try:
+                return bool(placement.get("has_nonzero_load"))
+            except Exception:
+                return False
+        value = bool(self._compute_placement_has_nonzero_load(placement))
+        try:
+            placement["has_nonzero_load"] = bool(value)
+        except Exception:
+            pass
+        return bool(value)
+
+    def _pending_stale_panel_ids(self):
+        """Return panel ids with potentially stale totals due to add/remove non-zero load effects."""
+        stale = set()
+        for operation in list(self._iter_pending_operations()):
+            for placement in list(operation.get("placements") or []):
+                if not self._placement_has_nonzero_load(placement):
+                    continue
+                action = StagedAction.normalize(placement.get("action", ""))
+                from_panel = int(placement.get("from_panel_id", 0) or 0)
+                to_panel = int(placement.get("to_panel_id", 0) or 0)
+                if StagedAction.is_add_spare(action) or StagedAction.is_add_space(action):
+                    if to_panel > 0:
+                        stale.add(int(to_panel))
+                    continue
+                if StagedAction.is_remove_spare(action) or StagedAction.is_remove_space(action):
+                    if from_panel > 0:
+                        stale.add(int(from_panel))
+                    continue
+                if action == StagedAction.MOVE:
+                    if from_panel > 0:
+                        stale.add(int(from_panel))
+                    if to_panel > 0:
+                        stale.add(int(to_panel))
+        return stale
+
+    def _preview_currents_by_panel(self, doc, panel_ids):
+        """Evaluate staged-operation load totals in a rollback-only transaction group."""
+        target_ids = set([int(x) for x in list(panel_ids or []) if int(x) > 0])
+        if not target_ids:
+            return {}
+
+        pending = sorted(list(self._iter_pending_operations()), key=lambda x: int(x.get("seq", 0) or 0))
+        if not pending:
+            return {}
+        preview_group = DB.TransactionGroup(doc, "Batch Swap Circuits - Preview Loads")
+        started = False
+        try:
+            preview_group.Start()
+            started = True
+            for operation in pending:
+                self._apply_sequence_operation(doc, operation)
+            try:
+                doc.Regenerate()
+            except Exception:
+                pass
+
+            options = ps_repo.collect_panel_equipment_options(
+                doc,
+                panels=self._all_panels_cache,
+                include_without_schedule=True,
+            )
+            preview = {}
+            for option in list(options or []):
+                panel_id = int(option.get("panel_id", 0) or 0)
+                if panel_id <= 0 or panel_id not in target_ids:
+                    continue
+                preview[panel_id] = self._snapshot_current_model((option or {}).get("equipment_model"))
+            return preview
+        except Exception as ex:
+            LOGGER.warning("Batch Swap load preview failed: %s", str(ex))
+            return {}
+        finally:
+            if started:
+                try:
+                    preview_group.RollBack()
+                except Exception as ex:
+                    LOGGER.warning("Batch Swap load preview rollback failed: %s", str(ex))
+
+    def _set_currents_rich_text(self, option, connected_textblock, demand_textblock, model_override=None, is_stale=False):
+        """Render two-row current summary with aligned labels and black values."""
+        model = model_override if model_override is not None else (option or {}).get("equipment_model")
+        conn = self._format_amp_value(self._current_model_value(model, "current_connected_total", None))
+        dmd = self._format_amp_value(self._current_model_value(model, "current_demand_total", None))
+        ia = self._format_amp_value(self._current_model_value(model, "branch_current_phase_a", None))
+        ib = self._format_amp_value(self._current_model_value(model, "branch_current_phase_b", None))
+        ic = self._format_amp_value(self._current_model_value(model, "branch_current_phase_c", None))
+
+        def _amp_text(value_text, mark_stale=False):
+            base = "{0} A".format(value_text) if str(value_text or "-") != "-" else "-"
+            if bool(mark_stale):
+                return "{0}*".format(base)
+            return base
 
         self._set_rich_text(
             connected_textblock,
             [
-                (_amp_text(conn), True),
-                (" (Ia: ", False), (_amp_text(ia), True),
-                (", Ib: ", False), (_amp_text(ib), True),
-                (", Ic: ", False), (_amp_text(ic), True),
+                (_amp_text(conn, mark_stale=bool(is_stale)), True),
+                (" (Ia: ", False), (_amp_text(ia, mark_stale=False), True),
+                (", Ib: ", False), (_amp_text(ib, mark_stale=False), True),
+                (", Ic: ", False), (_amp_text(ic, mark_stale=False), True),
                 (")", False),
             ],
         )
         self._set_rich_text(
             demand_textblock,
             [
-                (_amp_text(dmd), True),
+                (_amp_text(dmd, mark_stale=bool(is_stale)), True),
             ],
         )
+        for block in (connected_textblock, demand_textblock):
+            if block is None:
+                continue
+            try:
+                block.FontStyle = FontStyles.Italic if bool(is_stale) else FontStyles.Normal
+            except Exception:
+                pass
 
     def _selected_option(self, combo):
         """Resolve selected panel option from combo."""
@@ -1001,6 +1254,42 @@ class BatchSwapWindow(forms.WPFWindow):
         self._working_rows_by_panel[panel_id] = self._clone_rows(loaded)
         return self._working_rows_by_panel[panel_id]
 
+    def _refresh_panel_header_preview(self):
+        """Refresh panel profile/mains/current header blocks for current selections."""
+        if self._left_option is None or self._right_option is None:
+            return
+        pending_signature = self._pending_operations_signature()
+        stale_panel_ids = self._pending_stale_panel_ids() if pending_signature else set()
+        preview_stale = bool(pending_signature and pending_signature != str(self._last_preview_signature or ""))
+        preview_currents = {}
+        if pending_signature and self._preview_currents_cache_by_panel:
+            preview_currents = dict(self._preview_currents_cache_by_panel or {})
+        left_panel_id = int((self._left_option or {}).get("panel_id", 0) or 0)
+        right_panel_id = int((self._right_option or {}).get("panel_id", 0) or 0)
+
+        self._set_profile_rich_text(self._left_option, self.LeftPanelMeta)
+        self._set_profile_rich_text(self._right_option, self.RightPanelMeta)
+        self._set_mains_rich_text(self._left_option, self.LeftPanelMainsText)
+        self._set_mains_rich_text(self._right_option, self.RightPanelMainsText)
+        self._set_currents_rich_text(
+            self._left_option,
+            self.LeftPanelCurrentConnectedText,
+            self.LeftPanelCurrentDemandText,
+            model_override=preview_currents.get(left_panel_id),
+            is_stale=bool(preview_stale and left_panel_id in stale_panel_ids),
+        )
+        self._set_currents_rich_text(
+            self._right_option,
+            self.RightPanelCurrentConnectedText,
+            self.RightPanelCurrentDemandText,
+            model_override=preview_currents.get(right_panel_id),
+            is_stale=bool(preview_stale and right_panel_id in stale_panel_ids),
+        )
+        if self.LeftPanelTypeMeta is not None:
+            self.LeftPanelTypeMeta.Text = self._format_schedule_type_label(self._left_option)
+        if self.RightPanelTypeMeta is not None:
+            self.RightPanelTypeMeta.Text = self._format_schedule_type_label(self._right_option)
+
     def _reload_from_selected_panels(self):
         """Rebind active panel selections to working row state."""
         doc = self._active_doc()
@@ -1021,23 +1310,7 @@ class BatchSwapWindow(forms.WPFWindow):
         self._clear_preview_slots(refresh=False)
         self._recompute_transferability()
         self._refresh_row_views()
-
-        self._set_profile_rich_text(self._left_option, self.LeftPanelMeta)
-        self._set_profile_rich_text(self._right_option, self.RightPanelMeta)
-        self._set_currents_rich_text(
-            self._left_option,
-            self.LeftPanelCurrentConnectedText,
-            self.LeftPanelCurrentDemandText,
-        )
-        self._set_currents_rich_text(
-            self._right_option,
-            self.RightPanelCurrentConnectedText,
-            self.RightPanelCurrentDemandText,
-        )
-        if self.LeftPanelTypeMeta is not None:
-            self.LeftPanelTypeMeta.Text = self._format_schedule_type_label(self._left_option)
-        if self.RightPanelTypeMeta is not None:
-            self.RightPanelTypeMeta.Text = self._format_schedule_type_label(self._right_option)
+        self._refresh_panel_header_preview()
         if not self._has_schedule(self._left_option) or not self._has_schedule(self._right_option):
             self._set_status(
                 "Select template(s) and create missing panel schedules before cross-panel planning. "
@@ -1048,6 +1321,7 @@ class BatchSwapWindow(forms.WPFWindow):
                 "Loaded panel rows. Staged operations: {0}".format(len(self._operation_history))
             )
         self._update_action_buttons_state()
+        self._update_load_preview_refresh_state()
 
     def _collect_staged_circuit_ids(self):
         """Return circuit ids currently involved in staged operations."""
@@ -1277,6 +1551,27 @@ class BatchSwapWindow(forms.WPFWindow):
         if self.SwapSummaryText is not None:
             self.SwapSummaryText.Text = str(text or "")
 
+    def _update_load_preview_refresh_state(self):
+        """Enable manual preview-refresh controls only when staged preview is stale."""
+        pending_signature = self._pending_operations_signature()
+        if not pending_signature:
+            self._last_preview_signature = ""
+            self._preview_currents_cache_by_panel = {}
+        stale_panel_ids = self._pending_stale_panel_ids() if pending_signature else set()
+        needs_refresh = bool(
+            pending_signature
+            and pending_signature != str(self._last_preview_signature or "")
+            and stale_panel_ids
+        )
+        if self.LoadPreviewRefreshButton is not None:
+            self.LoadPreviewRefreshButton.IsEnabled = bool(needs_refresh)
+            if needs_refresh:
+                self.LoadPreviewRefreshButton.ToolTip = "Refresh panel load preview for staged changes."
+            else:
+                self.LoadPreviewRefreshButton.ToolTip = "Panel load preview is up to date."
+        if self.LoadPreviewHintText is not None:
+            self.LoadPreviewHintText.Visibility = Visibility.Visible if bool(needs_refresh) else Visibility.Collapsed
+
     def _resolve_rows_and_option(self, list_name):
         """Map list control name to backing rows/option."""
         name = str(list_name or "")
@@ -1479,9 +1774,14 @@ class BatchSwapWindow(forms.WPFWindow):
         if not placements:
             return
         before = dict(before_snapshots or {})
+        prepared = []
+        for placement in list(placements or []):
+            data = dict(placement or {})
+            data["has_nonzero_load"] = bool(self._compute_placement_has_nonzero_load(data))
+            prepared.append(data)
         operation = {
             "seq": 0,
-            "placements": list(placements),
+            "placements": list(prepared),
             "before": before,
             "status": "pending",
             "message": "",
@@ -1681,6 +1981,8 @@ class BatchSwapWindow(forms.WPFWindow):
             self.ApplyButton.IsEnabled = bool(pending_exists)
         if self.ClearListButton is not None:
             self.ClearListButton.IsEnabled = bool(applied_exists)
+        self._update_load_preview_refresh_state()
+        self._refresh_panel_header_preview()
 
     def _clear_preview_slots(self, refresh=True):
         """Clear drag preview highlight state."""
@@ -1801,8 +2103,32 @@ class BatchSwapWindow(forms.WPFWindow):
         self._set_panel_combo_mode(False)
 
     def refresh_clicked(self, sender, args):
-        """Refresh current view from working state."""
+        """Manually refresh rollback-based panel load preview for staged changes."""
+        doc = self._active_doc()
+        if doc is None:
+            self._set_status("No active Revit document.")
+            return
+        pending_signature = self._pending_operations_signature()
+        if not pending_signature:
+            self._reload_from_selected_panels()
+            self._set_status("No pending staged actions to preview.")
+            return
+        panel_ids = sorted(list(self._pending_stale_panel_ids()))
+        if not panel_ids:
+            self._update_load_preview_refresh_state()
+            self._refresh_panel_header_preview()
+            self._set_status("No non-zero staged loads require preview refresh.")
+            return
+        preview_currents = self._preview_currents_by_panel(doc, panel_ids)
+        if not preview_currents:
+            self._set_status("Load preview refresh failed.")
+            self._update_load_preview_refresh_state()
+            self._refresh_panel_header_preview()
+            return
+        self._preview_currents_cache_by_panel = dict(preview_currents or {})
+        self._last_preview_signature = str(pending_signature or "")
         self._reload_from_selected_panels()
+        self._set_status("Refreshed panel load previews.")
 
     def undo_last_clicked(self, sender, args):
         """Undo most recent staged operation."""

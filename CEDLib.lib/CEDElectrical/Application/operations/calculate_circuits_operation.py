@@ -88,7 +88,9 @@ class CalculateCircuitsOperation(object):
                 return {'status': 'cancelled', 'reason': 'large_selection_cancel'}
 
         branches = []
+        existing_values_by_id = {}
         for circuit in circuits:
+            existing_values_by_id[_elid_value(circuit.Id)] = self._collect_existing_preview_values(circuit)
             branch = CircuitBranch(circuit, settings=settings)
             if not branch.is_power_circuit or branch.is_space or branch.is_spare:
                 continue
@@ -103,6 +105,33 @@ class CalculateCircuitsOperation(object):
         if not branches:
             forms.alert('No editable branch circuits found to process.')
             return {'status': 'cancelled', 'reason': 'no_branches'}
+
+        preview_rows = self._collect_conduit_wire_preview_rows(branches, existing_values_by_id)
+        preview_enabled = bool(request.options.get('calc_preview_enabled', False))
+        preview_decision = str(request.options.get('calc_preview_decision') or '').strip().lower()
+        if preview_enabled and not preview_decision and preview_rows:
+            return {
+                'status': 'preview_required',
+                'reason': 'conduit_wire_changes',
+                'preview_rows': preview_rows,
+                'locked_rows': locked_rows,
+                'runtime_alert_rows': [],
+            }
+
+        if preview_decision == 'skip':
+            return {
+                'status': 'cancelled',
+                'reason': 'calc_preview_skipped',
+                'locked_rows': locked_rows,
+                'runtime_alert_rows': [],
+            }
+
+        if preview_decision == 'keep_existing' and preview_rows:
+            branches = self._rebuild_branches_with_existing_sizes(
+                branches,
+                existing_values_by_id,
+                settings,
+            )
 
         total_fixtures = 0
         total_equipment = 0
@@ -158,7 +187,116 @@ class CalculateCircuitsOperation(object):
             'updated_equipment': total_equipment,
             'locked_rows': locked_rows,
             'runtime_alert_rows': runtime_alert_rows,
+            'calc_preview_rows': preview_rows,
+            'calc_preview_decision': preview_decision,
         }
+
+    def _lookup_param_text(self, element, param_name, default_value=''):
+        try:
+            param = element.LookupParameter(param_name)
+        except Exception:
+            param = None
+        if not param:
+            return default_value
+        try:
+            value = param.AsString()
+            if value is None:
+                value = param.AsValueString()
+            return str(value or default_value)
+        except Exception:
+            return default_value
+
+    def _lookup_param_value(self, element, param_name, default_value=None):
+        try:
+            param = element.LookupParameter(param_name)
+        except Exception:
+            param = None
+        if not param:
+            return default_value
+        try:
+            st = param.StorageType
+            if st == DB.StorageType.Integer:
+                return param.AsInteger()
+            if st == DB.StorageType.Double:
+                return param.AsDouble()
+            if st == DB.StorageType.String:
+                value = param.AsString()
+                if value is None:
+                    value = param.AsValueString()
+                return value
+        except Exception:
+            return default_value
+        return default_value
+
+    def _collect_existing_preview_values(self, circuit):
+        return {
+            'current_summary': self._lookup_param_text(circuit, 'Conduit and Wire Size_CEDT', '-').strip() or '-',
+            'CKT_User Override_CED': 1,
+            'CKT_Number of Sets_CED': self._lookup_param_value(circuit, 'CKT_Number of Sets_CED', 0),
+            'CKT_Include Neutral_CED': self._lookup_param_value(circuit, 'CKT_Include Neutral_CED', 0),
+            'CKT_Include Isolated Ground_CED': self._lookup_param_value(circuit, 'CKT_Include Isolated Ground_CED', 0),
+            'CKT_Wire Hot Size_CEDT': self._lookup_param_text(circuit, 'CKT_Wire Hot Size_CEDT', ''),
+            'CKT_Wire Neutral Size_CEDT': self._lookup_param_text(circuit, 'CKT_Wire Neutral Size_CEDT', ''),
+            'CKT_Wire Ground Size_CEDT': self._lookup_param_text(circuit, 'CKT_Wire Ground Size_CEDT', ''),
+            'CKT_Wire Isolated Ground Size_CEDT': self._lookup_param_text(circuit, 'CKT_Wire Isolated Ground Size_CEDT', ''),
+            'Wire Material_CEDT': self._lookup_param_text(circuit, 'Wire Material_CEDT', ''),
+            'Wire Temparature Rating_CEDT': self._lookup_param_text(circuit, 'Wire Temparature Rating_CEDT', ''),
+            'Wire Insulation_CEDT': self._lookup_param_text(circuit, 'Wire Insulation_CEDT', ''),
+            'Conduit Size_CEDT': self._lookup_param_text(circuit, 'Conduit Size_CEDT', ''),
+            'Conduit Type_CEDT': self._lookup_param_text(circuit, 'Conduit Type_CEDT', ''),
+        }
+
+    def _normalize_summary_text(self, value):
+        text = str(value or '').strip().lower()
+        return ' '.join(text.split()) or '-'
+
+    def _collect_conduit_wire_preview_rows(self, branches, existing_values_by_id):
+        rows = []
+        for branch in list(branches or []):
+            cid = _elid_value(branch.circuit.Id)
+            existing = dict(existing_values_by_id.get(cid) or {})
+            previous = str(existing.get('current_summary') or '-').strip() or '-'
+            new_value = str(branch.get_conduit_and_wire_size() or '-').strip() or '-'
+            if self._normalize_summary_text(previous) == self._normalize_summary_text(new_value):
+                continue
+            rows.append({
+                'circuit_id': cid,
+                'panel': branch.panel or '',
+                'number': branch.circuit_number or '',
+                'circuit': '{} / {}'.format(branch.panel or '-', branch.circuit_number or '-'),
+                'load_name': branch.load_name or '',
+                'previous_size': previous,
+                'new_size': new_value,
+            })
+        return rows
+
+    def _rebuild_branches_with_existing_sizes(self, branches, existing_values_by_id, settings):
+        changed_ids = set()
+        for row in self._collect_conduit_wire_preview_rows(branches, existing_values_by_id):
+            try:
+                changed_ids.add(int(row.get('circuit_id') or 0))
+            except Exception:
+                continue
+        if not changed_ids:
+            return branches
+
+        rebuilt = []
+        for branch in list(branches or []):
+            cid = _elid_value(branch.circuit.Id)
+            if cid not in changed_ids:
+                rebuilt.append(branch)
+                continue
+            preview_values = dict(existing_values_by_id.get(cid) or {})
+            preview_values.pop('current_summary', None)
+            keep_branch = CircuitBranch(branch.circuit, settings=settings, preview_values=preview_values)
+            keep_branch.calculate_hot_wire_size()
+            keep_branch.calculate_neutral_wire_size()
+            keep_branch.calculate_ground_wire_size()
+            keep_branch.calculate_isolated_ground_wire_size()
+            keep_branch.calculate_conduit_size()
+            keep_branch._calc_preview_keep_existing = True
+            rebuilt.append(keep_branch)
+        return rebuilt
 
     def _collect_shared_param_values(self, branch):
         """Map branch results into shared-parameter values."""
@@ -167,7 +305,7 @@ class CalculateCircuitsOperation(object):
         include_neutral = 1 if neutral_qty > 0 else 0
         include_ig = 1 if ig_qty > 0 else 0
 
-        return {
+        values = {
             'CKT_Circuit Type_CEDT': branch.branch_type,
             'CKT_Panel_CEDT': branch.panel,
             'CKT_Circuit Number_CEDT': branch.circuit_number,
@@ -201,6 +339,9 @@ class CalculateCircuitsOperation(object):
             'Circuit Ampacity_CED': branch.circuit_base_ampacity,
             'CKT_Length Makeup_CED': branch.wire_length_makeup,
         }
+        if bool(getattr(branch, '_calc_preview_keep_existing', False)):
+            values['CKT_User Override_CED'] = 1
+        return values
 
     def _build_alert_payload(self, branch):
         """Build serializable alert payload for persistence."""

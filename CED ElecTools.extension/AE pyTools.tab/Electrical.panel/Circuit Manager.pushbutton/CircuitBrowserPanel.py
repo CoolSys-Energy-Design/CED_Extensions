@@ -22,7 +22,7 @@ for _wpf_asm in ("PresentationFramework", "PresentationCore", "WindowsBase"):
     except Exception:
         pass
 
-from System.Windows import Visibility
+from System.Windows import GridLength, GridUnitType, Visibility
 from System.Windows.Controls import (
     ContextMenu,
     MenuItem,
@@ -106,6 +106,8 @@ CURRENT_ACCENT_MODE = "blue"
 THEME_CONFIG_SECTION = "AE-pyTools-Theme"
 THEME_CONFIG_THEME_KEY = "theme_mode"
 THEME_CONFIG_ACCENT_KEY = "accent_mode"
+CIRCUIT_MANAGER_CONFIG_SECTION = "AE-pyTools-CircuitManager"
+CALC_PREVIEW_CONFIG_KEY = "calc_preview_enabled"
 HIDABLE_ALERT_IDS = {
     "Design.NonStandardOCPRating",
     "Design.BreakerLugSizeLimitOverride",
@@ -183,6 +185,38 @@ def _save_theme_state_to_config(theme_mode, accent_mode):
             return
         cfg.set_option(THEME_CONFIG_THEME_KEY, _normalize_theme_mode(theme_mode, "light"))
         cfg.set_option(THEME_CONFIG_ACCENT_KEY, _normalize_accent_mode(accent_mode, "blue"))
+        script.save_config()
+    except Exception:
+        pass
+
+
+def _bool_from_config(value, fallback=False):
+    if isinstance(value, bool):
+        return bool(value)
+    text = str(value or "").strip().lower()
+    if text in ("1", "true", "yes", "on"):
+        return True
+    if text in ("0", "false", "no", "off"):
+        return False
+    return bool(fallback)
+
+
+def _load_calc_preview_enabled(default_value=False):
+    try:
+        cfg = script.get_config(CIRCUIT_MANAGER_CONFIG_SECTION)
+        if cfg is None:
+            return bool(default_value)
+        return _bool_from_config(cfg.get_option(CALC_PREVIEW_CONFIG_KEY, default_value), default_value)
+    except Exception:
+        return bool(default_value)
+
+
+def _save_calc_preview_enabled(value):
+    try:
+        cfg = script.get_config(CIRCUIT_MANAGER_CONFIG_SECTION)
+        if cfg is None:
+            return
+        cfg.set_option(CALC_PREVIEW_CONFIG_KEY, bool(value))
         script.save_config()
     except Exception:
         pass
@@ -701,12 +735,19 @@ class CircuitListItem(object):
         self.load_name = getattr(circuit, "LoadName", "") or ""
         self.load_name_display = self.load_name
         self.load_name_visibility = "Visible"
+        self.sort_panel = str(self.panel or "").lower()
+        self.sort_circuit_slot = getattr(circuit, "StartSlot", 0) or 0
+        self.sort_load_name = str(self.load_name or "").lower()
 
         poles = "?"
+        poles_value = 0
         try:
-            poles = str(getattr(circuit, "PolesNumber", "?") or "?")
+            poles_value = int(getattr(circuit, "PolesNumber", 0) or 0)
+            poles = str(poles_value or "?")
         except Exception:
+            poles_value = 0
             pass
+        self.sort_poles = poles_value
 
         rating_value = None
         if circuit.SystemType == DBE.ElectricalSystemType.PowerCircuit:
@@ -714,6 +755,7 @@ class CircuitListItem(object):
                 rating_value = int(round(circuit.Rating, 0))
             except Exception:
                 rating_value = None
+        self.sort_rating = float(rating_value) if rating_value is not None else 999999.0
 
         if circuit.CircuitType == DBE.CircuitType.Space:
             self.rating_poles = "/{}P".format(poles)
@@ -972,6 +1014,49 @@ class RuntimeAlertRow(object):
         self.message = str(message or "")
 
 
+class CalculationPreviewRow(object):
+    def __init__(self, row):
+        data = dict(row or {})
+        self.circuit_id = data.get("circuit_id")
+        self.circuit = str(data.get("circuit") or "-")
+        self.load_name = str(data.get("load_name") or "-")
+        self.previous_size = str(data.get("previous_size") or "-")
+        self.new_size = str(data.get("new_size") or "-")
+
+
+class CalculationPreviewWindow(forms.WPFWindow):
+    def __init__(self, preview_rows, theme_mode="light", accent_mode="blue"):
+        xaml = os.path.abspath(os.path.join(_THIS_DIR, "CircuitCalculationPreviewWindow.xaml"))
+        self._theme_mode = theme_mode or "light"
+        self._accent_mode = accent_mode or "blue"
+        self.decision = None
+        forms.WPFWindow.__init__(self, xaml)
+        _try_apply_theme(self)
+        rows = [CalculationPreviewRow(x) for x in list(preview_rows or [])]
+        preview_list = self.FindName("PreviewList")
+        if preview_list is not None:
+            preview_list.ItemsSource = ObservableCollection[CalculationPreviewRow](rows)
+
+    def keep_new_clicked(self, sender, args):
+        self.decision = "keep_new"
+        self.Close()
+
+    def keep_existing_clicked(self, sender, args):
+        self.decision = "keep_existing"
+        self.Close()
+
+    def skip_clicked(self, sender, args):
+        choice = forms.alert(
+            "Are you sure you want to skip calculations?\n\nResulting data will be inaccurate.",
+            title="Skip Calculations",
+            options=["No", "Yes, Skip"],
+        )
+        if choice != "Yes, Skip":
+            return
+        self.decision = "skip"
+        self.Close()
+
+
 class CircuitRunSummaryWindow(forms.WPFWindow):
     def __init__(self, locked_rows, runtime_rows, theme_mode="light", accent_mode="blue"):
         xaml = os.path.abspath(os.path.join(_THIS_DIR, "CircuitRunSummaryWindow.xaml"))
@@ -1013,6 +1098,9 @@ class CircuitRunSummaryWindow(forms.WPFWindow):
 
         locked_list = self.FindName("LockedList")
         runtime_list = self.FindName("RuntimeList")
+        root_grid = self.FindName("SummaryRoot")
+        runtime_section = self.FindName("RuntimeSection")
+        locked_section = self.FindName("LockedSection")
         self._locked_list = locked_list
         self._runtime_list = runtime_list
         locked_count = self.FindName("LockedCountText")
@@ -1026,6 +1114,20 @@ class CircuitRunSummaryWindow(forms.WPFWindow):
             locked_count.Text = "Locked items: {}".format(len(locked))
         if runtime_count is not None:
             runtime_count.Text = "Runtime-only alerts: {}".format(len(runtime))
+        self._sync_section_visibility(root_grid, runtime_section, locked_section, bool(runtime), bool(locked))
+
+    def _sync_section_visibility(self, root_grid, runtime_section, locked_section, has_runtime, has_locked):
+        if runtime_section is not None:
+            runtime_section.Visibility = Visibility.Visible if bool(has_runtime) else Visibility.Collapsed
+        if locked_section is not None:
+            locked_section.Visibility = Visibility.Visible if bool(has_locked) else Visibility.Collapsed
+        try:
+            rows = root_grid.RowDefinitions
+            rows[1].Height = GridLength(1, GridUnitType.Star) if bool(has_runtime) else GridLength(0)
+            rows[2].Height = GridLength(8) if bool(has_runtime and has_locked) else GridLength(0)
+            rows[3].Height = GridLength(1, GridUnitType.Star) if bool(has_locked) else GridLength(0)
+        except Exception:
+            pass
 
     def close_clicked(self, sender, args):
         self.Close()
@@ -1141,7 +1243,7 @@ class NeutralIGActionWindow(forms.WPFWindow):
         if self._show_unsupported_cb is not None:
             self._show_unsupported_cb.IsChecked = True
         for row in self._rows:
-            row.is_checked = False
+            row.is_checked = bool(getattr(row, "is_enabled", False))
         self._apply_visibility_filter()
         self.Loaded += self.window_loaded
         self._refresh_grid()
@@ -1491,7 +1593,7 @@ class BreakerActionWindow(forms.WPFWindow):
             self._max_load_pct_tb.GotKeyboardFocus += self.max_load_percent_got_focus
             self._max_load_pct_tb.LostFocus += self.max_load_percent_lost_focus
         for row in self._rows:
-            row.is_checked = False
+            row.is_checked = bool(getattr(row, "is_enabled", False))
         self.Loaded += self.window_loaded
         self._refresh_status()
         self._sync_button_states()
@@ -1923,7 +2025,7 @@ class MarkExistingActionWindow(forms.WPFWindow):
             self._clear_conduit_cb.IsChecked = False
 
         for row in self._rows:
-            row.is_checked = False
+            row.is_checked = bool(getattr(row, "is_enabled", False))
 
         self._apply_visibility_filter()
         self._sync_option_controls()
@@ -2375,11 +2477,14 @@ class CircuitBrowserPanel(forms.WPFPanel):
         self._overrides_only = False
         self._syncblocked_only = False
         self._checked_only = False
+        self._calc_preview_enabled = _load_calc_preview_enabled(False)
         self._actions_menu = None
         self._browser_options_menu = None
         self._browser_theme_items = {}
         self._browser_accent_items = {}
         self._browser_display_items = {}
+        self._browser_sort_items = {}
+        self._sort_mode = "circuit"
         self._browser_compress_item = None
         self._compact_show_type_badges = True
         self._use_surface_item_states = True
@@ -2413,6 +2518,8 @@ class CircuitBrowserPanel(forms.WPFPanel):
         self._status = self.FindName("StatusText")
         self._doc_name_text = self.FindName("DocumentNameText")
         self._toggle = self.FindName("ToggleViewButton")
+        self._calc_preview_toggle = self.FindName("CalcPreviewToggle")
+        self._calc_preview_state_text = self.FindName("CalcPreviewStateText")
         self._filter_button = self.FindName("FilterButton")
         self._browser_options_button = self.FindName("BrowserOptionsButton")
         self._filter_active_mark = self.FindName("FilterActiveMark")
@@ -2423,6 +2530,7 @@ class CircuitBrowserPanel(forms.WPFPanel):
         self._surface_item_style = _try_find_resource(self, "CED.ListViewItem.SurfaceBehavior")
         self._apply_list_interaction_mode()
         self._update_search_chrome()
+        self._sync_calc_preview_toggle()
         self._update_toggle_button_visual()
 
         self._compact_template = self.FindResource("CompactTemplate")
@@ -2500,6 +2608,10 @@ class CircuitBrowserPanel(forms.WPFPanel):
 
         self._update_session_sync_lock_map(result)
 
+        if result.get("status") == "preview_required":
+            self._show_calculation_preview(request, result)
+            return
+
         if result.get("status") == "ok":
             self._set_status("Calculated {} circuits".format(result.get("updated_circuits", 0)))
             try:
@@ -2512,6 +2624,49 @@ class CircuitBrowserPanel(forms.WPFPanel):
         reason = result.get("reason", "unknown")
         self._set_status("Operation cancelled ({})".format(reason))
         self._safe_load_items()
+
+    def _show_calculation_preview(self, request, result):
+        rows = list((result or {}).get("preview_rows") or [])
+        if not rows:
+            self._set_status("Calculation preview had no changes.")
+            return
+        try:
+            window = CalculationPreviewWindow(
+                rows,
+                theme_mode=self._theme_mode,
+                accent_mode=self._accent_mode,
+            )
+            window.ShowDialog()
+        except Exception as ex:
+            self._logger.warning("Calculation preview window failed: %s", ex)
+            forms.alert("Failed to open calculation preview:\n\n{}".format(ex), title=TITLE)
+            self._set_status("Calculation preview failed")
+            return
+
+        decision = str(getattr(window, "decision", "") or "").strip().lower()
+        if not decision:
+            self._set_status("Calculation cancelled (preview closed)")
+            return
+        if decision == "skip":
+            self._set_status("Calculation skipped by preview")
+            return
+
+        options = dict(getattr(request, "options", None) or {})
+        options["calc_preview_decision"] = decision
+        if self._operation_gateway.is_busy():
+            forms.alert("An operation is already running. Please wait.", title=TITLE)
+            return
+        decision_label = "keeping existing sizes" if decision == "keep_existing" else "keeping new sizes"
+        self._set_status("Calculating circuits ({})...".format(decision_label))
+        raised = self._operation_gateway.raise_operation(
+            operation_key=getattr(request, "operation_key", "calculate_circuits"),
+            circuit_ids=list(getattr(request, "circuit_ids", []) or []),
+            source=getattr(request, "source", "pane"),
+            options=options,
+            callback=self._on_operation_complete,
+        )
+        if not raised:
+            self._set_status("Unable to queue calculation")
 
     def _update_session_sync_lock_map(self, result):
         rows = list((result or {}).get("locked_rows") or [])
@@ -3224,6 +3379,7 @@ class CircuitBrowserPanel(forms.WPFPanel):
             items = [x for x in items if x.branch_type in self._active_type_filters]
         if query:
             items = [x for x in items if query in x.search_name]
+        items = self._sort_browser_items(items)
         for item in items:
             item.show_type_tag = bool(self._compact_show_type_badges)
             item.type_tag_visibility = "Visible" if item.show_type_tag else "Collapsed"
@@ -3244,6 +3400,33 @@ class CircuitBrowserPanel(forms.WPFPanel):
                 self._uniform_item_width = self._compute_uniform_item_width()
             self._apply_uniform_item_width_to_realized_rows()
         self._set_status("Showing {} of {} circuits".format(len(items), len(self._all_items)))
+
+    def _sort_browser_items(self, items):
+        sorted_items = list(items or [])
+        mode = str(self._sort_mode or "circuit").lower()
+        if mode == "load_name":
+            sorted_items.sort(key=lambda x: (
+                str(getattr(x, "sort_load_name", "") or ""),
+                str(getattr(x, "sort_panel", "") or ""),
+                int(getattr(x, "sort_circuit_slot", 0) or 0),
+                str(getattr(x, "circuit_number", "") or "").lower(),
+            ))
+            return sorted_items
+        if mode == "rating":
+            sorted_items.sort(key=lambda x: (
+                float(getattr(x, "sort_rating", 999999.0) or 999999.0),
+                int(getattr(x, "sort_poles", 0) or 0),
+                str(getattr(x, "sort_panel", "") or ""),
+                int(getattr(x, "sort_circuit_slot", 0) or 0),
+                str(getattr(x, "sort_load_name", "") or ""),
+            ))
+            return sorted_items
+        sorted_items.sort(key=lambda x: (
+            str(getattr(x, "sort_panel", "") or ""),
+            int(getattr(x, "sort_circuit_slot", 0) or 0),
+            str(getattr(x, "sort_load_name", "") or ""),
+        ))
+        return sorted_items
 
     def list_size_changed(self, sender, args):
         if not self._use_compact_compress_mode():
@@ -3857,6 +4040,26 @@ class CircuitBrowserPanel(forms.WPFPanel):
         self._browser_display_items["card"] = card_item
         menu.Items.Add(display_menu)
 
+        sort_menu = MenuItem()
+        _set_if_resource(self, sort_menu, "Style", "CED.MenuItem.Base")
+        sort_menu.Header = "Sort By"
+        for sort_mode, sort_label in (
+            ("circuit", "Circuit"),
+            ("load_name", "Load Name"),
+            ("rating", "Rating"),
+        ):
+            item = MenuItem()
+            _set_if_resource(self, item, "Style", "CED.MenuItem.Base")
+            item.Header = sort_label
+            item.IsCheckable = True
+            item.IsChecked = (self._sort_mode == sort_mode)
+            item.StaysOpenOnClick = True
+            item.Tag = sort_mode
+            item.Click += self.browser_sort_clicked
+            sort_menu.Items.Add(item)
+            self._browser_sort_items[sort_mode] = item
+        menu.Items.Add(sort_menu)
+
         compact_menu = MenuItem()
         _set_if_resource(self, compact_menu, "Style", "CED.MenuItem.Base")
         compact_menu.Header = "List View"
@@ -3893,6 +4096,9 @@ class CircuitBrowserPanel(forms.WPFPanel):
         for mode, item in (self._browser_display_items or {}).items():
             if item is not None:
                 item.IsChecked = (mode == selected_display)
+        for mode, item in (self._browser_sort_items or {}).items():
+            if item is not None:
+                item.IsChecked = (mode == self._sort_mode)
         if self._browser_compress_item is not None:
             self._browser_compress_item.IsChecked = bool(self._compress_item_width)
 
@@ -3973,6 +4179,17 @@ class CircuitBrowserPanel(forms.WPFPanel):
         if mode == "card":
             self._set_card_view(True)
             self._sync_browser_options_menu_state()
+
+    def browser_sort_clicked(self, sender, args):
+        mode = str(getattr(sender, "Tag", "circuit")).lower()
+        if mode not in ("circuit", "load_name", "rating"):
+            mode = "circuit"
+        if self._sort_mode == mode:
+            self._sync_browser_options_menu_state()
+            return
+        self._sort_mode = mode
+        self._sync_browser_options_menu_state()
+        self._refresh_list()
 
     def _collect_action_targets(self):
         # Actions run only on explicitly checked circuits to avoid
@@ -5729,6 +5946,26 @@ class CircuitBrowserPanel(forms.WPFPanel):
     def clear_revit_selection_clicked(self, sender, args):
         clear_revit_selection(uidoc=revit.uidoc)
 
+    def _sync_calc_preview_toggle(self):
+        if self._calc_preview_toggle is not None:
+            try:
+                self._calc_preview_toggle.IsChecked = bool(self._calc_preview_enabled)
+            except Exception:
+                pass
+        if self._calc_preview_state_text is not None:
+            self._calc_preview_state_text.Text = "On" if bool(self._calc_preview_enabled) else "Off"
+
+    def calc_preview_toggled(self, sender, args):
+        self._calc_preview_enabled = bool(getattr(sender, "IsChecked", False))
+        _save_calc_preview_enabled(self._calc_preview_enabled)
+        self._sync_calc_preview_toggle()
+
+    def _calculation_options(self):
+        return {
+            "show_output": False,
+            "calc_preview_enabled": bool(self._calc_preview_enabled),
+        }
+
     def check_all_clicked(self, sender, args):
         try:
             items = list(self._list.ItemsSource or [])
@@ -5772,7 +6009,7 @@ class CircuitBrowserPanel(forms.WPFPanel):
             operation_key="calculate_circuits",
             circuit_ids=circuit_ids,
             source="pane",
-            options={"show_output": False},
+            options=self._calculation_options(),
             callback=self._on_operation_complete,
         )
         if not raised:
@@ -5797,7 +6034,7 @@ class CircuitBrowserPanel(forms.WPFPanel):
             operation_key="calculate_circuits",
             circuit_ids=circuit_ids,
             source="pane",
-            options={"show_output": False},
+            options=self._calculation_options(),
             callback=self._on_operation_complete,
         )
         if not raised:

@@ -32,6 +32,7 @@ from UIClasses import resource_loader, ui_bases
 
 CIRCUIT_NOTES_KEY = "__bip_circuit_notes__"
 CIRCUIT_NAME_KEY = "__bip_circuit_name__"
+ORIGINAL_CONDUIT_WIRE_KEY = "__original_conduit_wire_summary__"
 UI_WIRE_SIZE_ORDER = [
     "12",
     "10",
@@ -489,6 +490,7 @@ class CircuitPropertyEditorViewModel(object):
             "Wire Insulation_CEDT": _lookup_param_text(circuit, "Wire Insulation_CEDT", ""),
             CIRCUIT_NAME_KEY: _lookup_builtin_text(circuit, DB.BuiltInParameter.RBS_ELEC_CIRCUIT_NAME, ""),
             CIRCUIT_NOTES_KEY: _lookup_builtin_text(circuit, DB.BuiltInParameter.RBS_ELEC_CIRCUIT_NOTES_PARAM, ""),
+            ORIGINAL_CONDUIT_WIRE_KEY: _lookup_param_text(circuit, "Conduit and Wire Size_CEDT", "-"),
             "__branch_type__": _derive_branch_type(circuit),
         }
 
@@ -725,6 +727,30 @@ class CircuitPropertyEditorViewModel(object):
             "rating": _has_id("Design.NonStandardOCPRating", "Design.UndersizedOCP") or _has_text("non-standard ampere rating", "undersized ocp"),
         }
 
+    def _original_conduit_wire_summary(self, circuit_id):
+        base = dict(self.base_values.get(circuit_id, {}) or {})
+        value = str(base.get(ORIGINAL_CONDUIT_WIRE_KEY, "") or "").strip()
+        return value or "-"
+
+    @staticmethod
+    def _normalize_summary_text(value):
+        text = str(value or "").strip().lower()
+        return " ".join(text.split()) or "-"
+
+    def _conduit_wire_preview_values(self, circuit_id, new_summary=None):
+        current_summary = self._original_conduit_wire_summary(circuit_id)
+        if new_summary is None:
+            new_summary = current_summary
+        new_summary = str(new_summary or "").strip() or "-"
+        return {
+            "current_conduit_summary": current_summary,
+            "new_conduit_summary": new_summary,
+            "conduit_summary_changed": (
+                self._normalize_summary_text(current_summary)
+                != self._normalize_summary_text(new_summary)
+            ),
+        }
+
     def _build_preview_row(self, circuit_id):
         row = self.rows_by_id.get(circuit_id)
         circuit = self.circuits_by_id.get(circuit_id)
@@ -750,7 +776,7 @@ class CircuitPropertyEditorViewModel(object):
                     "isolated_ground_size_manual_enabled": False,
                     "wire_specs_enabled": False,
                 },
-                "preview": {},
+                "preview": self._conduit_wire_preview_values(circuit_id),
                 "notices": [],
                 "warning_flags": {},
             }
@@ -785,7 +811,7 @@ class CircuitPropertyEditorViewModel(object):
                     "isolated_ground_size_manual_enabled": False,
                     "wire_specs_enabled": False,
                 },
-                "preview": {},
+                "preview": self._conduit_wire_preview_values(circuit_id),
                 "notices": ["Unsupported circuit type."],
                 "warning_flags": {
                     "length": False,
@@ -954,6 +980,7 @@ class CircuitPropertyEditorViewModel(object):
         if neutral_locked_by_type and branch_neutral_qty > 0:
             toggles_view["include_neutral"] = True
 
+        conduit_summary = str(branch.get_conduit_and_wire_size() or "-")
         preview_values = {
             "circuit_type": str(getattr(branch, "branch_type", "") or "-"),
             "is_feeder": is_feeder,
@@ -982,8 +1009,9 @@ class CircuitPropertyEditorViewModel(object):
             "conduit_fill": "{} %".format(_fmt_number(_as_float(getattr(branch, "conduit_fill_percentage", 0.0), 0.0) * 100.0, 1)),
             "max_lug_size": str(((getattr(branch, "_wire_info", {}) or {}).get("max_lug_size") or "")).strip(),
             "wire_summary": str(branch.get_wire_size_callout() or "-"),
-            "conduit_summary": str(branch.get_conduit_and_wire_size() or "-"),
+            "conduit_summary": conduit_summary,
         }
+        preview_values.update(self._conduit_wire_preview_values(circuit_id, conduit_summary))
 
         notice_items = list(getattr(getattr(branch, "notices", None), "items", []) or [])
         notices = self._collect_notices(branch)
@@ -1115,7 +1143,13 @@ class CircuitPropertyEditorViewModel(object):
         return diff
 
     def has_pending_changes(self, circuit_id):
-        return bool(self._build_diff(circuit_id))
+        if bool(self._build_diff(circuit_id)):
+            return True
+        state = self.preview_rows.get(circuit_id)
+        if state is None:
+            state = self._build_preview_row(circuit_id)
+        preview = dict(state.get("preview") or {})
+        return bool(preview.get("conduit_summary_changed", False))
 
     def pending_count(self):
         return len([x for x in list(self.rows or []) if self.has_pending_changes(x.circuit_id)])
@@ -1231,8 +1265,9 @@ class CircuitPropertiesEditorWindow(forms.WPFWindow):
         self._load_box = self.FindName("PreviewLoadCurrentBox")
         self._ampacity_box = self.FindName("PreviewAmpacityBox")
         self._ampacity_text = self.FindName("PreviewAmpacityText")
-        self._wire_summary_text = self.FindName("PreviewWireSummaryText")
-        self._conduit_summary_text = self.FindName("PreviewConduitSummaryText")
+        self._current_conduit_summary_text = self.FindName("PreviewCurrentConduitSummaryText")
+        self._new_conduit_summary_text = self.FindName("PreviewNewConduitSummaryText")
+        self._new_conduit_summary_box = self.FindName("PreviewNewConduitSummaryBox")
         self._conduit_fill_text = self.FindName("ConduitFillText")
         self._conduit_fill_box = self.FindName("ConduitFillBox")
         self._notice_text = self.FindName("PreviewNoticeText")
@@ -1635,6 +1670,43 @@ class CircuitPropertiesEditorWindow(forms.WPFWindow):
         except Exception:
             pass
 
+    def _set_changed_border(self, element, is_changed):
+        if element is None:
+            return
+        try:
+            is_border = isinstance(element, Border)
+        except Exception:
+            is_border = False
+        if is_border:
+            brush_prop = Border.BorderBrushProperty
+            thick_prop = Border.BorderThicknessProperty
+        else:
+            brush_prop = Control.BorderBrushProperty
+            thick_prop = Control.BorderThicknessProperty
+        if bool(is_changed):
+            try:
+                blue_brush = self.FindResource("CED.Brush.AccentBlue")
+            except Exception:
+                blue_brush = None
+            if blue_brush is not None:
+                try:
+                    element.SetValue(brush_prop, blue_brush)
+                except Exception:
+                    pass
+            try:
+                element.SetValue(thick_prop, Thickness(2))
+            except Exception:
+                pass
+            return
+        try:
+            element.ClearValue(brush_prop)
+        except Exception:
+            pass
+        try:
+            element.ClearValue(thick_prop)
+        except Exception:
+            pass
+
     def _initialize_metric_tooltips(self):
         self._vd_tooltip_objects = []
         self._vd_tooltip_base_text = ""
@@ -1938,6 +2010,11 @@ class CircuitPropertiesEditorWindow(forms.WPFWindow):
             if self._notice_text is not None:
                 self._notice_text.Text = "No warnings."
             self._set_notice_warning_state(False)
+            if self._current_conduit_summary_text is not None:
+                self._current_conduit_summary_text.Text = "-"
+            if self._new_conduit_summary_text is not None:
+                self._new_conduit_summary_text.Text = "-"
+            self._set_changed_border(self._new_conduit_summary_box, False)
             self._apply_preview_metric_tooltips({}, None)
             self._sync_reset_button_state(None)
             return
@@ -2115,8 +2192,11 @@ class CircuitPropertiesEditorWindow(forms.WPFWindow):
             self._load_text.Text = str(preview.get("load_current", "-"))
             self._apply_preview_metric_tooltips(preview, row)
             self._ampacity_text.Text = str(preview.get("ampacity", "-"))
-            self._wire_summary_text.Text = str(preview.get("wire_summary", "-"))
-            self._conduit_summary_text.Text = str(preview.get("conduit_summary", "-"))
+            if self._current_conduit_summary_text is not None:
+                self._current_conduit_summary_text.Text = str(preview.get("current_conduit_summary", "-"))
+            if self._new_conduit_summary_text is not None:
+                self._new_conduit_summary_text.Text = str(preview.get("new_conduit_summary", preview.get("conduit_summary", "-")))
+            self._set_changed_border(self._new_conduit_summary_box, bool(preview.get("conduit_summary_changed", False)))
             self._notice_text.Text = "\n".join(notices) if notices else "No warnings."
             self._set_notice_warning_state(bool(notices))
             self._apply_warning_styles(warning_flags)
