@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 __title__ = "Circuit Grouper"
-__doc__ = ("Group circuitable devices (case controllers) by CKT_Circuit Number_CEDT, "
-           "validate voltage/pole compatibility, regroup, then create one native "
-           "Revit circuit per group.")
+__doc__ = ("Gather every circuitable element (any family instance with a power "
+           "connector) - from the current selection if one exists, else the "
+           "whole model - group them by a parameter you choose, validate "
+           "voltage/pole compatibility, regroup, then create one native Revit "
+           "circuit per group.")
 
 import os
 import sys
@@ -30,19 +32,45 @@ def main():
         forms.alert("No active document.", title=TITLE)
         return
 
-    rows_data = cg_collect.collect_devices(doc, cg_core.DEFAULT_SPEC_KEY)
+    # If the user has a selection, operate only on those elements; otherwise
+    # scan the whole model. Either way only circuitable elements are kept.
+    sel_ids = None
+    scope_label = "model"
+    try:
+        picked = list(revit.uidoc.Selection.GetElementIds())
+    except Exception:
+        picked = []
+    if picked:
+        sel_ids = [cg_collect.element_id_value(eid) for eid in picked]
+        scope_label = "selection"
+
+    rows_data = cg_collect.collect_devices(doc, sel_ids)
     if not rows_data:
-        forms.alert(
-            "No devices found with BOTH CKT_Circuit Number_CEDT and Identity Mark populated.\n"
-            "(Run Place Identity Mark first to stamp the case controllers.)",
-            title=TITLE,
-        )
+        if sel_ids is not None:
+            forms.alert(
+                "None of the selected elements are circuitable "
+                "(no electrical power connector).",
+                title=TITLE,
+            )
+        else:
+            forms.alert(
+                "No circuitable elements found in the model "
+                "(nothing has an electrical power connector).",
+                title=TITLE,
+            )
         return
+
+    group_param_options = cg_core.common_group_params(rows_data)
+    default_group_param = cg_core.default_group_param(group_param_options)
+
+    logger.debug("Circuit Grouper scope=%s, %d circuitable element(s)",
+                 scope_label, len(rows_data))
 
     panel_names, name_to_id = cg_collect.collect_panels(doc)
 
     plans, name_to_id = cg_window.show_window(
-        rows_data, panel_names, name_to_id, cg_core.RATING_OPTIONS
+        rows_data, panel_names, name_to_id, cg_core.RATING_OPTIONS,
+        group_param_options, default_group_param,
     )
 
     if not plans:

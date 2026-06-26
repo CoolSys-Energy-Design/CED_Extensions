@@ -27,6 +27,47 @@ DEVICE_SPECS = {
 DEFAULT_SPEC_KEY = "case_controllers"
 
 # ---------------------------------------------------------------------------
+# Group-by parameter selection
+# ---------------------------------------------------------------------------
+# The window lets the user pick which parameter the circuits are grouped on.
+# The offered list is the set of parameters COMMON to every gathered fixture
+# (so grouping is always well-defined). These names, when present in that
+# common set, are surfaced first because they are the usual grouping keys;
+# everything else common follows alphabetically.
+PREFERRED_GROUP_PARAMS = [
+    "CKT_Circuit Number_CEDT",
+    "Identity Mark",
+    "CKT_Load Name_CEDT",
+    "CKT_Panel_CEDT",
+    "Family:Type",
+    "Level",
+]
+
+
+def common_group_params(rows):
+    """Parameter names present on EVERY gathered row, ordered with the usual
+    grouping keys first. ``rows`` are the plain dicts from cg_collect, each
+    carrying a ``group_values`` dict of {param_name: value_string}."""
+    name_sets = [set((r.get("group_values") or {}).keys()) for r in rows]
+    if not name_sets:
+        return []
+    common = name_sets[0]
+    for s in name_sets[1:]:
+        common = common & s
+    preferred = [p for p in PREFERRED_GROUP_PARAMS if p in common]
+    rest = sorted(n for n in common if n not in PREFERRED_GROUP_PARAMS)
+    return preferred + rest
+
+
+def default_group_param(options):
+    """Pick the initial group-by parameter: prefer circuit number, then
+    identity mark, otherwise the first available option."""
+    for p in ("CKT_Circuit Number_CEDT", "Identity Mark"):
+        if p in options:
+            return p
+    return options[0] if options else ""
+
+# ---------------------------------------------------------------------------
 # Breaker rating options + parsing
 # ---------------------------------------------------------------------------
 # Combo lists numbers only ("A" is implied).

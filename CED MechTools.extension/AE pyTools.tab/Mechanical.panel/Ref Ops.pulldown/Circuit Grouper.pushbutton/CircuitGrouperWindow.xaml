@@ -13,6 +13,8 @@
     <SolidColorBrush x:Key="SubText" Color="#A8A8A8"/>
     <SolidColorBrush x:Key="Accent" Color="#2D8CEB"/>
 
+    <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+
     <Style TargetType="TextBlock">
       <Setter Property="Foreground" Value="{StaticResource Text}"/>
       <Setter Property="VerticalAlignment" Value="Center"/>
@@ -63,6 +65,11 @@
     <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,8">
       <Button Content="New Group from Selected" MinWidth="170" Click="new_group_clicked"/>
       <Button Content="Toggle Checked" MinWidth="120" Click="toggle_checked_clicked"/>
+      <TextBlock Text="Group by:" Margin="16,0,4,0" Foreground="{StaticResource SubText}"/>
+      <ComboBox Name="GroupByCombo" Width="220" VerticalAlignment="Center"
+                ItemsSource="{Binding GroupParamOptions}"
+                SelectionChanged="group_param_changed"
+                ToolTip="Parameter used to group elements into circuits"/>
       <TextBlock Name="SummaryText" Margin="16,0,0,0" Foreground="{StaticResource SubText}" Text="Ready"/>
     </StackPanel>
 
@@ -105,68 +112,124 @@
       </DataGrid.Resources>
 
       <DataGrid.GroupStyle>
+        <!-- Outer level: status bucket (Not Ready / Ready / Already Circuited).
+             DataContext = the CollectionViewGroup; Name = the bucket string,
+             Items.Count = number of circuits in the bucket. -->
         <GroupStyle>
           <GroupStyle.HeaderTemplate>
             <DataTemplate>
-              <!-- DataContext = the GroupVM (the value we grouped by) -->
-              <Border Background="#30303A" Padding="8,5" Margin="0,6,0,0"
-                      BorderBrush="{StaticResource Border}" BorderThickness="0,0,0,1">
-                <Grid DataContext="{Binding Name}">
-                  <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="220"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="160"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="78"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                  </Grid.ColumnDefinitions>
-
-                  <TextBox Grid.Column="0"
-                           Text="{Binding load_name, Mode=OneWay}"
-                           ToolTip="Load name (CKT_Load Name_CEDT) for this circuit"
-                           FontWeight="Bold"
-                           LostFocus="group_load_name_changed"/>
-
-                  <TextBlock Grid.Column="1" Text="Panel:" Margin="12,0,4,0" Foreground="{StaticResource SubText}"/>
-                  <ComboBox Grid.Column="2"
-                            IsEditable="True"
-                            ItemsSource="{Binding DataContext.PanelOptions, RelativeSource={RelativeSource AncestorType=Window}}"
-                            Text="{Binding panel, Mode=OneWay}"
-                            SelectionChanged="group_panel_changed"
-                            LostFocus="group_panel_changed"/>
-
-                  <TextBlock Grid.Column="3" Text="Breaker:" Margin="12,0,4,0" Foreground="{StaticResource SubText}"/>
-                  <ComboBox Grid.Column="4"
-                            IsEditable="True"
-                            ItemsSource="{Binding DataContext.RatingOptions, RelativeSource={RelativeSource AncestorType=Window}}"
-                            Text="{Binding rating, Mode=OneWay}"
-                            ToolTip="Breaker amps (number only). Enter 20, 20 A or 20A."
-                            SelectionChanged="group_rating_changed"
-                            LostFocus="group_rating_changed"
-                            GotKeyboardFocus="rating_got_focus"
-                            PreviewMouseLeftButtonDown="rating_mouse_down"/>
-                  <TextBlock Grid.Column="5" Text="A" Margin="3,0,0,0" Foreground="{StaticResource SubText}"/>
-
-                  <TextBlock Grid.Column="6"
-                             Text="&#9888;"
-                             FontWeight="Bold"
-                             FontSize="14"
-                             Foreground="#E0B020"
-                             Margin="6,0,0,0"
-                             Visibility="{Binding rating_warning_visibility}"
-                             ToolTip="{Binding rating_tooltip}"/>
-
-                  <TextBlock Grid.Column="7"
-                             HorizontalAlignment="Right"
-                             TextWrapping="Wrap"
-                             Text="{Binding status}"
-                             Foreground="{Binding status_color}"/>
-                </Grid>
+              <Border Background="#26262B" Padding="6,5" Margin="0,12,0,0"
+                      BorderBrush="{StaticResource Border}" BorderThickness="0,0,0,2">
+                <StackPanel Orientation="Horizontal">
+                  <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="15"/>
+                  <TextBlock Margin="6,0,0,0" Foreground="{StaticResource SubText}"
+                             Text="{Binding Items.Count, StringFormat=' ({0} circuit(s))'}"/>
+                </StackPanel>
               </Border>
             </DataTemplate>
           </GroupStyle.HeaderTemplate>
+        </GroupStyle>
+
+        <!-- Inner level: one collapsible circuit. Custom GroupItem template
+             (a stretching header + ItemsPresenter) instead of an Expander, so
+             the header fills the full width and the '*' status column can push
+             the status text to the right (under the Status column) rather than
+             colliding with the 'A' amps label. GroupItem DataContext is the
+             CollectionViewGroup; Name = the GroupVM. -->
+        <GroupStyle>
+          <GroupStyle.ContainerStyle>
+            <Style TargetType="{x:Type GroupItem}">
+              <Setter Property="Template">
+                <Setter.Value>
+                  <ControlTemplate TargetType="{x:Type GroupItem}">
+                    <StackPanel Margin="0,6,0,0">
+                      <Border Background="#30303A" Padding="2,3"
+                              BorderBrush="{StaticResource Border}" BorderThickness="0,0,0,1">
+                        <!-- DataContext = the GroupVM -->
+                        <Grid DataContext="{Binding Name}">
+                          <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="26"/>
+                            <ColumnDefinition Width="220"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="160"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="78"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                          </Grid.ColumnDefinitions>
+
+                          <ToggleButton Grid.Column="0"
+                                        x:Name="ExpandToggle"
+                                        IsChecked="{Binding is_expanded, Mode=TwoWay}"
+                                        Background="Transparent" BorderThickness="0"
+                                        Foreground="{StaticResource Text}"
+                                        Width="20" Height="20" Padding="0"
+                                        Cursor="Hand"
+                                        VerticalAlignment="Center" HorizontalAlignment="Center"
+                                        ToolTip="Expand / collapse this circuit">
+                            <ToggleButton.Style>
+                              <Style TargetType="ToggleButton">
+                                <Setter Property="Content" Value="&#9656;"/>
+                                <Style.Triggers>
+                                  <Trigger Property="IsChecked" Value="True">
+                                    <Setter Property="Content" Value="&#9662;"/>
+                                  </Trigger>
+                                </Style.Triggers>
+                              </Style>
+                            </ToggleButton.Style>
+                          </ToggleButton>
+
+                          <TextBox Grid.Column="1"
+                                   Text="{Binding load_name, Mode=OneWay}"
+                                   ToolTip="Load name (CKT_Load Name_CEDT) for this circuit"
+                                   FontWeight="Bold"
+                                   LostFocus="group_load_name_changed"/>
+
+                          <TextBlock Grid.Column="2" Text="Panel:" Margin="12,0,4,0" Foreground="{StaticResource SubText}"/>
+                          <ComboBox Grid.Column="3"
+                                    IsEditable="True"
+                                    ItemsSource="{Binding DataContext.PanelOptions, RelativeSource={RelativeSource AncestorType=Window}}"
+                                    Text="{Binding panel, Mode=OneWay}"
+                                    SelectionChanged="group_panel_changed"
+                                    LostFocus="group_panel_changed"/>
+
+                          <TextBlock Grid.Column="4" Text="Breaker:" Margin="12,0,4,0" Foreground="{StaticResource SubText}"/>
+                          <ComboBox Grid.Column="5"
+                                    IsEditable="True"
+                                    ItemsSource="{Binding DataContext.RatingOptions, RelativeSource={RelativeSource AncestorType=Window}}"
+                                    Text="{Binding rating, Mode=OneWay}"
+                                    ToolTip="Breaker amps (number only). Enter 20, 20 A or 20A."
+                                    SelectionChanged="group_rating_changed"
+                                    LostFocus="group_rating_changed"
+                                    GotKeyboardFocus="rating_got_focus"
+                                    PreviewMouseLeftButtonDown="rating_mouse_down"/>
+                          <TextBlock Grid.Column="6" Text="A" Margin="3,0,0,0" Foreground="{StaticResource SubText}"/>
+
+                          <TextBlock Grid.Column="7"
+                                     Text="&#9888;"
+                                     FontWeight="Bold"
+                                     FontSize="14"
+                                     Foreground="#E0B020"
+                                     Margin="6,0,0,0"
+                                     Visibility="{Binding rating_warning_visibility}"
+                                     ToolTip="{Binding rating_tooltip}"/>
+
+                          <TextBlock Grid.Column="8"
+                                     HorizontalAlignment="Right"
+                                     Margin="12,0,4,0"
+                                     TextWrapping="Wrap"
+                                     Text="{Binding status}"
+                                     Foreground="{Binding status_color}"/>
+                        </Grid>
+                      </Border>
+                      <ItemsPresenter Visibility="{Binding IsChecked, ElementName=ExpandToggle, Converter={StaticResource BoolToVis}}"/>
+                    </StackPanel>
+                  </ControlTemplate>
+                </Setter.Value>
+              </Setter>
+            </Style>
+          </GroupStyle.ContainerStyle>
         </GroupStyle>
       </DataGrid.GroupStyle>
 
@@ -187,6 +250,7 @@
         <DataGridTextColumn Header="Identity Mark" Binding="{Binding identity_mark}" Width="140"/>
         <DataGridTextColumn Header="Voltage" Binding="{Binding voltage_text}" Width="80"/>
         <DataGridTextColumn Header="Poles" Binding="{Binding poles_text}" Width="60"/>
+        <DataGridTextColumn Header="Elev. from Level" Binding="{Binding elevation_text}" Width="110"/>
 
         <DataGridTemplateColumn Header="Status" Width="170">
           <DataGridTemplateColumn.CellTemplate>

@@ -26,7 +26,7 @@ def element_id_value(eid):
 # ---------------------------------------------------------------------------
 # Source parameters
 # ---------------------------------------------------------------------------
-PARAM_CIRCUIT_NUMBER = "CKT_Circuit Number_CEDT"   # grouping key (must be populated)
+PARAM_CIRCUIT_NUMBER = "CKT_Circuit Number_CEDT"
 PARAM_PANEL = "CKT_Panel_CEDT"
 PARAM_RATING = "CKT_Rating_CED"
 PARAM_LOAD_NAME = "CKT_Load Name_CEDT"
@@ -155,6 +155,161 @@ def _is_already_circuited(elem):
     return False
 
 
+def has_power_connector(elem):
+    """True if the element has an electrical power connector (i.e. it can be
+    placed on a power circuit). This is the single definition of "circuitable"
+    used both to gather candidates here and to filter members in cg_apply."""
+    mep = getattr(elem, "MEPModel", None)
+    if mep is None:
+        return False
+    try:
+        cm = mep.ConnectorManager
+    except Exception:
+        cm = None
+    if cm is None:
+        return False
+    try:
+        for conn in cm.Connectors:
+            try:
+                if conn.Domain == DB.Domain.DomainElectrical:
+                    if conn.ElectricalSystemType == DB.Electrical.ElectricalSystemType.PowerCircuit:
+                        return True
+            except Exception:
+                continue
+    except Exception:
+        return False
+    return False
+
+
+def _level_name_and_elevation(doc, elem):
+    """Return (level_name, level_elevation_ft) for the element's associated
+    level, or ('', None) if it has none."""
+    lid = getattr(elem, "LevelId", None)
+    lvl = None
+    try:
+        if lid is not None and lid != DB.ElementId.InvalidElementId:
+            lvl = doc.GetElement(lid)
+    except Exception:
+        lvl = None
+    if lvl is None:
+        for bip_name in ("FAMILY_LEVEL_PARAM",
+                         "INSTANCE_SCHEDULE_ONLY_LEVEL_PARAM",
+                         "INSTANCE_REFERENCE_LEVEL_PARAM",
+                         "RBS_START_LEVEL_PARAM"):
+            bip = getattr(DB.BuiltInParameter, bip_name, None)
+            if bip is None:
+                continue
+            try:
+                p = elem.get_Parameter(bip)
+                if p and p.HasValue:
+                    cand = doc.GetElement(p.AsElementId())
+                    if cand is not None and hasattr(cand, "Elevation"):
+                        lvl = cand
+                        break
+            except Exception:
+                continue
+    if lvl is None:
+        return "", None
+    name = ""
+    try:
+        name = lvl.Name or ""
+    except Exception:
+        name = ""
+    elev = None
+    try:
+        elev = lvl.Elevation
+    except Exception:
+        elev = None
+    return name, elev
+
+
+def _element_z(elem):
+    loc = getattr(elem, "Location", None)
+    pt = getattr(loc, "Point", None) if loc is not None else None
+    if pt is not None:
+        try:
+            return pt.Z
+        except Exception:
+            pass
+    try:
+        bb = elem.get_BoundingBox(None)
+        if bb is not None:
+            return (bb.Min.Z + bb.Max.Z) * 0.5
+    except Exception:
+        pass
+    return None
+
+
+def _format_length(doc, internal_feet):
+    """Format an internal (feet) length using the project's display units."""
+    try:
+        from Autodesk.Revit.DB import UnitFormatUtils, SpecTypeId
+        return UnitFormatUtils.Format(
+            doc.GetUnits(), SpecTypeId.Length, internal_feet, False, False)
+    except Exception:
+        pass
+    try:  # Revit 2021 and earlier
+        from Autodesk.Revit.DB import UnitFormatUtils, UnitType
+        return UnitFormatUtils.Format(
+            doc.GetUnits(), UnitType.UT_Length, internal_feet, False, False)
+    except Exception:
+        pass
+    return "{:.2f}'".format(internal_feet)
+
+
+def _read_elevation(doc, elem, level_elev):
+    """Elevation of the element above its associated level, in project units."""
+    z = _element_z(elem)
+    if z is None:
+        return ""
+    rel = z - (level_elev if level_elev is not None else 0.0)
+    return _format_length(doc, rel)
+
+
+def _param_value_string(p):
+    """Best stable string for a parameter's value, for use as a group key."""
+    if p is None:
+        return ""
+    try:
+        st = p.StorageType
+    except Exception:
+        st = None
+    try:
+        if st == DB.StorageType.String:
+            return p.AsString() or ""
+        if st == DB.StorageType.Integer:
+            vs = p.AsValueString()
+            return vs if vs else str(p.AsInteger())
+        if st == DB.StorageType.Double:
+            vs = p.AsValueString()
+            return vs if vs else "{:g}".format(p.AsDouble())
+        if st == DB.StorageType.ElementId:
+            return p.AsValueString() or ""
+    except Exception:
+        pass
+    try:
+        return p.AsValueString() or ""
+    except Exception:
+        return ""
+
+
+def _collect_group_values(elem):
+    """Map of {instance parameter name: value string} for the element."""
+    vals = {}
+    try:
+        for p in elem.Parameters:
+            try:
+                name = p.Definition.Name
+            except Exception:
+                name = None
+            if not name:
+                continue
+            vals[name] = _param_value_string(p)
+    except Exception:
+        pass
+    return vals
+
+
 def _family_type_label(doc, elem):
     try:
         sym = doc.GetElement(elem.GetTypeId())
@@ -188,56 +343,67 @@ def _resolve_categories(spec):
     return cats
 
 
-def collect_devices(doc, spec_key=None):
-    """Return a list of plain dicts, one per circuitable device that has
-    CKT_Circuit Number_CEDT populated. The window wraps these into row VMs."""
-    spec = cg_core.DEVICE_SPECS[spec_key or cg_core.DEFAULT_SPEC_KEY]
-    fam_filter = (spec.get("family_contains") or "").strip().lower() or None
+def collect_devices(doc, element_ids=None):
+    """Return a list of plain dicts, one per circuitable element (any family
+    instance with an electrical power connector). No populated-parameter
+    requirement - every circuitable element is gathered.
+
+    If ``element_ids`` is given (an iterable of numeric ElementIds, e.g. the
+    current selection), only those elements are considered; otherwise the
+    whole model is scanned. The window wraps the returned dicts into row VMs.
+    """
+    if element_ids is not None:
+        wanted = set(int(e) for e in element_ids)
+        candidates = []
+        for eid in wanted:
+            el = doc.GetElement(DB.ElementId(int(eid)))
+            if el is not None:
+                candidates.append(el)
+    else:
+        candidates = (
+            DB.FilteredElementCollector(doc)
+            .OfClass(DB.FamilyInstance)
+            .WhereElementIsNotElementType()
+        )
 
     seen = set()
     rows = []
-    for bic in _resolve_categories(spec):
-        collector = (
-            DB.FilteredElementCollector(doc)
-            .OfCategory(bic)
-            .WhereElementIsNotElementType()
-        )
-        for elem in collector:
-            eid = element_id_value(elem.Id)
-            if eid in seen:
-                continue
+    for elem in candidates:
+        if not has_power_connector(elem):
+            continue
+        eid = element_id_value(elem.Id)
+        if eid in seen:
+            continue
+        seen.add(eid)
 
-            ckt = _lookup(elem, PARAM_CIRCUIT_NUMBER)
-            circuit_number = _as_text(ckt).strip()
-            if not circuit_number:
-                continue  # require a populated circuit number
+        family_type = _family_type_label(doc, elem)
+        level_name, level_elev = _level_name_and_elevation(doc, elem)
+        voltage_text, voltage_key = _read_voltage(elem)
+        poles_text, poles_value = _read_poles(elem)
 
-            identity_mark = _as_text(_lookup(elem, "Identity Mark")).strip()
-            if not identity_mark:
-                continue  # require the Identity Mark parameter (no Mark fallback)
+        # all instance params, plus synthetic keys that are always present so
+        # the user can always group by Family:Type / Level
+        group_values = _collect_group_values(elem)
+        group_values["Family:Type"] = family_type
+        group_values["Level"] = level_name
 
-            family_type = _family_type_label(doc, elem)
-            if fam_filter and fam_filter not in family_type.lower():
-                continue
-
-            seen.add(eid)
-            voltage_text, voltage_key = _read_voltage(elem)
-            poles_text, poles_value = _read_poles(elem)
-            rows.append({
-                "element_id": eid,
-                "family_type": family_type,
-                "identity_mark": identity_mark,
-                "panel": _as_text(_lookup(elem, PARAM_PANEL)).strip(),
-                "circuit_number": circuit_number,
-                "rating": _read_rating(elem),
-                "load_name": _as_text(_lookup(elem, PARAM_LOAD_NAME)).strip(),
-                "voltage_text": voltage_text,
-                "voltage_key": voltage_key,
-                "poles_text": poles_text,
-                "poles_value": poles_value,
-                "already_circuited": _is_already_circuited(elem),
-            })
-    rows.sort(key=lambda r: (r["circuit_number"], r["family_type"], r["identity_mark"]))
+        rows.append({
+            "element_id": eid,
+            "family_type": family_type,
+            "identity_mark": _as_text(_lookup(elem, "Identity Mark")).strip(),
+            "panel": _as_text(_lookup(elem, PARAM_PANEL)).strip(),
+            "circuit_number": _as_text(_lookup(elem, PARAM_CIRCUIT_NUMBER)).strip(),
+            "rating": _read_rating(elem),
+            "load_name": _as_text(_lookup(elem, PARAM_LOAD_NAME)).strip(),
+            "voltage_text": voltage_text,
+            "voltage_key": voltage_key,
+            "poles_text": poles_text,
+            "poles_value": poles_value,
+            "elevation_text": _read_elevation(doc, elem, level_elev),
+            "group_values": group_values,
+            "already_circuited": _is_already_circuited(elem),
+        })
+    rows.sort(key=lambda r: (r["family_type"], r["identity_mark"], r["element_id"]))
     return rows
 
 

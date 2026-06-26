@@ -72,6 +72,24 @@ def run():
 
     check("new group key", cg_core.next_new_group_key(["NEW-1", "R1"]) == "NEW-2")
 
+    # --- group-by parameter discovery ---
+    rows_data = [
+        {"group_values": {"Identity Mark": "RA-1", "Level": "L1", "Family:Type": "A", "Only_A": "x"}},
+        {"group_values": {"Identity Mark": "RA-2", "Level": "L1", "Family:Type": "B", "Only_B": "y"}},
+    ]
+    opts = cg_core.common_group_params(rows_data)
+    check("common params intersect", "Identity Mark" in opts and "Level" in opts and "Family:Type" in opts)
+    check("common params exclude non-shared", "Only_A" not in opts and "Only_B" not in opts)
+    check("preferred ordering", opts.index("Identity Mark") < opts.index("Family:Type"))
+    check("empty rows -> no params", cg_core.common_group_params([]) == [])
+    check("default prefers circuit number",
+          cg_core.default_group_param(["Identity Mark", "CKT_Circuit Number_CEDT"]) == "CKT_Circuit Number_CEDT")
+    check("default falls back to identity",
+          cg_core.default_group_param(["Level", "Identity Mark"]) == "Identity Mark")
+    check("default first when no preferred",
+          cg_core.default_group_param(["Level", "Family:Type"]) == "Level")
+    check("default empty when none", cg_core.default_group_param([]) == "")
+
     print("\nAll tests passed.")
 
 

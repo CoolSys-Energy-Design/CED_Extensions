@@ -17,26 +17,8 @@ import cg_collect
 # Connector / circuit helpers
 # ---------------------------------------------------------------------------
 def _has_power_connector(elem):
-    mep = getattr(elem, "MEPModel", None)
-    if mep is None:
-        return False
-    try:
-        cm = mep.ConnectorManager
-    except Exception:
-        cm = None
-    if cm is None:
-        return False
-    try:
-        for conn in cm.Connectors:
-            try:
-                if conn.Domain == DB.Domain.DomainElectrical:
-                    if conn.ElectricalSystemType == DB.Electrical.ElectricalSystemType.PowerCircuit:
-                        return True
-            except Exception:
-                continue
-    except Exception:
-        return False
-    return False
+    # single definition lives in cg_collect (used by both collection + apply)
+    return cg_collect.has_power_connector(elem)
 
 
 def _existing_systems(elem):
