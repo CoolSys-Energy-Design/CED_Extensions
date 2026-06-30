@@ -67,6 +67,21 @@
                     Visibility="Collapsed"
                     ToolTip="Only targets created in this phase will be matched."/>
         </Grid>
+        <!-- Host-only: force every placed fixture to a fixed height above
+             its parent. Shown only when the Host model source is active. -->
+        <StackPanel x:Name="HostHeightRow" Orientation="Horizontal"
+                    Margin="0,8,0,0" Visibility="Collapsed">
+          <CheckBox x:Name="HostHeightCheck" VerticalAlignment="Center"
+                    Content="Place host fixtures at this height relative to their parent:"/>
+          <ComboBox x:Name="HostHeightCombo" IsEditable="True" Width="150"
+                    Margin="8,0,0,0" VerticalAlignment="Center"
+                    ToolTip="Height above each parent. Accepts: 66 (inches), 66&quot;, 5' 6&quot;, 5' - 6&quot;, 5' 6, or 5' - 6.">
+            <ComboBoxItem>18&quot;</ComboBoxItem>
+            <ComboBoxItem>44&quot;</ComboBoxItem>
+            <ComboBoxItem>48&quot;</ComboBoxItem>
+            <ComboBoxItem>5' - 6&quot;</ComboBoxItem>
+          </ComboBox>
+        </StackPanel>
       </StackPanel>
     </GroupBox>
 

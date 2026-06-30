@@ -79,6 +79,7 @@ def _pass_options(base, only_level_id):
         category_filter=base.category_filter,
         uidoc=base.uidoc,
         only_level_id=only_level_id,
+        host_relative_height_inches=base.host_relative_height_inches,
     )
 
 

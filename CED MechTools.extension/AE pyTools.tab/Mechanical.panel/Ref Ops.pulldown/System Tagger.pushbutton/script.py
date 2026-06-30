@@ -29,6 +29,26 @@ RESUME_SCHEMA_GUID = Guid("5f1a3c2e-9e4c-4e42-9f26-9c8f8f5c6f14")
 RESUME_SCHEMA_NAME = "CED_SystemTagger_Resume"
 
 
+def _element_id_value(eid):
+    """Numeric value of an ``ElementId``, compatible across Revit versions.
+
+    Revit 2024+ exposes ``ElementId.Value`` (Int64) and deprecates
+    ``IntegerValue`` (removed in newer builds, so it can't be relied on
+    for 2025 / 2026). Prefer ``Value`` and fall back to ``IntegerValue``
+    on pre-2024 builds. Returns ``None`` for a missing id. Coerced to a
+    Python ``int`` so the value round-trips safely back through
+    ``DB.ElementId(...)`` on every build.
+    """
+    if eid is None:
+        return None
+    v = getattr(eid, "Value", None)
+    if v is None:
+        v = getattr(eid, "IntegerValue", None)
+    if v is None:
+        return None
+    return int(v)
+
+
 def _rgb(r, g, b):
     return DB.Color(bytearray([r])[0], bytearray([g])[0], bytearray([b])[0])
 
@@ -330,7 +350,7 @@ def _toggle_pick_cases(system_id, view, ogs):
                     except Exception:
                         break
 
-                    elem_int = ref.ElementId.IntegerValue
+                    elem_int = _element_id_value(ref.ElementId)
                     elem_id = DB.ElementId(elem_int)
 
                     if elem_int in selected_set:

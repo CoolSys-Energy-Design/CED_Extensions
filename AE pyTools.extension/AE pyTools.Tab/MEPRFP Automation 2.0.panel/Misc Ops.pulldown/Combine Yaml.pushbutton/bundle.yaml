@@ -1,0 +1,10 @@
+title: Combine Yaml
+
+tooltip: >-
+  Merge two equipment-definition YAML files. File A keeps its numbering;
+  File B is appended with all EQ / SET / LED / annotation ids (and the
+  references that point at them) renumbered so nothing collides. Writes a
+  new file (default name "combined").
+
+author: >-
+  CED

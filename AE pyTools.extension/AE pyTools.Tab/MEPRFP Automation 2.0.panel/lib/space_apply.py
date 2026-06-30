@@ -281,6 +281,12 @@ def _apply_one(doc, plan, result):
     used_level = None
     create_exc = None
     for _lv in level_candidates:
+        # Pass the absolute internal-coordinate ``target_pt`` straight
+        # through: ``NewFamilyInstance`` honours its Z and derives
+        # "Elevation from Level" from it. (Do NOT subtract ``_lv.Elevation``
+        # — in models with a survey / elevation-base offset that property
+        # is not the level's internal Z, so subtracting it drops every
+        # fixture by the offset. Mirrors ``placement._place_fixture``.)
         try:
             if _level_ctor is not None:
                 inst = _level_ctor(
@@ -370,6 +376,21 @@ def _apply_one(doc, plan, result):
                     inst.Id, exc
                 )
             )
+
+    # Cancel the level-relative double-count NewFamilyInstance applies to
+    # level-based families, so the fixture lands at its intended absolute
+    # elevation regardless of the project's datum / elevation-base offset.
+    # Runs after the Level is finalized. No-op for workplane / face-based
+    # families and levels whose internal Z is 0. (Mirrors the equipment
+    # side in ``placement.execute_placement``.)
+    try:
+        _placement._correct_elevation_from_level(doc, inst, target_pt.Z)
+    except Exception as exc:
+        result.warnings.append(
+            "Elevation correction failed for ElementId {}: {}".format(
+                inst.Id, exc
+            )
+        )
 
     # Stamp Element_Linker with full Spaces lineage.
     try:

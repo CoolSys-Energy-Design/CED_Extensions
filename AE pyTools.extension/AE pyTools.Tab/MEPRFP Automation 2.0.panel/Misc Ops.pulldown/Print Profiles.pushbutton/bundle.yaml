@@ -1,0 +1,8 @@
+title: Print Profiles
+
+tooltip: >-
+  Write every profile name in the active project's stored YAML
+  (Extensible Storage) to a plain text file, one name per row.
+
+author: >-
+  CED

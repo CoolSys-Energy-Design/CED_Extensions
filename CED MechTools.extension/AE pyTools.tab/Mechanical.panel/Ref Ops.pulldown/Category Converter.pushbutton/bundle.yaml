@@ -1,0 +1,10 @@
+title: Category Converter
+
+tooltip: >-
+  Batch-convert the family category of one or more .rfa files. Pick the RFA
+  files, choose a single target category, and each family is opened silently,
+  reassigned to the new category, saved, and closed. A results report lists
+  the old -> new category for every file.
+
+author: >-
+  CED

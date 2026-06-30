@@ -849,6 +849,76 @@ def _ensure_instance_level_param(doc, inst, level_id, uidoc=None, diagnostics_by
     return any_write
 
 
+def _correct_elevation_from_level(doc, inst, target_world_z, tol=1e-4):
+    """Re-derive "Elevation from Level" so a level-based family lands at
+    the absolute internal elevation ``target_world_z`` — datum-agnostic.
+
+    Why this is needed: for a ``OneLevelBased`` family,
+    ``NewFamilyInstance(point, symbol, level)`` treats the point's Z as an
+    offset *relative to the level's internal elevation* and adds that
+    elevation back. So passing an absolute Z double-counts the level. The
+    error is invisible when the level's internal Z is 0 and equals one
+    full level-elevation on a raised level (a roof). We CANNOT correct by
+    subtracting ``Level.Elevation`` — in a model with a survey /
+    elevation-base offset that property is NOT the level's internal Z
+    (e.g. a level whose ``Elevation`` reads 124 ft but sits at internal
+    24 ft). So we measure the internal elevation empirically instead:
+
+        regen, then internal_Z = Location.Z - current "Elevation from Level"
+        set "Elevation from Level" = target_world_z - internal_Z
+
+    After that, world Z = internal_Z + new_offset = target_world_z exactly,
+    regardless of datum.
+
+    Returns True if it adjusted the offset, False if no adjustment was
+    needed or possible:
+      * Family has no writable INSTANCE_FREE_HOST_OFFSET_PARAM — i.e. a
+        workplane / face-based family, which honours the absolute point Z
+        directly and needs no correction.
+      * The instance already sits at ``target_world_z`` (within ``tol``)
+        — e.g. a level whose internal Z is 0, so no double-count occurred.
+    """
+    if doc is None or inst is None or target_world_z is None:
+        return False
+    try:
+        p = inst.get_Parameter(BuiltInParameter.INSTANCE_FREE_HOST_OFFSET_PARAM)
+    except Exception:
+        p = None
+    if p is None:
+        return False
+    try:
+        if p.IsReadOnly:
+            return False
+    except Exception:
+        return False
+    try:
+        doc.Regenerate()
+    except Exception:
+        pass
+    try:
+        loc = inst.Location
+        pt = getattr(loc, "Point", None)
+        if pt is None:
+            return False
+        world_z = float(pt.Z)
+    except Exception:
+        return False
+    # Already where we want it (no level double-count occurred) — leave it.
+    if abs(world_z - float(target_world_z)) <= tol:
+        return False
+    try:
+        cur_offset = float(p.AsDouble())
+    except Exception:
+        return False
+    internal_level_z = world_z - cur_offset
+    new_offset = float(target_world_z) - internal_level_z
+    try:
+        p.Set(new_offset)
+    except Exception:
+        return False
+    return True
+
+
 def _find_plan_view_for_level(doc, level_id_int):
     """Return a non-template ``ViewPlan`` whose ``GenLevel`` ElementId
     equals ``level_id_int`` — or ``None`` when no such view exists.
@@ -1189,6 +1259,41 @@ def parse_feet_value(value):
     return sign * (feet + inches / 12.0)
 
 
+def parse_relative_height_inches(value):
+    """Parse a user-entered mounting height into decimal INCHES.
+
+    Unlike ``parse_feet_value`` (which reads a bare number as feet), a
+    bare number here is read as INCHES — matching how electrical
+    mounting heights are spoken ("66" == 66"). All of these return 66.0:
+
+        ``"66"``    ``"66\""``    ``"5' 6\""``    ``"5' - 6\""``
+        ``"5' 6"``  ``"5' - 6"``  ``"5'-6\""``
+
+    Also tolerates a fraction (``"5' 6 1/2\""`` -> 66.5), a lone feet
+    value (``"5'"`` -> 60), and a plain decimal (``"66.5"`` -> 66.5).
+    Returns ``None`` on parse failure (empty / non-numeric).
+    """
+    if value is None:
+        return None
+    text = str(value).strip()
+    if not text:
+        return None
+    m = _FT_IN_RE.match(text)
+    if m and (m.group("feet") or m.group("whole") or m.group("num")):
+        sign = -1.0 if m.group("sign") else 1.0
+        feet = float(m.group("feet") or 0)
+        whole_in = float(m.group("whole") or 0)
+        num = m.group("num")
+        den = m.group("den")
+        frac_in = (float(num) / float(den)) if (num and den and float(den) != 0) else 0.0
+        return sign * (feet * 12.0 + whole_in + frac_in)
+    # Fallback: a plain decimal with no feet marker -> inches.
+    try:
+        return float(text.rstrip('"').strip())
+    except (TypeError, ValueError):
+        return None
+
+
 _HEADER_NAME_KEYS = ("name", "block_name", "block", "blockname", "family")
 _HEADER_X_KEYS = ("x", "position x", "position_x", "pos_x", "px")
 _HEADER_Y_KEYS = ("y", "position y", "position_y", "pos_y", "py")
@@ -1378,7 +1483,8 @@ class PlacementOptions(object):
                  allow_type_substitution=False,
                  category_filter=None,
                  uidoc=None,
-                 only_level_id=_ALL_LEVELS):
+                 only_level_id=_ALL_LEVELS,
+                 host_relative_height_inches=None):
         self.skip_already_placed = skip_already_placed
         self.default_level_id = default_level_id
         self.transaction_action = transaction_action
@@ -1409,6 +1515,15 @@ class PlacementOptions(object):
         # families (the level-bearing ``NewFamilyInstance`` overload
         # is unreliable for those).
         self.uidoc = uidoc
+        # Host-based mounting-height override. When not ``None`` it is a
+        # height in INCHES, and every fixture placed against a HOST-MODEL
+        # target is dropped at ``parent.Z + this`` instead of at the LED's
+        # captured z offset — i.e. all host fixtures land at one uniform
+        # height above their parent. Only honoured for the host-model
+        # source (the dialog only exposes the control there). The captured
+        # ``Elevation from Level`` / ``Offset`` parameters are suppressed
+        # for those placements so they can't clobber the override.
+        self.host_relative_height_inches = host_relative_height_inches
 
 
 def _activate_symbol(symbol):
@@ -1554,7 +1669,7 @@ def _split_label(label):
 
 def _place_fixture(doc, led, anchor_world_pt, anchor_rotation_deg, level_id,
                    allow_type_substitution=False, group_index=None,
-                   uidoc=None):
+                   uidoc=None, z_override_ft=None):
     """Place one LED at the resolved world point.
 
     Returns ``(placed_elem_or_None, status, info)`` where ``status`` is
@@ -1605,7 +1720,19 @@ def _place_fixture(doc, led, anchor_world_pt, anchor_rotation_deg, level_id,
     target_rot_deg = geometry.child_rotation_from_offsets(
         anchor_rotation_deg, offset
     )
-    target_pt = XYZ(target_pt_t[0], target_pt_t[1], target_pt_t[2])
+    # Host-based mounting-height override: drop this fixture at a fixed
+    # height above its parent (``parent.Z + z_override_ft``) instead of
+    # the LED's captured z offset. X/Y (and rotation) still follow the
+    # captured offsets; only the elevation is forced. ``z_override_ft``
+    # is supplied by the caller solely for host-model targets.
+    if z_override_ft is not None:
+        try:
+            parent_z = float(anchor_world_pt[2])
+        except (TypeError, IndexError, ValueError):
+            parent_z = target_pt_t[2]
+        target_pt = XYZ(target_pt_t[0], target_pt_t[1], parent_z + z_override_ft)
+    else:
+        target_pt = XYZ(target_pt_t[0], target_pt_t[1], target_pt_t[2])
 
     family_name, type_name = _split_label(label)
 
@@ -1774,6 +1901,14 @@ def _place_fixture(doc, led, anchor_world_pt, anchor_rotation_deg, level_id,
     inst = None
     used_source = None
     for lv, source_tag in candidates:
+        # ``target_pt.Z`` is an ABSOLUTE internal-coordinate elevation
+        # (parent world Z + the LED's z offset, or the host-height
+        # override). ``NewFamilyInstance`` honours that Z directly for
+        # these families and derives "Elevation from Level" from it — so
+        # we pass ``target_pt`` unchanged. (Do NOT subtract
+        # ``lv.Elevation``: in models with a survey / elevation-base
+        # offset, ``Level.Elevation`` is NOT the level's internal Z, so
+        # subtracting it drops every fixture by the offset.)
         try:
             if _level_ctor is not None:
                 inst = _level_ctor(
@@ -1816,6 +1951,13 @@ def _place_fixture(doc, led, anchor_world_pt, anchor_rotation_deg, level_id,
     # ``placement_engine`` order so a captured parameter can't shadow
     # the level write. ``level_id`` is kept on the signature so
     # callers don't have to change shape if the order ever moves back.
+    #
+    # ``target_world_z`` is the absolute internal-coordinate elevation the
+    # fixture is meant to land at (parent Z + offset, or the host-height
+    # override). The caller hands it to ``_correct_elevation_from_level``
+    # AFTER the level is finalized, to cancel the level-relative
+    # double-count NewFamilyInstance applies to level-based families.
+    info["target_world_z"] = target_pt.Z
     return inst, status, info
 
 
@@ -1913,6 +2055,15 @@ _STAMP_ONLY_PARAM_KEYS = frozenset({
 })
 
 
+# Parameters suppressed during a host-height-override run so the captured
+# elevation can't move the fixture off the user-forced height above its
+# parent. Both are the standard "height above level" knobs.
+_HOST_HEIGHT_SKIP_PARAMS = frozenset({
+    "Elevation from Level",
+    "Offset",
+})
+
+
 def _find_parameter(elem, name):
     """Find a parameter by display name with a ``Parameters``-walk fallback.
 
@@ -1953,7 +2104,8 @@ def _find_parameter(elem, name):
     return None
 
 
-def _apply_static_parameters(elem, params_dict, warnings=None):
+def _apply_static_parameters(elem, params_dict, warnings=None,
+                             skip_param_names=None):
     """Write LED-captured static parameters onto the placed instance.
 
     Mirrors the legacy ``PlaceElementsEngine._apply_parameters``: walks
@@ -2006,6 +2158,12 @@ def _apply_static_parameters(elem, params_dict, warnings=None):
 
     for name, value in params_dict.items():
         if not name or name in _STAMP_ONLY_PARAM_KEYS:
+            skipped += 1
+            continue
+        if skip_param_names and name in skip_param_names:
+            # Caller-requested skip (e.g. the host-height override
+            # suppresses the captured "Elevation from Level" / "Offset"
+            # so they can't move the fixture off the forced height).
             skipped += 1
             continue
         if isinstance(value, dict):
@@ -2623,6 +2781,18 @@ def execute_placement(doc, matches, options=None):
         for m in kept:
             anchor = m.target.world_pt
             anchor_rot = m.target.rotation_deg
+            # Host-based mounting-height override. Only host-model targets
+            # are affected (the dialog exposes the control there only).
+            # ``z_override_ft`` forces every LED to ``parent.Z + height``;
+            # ``height_skip_params`` suppresses the captured elevation
+            # parameters so they can't move the fixture back afterward.
+            if (options.host_relative_height_inches is not None
+                    and m.target.source == SOURCE_HOST_MODEL):
+                z_override_ft = float(options.host_relative_height_inches) / 12.0
+                height_skip_params = _HOST_HEIGHT_SKIP_PARAMS
+            else:
+                z_override_ft = None
+                height_skip_params = None
             # Per-target level used as a fallback for any LED whose own
             # captured ``LevelId`` is missing. Validated so a broken
             # parent (e.g. one whose own ``LevelId=-1``) doesn't
@@ -2723,6 +2893,7 @@ def execute_placement(doc, matches, options=None):
                         allow_type_substitution=options.allow_type_substitution,
                         group_index=group_index,
                         uidoc=uidoc,
+                        z_override_ft=z_override_ft,
                     )
                     led_id = led.get("id") or "?"
                     led_label = led.get("label") or "?"
@@ -2798,7 +2969,8 @@ def execute_placement(doc, matches, options=None):
                     # CKT_* fields fresh from the same source. Order matters:
                     # _apply_static_parameters must run before _write_linker.
                     written, _skipped = _apply_static_parameters(
-                        placed, led.get("parameters")
+                        placed, led.get("parameters"),
+                        skip_param_names=height_skip_params,
                     )
                     result.static_param_writes += written
                     # Resolve BYPARENT directives against the live parent
@@ -2823,6 +2995,17 @@ def execute_placement(doc, matches, options=None):
                             doc, placed, led_level_id,
                             uidoc=uidoc,
                         )
+                    # Cancel the level-relative double-count that
+                    # NewFamilyInstance applies to level-based families, so
+                    # the fixture lands at its intended absolute elevation
+                    # regardless of the project's datum / elevation-base
+                    # offset. Runs LAST — after the Level is finalized,
+                    # since the level determines the internal elevation we
+                    # measure against. No-op for workplane / face-based
+                    # families and for levels whose internal Z is 0.
+                    _correct_elevation_from_level(
+                        doc, placed, (info or {}).get("target_world_z"),
+                    )
                     if _write_linker(placed, led, m.profile, m.target):
                         result.element_linker_writes += 1
     finally:

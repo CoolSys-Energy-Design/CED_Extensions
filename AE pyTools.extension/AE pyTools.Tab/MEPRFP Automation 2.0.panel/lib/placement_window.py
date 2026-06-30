@@ -152,6 +152,9 @@ class PlacementController(object):
         self.src_browse_btn = f("SrcBrowseButton")
         self.phase_label = f("PhaseLabel")
         self.phase_combo = f("PhaseCombo")
+        self.host_height_row = f("HostHeightRow")
+        self.host_height_check = f("HostHeightCheck")
+        self.host_height_combo = f("HostHeightCombo")
         self.category_list = f("CategoryList")
         self.profile_list = f("ProfileList")
         self.profile_search_box = f("ProfileSearchBox")
@@ -274,6 +277,11 @@ class PlacementController(object):
                     _SourceItem(self._csv_path, "csv", self._csv_path)
                 )
                 self.src_combo.SelectedIndex = 0
+        # Host-height override is meaningful only for the host-model
+        # source (fixtures placed relative to a live host parent).
+        self.host_height_row.Visibility = (
+            Visibility.Visible if kind == "host_model" else Visibility.Collapsed
+        )
         # Clear preview when source changes.
         self._clear_match_rows()
         self._set_status("Source switched. Match again.")
@@ -638,12 +646,30 @@ class PlacementController(object):
 
         selected_cats = {str(item) for item in self.category_list.SelectedItems}
         default_level_id = self._resolve_default_level_id()
+
+        # Host-only mounting-height override. Only honoured for the
+        # host-model source; parse the write-in value and abort the run
+        # (rather than silently ignoring it) if the user checked the box
+        # but typed something we can't read.
+        host_height_inches = None
+        if (self._source_kind == "host_model"
+                and bool(self.host_height_check.IsChecked)):
+            raw = (self.host_height_combo.Text or "").strip()
+            host_height_inches = placement.parse_relative_height_inches(raw)
+            if host_height_inches is None:
+                self._set_status(
+                    "Can't read height '{}'. Use e.g. 66, 66\", 5' 6\", "
+                    "or 5' - 6\".".format(raw)
+                )
+                return
+
         options = placement.PlacementOptions(
             skip_already_placed=bool(self.skip_placed_check.IsChecked),
             allow_type_substitution=bool(self.allow_type_sub_check.IsChecked),
             default_level_id=default_level_id,
             category_filter=selected_cats or None,
             uidoc=self.uidoc,
+            host_relative_height_inches=host_height_inches,
         )
 
         # Hand the run to Revit's main thread via the modeless

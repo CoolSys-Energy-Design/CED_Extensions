@@ -1,0 +1,2475 @@
+equipment_definitions:
+- equipment_properties: {}
+  version: 1
+  prompt_on_parent_mismatch: false
+  schema_version: 4
+  allow_parentless: true
+  ced_truth_source_name: '3608 (AMANA, RCS10TS) MICROWAVE : MICROWAVE'
+  name: '3608 (AMANA, RCS10TS) MICROWAVE : MICROWAVE'
+  parent_filter:
+    family_name_pattern: '3608 (AMANA, RCS10TS) MICROWAVE'
+    parameter_filters: {}
+    category: Specialty Equipment
+    type_name_pattern: MICROWAVE
+  linked_sets:
+  - id: SET-022
+    linked_element_definitions:
+    - offsets:
+      - rotation_deg: -180.0
+        x_inches: -0.9597
+        y_inches: 14.4698
+        z_inches: 46.0
+      label: 'EF-U_Receptacle_CED : Duplex Wall Horizontal - GFCI'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-022-LED-001
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Load Classification_CED: K
+        CKT_Rating_CED: 20.0
+        Product Specification: ''
+        CKT_Panel_CEDT: PB
+        Apparent Load Input_CED: 0.0
+        CKT_Schedule Notes_CEDT: ''
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-022-LED-001 Set Definition ID: SET-022 Location XYZ (ft): 88.712965,270.238869,3.833333 Rotation (deg): 90.000000 Parent Rotation (deg): -90.000000 Parent ElementId: 9634242 LevelId: 30 ElementId: 5823937 FacingOrientation: -1.000000,0.000000,0.000000'
+        Product Datasheet URL: ''
+        Wattage Input_CED: 10763.9104167
+        FLA Input_CED: 0.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: MICROWAVE - BAKERY PREP/SVC
+        Voltage_CED: 120.0
+        Number of Poles_CED: 1
+    name: '3608 (AMANA, RCS10TS) MICROWAVE : MICROWAVE Types'
+  allow_unmatched_parents: true
+  id: EQ-022
+  ced_truth_source_id: EQ-022
+- equipment_properties: {}
+  version: 1
+  prompt_on_parent_mismatch: false
+  schema_version: 4
+  allow_parentless: true
+  ced_truth_source_name: '7003 (EDLUND, ERS-60) RECEIVING SCALE : RECEIVING SCALE'
+  name: '7003 (EDLUND, ERS-60) RECEIVING SCALE : RECEIVING SCALE'
+  parent_filter:
+    family_name_pattern: '7003 (EDLUND, ERS-60) RECEIVING SCALE'
+    parameter_filters: {}
+    category: Specialty Equipment
+    type_name_pattern: RECEIVING SCALE
+  linked_sets:
+  - id: SET-018
+    linked_element_definitions:
+    - offsets:
+      - rotation_deg: 90.0
+        x_inches: 18.3484
+        y_inches: 12.0566
+        z_inches: 46.0
+      label: 'EF-U_Receptacle_CED : Duplex Wall Horizontal - GFCI'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-018-LED-001
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Load Classification_CED: REC
+        CKT_Rating_CED: 20.0
+        Product Specification: ''
+        CKT_Panel_CEDT: CP
+        Apparent Load Input_CED: 180.0
+        CKT_Schedule Notes_CEDT: IG
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-018-LED-001 Set Definition ID: SET-018 Location XYZ (ft): 88.712965,260.072202,3.833333 Rotation (deg): 90.000000 Parent Rotation (deg): 0.000000 Parent ElementId: 10966114 LevelId: 30 ElementId: 5823316 FacingOrientation: -1.000000,0.000000,0.000000'
+        Product Datasheet URL: ''
+        Wattage Input_CED: 0.0
+        FLA Input_CED: 0.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: SCALE -  BAKERY PREP / SVC
+        Voltage_CED: 120.0
+        Number of Poles_CED: 1
+    name: '7003 (EDLUND, ERS-60) RECEIVING SCALE : RECEIVING SCALE Types'
+  allow_unmatched_parents: true
+  id: EQ-018
+  ced_truth_source_id: EQ-018
+- equipment_properties: {}
+  version: 1
+  prompt_on_parent_mismatch: false
+  schema_version: 4
+  allow_parentless: true
+  ced_truth_source_name: '7351 (VOLLRATH, 59500P) INDUCTION RANGE1 : INDUCTION RANGE 2'
+  name: '7351 (VOLLRATH, 59500P) INDUCTION RANGE1 : INDUCTION RANGE 2'
+  parent_filter:
+    family_name_pattern: '7351 (VOLLRATH, 59500P) INDUCTION RANGE1'
+    parameter_filters: {}
+    category: Specialty Equipment
+    type_name_pattern: INDUCTION RANGE 2
+  linked_sets:
+  - id: SET-019
+    linked_element_definitions:
+    - offsets:
+      - rotation_deg: 0.0
+        x_inches: -0.1963
+        y_inches: -17.6301
+        z_inches: 46.0
+      label: 'EF-U_Receptacle_CED : Duplex Wall Horizontal - GFCI'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-019-LED-001
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Product Specification: ''
+        Load Classification_CED: K
+        CKT_Rating_CED: 20.0
+        CKT_Panel_CEDT: PB
+        Apparent Load Input_CED: 0.0
+        CKT_Schedule Notes_CEDT: ''
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-019-LED-001 Set Definition ID: SET-019 Location XYZ (ft): 88.712965,266.072202,3.833333 Rotation (deg): 90.000000 Parent Rotation (deg): 90.000000 Parent ElementId: 10966116 LevelId: 30 ElementId: 5823795 FacingOrientation: -1.000000,0.000000,0.000000'
+        Product Datasheet URL: ''
+        Wattage Input_CED: 0.0
+        FLA Input_CED: 15.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: INDUC STOVE - BAKE PREP/SVC
+        Voltage_CED: 120.0
+        Number of Poles_CED: 1
+    name: '7351 (VOLLRATH, 59500P) INDUCTION RANGE1 : INDUCTION RANGE 2 Types'
+  allow_unmatched_parents: true
+  id: EQ-019
+  ced_truth_source_id: EQ-019
+- equipment_properties: {}
+  version: 1
+  prompt_on_parent_mismatch: false
+  schema_version: 4
+  allow_parentless: true
+  ced_truth_source_name: '3101 (BIRO, MINI 32) MEAT GRINDER : MEAT GRINDER'
+  name: '3101 (BIRO, MINI 32) MEAT GRINDER : MEAT GRINDER'
+  parent_filter:
+    family_name_pattern: '3101 (BIRO, MINI 32) MEAT GRINDER'
+    parameter_filters: {}
+    category: Specialty Equipment
+    type_name_pattern: MEAT GRINDER
+  linked_sets:
+  - id: SET-012
+    linked_element_definitions:
+    - offsets:
+      - rotation_deg: 0.0
+        x_inches: -5.7883
+        y_inches: -20.375
+        z_inches: 18.0
+      label: 'EF-U_Receptacle_CED : Specialty Wall - L15-20R'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-012-LED-001
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Product Specification: ''
+        Load Classification_CED: REC
+        CKT_Rating_CED: 20.0
+        CKT_Panel_CEDT: PM
+        Apparent Load Input_CED: 0.0
+        Power Factor_CED: 1.0
+        CKT_Schedule Notes_CEDT: ''
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-012-LED-001 Set Definition ID: SET-012 Location XYZ (ft): -57.885954,363.592013,1.500000 Rotation (deg): 180.000000 Parent Rotation (deg): 180.000000 Parent ElementId: 9000374 LevelId: 30 ElementId: 5699898 FacingOrientation: -0.000000,-1.000000,0.000000'
+        Wattage Input_CED: 0.0
+        Product Datasheet URL: ''
+        FLA Input_CED: 6.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: MEAT GRINDER - MEAT PREP
+        Voltage_CED: 208.0
+        Number of Poles_CED: 3
+    name: '3101 (BIRO, MINI 32) MEAT GRINDER : MEAT GRINDER Types'
+  ced_truth_source_id: EQ-012
+  allow_unmatched_parents: true
+  id: EQ-012
+- equipment_properties: {}
+  version: 1
+  prompt_on_parent_mismatch: false
+  schema_version: 4
+  allow_parentless: true
+  ced_truth_source_name: 'RO WATER SYSTEM : RO WATER SYSTEM'
+  name: 'RO WATER SYSTEM : RO WATER SYSTEM'
+  parent_filter:
+    family_name_pattern: RO WATER SYSTEM
+    parameter_filters: {}
+    category: Specialty Equipment
+    type_name_pattern: RO WATER SYSTEM
+  linked_sets:
+  - id: SET-042
+    linked_element_definitions:
+    - offsets:
+      - rotation_deg: 180.0
+        x_inches: 23.209
+        y_inches: 24.4375
+        z_inches: 36.0
+      label: 'EF-U_Receptacle_CED : Duplex Wall - GFCI'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-042-LED-001
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Product Specification: ''
+        Load Classification_CED: REC
+        CKT_Rating_CED: 20.0
+        CKT_Panel_CEDT: LP1
+        Apparent Load Input_CED: 180.0
+        CKT_Schedule Notes_CEDT: ''
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-042-LED-001 Set Definition ID: SET-042 Location XYZ (ft): -95.724495,388.374286,20.583333 Rotation (deg): 180.000000 Parent Rotation (deg): 0.000000 Parent ElementId: 11008577 LevelId: 1678422 ElementId: 6133621 FacingOrientation: -0.000000,-1.000000,0.000000'
+        Product Datasheet URL: ''
+        Wattage Input_CED: 0.0
+        FLA Input_CED: 16.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: FRESHPURE RO SKID
+        Voltage_CED: 120.0
+        Number of Poles_CED: 1
+    - offsets:
+      - rotation_deg: 180.0
+        x_inches: 8.3941
+        y_inches: 24.4375
+        z_inches: 36.0
+      label: 'EF-U_Receptacle_CED : Specialty Wall - L6-20R'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-042-LED-002
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Product Specification: ''
+        Load Classification_CED: REC
+        CKT_Rating_CED: 20.0
+        CKT_Panel_CEDT: LP1
+        Apparent Load Input_CED: 0.0
+        CKT_Schedule Notes_CEDT: ''
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-042-LED-002 Set Definition ID: SET-042 Location XYZ (ft): -96.959069,388.374286,20.583333 Rotation (deg): 180.000000 Parent Rotation (deg): 0.000000 Parent ElementId: 11008577 LevelId: 1678422 ElementId: 6133623 FacingOrientation: -0.000000,-1.000000,0.000000'
+        Product Datasheet URL: ''
+        Wattage Input_CED: 0.0
+        FLA Input_CED: 16.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: FRESHPURE RO SKID
+        Voltage_CED: 208.0
+        Number of Poles_CED: 3
+    - offsets:
+      - rotation_deg: 180.0
+        x_inches: 38.8214
+        y_inches: 24.4375
+        z_inches: 36.0
+      label: 'EF-U_Receptacle_CED : Quad Wall - GFCI'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-042-LED-003
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Product Specification: ''
+        Load Classification_CED: REC
+        CKT_Rating_CED: 20.0
+        CKT_Panel_CEDT: LP1
+        Apparent Load Input_CED: 180.0
+        CKT_Schedule Notes_CEDT: ''
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-042-LED-003 Set Definition ID: SET-042 Location XYZ (ft): -94.423462,388.374286,20.583333 Rotation (deg): 180.000000 Parent Rotation (deg): 0.000000 Parent ElementId: 11008577 LevelId: 1678422 ElementId: 6133624 FacingOrientation: -0.000000,-1.000000,0.000000'
+        Product Datasheet URL: ''
+        Wattage Input_CED: 0.0
+        FLA Input_CED: 0.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: FRESHPURE RO SKID QUAD
+        Voltage_CED: 120.0
+        Number of Poles_CED: 1
+    name: 'RO WATER SYSTEM : RO WATER SYSTEM Types'
+  allow_unmatched_parents: true
+  id: EQ-042
+  ced_truth_source_id: EQ-042
+- equipment_properties: {}
+  version: 1
+  prompt_on_parent_mismatch: false
+  schema_version: 4
+  allow_parentless: true
+  ced_truth_source_name: '3272 (ALTO SHAAM, 1200 UP) DOUBLE HOT HOLDING CABINET : DOUBLE ALTOSHAAM 208V'
+  name: '3272 (ALTO SHAAM, 1200 UP) DOUBLE HOT HOLDING CABINET : DOUBLE ALTOSHAAM 208V'
+  parent_filter:
+    family_name_pattern: '3272 (ALTO SHAAM, 1200 UP) DOUBLE HOT HOLDING CABINET'
+    parameter_filters: {}
+    category: Specialty Equipment
+    type_name_pattern: DOUBLE ALTOSHAAM 208V
+  linked_sets:
+  - id: SET-041
+    linked_element_definitions:
+    - offsets:
+      - rotation_deg: -180.0
+        x_inches: -2.0131
+        y_inches: 20.3731
+        z_inches: 18.0
+      label: 'EF-U_Receptacle_CED : Specialty Wall - 6-50R'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-041-LED-001
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Load Classification_CED: K
+        CKT_Rating_CED: 40.0
+        Product Specification: ''
+        CKT_Panel_CEDT: PK1
+        Apparent Load Input_CED: 0.0
+        CKT_Schedule Notes_CEDT: GFI
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-041-LED-001 Set Definition ID: SET-041 Location XYZ (ft): 88.608838,289.155536,1.500000 Rotation (deg): 270.000000 Parent Rotation (deg): 90.000000 Parent ElementId: 8953832 LevelId: 30 ElementId: 5820192 FacingOrientation: 1.000000,-0.000000,0.000000'
+        Product Datasheet URL: ''
+        Wattage Input_CED: 66736.2445836
+        FLA Input_CED: 0.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: COOK HOLD OVEN
+        Voltage_CED: 208.0
+        Number of Poles_CED: 2
+    name: '3272 (ALTO SHAAM, 1200 UP) DOUBLE HOT HOLDING CABINET : DOUBLE ALTOSHAAM 208V Types'
+  allow_unmatched_parents: true
+  id: EQ-041
+  ced_truth_source_id: EQ-041
+- equipment_properties: {}
+  version: 1
+  prompt_on_parent_mismatch: false
+  schema_version: 4
+  allow_parentless: true
+  ced_truth_source_name: '3424 (GLOBE, SP08) 8QT MIXER : 8QT MIXER'
+  name: '3424 (GLOBE, SP08) 8QT MIXER : 8QT MIXER'
+  parent_filter:
+    family_name_pattern: '3424 (GLOBE, SP08) 8QT MIXER'
+    parameter_filters: {}
+    category: Specialty Equipment
+    type_name_pattern: 8QT MIXER
+  linked_sets:
+  - id: SET-020
+    linked_element_definitions:
+    - offsets:
+      - rotation_deg: -180.0
+        x_inches: 0.5925
+        y_inches: 16.9802
+        z_inches: 46.0
+      label: 'EF-U_Receptacle_CED : Duplex Wall Horizontal - GFCI'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-020-LED-001
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Load Classification_CED: K
+        CKT_Rating_CED: 20.0
+        Product Specification: ''
+        CKT_Panel_CEDT: PB
+        Apparent Load Input_CED: 0.0
+        CKT_Schedule Notes_CEDT: ''
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-020-LED-001 Set Definition ID: SET-020 Location XYZ (ft): 88.712965,267.905536,3.833333 Rotation (deg): 90.000000 Parent Rotation (deg): -90.000000 Parent ElementId: 9634241 LevelId: 30 ElementId: 5823886 FacingOrientation: -1.000000,0.000000,0.000000'
+        Product Datasheet URL: ''
+        Wattage Input_CED: 0.0
+        FLA Input_CED: 5.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: 8QT MIXER - BAKERY PREP/SVC
+        Voltage_CED: 120.0
+        Number of Poles_CED: 1
+    name: '3424 (GLOBE, SP08) 8QT MIXER : 8QT MIXER Types'
+  allow_unmatched_parents: true
+  id: EQ-020
+  ced_truth_source_id: EQ-020
+- equipment_properties: {}
+  version: 1
+  prompt_on_parent_mismatch: false
+  schema_version: 4
+  allow_parentless: true
+  ced_truth_source_name: '5960, 5961, 5962, 5963, 5964, 5965 (OLYMPIC) COOLER SHELVING : 48 X 24 X 72'
+  name: '5960, 5961, 5962, 5963, 5964, 5965 (OLYMPIC) COOLER SHELVING : 48 X 24 X 72'
+  parent_filter:
+    family_name_pattern: '5960, 5961, 5962, 5963, 5964, 5965 (OLYMPIC) COOLER SHELVING'
+    parameter_filters: {}
+    category: Specialty Equipment
+    type_name_pattern: 48 X 24 X 72
+  linked_sets:
+  - id: SET-004
+    linked_element_definitions:
+    - offsets:
+      - rotation_deg: 0.0
+        x_inches: 0.0
+        y_inches: -12.0
+        z_inches: 46.0
+      label: 'EF-U_Receptacle_CED : Duplex Wall Horizontal - GFCI'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-004-LED-001
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Product Specification: ''
+        Load Classification_CED: REC
+        CKT_Rating_CED: 20.0
+        CKT_Panel_CEDT: LP2
+        Apparent Load Input_CED: 0.0
+        Power Factor_CED: 1.0
+        CKT_Schedule Notes_CEDT: ''
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-004-LED-001 Set Definition ID: SET-004 Location XYZ (ft): -107.391162,324.289557,3.833333 Rotation (deg): 90.000000 Parent Rotation (deg): 90.000000 Parent ElementId: 9927425 LevelId: 30 ElementId: 6244878 FacingOrientation: -1.000000,0.000000,0.000000'
+        Wattage Input_CED: 0.0
+        Product Datasheet URL: ''
+        FLA Input_CED: 2.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: WRAPPER - PRODUCE PREP
+        Voltage_CED: 120.0
+        Number of Poles_CED: 1
+    name: '5960, 5961, 5962, 5963, 5964, 5965 (OLYMPIC) COOLER SHELVING : 48 X 24 X 72 Types'
+  ced_truth_source_id: EQ-004
+  allow_unmatched_parents: true
+  id: EQ-004
+- equipment_properties: {}
+  version: 1
+  prompt_on_parent_mismatch: false
+  schema_version: 4
+  allow_parentless: true
+  ced_truth_source_name: '3836, 3838, 3840, 3843 (TRUE, TPP AT HC) PIZZA PREP : 60"'
+  name: '3836, 3838, 3840, 3843 (TRUE, TPP AT HC) PIZZA PREP : 60"'
+  parent_filter:
+    family_name_pattern: '3836, 3838, 3840, 3843 (TRUE, TPP AT HC) PIZZA PREP'
+    parameter_filters: {}
+    category: Specialty Equipment
+    type_name_pattern: 60"
+  linked_sets:
+  - id: SET-028
+    linked_element_definitions:
+    - offsets:
+      - rotation_deg: 180.0
+        x_inches: -25.125
+        y_inches: 18.1545
+        z_inches: 18.0
+      label: 'EF-U_Receptacle_CED : Duplex Wall Horizontal - GFCI'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-028-LED-001
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Load Classification_CED: REC
+        CKT_Rating_CED: 20.0
+        Product Specification: ''
+        CKT_Panel_CEDT: PK1
+        Apparent Load Input_CED: 0.0
+        CKT_Schedule Notes_CEDT: ''
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-028-LED-001 Set Definition ID: SET-028 Location XYZ (ft): 88.004671,294.039373,1.500000 Rotation (deg): 90.000000 Parent Rotation (deg): -90.000000 Parent ElementId: 9451359 LevelId: 30 ElementId: 6105611 FacingOrientation: -1.000000,0.000000,0.000000'
+        Product Datasheet URL: ''
+        Wattage Input_CED: 0.0
+        FLA Input_CED: 4.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: PIZZA PREP REF COUNTER
+        Voltage_CED: 120.0
+        Number of Poles_CED: 1
+    name: '3836, 3838, 3840, 3843 (TRUE, TPP AT HC) PIZZA PREP : 60" Types'
+  allow_unmatched_parents: true
+  id: EQ-028
+  ced_truth_source_id: EQ-028
+- equipment_properties: {}
+  version: 1
+  prompt_on_parent_mismatch: false
+  schema_version: 4
+  allow_parentless: true
+  ced_truth_source_name: 'BUG LIGHT : PREP'
+  name: 'BUG LIGHT : PREP'
+  parent_filter:
+    family_name_pattern: BUG LIGHT
+    parameter_filters: {}
+    category: Specialty Equipment
+    type_name_pattern: PREP
+  linked_sets:
+  - id: SET-001
+    linked_element_definitions:
+    - offsets:
+      - rotation_deg: -180.0
+        x_inches: 0.0
+        y_inches: 2.25
+        z_inches: 84.0
+      label: 'EF-U_Receptacle_CED : Duplex Wall'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-001-LED-001
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Product Specification: ''
+        Load Classification_CED: REC
+        CKT_Rating_CED: 20.0
+        CKT_Panel_CEDT: LP2
+        Apparent Load Input_CED: 180.0
+        Power Factor_CED: 1.0
+        CKT_Schedule Notes_CEDT: ''
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-001-LED-001 Set Definition ID: SET-001 Location XYZ (ft): -110.007478,306.432718,7.000000 Rotation (deg): 30.000000 Parent Rotation (deg): -150.000000 Parent ElementId: 9648790 LevelId: 30 ElementId: 5328393 FacingOrientation: -0.500000,0.866025,0.000000'
+        Wattage Input_CED: 0.0
+        Product Datasheet URL: ''
+        FLA Input_CED: 0.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: BUG LIGHT - PRODUCE PREP
+        Voltage_CED: 120.0
+        Number of Poles_CED: 1
+    name: 'BUG LIGHT : PREP Types'
+  ced_truth_source_id: EQ-001
+  allow_unmatched_parents: true
+  id: EQ-001
+- equipment_properties: {}
+  version: 1
+  prompt_on_parent_mismatch: false
+  schema_version: 4
+  allow_parentless: true
+  ced_truth_source_name: '3427, 3428, 3429 (BAXTER, OV500) DOUBLE RACK OVEN : ELECTRIC OVEN 480V'
+  name: '3427, 3428, 3429 (BAXTER, OV500) DOUBLE RACK OVEN : ELECTRIC OVEN 480V'
+  parent_filter:
+    family_name_pattern: '3427, 3428, 3429 (BAXTER, OV500) DOUBLE RACK OVEN'
+    parameter_filters: {}
+    category: Specialty Equipment
+    type_name_pattern: ELECTRIC OVEN 480V
+  linked_sets:
+  - id: SET-017
+    linked_element_definitions:
+    - offsets:
+      - rotation_deg: 135.0
+        x_inches: -29.4138
+        y_inches: 44.5645
+        z_inches: 18.0
+      label: 'EF-U_Junction Box_CED : Wall - No Stem'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-017-LED-001
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Product Specification: ''
+        Load Classification_CED: K
+        CKT_Rating_CED: 80.0
+        CKT_Panel_CEDT: PK3
+        Apparent Load Input_CED: 0.0
+        CKT_Schedule Notes_CEDT: ''
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-017-LED-001 Set Definition ID: SET-017 Location XYZ (ft): 87.132314,249.783883,1.500000 Rotation (deg): 0.000000 Parent Rotation (deg): -135.000000 Parent ElementId: 8819166 LevelId: 30 ElementId: 5729935 FacingOrientation: 0.000000,1.000000,0.000000'
+        Product Datasheet URL: ''
+        Wattage Input_CED: 0.0
+        FLA Input_CED: 64.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: DOUBLE RACK OVEN
+        Voltage_CED: 480.0
+        Number of Poles_CED: 3
+    - offsets:
+      - rotation_deg: 135.0
+        x_inches: -15.2717
+        y_inches: 44.5645
+        z_inches: 18.0
+      label: 'EF-U_Junction Box_CED : Wall - No Stem'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-017-LED-002
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Product Specification: ''
+        Load Classification_CED: K
+        CKT_Rating_CED: 20.0
+        CKT_Panel_CEDT: PB
+        Apparent Load Input_CED: 0.0
+        CKT_Schedule Notes_CEDT: ''
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-017-LED-002 Set Definition ID: SET-017 Location XYZ (ft): 86.298981,248.950550,1.500000 Rotation (deg): 0.000000 Parent Rotation (deg): -135.000000 Parent ElementId: 8819166 LevelId: 30 ElementId: 5729936 FacingOrientation: 0.000000,1.000000,0.000000'
+        Product Datasheet URL: ''
+        Wattage Input_CED: 0.0
+        FLA Input_CED: 15.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: DOUBLE RACK OVEN CNTRLS
+        Voltage_CED: 120.0
+        Number of Poles_CED: 1
+    - offsets:
+      - rotation_deg: -135.0
+        x_inches: -65.8551
+        y_inches: 35.1251
+        z_inches: 36.0
+      label: 'EF-U_Disconnect Switch_CED : Fused - 100A'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-017-LED-003
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Product Specification: ''
+        Load Classification_CED: NC
+        CKT_Rating_CED: 0.0
+        CKT_Panel_CEDT: ''
+        Apparent Load Input_CED: 0.0
+        CKT_Schedule Notes_CEDT: ''
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-017-LED-003 Set Definition ID: SET-017 Location XYZ (ft): 88.723421,252.487429,3.000000 Rotation (deg): 90.000000 Parent Rotation (deg): -135.000000 Parent ElementId: 8819166 LevelId: 30 ElementId: 6109054 FacingOrientation: -1.000000,0.000000,0.000000'
+        Product Datasheet URL: ''
+        Wattage Input_CED: 0.0
+        FLA Input_CED: 0.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: ''
+        Voltage_CED: 208.0
+        Number of Poles_CED: 3
+    name: '3427, 3428, 3429 (BAXTER, OV500) DOUBLE RACK OVEN : ELECTRIC OVEN 480V Types'
+  allow_unmatched_parents: true
+  id: EQ-017
+  ced_truth_source_id: EQ-017
+- equipment_properties: {}
+  version: 1
+  prompt_on_parent_mismatch: false
+  schema_version: 4
+  allow_parentless: true
+  ced_truth_source_name: '3106 (HOBART, F101 1) FAT MOISTURE ANALYZER : FAT MOISTURE ANALYZER'
+  name: '3106 (HOBART, F101 1) FAT MOISTURE ANALYZER : FAT MOISTURE ANALYZER'
+  parent_filter:
+    family_name_pattern: '3106 (HOBART, F101 1) FAT MOISTURE ANALYZER'
+    parameter_filters: {}
+    category: Specialty Equipment
+    type_name_pattern: FAT MOISTURE ANALYZER
+  linked_sets:
+  - id: SET-011
+    linked_element_definitions:
+    - offsets:
+      - rotation_deg: -180.0
+        x_inches: -5.729
+        y_inches: 18.4648
+        z_inches: 46.0
+      label: 'EF-U_Receptacle_CED : Duplex Wall Horizontal - GFCI'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-011-LED-001
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Product Specification: ''
+        Load Classification_CED: REC
+        CKT_Rating_CED: 20.0
+        CKT_Panel_CEDT: PM
+        Apparent Load Input_CED: 0.0
+        Power Factor_CED: 1.0
+        CKT_Schedule Notes_CEDT: ''
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-011-LED-001 Set Definition ID: SET-011 Location XYZ (ft): -63.469287,354.217013,3.833333 Rotation (deg): 0.000000 Parent Rotation (deg): 180.000000 Parent ElementId: 9715663 LevelId: 30 ElementId: 5699704 FacingOrientation: 0.000000,1.000000,0.000000'
+        Wattage Input_CED: 0.0
+        Product Datasheet URL: ''
+        FLA Input_CED: 1.8
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: FAT ANALYZER - MEAT PREP
+        Voltage_CED: 120.0
+        Number of Poles_CED: 1
+    name: '3106 (HOBART, F101 1) FAT MOISTURE ANALYZER : FAT MOISTURE ANALYZER Types'
+  ced_truth_source_id: EQ-011
+  allow_unmatched_parents: true
+  id: EQ-011
+- equipment_properties: {}
+  version: 1
+  prompt_on_parent_mismatch: false
+  schema_version: 4
+  allow_parentless: true
+  ced_truth_source_name: '6801 (MILLWORK) BULK NUT BUTTER FIXTURE : BULK NUT BUTTER'
+  name: '6801 (MILLWORK) BULK NUT BUTTER FIXTURE : BULK NUT BUTTER'
+  parent_filter:
+    family_name_pattern: 6801 (MILLWORK) BULK NUT BUTTER FIXTURE
+    parameter_filters: {}
+    category: Specialty Equipment
+    type_name_pattern: BULK NUT BUTTER
+  linked_sets:
+  - id: SET-006
+    linked_element_definitions:
+    - offsets:
+      - rotation_deg: -180.0
+        x_inches: -5.9737
+        y_inches: 10.0
+        z_inches: 44.0
+      label: 'EF-U_Receptacle_CED : Duplex Wall - Horizontal'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-006-LED-001
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Product Specification: ''
+        Load Classification_CED: NC
+        CKT_Rating_CED: 20.0
+        CKT_Panel_CEDT: LF
+        Apparent Load Input_CED: 0.0
+        Power Factor_CED: 1.0
+        CKT_Schedule Notes_CEDT: ''
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-006-LED-001 Set Definition ID: SET-006 Location XYZ (ft): -108.196624,306.046228,3.666667 Rotation (deg): 210.000000 Parent Rotation (deg): 30.000000 Parent ElementId: 9269302 LevelId: 30 ElementId: 5988864 FacingOrientation: 0.500000,-0.866025,0.000000'
+        Wattage Input_CED: 0.0
+        Product Datasheet URL: ''
+        FLA Input_CED: 12.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: NUT GRINDER 2 - SALES FLR
+        Voltage_CED: 120.0
+        Number of Poles_CED: 1
+    - offsets:
+      - rotation_deg: -180.0
+        x_inches: -17.8035
+        y_inches: 10.0
+        z_inches: 44.0
+      label: 'EF-U_Receptacle_CED : Duplex Wall - Horizontal'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-006-LED-002
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Product Specification: ''
+        Load Classification_CED: NC
+        CKT_Rating_CED: 20.0
+        CKT_Panel_CEDT: LF
+        Apparent Load Input_CED: 0.0
+        Power Factor_CED: 1.0
+        CKT_Schedule Notes_CEDT: ''
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-006-LED-002 Set Definition ID: SET-006 Location XYZ (ft): -109.050366,305.553319,3.666667 Rotation (deg): 210.000000 Parent Rotation (deg): 30.000000 Parent ElementId: 9269302 LevelId: 30 ElementId: 5988923 FacingOrientation: 0.500000,-0.866025,0.000000'
+        Wattage Input_CED: 0.0
+        Product Datasheet URL: ''
+        FLA Input_CED: 12.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: NUT GRINDER 1 - SALES FLR
+        Voltage_CED: 120.0
+        Number of Poles_CED: 1
+    - offsets:
+      - rotation_deg: -180.0
+        x_inches: 17.7093
+        y_inches: 10.183
+        z_inches: 44.0
+      label: 'EF-U_Receptacle_CED : Duplex Wall - Horizontal'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-006-LED-003
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Product Specification: ''
+        Load Classification_CED: NC
+        CKT_Rating_CED: 20.0
+        CKT_Panel_CEDT: LF
+        Apparent Load Input_CED: 0.0
+        Power Factor_CED: 1.0
+        CKT_Schedule Notes_CEDT: ''
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-006-LED-003 Set Definition ID: SET-006 Location XYZ (ft): -106.495075,307.046228,3.666667 Rotation (deg): 210.000000 Parent Rotation (deg): 30.000000 Parent ElementId: 9269302 LevelId: 30 ElementId: 5988959 FacingOrientation: 0.500000,-0.866025,0.000000'
+        Wattage Input_CED: 0.0
+        Product Datasheet URL: ''
+        FLA Input_CED: 12.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: NUT GRINDER 4 - SALES FLR
+        Voltage_CED: 120.0
+        Number of Poles_CED: 1
+    - offsets:
+      - rotation_deg: -180.0
+        x_inches: 5.8795
+        y_inches: 10.183
+        z_inches: 44.0
+      label: 'EF-U_Receptacle_CED : Duplex Wall - Horizontal'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-006-LED-004
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Product Specification: ''
+        Load Classification_CED: NC
+        CKT_Rating_CED: 20.0
+        CKT_Panel_CEDT: LF
+        Apparent Load Input_CED: 0.0
+        Power Factor_CED: 1.0
+        CKT_Schedule Notes_CEDT: ''
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-006-LED-004 Set Definition ID: SET-006 Location XYZ (ft): -107.348817,306.553319,3.666667 Rotation (deg): 210.000000 Parent Rotation (deg): 30.000000 Parent ElementId: 9269302 LevelId: 30 ElementId: 5988960 FacingOrientation: 0.500000,-0.866025,0.000000'
+        Wattage Input_CED: 0.0
+        Product Datasheet URL: ''
+        FLA Input_CED: 12.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: NUT GRINDER 3 - SALES FLR
+        Voltage_CED: 120.0
+        Number of Poles_CED: 1
+    name: '6801 (MILLWORK) BULK NUT BUTTER FIXTURE : BULK NUT BUTTER Types'
+  ced_truth_source_id: EQ-006
+  allow_unmatched_parents: true
+  id: EQ-006
+- equipment_properties: {}
+  version: 1
+  prompt_on_parent_mismatch: false
+  schema_version: 4
+  allow_parentless: true
+  ced_truth_source_name: '3479 (MANITOWOC, UDF0240A) ICE MACHINE : ICE MACHINE'
+  name: '3479 (MANITOWOC, UDF0240A) ICE MACHINE : ICE MACHINE'
+  parent_filter:
+    family_name_pattern: '3479 (MANITOWOC, UDF0240A) ICE MACHINE'
+    parameter_filters: {}
+    category: Mechanical Equipment
+    type_name_pattern: ICE MACHINE
+  linked_sets:
+  - id: SET-015
+    linked_element_definitions:
+    - offsets:
+      - rotation_deg: -90.0
+        x_inches: -20.25
+        y_inches: -27.284
+        z_inches: 36.0
+      label: 'EF-U_Disconnect Switch_CED : Non-Fused - 30A'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-015-LED-001
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Product Specification: ''
+        Load Classification_CED: NC
+        CKT_Rating_CED: 20.0
+        CKT_Panel_CEDT: LP1
+        Apparent Load Input_CED: 0.0
+        Power Factor_CED: 1.0
+        CKT_Schedule Notes_CEDT: ''
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-015-LED-001 Set Definition ID: SET-015 Location XYZ (ft): -101.370327,361.723263,3.000000 Rotation (deg): 90.000000 Parent Rotation (deg): 180.000000 Parent ElementId: 5502726 LevelId: 30 ElementId: 6104785 FacingOrientation: -1.000000,0.000000,0.000000'
+        Wattage Input_CED: 0.0
+        Product Datasheet URL: ''
+        FLA Input_CED: 3.2
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: ICE FLAKER
+        Voltage_CED: 208.0
+        Number of Poles_CED: 2
+    name: '3479 (MANITOWOC, UDF0240A) ICE MACHINE : ICE MACHINE Types'
+  ced_truth_source_id: EQ-015
+  allow_unmatched_parents: true
+  id: EQ-015
+- equipment_properties: {}
+  version: 1
+  prompt_on_parent_mismatch: false
+  schema_version: 4
+  allow_parentless: true
+  ced_truth_source_name: '3108, 3109, 3110 (MAINCA, FC 20) HYDRAULIC SAUSAGE STUFFER : 3108'
+  name: '3108, 3109, 3110 (MAINCA, FC 20) HYDRAULIC SAUSAGE STUFFER : 3108'
+  parent_filter:
+    family_name_pattern: '3108, 3109, 3110 (MAINCA, FC 20) HYDRAULIC SAUSAGE STUFFER'
+    parameter_filters: {}
+    category: Specialty Equipment
+    type_name_pattern: 3108
+  linked_sets:
+  - id: SET-013
+    linked_element_definitions:
+    - offsets:
+      - rotation_deg: -180.0
+        x_inches: 11.3044
+        y_inches: 16.7617
+        z_inches: 36.0
+      label: 'EF-U_Disconnect Switch_CED : Non-Fused - 30A'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-013-LED-001
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Product Specification: ''
+        Load Classification_CED: NC
+        CKT_Rating_CED: 20.0
+        CKT_Panel_CEDT: PM
+        Apparent Load Input_CED: 0.0
+        Power Factor_CED: 1.0
+        CKT_Schedule Notes_CEDT: ''
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-013-LED-001 Set Definition ID: SET-013 Location XYZ (ft): -59.802620,363.592013,3.000000 Rotation (deg): 180.000000 Parent Rotation (deg): -0.000000 Parent ElementId: 9620936 LevelId: 30 ElementId: 5700196 FacingOrientation: -0.000000,-1.000000,0.000000'
+        Wattage Input_CED: 0.0
+        Product Datasheet URL: ''
+        FLA Input_CED: 5.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: SAUSAGE STUFFER - MEAT PREP
+        Voltage_CED: 208.0
+        Number of Poles_CED: 3
+    name: '3108, 3109, 3110 (MAINCA, FC 20) HYDRAULIC SAUSAGE STUFFER : 3108 Types'
+  ced_truth_source_id: EQ-013
+  allow_unmatched_parents: true
+  id: EQ-013
+- equipment_properties: {}
+  version: 1
+  prompt_on_parent_mismatch: false
+  schema_version: 4
+  allow_parentless: true
+  ced_truth_source_name: '3015 (CITROCASA, 8000 SB ATS) JUICER : JUICER'
+  name: '3015 (CITROCASA, 8000 SB ATS) JUICER : JUICER'
+  parent_filter:
+    family_name_pattern: '3015 (CITROCASA, 8000 SB ATS) JUICER'
+    parameter_filters: {}
+    category: Specialty Equipment
+    type_name_pattern: JUICER
+  linked_sets:
+  - id: SET-005
+    linked_element_definitions:
+    - offsets:
+      - rotation_deg: 180.0
+        x_inches: 1.7933
+        y_inches: 17.6
+        z_inches: 46.0
+      label: 'EF-U_Receptacle_CED : Duplex Wall Horizontal - GFCI'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-005-LED-001
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Product Specification: ''
+        Load Classification_CED: REC
+        CKT_Rating_CED: 20.0
+        CKT_Panel_CEDT: LP2
+        Apparent Load Input_CED: 0.0
+        Power Factor_CED: 1.0
+        CKT_Schedule Notes_CEDT: ''
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-005-LED-001 Set Definition ID: SET-005 Location XYZ (ft): -118.005745,325.874286,3.833333 Rotation (deg): 270.000000 Parent Rotation (deg): 90.000000 Parent ElementId: 9557359 LevelId: 30 ElementId: 5698020 FacingOrientation: 1.000000,-0.000000,0.000000'
+        Wattage Input_CED: 0.0
+        Product Datasheet URL: ''
+        FLA Input_CED: 2.5
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: JUICER PRODUCE PREP
+        Voltage_CED: 120.0
+        Number of Poles_CED: 1
+    name: '3015 (CITROCASA, 8000 SB ATS) JUICER : JUICER Types'
+  ced_truth_source_id: EQ-005
+  allow_unmatched_parents: true
+  id: EQ-005
+- equipment_properties: {}
+  version: 1
+  prompt_on_parent_mismatch: false
+  schema_version: 4
+  allow_parentless: true
+  ced_truth_source_name: "2321, 2322, 2323, 2324, 2325 (HILL PHOENIX) PIZZA VENUE : 10' PIZZA VENUE INLINE_D-2322 SB-10H"
+  name: "2321, 2322, 2323, 2324, 2325 (HILL PHOENIX) PIZZA VENUE : 10' PIZZA VENUE INLINE_D-2322 SB-10H"
+  parent_filter:
+    family_name_pattern: '2321, 2322, 2323, 2324, 2325 (HILL PHOENIX) PIZZA VENUE'
+    parameter_filters: {}
+    category: Specialty Equipment
+    type_name_pattern: 10' PIZZA VENUE INLINE_D-2322 SB-10H
+  linked_sets:
+  - id: SET-031
+    linked_element_definitions:
+    - offsets:
+      - rotation_deg: 90.0
+        x_inches: 92.097
+        y_inches: -10.2044
+        z_inches: 0.0
+      label: 'EF-U_Junction Box_CED : Floor'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-031-LED-001
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Product Specification: ''
+        Load Classification_CED: K
+        CKT_Rating_CED: 0.0
+        CKT_Panel_CEDT: ''
+        Apparent Load Input_CED: 0.0
+        CKT_Schedule Notes_CEDT: ''
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-031-LED-001 Set Definition ID: SET-031 Location XYZ (ft): 78.035921,293.072202,0.000000 Rotation (deg): 0.000000 Parent Rotation (deg): -90.000000 Parent ElementId: 11994075 LevelId: 30 ElementId: 6020769 FacingOrientation: 0.000000,1.000000,0.000000'
+        Product Datasheet URL: ''
+        Wattage Input_CED: 0.0
+        FLA Input_CED: 0.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: ''
+        Voltage_CED: 120.0
+        Number of Poles_CED: 1
+    name: "2321, 2322, 2323, 2324, 2325 (HILL PHOENIX) PIZZA VENUE : 10' PIZZA VENUE INLINE_D-2322 SB-10H Types"
+  allow_unmatched_parents: true
+  id: EQ-031
+  ced_truth_source_id: EQ-031
+- equipment_properties: {}
+  version: 1
+  prompt_on_parent_mismatch: false
+  schema_version: 4
+  allow_parentless: true
+  ced_truth_source_name: '3299 (ZOJIRUSHI, NYC 36) RICE COOKER : RICE COOKER'
+  name: '3299 (ZOJIRUSHI, NYC 36) RICE COOKER : RICE COOKER'
+  parent_filter:
+    family_name_pattern: '3299 (ZOJIRUSHI, NYC 36) RICE COOKER'
+    parameter_filters: {}
+    category: Specialty Equipment
+    type_name_pattern: RICE COOKER
+  linked_sets:
+  - id: SET-027
+    linked_element_definitions:
+    - offsets:
+      - rotation_deg: 0.0
+        x_inches: -1.5629
+        y_inches: -16.0
+        z_inches: 46.0
+      label: 'EF-U_Receptacle_CED : Specialty Wall - 208V/1Ph - Horizontal'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-027-LED-001
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Product Specification: ''
+        Load Classification_CED: K
+        CKT_Rating_CED: 20.0
+        CKT_Panel_CEDT: PK1
+        Apparent Load Input_CED: 0.0
+        CKT_Schedule Notes_CEDT: ''
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-027-LED-001 Set Definition ID: SET-027 Location XYZ (ft): 88.004671,276.660467,3.833333 Rotation (deg): 90.000000 Parent Rotation (deg): 90.000000 Parent ElementId: 9234851 LevelId: 30 ElementId: 5824004 FacingOrientation: -1.000000,0.000000,0.000000'
+        Product Datasheet URL: ''
+        Wattage Input_CED: 0.0
+        FLA Input_CED: 15.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: RICE WARMER
+        Voltage_CED: 208.0
+        Number of Poles_CED: 2
+    name: '3299 (ZOJIRUSHI, NYC 36) RICE COOKER : RICE COOKER Types'
+  allow_unmatched_parents: true
+  id: EQ-027
+  ced_truth_source_id: EQ-027
+- equipment_properties: {}
+  version: 1
+  prompt_on_parent_mismatch: false
+  schema_version: 4
+  allow_parentless: true
+  ced_truth_source_name: 'HOOD : TYPE'
+  name: 'HOOD : TYPE'
+  parent_filter:
+    family_name_pattern: HOOD
+    parameter_filters: {}
+    category: Mechanical Equipment
+    type_name_pattern: TYPE
+  linked_sets:
+  - id: SET-039
+    linked_element_definitions:
+    - offsets:
+      - rotation_deg: -90.0
+        x_inches: -54.4401
+        y_inches: 23.625
+        z_inches: 96.0
+      label: 'EF-U_Junction Box_CED : Wall - No Stem'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-039-LED-001
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Load Classification_CED: NC
+        CKT_Rating_CED: 20.0
+        Product Specification: ''
+        CKT_Panel_CEDT: PK2
+        Apparent Load Input_CED: 500.0
+        CKT_Schedule Notes_CEDT: ''
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-039-LED-001 Set Definition ID: SET-039 Location XYZ (ft): 98.077588,327.322202,8.000000 Rotation (deg): 0.000000 Parent Rotation (deg): 90.000000 Parent ElementId: 9440846 LevelId: 30 ElementId: 5818559 FacingOrientation: 0.000000,1.000000,0.000000'
+        Product Datasheet URL: ''
+        Wattage Input_CED: 0.0
+        FLA Input_CED: 0.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: HOOD-4 CONTROLS
+        Voltage_CED: 120.0
+        Number of Poles_CED: 1
+    name: 'HOOD : TYPE Types'
+  allow_unmatched_parents: true
+  id: EQ-039
+  ced_truth_source_id: EQ-039
+- equipment_properties: {}
+  version: 1
+  prompt_on_parent_mismatch: false
+  schema_version: 4
+  allow_parentless: true
+  ced_truth_source_name: '3213 (PIZZA MASTER, PM933ED) PIZZA OVEN : PIZZA OVEN'
+  name: '3213 (PIZZA MASTER, PM933ED) PIZZA OVEN : PIZZA OVEN'
+  parent_filter:
+    family_name_pattern: '3213 (PIZZA MASTER, PM933ED) PIZZA OVEN'
+    parameter_filters: {}
+    category: Specialty Equipment
+    type_name_pattern: PIZZA OVEN
+  linked_sets:
+  - id: SET-029
+    linked_element_definitions:
+    - offsets:
+      - rotation_deg: 90.0
+        x_inches: -21.2932
+        y_inches: 13.6015
+        z_inches: 18.0
+      label: 'EF-U_Junction Box_CED : Wall - No Stem'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-029-LED-001
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Product Specification: ''
+        Load Classification_CED: K
+        CKT_Rating_CED: 60.0
+        CKT_Panel_CEDT: PK2
+        Apparent Load Input_CED: 0.0
+        CKT_Schedule Notes_CEDT: ''
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-029-LED-001 Set Definition ID: SET-029 Location XYZ (ft): 88.285921,300.488869,1.500000 Rotation (deg): 0.000000 Parent Rotation (deg): -90.000000 Parent ElementId: 8821299 LevelId: 30 ElementId: 5729982 FacingOrientation: 0.000000,1.000000,0.000000'
+        Product Datasheet URL: ''
+        Wattage Input_CED: 0.0
+        FLA Input_CED: 47.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: PIZZA DECK 1
+        Voltage_CED: 208.0
+        Number of Poles_CED: 3
+    - offsets:
+      - rotation_deg: 90.0
+        x_inches: -6.2932
+        y_inches: 13.6015
+        z_inches: 18.0
+      label: 'EF-U_Junction Box_CED : Wall - No Stem'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-029-LED-002
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Product Specification: ''
+        Load Classification_CED: K
+        CKT_Rating_CED: 60.0
+        CKT_Panel_CEDT: PK2
+        Apparent Load Input_CED: 0.0
+        CKT_Schedule Notes_CEDT: ''
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-029-LED-002 Set Definition ID: SET-029 Location XYZ (ft): 88.285921,299.238869,1.500000 Rotation (deg): 0.000000 Parent Rotation (deg): -90.000000 Parent ElementId: 8821299 LevelId: 30 ElementId: 5729983 FacingOrientation: 0.000000,1.000000,0.000000'
+        Product Datasheet URL: ''
+        Wattage Input_CED: 0.0
+        FLA Input_CED: 47.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: PIZZA DECK 2
+        Voltage_CED: 208.0
+        Number of Poles_CED: 3
+    - offsets:
+      - rotation_deg: 90.0
+        x_inches: 9.7068
+        y_inches: 13.6015
+        z_inches: 18.0
+      label: 'EF-U_Junction Box_CED : Wall - No Stem'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-029-LED-003
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Product Specification: ''
+        Load Classification_CED: K
+        CKT_Rating_CED: 60.0
+        CKT_Panel_CEDT: PK2
+        Apparent Load Input_CED: 0.0
+        CKT_Schedule Notes_CEDT: ''
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-029-LED-003 Set Definition ID: SET-029 Location XYZ (ft): 88.285921,297.905536,1.500000 Rotation (deg): 0.000000 Parent Rotation (deg): -90.000000 Parent ElementId: 8821299 LevelId: 30 ElementId: 5729984 FacingOrientation: 0.000000,1.000000,0.000000'
+        Product Datasheet URL: ''
+        Wattage Input_CED: 0.0
+        FLA Input_CED: 47.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: PIZZA DECK 3
+        Voltage_CED: 208.0
+        Number of Poles_CED: 3
+    name: '3213 (PIZZA MASTER, PM933ED) PIZZA OVEN : PIZZA OVEN Types'
+  allow_unmatched_parents: true
+  id: EQ-029
+  ced_truth_source_id: EQ-029
+- equipment_properties: {}
+  version: 1
+  prompt_on_parent_mismatch: false
+  schema_version: 4
+  allow_parentless: true
+  ced_truth_source_name: '9154 (BIZERBA, HAND WRAP STATION) HANDWRAP STATION : WRAP STATION'
+  name: '9154 (BIZERBA, HAND WRAP STATION) HANDWRAP STATION : WRAP STATION'
+  parent_filter:
+    family_name_pattern: '9154 (BIZERBA, HAND WRAP STATION) HANDWRAP STATION'
+    parameter_filters: {}
+    category: Specialty Equipment
+    type_name_pattern: WRAP STATION
+  linked_sets:
+  - id: SET-010
+    linked_element_definitions:
+    - offsets:
+      - rotation_deg: -180.0
+        x_inches: -2.2425
+        y_inches: 15.6641
+        z_inches: 0.0
+      label: 'EF-U_Receptacle_CED : Duplex Wall Horizontal - GFCI'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-010-LED-001
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Product Specification: ''
+        Load Classification_CED: REC
+        CKT_Rating_CED: 20.0
+        CKT_Panel_CEDT: PM
+        Apparent Load Input_CED: 750.0
+        Power Factor_CED: 1.0
+        CKT_Schedule Notes_CEDT: ''
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-010-LED-001 Set Definition ID: SET-010 Location XYZ (ft): -68.219287,354.217013,0.000000 Rotation (deg): 0.000000 Parent Rotation (deg): 180.000000 Parent ElementId: 9712874 LevelId: 30 ElementId: 6109388 FacingOrientation: 0.000000,1.000000,0.000000'
+        Wattage Input_CED: 0.0
+        Product Datasheet URL: ''
+        FLA Input_CED: 0.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: WRAPPING STATION
+        Voltage_CED: 120.0
+        Number of Poles_CED: 1
+    name: '9154 (BIZERBA, HAND WRAP STATION) HANDWRAP STATION : WRAP STATION Types'
+  ced_truth_source_id: EQ-010
+  allow_unmatched_parents: true
+  id: EQ-010
+- equipment_properties: {}
+  version: 1
+  prompt_on_parent_mismatch: false
+  schema_version: 4
+  allow_parentless: true
+  ced_truth_source_name: '3217 (ELKAY, RTC-16-SL) RETHERMALIZER : RETHERMALIZER'
+  name: '3217 (ELKAY, RTC-16-SL) RETHERMALIZER : RETHERMALIZER'
+  parent_filter:
+    family_name_pattern: '3217 (ELKAY, RTC-16-SL) RETHERMALIZER'
+    parameter_filters: {}
+    category: Specialty Equipment
+    type_name_pattern: RETHERMALIZER
+  linked_sets:
+  - id: SET-038
+    linked_element_definitions:
+    - offsets:
+      - rotation_deg: 0.0
+        x_inches: -1.11
+        y_inches: -34.3125
+        z_inches: 18.0
+      label: 'EF-U_Receptacle_CED : Specialty Wall - L6-30R'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-038-LED-001
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Load Classification_CED: K
+        CKT_Rating_CED: 30.0
+        Product Specification: ''
+        CKT_Panel_CEDT: PK1
+        Apparent Load Input_CED: 0.0
+        CKT_Schedule Notes_CEDT: GFI
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-038-LED-001 Set Definition ID: SET-038 Location XYZ (ft): 102.546338,304.275090,1.500000 Rotation (deg): 90.000000 Parent Rotation (deg): 90.000000 Parent ElementId: 8802285 LevelId: 30 ElementId: 5819200 FacingOrientation: -1.000000,0.000000,0.000000'
+        Product Datasheet URL: ''
+        Wattage Input_CED: 0.0
+        FLA Input_CED: 25.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: RETHERMALIZER
+        Voltage_CED: 208.0
+        Number of Poles_CED: 3
+    name: '3217 (ELKAY, RTC-16-SL) RETHERMALIZER : RETHERMALIZER Types'
+  allow_unmatched_parents: true
+  id: EQ-038
+  ced_truth_source_id: EQ-038
+- equipment_properties: {}
+  version: 1
+  prompt_on_parent_mismatch: false
+  schema_version: 4
+  allow_parentless: true
+  ced_truth_source_name: '3613 (ECOLAB, EC 44) SCULLERY DISHWASHER : SCULLERY DISHWASHER'
+  name: '3613 (ECOLAB, EC 44) SCULLERY DISHWASHER : SCULLERY DISHWASHER'
+  parent_filter:
+    family_name_pattern: '3613 (ECOLAB, EC 44) SCULLERY DISHWASHER'
+    parameter_filters: {}
+    category: Specialty Equipment
+    type_name_pattern: SCULLERY DISHWASHER
+  linked_sets:
+  - id: SET-033
+    linked_element_definitions:
+    - offsets:
+      - rotation_deg: 90.0
+        x_inches: -8.7099
+        y_inches: 7.9746
+        z_inches: 18.0
+      label: 'EF-U_Junction Box_CED : Wall - No Stem'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-033-LED-001
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Load Classification_CED: NC
+        CKT_Rating_CED: 60.0
+        Product Specification: ''
+        CKT_Panel_CEDT: PK1
+        Apparent Load Input_CED: 0.0
+        CKT_Schedule Notes_CEDT: GFI
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-033-LED-001 Set Definition ID: SET-033 Location XYZ (ft): 101.827588,332.572202,1.500000 Rotation (deg): 0.000000 Parent Rotation (deg): -90.000000 Parent ElementId: 8911412 LevelId: 30 ElementId: 5729970 FacingOrientation: 0.000000,1.000000,0.000000'
+        Product Datasheet URL: ''
+        Wattage Input_CED: 0.0
+        FLA Input_CED: 48.75
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: DISHWASHER
+        Voltage_CED: 208.0
+        Number of Poles_CED: 3
+    - offsets:
+      - rotation_deg: 90.0
+        x_inches: -23.7304
+        y_inches: 7.9746
+        z_inches: 18.0
+      label: 'EF-U_Junction Box_CED : Wall - No Stem'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-033-LED-002
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Load Classification_CED: NC
+        CKT_Rating_CED: 100.0
+        Product Specification: ''
+        CKT_Panel_CEDT: PK1
+        Apparent Load Input_CED: 0.0
+        CKT_Schedule Notes_CEDT: GFI
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-033-LED-002 Set Definition ID: SET-033 Location XYZ (ft): 101.827588,333.823910,1.500000 Rotation (deg): 0.000000 Parent Rotation (deg): -90.000000 Parent ElementId: 8911412 LevelId: 30 ElementId: 5729971 FacingOrientation: 0.000000,1.000000,0.000000'
+        Product Datasheet URL: ''
+        Wattage Input_CED: 0.0
+        FLA Input_CED: 75.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: DISHWASHER BOOSTER HEATER
+        Voltage_CED: 208.0
+        Number of Poles_CED: 3
+    - offsets:
+      - rotation_deg: -180.0
+        x_inches: -63.9099
+        y_inches: 16.7246
+        z_inches: 36.0
+      label: 'EF-U_Disconnect Switch_CED : Non-Fused - 30A'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-033-LED-003
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Load Classification_CED: NC
+        CKT_Rating_CED: 0.0
+        Product Specification: ''
+        CKT_Panel_CEDT: ''
+        Apparent Load Input_CED: 0.0
+        CKT_Schedule Notes_CEDT: ''
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-033-LED-003 Set Definition ID: SET-033 Location XYZ (ft): 102.556755,337.172202,3.000000 Rotation (deg): 90.000000 Parent Rotation (deg): -90.000000 Parent ElementId: 8911412 LevelId: 30 ElementId: 6105640 FacingOrientation: -1.000000,0.000000,0.000000'
+        Product Datasheet URL: ''
+        Wattage Input_CED: 0.0
+        FLA Input_CED: 0.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: ''
+        Voltage_CED: 208.0
+        Number of Poles_CED: 3
+    name: '3613 (ECOLAB, EC 44) SCULLERY DISHWASHER : SCULLERY DISHWASHER Types'
+  allow_unmatched_parents: true
+  id: EQ-033
+  ced_truth_source_id: EQ-033
+- equipment_properties: {}
+  version: 1
+  prompt_on_parent_mismatch: false
+  schema_version: 4
+  allow_parentless: true
+  ced_truth_source_name: '9150 (BIZERBA, KH 100) DEPARTMENT SCALE : SCALE'
+  name: '9150 (BIZERBA, KH 100) DEPARTMENT SCALE : SCALE'
+  parent_filter:
+    family_name_pattern: '9150 (BIZERBA, KH 100) DEPARTMENT SCALE'
+    parameter_filters: {}
+    category: Specialty Equipment
+    type_name_pattern: SCALE
+  linked_sets:
+  - id: SET-002
+    linked_element_definitions:
+    - offsets:
+      - rotation_deg: 0.0
+        x_inches: 0.0
+        y_inches: 5.7459
+        z_inches: 56.0
+      label: 'EF-U_Receptacle_CED : Duplex Wall - GFCI'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-002-LED-001
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Product Specification: ''
+        Load Classification_CED: REC
+        CKT_Rating_CED: 20.0
+        CKT_Panel_CEDT: CP
+        Apparent Load Input_CED: 180.0
+        Power Factor_CED: 1.0
+        CKT_Schedule Notes_CEDT: IG
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-002-LED-001 Set Definition ID: SET-002 Location XYZ (ft): -89.152547,345.616332,4.666667 Rotation (deg): 0.000000 Parent Rotation (deg): 0.000000 Parent ElementId: 9474904 LevelId: 30 ElementId: 5698846 FacingOrientation: 0.000000,1.000000,0.000000'
+        Wattage Input_CED: 0.0
+        Product Datasheet URL: ''
+        FLA Input_CED: 0.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: SCALE - SEAFOOD SERVICE
+        Voltage_CED: 120.0
+        Number of Poles_CED: 1
+    name: '9150 (BIZERBA, KH 100) DEPARTMENT SCALE : SCALE Types'
+  ced_truth_source_id: EQ-002
+  allow_unmatched_parents: true
+  id: EQ-002
+- equipment_properties: {}
+  version: 1
+  prompt_on_parent_mismatch: false
+  schema_version: 4
+  allow_parentless: true
+  ced_truth_source_name: '3437 (JAC, NEWSELF) BREAD SLICER : BREAD SLICER'
+  name: '3437 (JAC, NEWSELF) BREAD SLICER : BREAD SLICER'
+  parent_filter:
+    family_name_pattern: '3437 (JAC, NEWSELF) BREAD SLICER'
+    parameter_filters: {}
+    category: Specialty Equipment
+    type_name_pattern: BREAD SLICER
+  linked_sets:
+  - id: SET-025
+    linked_element_definitions:
+    - offsets:
+      - rotation_deg: -90.0
+        x_inches: -13.2305
+        y_inches: 1.9943
+        z_inches: 18.0
+      label: 'EF-U_Receptacle_CED : Duplex Wall Horizontal - GFCI'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-025-LED-001
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Product Specification: ''
+        Load Classification_CED: K
+        CKT_Rating_CED: 20.0
+        CKT_Panel_CEDT: PB
+        Apparent Load Input_CED: 180.0
+        CKT_Schedule Notes_CEDT: ''
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-025-LED-001 Set Definition ID: SET-025 Location XYZ (ft): 68.900311,251.886807,1.500000 Rotation (deg): 135.000000 Parent Rotation (deg): -135.000000 Parent ElementId: 9807010 LevelId: 30 ElementId: 5824569 FacingOrientation: -0.707107,-0.707107,0.000000'
+        Product Datasheet URL: ''
+        Wattage Input_CED: 0.0
+        FLA Input_CED: 0.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: BREAD SLICER - BAKE PREP/SVC
+        Voltage_CED: 120.0
+        Number of Poles_CED: 1
+    - offsets:
+      - rotation_deg: 135.0
+        x_inches: -16.1841
+        y_inches: 11.1781
+        z_inches: 0.0
+      label: 'EF-U_Junction Box_CED : Floor'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-025-LED-002
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Product Specification: ''
+        Load Classification_CED: NC
+        CKT_Rating_CED: 0.0
+        CKT_Panel_CEDT: ''
+        Apparent Load Input_CED: 0.0
+        CKT_Schedule Notes_CEDT: ''
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-025-LED-002 Set Definition ID: SET-025 Location XYZ (ft): 69.615520,251.519689,0.000000 Rotation (deg): 0.000000 Parent Rotation (deg): -135.000000 Parent ElementId: 9807010 LevelId: 30 ElementId: 6021289 FacingOrientation: 0.000000,1.000000,0.000000'
+        Product Datasheet URL: ''
+        Wattage Input_CED: 0.0
+        FLA Input_CED: 0.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: ''
+        Voltage_CED: 120.0
+        Number of Poles_CED: 1
+    name: '3437 (JAC, NEWSELF) BREAD SLICER : BREAD SLICER Types'
+  allow_unmatched_parents: true
+  id: EQ-025
+  ced_truth_source_id: EQ-025
+- equipment_properties: {}
+  version: 1
+  prompt_on_parent_mismatch: false
+  schema_version: 4
+  allow_parentless: true
+  ced_truth_source_name: '9550 (DELL, OPTIPLEX 7490 AIO) COMPUTER : COMPUTER'
+  name: '9550 (DELL, OPTIPLEX 7490 AIO) COMPUTER : COMPUTER'
+  parent_filter:
+    family_name_pattern: '9550 (DELL, OPTIPLEX 7490 AIO) COMPUTER'
+    parameter_filters: {}
+    category: Specialty Equipment
+    type_name_pattern: COMPUTER
+  linked_sets:
+  - id: SET-035
+    linked_element_definitions:
+    - offsets:
+      - rotation_deg: 180.0
+        x_inches: -8.8702
+        y_inches: 11.522
+        z_inches: 44.0
+      label: 'EF-U_Receptacle_CED : Duplex Wall - Isolated Ground Horizontal'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-035-LED-001
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Load Classification_CED: REC
+        CKT_Rating_CED: 20.0
+        Product Specification: ''
+        CKT_Panel_CEDT: SDP
+        Apparent Load Input_CED: 180.0
+        CKT_Schedule Notes_CEDT: ''
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-035-LED-001 Set Definition ID: SET-035 Location XYZ (ft): 85.306598,311.088600,3.666667 Rotation (deg): 270.000000 Parent Rotation (deg): 90.000000 Parent ElementId: 9928231 LevelId: 30 ElementId: 5819607 FacingOrientation: 1.000000,-0.000000,0.000000'
+        Product Datasheet URL: ''
+        Wattage Input_CED: 0.0
+        FLA Input_CED: 0.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: COMPUTER KITCHEN
+        Voltage_CED: 120.0
+        Number of Poles_CED: 1
+    name: '9550 (DELL, OPTIPLEX 7490 AIO) COMPUTER : COMPUTER Types'
+  allow_unmatched_parents: true
+  id: EQ-035
+  ced_truth_source_id: EQ-035
+- equipment_properties: {}
+  version: 1
+  prompt_on_parent_mismatch: false
+  schema_version: 4
+  allow_parentless: true
+  ced_truth_source_name: '3030 (DRY AGER, UX1500 PRO) AGED BEEF CASE : AGED BEEF CASE'
+  name: '3030 (DRY AGER, UX1500 PRO) AGED BEEF CASE : AGED BEEF CASE'
+  parent_filter:
+    family_name_pattern: '3030 (DRY AGER, UX1500 PRO) AGED BEEF CASE'
+    parameter_filters: {}
+    category: Specialty Equipment
+    type_name_pattern: AGED BEEF CASE
+  linked_sets:
+  - id: SET-009
+    linked_element_definitions:
+    - offsets:
+      - rotation_deg: 180.0
+        x_inches: 0.4016
+        y_inches: 16.5997
+        z_inches: 18.0
+      label: 'EF-U_Receptacle_CED : Duplex Wall - GFCI'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-009-LED-001
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Product Specification: ''
+        Load Classification_CED: REC
+        CKT_Rating_CED: 20.0
+        CKT_Panel_CEDT: PM
+        Apparent Load Input_CED: 0.0
+        Power Factor_CED: 1.0
+        CKT_Schedule Notes_CEDT: ''
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-009-LED-001 Set Definition ID: SET-009 Location XYZ (ft): -76.380745,353.612847,1.500000 Rotation (deg): 180.000000 Parent Rotation (deg): 0.000000 Parent ElementId: 9441652 LevelId: 30 ElementId: 5817318 FacingOrientation: -0.000000,-1.000000,0.000000'
+        Wattage Input_CED: 0.0
+        Product Datasheet URL: ''
+        FLA Input_CED: 2.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: AGED MEAT REF - SERVICE 130
+        Voltage_CED: 120.0
+        Number of Poles_CED: 1
+    name: '3030 (DRY AGER, UX1500 PRO) AGED BEEF CASE : AGED BEEF CASE Types'
+  ced_truth_source_id: EQ-009
+  allow_unmatched_parents: true
+  id: EQ-009
+- equipment_properties: {}
+  version: 1
+  prompt_on_parent_mismatch: false
+  schema_version: 4
+  allow_parentless: true
+  ced_truth_source_name: '3769, 3822, 3824, 3825, 3831 (TRUE, TWT HC) WORKTOP REFRIGERATOR : 72"'
+  name: '3769, 3822, 3824, 3825, 3831 (TRUE, TWT HC) WORKTOP REFRIGERATOR : 72"'
+  parent_filter:
+    family_name_pattern: '3769, 3822, 3824, 3825, 3831 (TRUE, TWT HC) WORKTOP REFRIGERATOR'
+    parameter_filters: {}
+    category: Specialty Equipment
+    type_name_pattern: 72"
+  linked_sets:
+  - id: SET-021
+    linked_element_definitions:
+    - offsets:
+      - rotation_deg: -180.0
+        x_inches: -9.9974
+        y_inches: 16.0219
+        z_inches: 18.0
+      label: 'EF-U_Receptacle_CED : Duplex Wall Horizontal - GFCI'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-021-LED-001
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Product Specification: ''
+        Load Classification_CED: REC
+        CKT_Rating_CED: 20.0
+        CKT_Panel_CEDT: PB
+        Apparent Load Input_CED: 0.0
+        CKT_Schedule Notes_CEDT: ''
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-021-LED-001 Set Definition ID: SET-021 Location XYZ (ft): 88.712965,268.912237,1.500000 Rotation (deg): 90.000000 Parent Rotation (deg): -90.000000 Parent ElementId: 9234939 LevelId: 30 ElementId: 6108864 FacingOrientation: -1.000000,0.000000,0.000000'
+        Product Datasheet URL: ''
+        Wattage Input_CED: 0.0
+        FLA Input_CED: 4.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: MIXER REF WORKTOP
+        Voltage_CED: 120.0
+        Number of Poles_CED: 1
+    name: '3769, 3822, 3824, 3825, 3831 (TRUE, TWT HC) WORKTOP REFRIGERATOR : 72" Types'
+  allow_unmatched_parents: true
+  id: EQ-021
+  ced_truth_source_id: EQ-021
+- equipment_properties: {}
+  version: 1
+  prompt_on_parent_mismatch: false
+  schema_version: 4
+  allow_parentless: true
+  ced_truth_source_name: '3278, 3279 (DOREGRILL, MAG408 MAG588) GAS ROTISSERIE OVEN : 4 DOOR'
+  name: '3278, 3279 (DOREGRILL, MAG408 MAG588) GAS ROTISSERIE OVEN : 4 DOOR'
+  parent_filter:
+    family_name_pattern: '3278, 3279 (DOREGRILL, MAG408 MAG588) GAS ROTISSERIE OVEN'
+    parameter_filters: {}
+    category: Specialty Equipment
+    type_name_pattern: 4 DOOR
+  linked_sets:
+  - id: SET-040
+    linked_element_definitions:
+    - offsets:
+      - rotation_deg: 90.0
+        x_inches: -19.5178
+        y_inches: 6.75
+        z_inches: 18.0
+      label: 'EF-U_Junction Box_CED : Wall - No Stem'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-040-LED-001
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Product Specification: ''
+        Load Classification_CED: K
+        CKT_Rating_CED: 20.0
+        CKT_Panel_CEDT: PK1
+        Apparent Load Input_CED: 0.0
+        CKT_Schedule Notes_CEDT: GFI
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-040-LED-001 Set Definition ID: SET-040 Location XYZ (ft): 101.327588,298.238869,1.500000 Rotation (deg): 0.000000 Parent Rotation (deg): -90.000000 Parent ElementId: 8825843 LevelId: 30 ElementId: 5819671 FacingOrientation: 0.000000,1.000000,0.000000'
+        Product Datasheet URL: ''
+        Wattage Input_CED: 0.0
+        FLA Input_CED: 5.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: ROTISSERIE OVEN
+        Voltage_CED: 208.0
+        Number of Poles_CED: 2
+    - offsets:
+      - rotation_deg: -180.0
+        x_inches: -39.9094
+        y_inches: 21.375
+        z_inches: 36.0
+      label: 'EF-U_Disconnect Switch_CED : Non-Fused - 60A'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-040-LED-002
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Product Specification: ''
+        Load Classification_CED: NC
+        CKT_Rating_CED: 0.0
+        CKT_Panel_CEDT: ''
+        Apparent Load Input_CED: 0.0
+        CKT_Schedule Notes_CEDT: ''
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-040-LED-002 Set Definition ID: SET-040 Location XYZ (ft): 102.546338,299.938165,3.000000 Rotation (deg): 90.000000 Parent Rotation (deg): -90.000000 Parent ElementId: 8825843 LevelId: 30 ElementId: 6141134 FacingOrientation: -1.000000,0.000000,0.000000'
+        Product Datasheet URL: ''
+        Wattage Input_CED: 0.0
+        FLA Input_CED: 0.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: ''
+        Voltage_CED: 208.0
+        Number of Poles_CED: 3
+    name: '3278, 3279 (DOREGRILL, MAG408 MAG588) GAS ROTISSERIE OVEN : 4 DOOR Types'
+  allow_unmatched_parents: true
+  id: EQ-040
+  ced_truth_source_id: EQ-040
+- equipment_properties: {}
+  version: 1
+  prompt_on_parent_mismatch: false
+  schema_version: 4
+  allow_parentless: true
+  ced_truth_source_name: '9152 (BIZERBA, XC II 300 PRO) SELF SERVICE PRINTER : SCALE'
+  name: '9152 (BIZERBA, XC II 300 PRO) SELF SERVICE PRINTER : SCALE'
+  parent_filter:
+    family_name_pattern: '9152 (BIZERBA, XC II 300 PRO) SELF SERVICE PRINTER'
+    parameter_filters: {}
+    category: Specialty Equipment
+    type_name_pattern: SCALE
+  linked_sets:
+  - id: SET-024
+    linked_element_definitions:
+    - offsets:
+      - rotation_deg: 180.0
+        x_inches: 0.0
+        y_inches: -2.1759
+        z_inches: 18.0
+      label: 'EF-U_Receptacle_CED : Duplex Wall Horizontal - GFCI'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-024-LED-001
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Load Classification_CED: REC
+        CKT_Rating_CED: 20.0
+        Product Specification: ''
+        CKT_Panel_CEDT: CP
+        Apparent Load Input_CED: 180.0
+        CKT_Schedule Notes_CEDT: IG
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-024-LED-001 Set Definition ID: SET-024 Location XYZ (ft): 69.089484,252.876146,1.500000 Rotation (deg): 225.000000 Parent Rotation (deg): 45.000000 Parent ElementId: 9804906 LevelId: 30 ElementId: 5824554 FacingOrientation: 0.707107,-0.707107,0.000000'
+        Product Datasheet URL: ''
+        Wattage Input_CED: 0.0
+        FLA Input_CED: 0.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: SCALE -  BAKERY PREP / SVC
+        Voltage_CED: 120.0
+        Number of Poles_CED: 1
+    - offsets:
+      - rotation_deg: -45.0
+        x_inches: 6.9004
+        y_inches: -19.3696
+        z_inches: 0.0
+      label: 'EF-U_Junction Box_CED : Floor'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-024-LED-002
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Load Classification_CED: NC
+        CKT_Rating_CED: 0.0
+        Product Specification: ''
+        CKT_Panel_CEDT: ''
+        Apparent Load Input_CED: 0.0
+        CKT_Schedule Notes_CEDT: ''
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-024-LED-002 Set Definition ID: SET-024 Location XYZ (ft): 70.509238,252.269608,0.000000 Rotation (deg): 0.000000 Parent Rotation (deg): 45.000000 Parent ElementId: 9804906 LevelId: 30 ElementId: 6021141 FacingOrientation: 0.000000,1.000000,0.000000'
+        Product Datasheet URL: ''
+        Wattage Input_CED: 0.0
+        FLA Input_CED: 0.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: ''
+        Voltage_CED: 120.0
+        Number of Poles_CED: 1
+    name: '9152 (BIZERBA, XC II 300 PRO) SELF SERVICE PRINTER : SCALE Types'
+  allow_unmatched_parents: true
+  id: EQ-024
+  ced_truth_source_id: EQ-024
+- equipment_properties: {}
+  version: 1
+  prompt_on_parent_mismatch: false
+  schema_version: 4
+  allow_parentless: true
+  ced_truth_source_name: '3423 (GLOBE, SP40) 40QT MIXER : 40QT MIXER'
+  name: '3423 (GLOBE, SP40) 40QT MIXER : 40QT MIXER'
+  parent_filter:
+    family_name_pattern: '3423 (GLOBE, SP40) 40QT MIXER'
+    parameter_filters: {}
+    category: Specialty Equipment
+    type_name_pattern: 40QT MIXER
+  linked_sets:
+  - id: SET-016
+    linked_element_definitions:
+    - offsets:
+      - rotation_deg: -180.0
+        x_inches: 5.9752
+        y_inches: 15.25
+        z_inches: 18.0
+      label: 'EF-U_Receptacle_CED : Duplex Wall - GFCI'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-016-LED-001
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Load Classification_CED: K
+        CKT_Rating_CED: 20.0
+        Product Specification: ''
+        CKT_Panel_CEDT: PB
+        Apparent Load Input_CED: 0.0
+        CKT_Schedule Notes_CEDT: ''
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-016-LED-001 Set Definition ID: SET-016 Location XYZ (ft): 75.398261,245.358416,1.500000 Rotation (deg): 0.000000 Parent Rotation (deg): 180.000000 Parent ElementId: 9882557 LevelId: 30 ElementId: 5824339 FacingOrientation: 0.000000,1.000000,0.000000'
+        Product Datasheet URL: ''
+        Wattage Input_CED: 0.0
+        FLA Input_CED: 16.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: 30QT MIXER - BAKERY PREP/SVC
+        Voltage_CED: 120.0
+        Number of Poles_CED: 1
+    name: '3423 (GLOBE, SP40) 40QT MIXER : 40QT MIXER Types'
+  allow_unmatched_parents: true
+  id: EQ-016
+  ced_truth_source_id: EQ-016
+- equipment_properties: {}
+  version: 1
+  prompt_on_parent_mismatch: false
+  schema_version: 4
+  allow_parentless: true
+  ced_truth_source_name: '3218 (BIZERBA, GSP HD) AUTOMATIC SLICER : AUTOMATIC SLICER'
+  name: '3218 (BIZERBA, GSP HD) AUTOMATIC SLICER : AUTOMATIC SLICER'
+  parent_filter:
+    family_name_pattern: '3218 (BIZERBA, GSP HD) AUTOMATIC SLICER'
+    parameter_filters: {}
+    category: Specialty Equipment
+    type_name_pattern: AUTOMATIC SLICER
+  linked_sets:
+  - id: SET-032
+    linked_element_definitions:
+    - offsets:
+      - rotation_deg: 0.0
+        x_inches: -2.1522
+        y_inches: -17.3773
+        z_inches: 46.0
+      label: 'EF-U_Receptacle_CED : Duplex Wall Horizontal - GFCI'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-032-LED-001
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Load Classification_CED: K
+        CKT_Rating_CED: 20.0
+        Product Specification: ''
+        CKT_Panel_CEDT: PK1
+        Apparent Load Input_CED: 0.0
+        CKT_Schedule Notes_CEDT: GFI
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-032-LED-001 Set Definition ID: SET-032 Location XYZ (ft): 84.702431,311.242827,3.833333 Rotation (deg): 90.000000 Parent Rotation (deg): 90.000000 Parent ElementId: 8873103 LevelId: 30 ElementId: 5822291 FacingOrientation: -1.000000,0.000000,0.000000'
+        Product Datasheet URL: ''
+        Wattage Input_CED: 0.0
+        FLA Input_CED: 4.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: MANUAL SLICER 2 - PREP 153
+        Voltage_CED: 120.0
+        Number of Poles_CED: 1
+    name: '3218 (BIZERBA, GSP HD) AUTOMATIC SLICER : AUTOMATIC SLICER Types'
+  allow_unmatched_parents: true
+  id: EQ-032
+  ced_truth_source_id: EQ-032
+- equipment_properties: {}
+  version: 1
+  prompt_on_parent_mismatch: false
+  schema_version: 4
+  allow_parentless: true
+  ced_truth_source_name: '3301- 3303, 3304 (TRAULSEN, TBC) BLAST CHILLER : TBC1H-20'
+  name: '3301- 3303, 3304 (TRAULSEN, TBC) BLAST CHILLER : TBC1H-20'
+  parent_filter:
+    family_name_pattern: '3301- 3303, 3304 (TRAULSEN, TBC) BLAST CHILLER'
+    parameter_filters: {}
+    category: Specialty Equipment
+    type_name_pattern: TBC1H-20
+  linked_sets:
+  - id: SET-036
+    linked_element_definitions:
+    - offsets:
+      - rotation_deg: -90.0
+        x_inches: 16.0927
+        y_inches: -11.357
+        z_inches: 18.0
+      label: 'EF-U_Junction Box_CED : Wall - No Stem'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-036-LED-001
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Load Classification_CED: K
+        CKT_Rating_CED: 20.0
+        Product Specification: ''
+        CKT_Panel_CEDT: PK1
+        Apparent Load Input_CED: 0.0
+        CKT_Schedule Notes_CEDT: GFI
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-036-LED-001 Set Definition ID: SET-036 Location XYZ (ft): 101.660921,318.172640,1.500000 Rotation (deg): 0.000000 Parent Rotation (deg): 90.000000 Parent ElementId: 9440522 LevelId: 30 ElementId: 5818917 FacingOrientation: 0.000000,1.000000,0.000000'
+        Product Datasheet URL: ''
+        Wattage Input_CED: 0.0
+        FLA Input_CED: 14.9
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: BLAST CHILLER
+        Voltage_CED: 120.0
+        Number of Poles_CED: 1
+    name: '3301- 3303, 3304 (TRAULSEN, TBC) BLAST CHILLER : TBC1H-20 Types'
+  allow_unmatched_parents: true
+  id: EQ-036
+  ced_truth_source_id: EQ-036
+- equipment_properties: {}
+  version: 1
+  prompt_on_parent_mismatch: false
+  schema_version: 4
+  allow_parentless: true
+  ced_truth_source_name: '3103 (BIRO, 4003FH) 16IN MEAT SAW : 16"'
+  name: '3103 (BIRO, 4003FH) 16IN MEAT SAW : 16"'
+  parent_filter:
+    family_name_pattern: '3103 (BIRO, 4003FH) 16IN MEAT SAW'
+    parameter_filters: {}
+    category: Specialty Equipment
+    type_name_pattern: 16"
+  linked_sets:
+  - id: SET-014
+    linked_element_definitions:
+    - offsets:
+      - rotation_deg: -180.0
+        x_inches: -19.1602
+        y_inches: 19.3678
+        z_inches: 36.0
+      label: 'EF-U_Disconnect Switch_CED : Non-Fused - 30A'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-014-LED-001
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Product Specification: ''
+        Load Classification_CED: NC
+        CKT_Rating_CED: 20.0
+        CKT_Panel_CEDT: PM
+        Apparent Load Input_CED: 0.0
+        Power Factor_CED: 1.0
+        CKT_Schedule Notes_CEDT: GFI
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-014-LED-001 Set Definition ID: SET-014 Location XYZ (ft): -71.789008,363.592013,3.000000 Rotation (deg): 180.000000 Parent Rotation (deg): -0.000000 Parent ElementId: 9717695 LevelId: 30 ElementId: 5700093 FacingOrientation: -0.000000,-1.000000,0.000000'
+        Wattage Input_CED: 0.0
+        Product Datasheet URL: ''
+        FLA Input_CED: 14.4
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: MEAT SAW - MEAT PREP
+        Voltage_CED: 208.0
+        Number of Poles_CED: 3
+    name: '3103 (BIRO, 4003FH) 16IN MEAT SAW : 16" Types'
+  ced_truth_source_id: EQ-014
+  allow_unmatched_parents: true
+  id: EQ-014
+- equipment_properties: {}
+  version: 1
+  prompt_on_parent_mismatch: false
+  schema_version: 4
+  allow_parentless: true
+  ced_truth_source_name: '3224 (RATIONAL, 20 2E) COMBI OVEN : COMBI OVEN 480v'
+  name: '3224 (RATIONAL, 20 2E) COMBI OVEN : COMBI OVEN 480v'
+  parent_filter:
+    family_name_pattern: '3224 (RATIONAL, 20 2E) COMBI OVEN'
+    parameter_filters: {}
+    category: Specialty Equipment
+    type_name_pattern: COMBI OVEN 480v
+  linked_sets:
+  - id: SET-037
+    linked_element_definitions:
+    - offsets:
+      - rotation_deg: 90.0
+        x_inches: -12.9594
+        y_inches: 21.0625
+        z_inches: 18.0
+      label: 'EF-U_Junction Box_CED : Wall - No Stem'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-037-LED-001
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Product Specification: ''
+        Load Classification_CED: K
+        CKT_Rating_CED: 35.0
+        CKT_Panel_CEDT: PK3
+        Apparent Load Input_CED: 0.0
+        CKT_Schedule Notes_CEDT: ''
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-037-LED-001 Set Definition ID: SET-037 Location XYZ (ft): 101.910921,312.816469,1.500000 Rotation (deg): 0.000000 Parent Rotation (deg): -90.000000 Parent ElementId: 9459470 LevelId: 30 ElementId: 5818991 FacingOrientation: 0.000000,1.000000,0.000000'
+        Product Datasheet URL: ''
+        Wattage Input_CED: 0.0
+        FLA Input_CED: 26.9
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: COMBI OVEN 1
+        Voltage_CED: 480.0
+        Number of Poles_CED: 3
+    - offsets:
+      - rotation_deg: 90.0
+        x_inches: -5.3599
+        y_inches: 21.0625
+        z_inches: 18.0
+      label: 'EF-U_Junction Box_CED : Wall - No Stem'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-037-LED-002
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Product Specification: ''
+        Load Classification_CED: K
+        CKT_Rating_CED: 35.0
+        CKT_Panel_CEDT: PK3
+        Apparent Load Input_CED: 0.0
+        CKT_Schedule Notes_CEDT: ''
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-037-LED-002 Set Definition ID: SET-037 Location XYZ (ft): 101.910921,312.183176,1.500000 Rotation (deg): 0.000000 Parent Rotation (deg): -90.000000 Parent ElementId: 9459470 LevelId: 30 ElementId: 5819084 FacingOrientation: 0.000000,1.000000,0.000000'
+        Product Datasheet URL: ''
+        Wattage Input_CED: 0.0
+        FLA Input_CED: 26.9
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: COMBI OVEN 2
+        Voltage_CED: 480.0
+        Number of Poles_CED: 3
+    name: '3224 (RATIONAL, 20 2E) COMBI OVEN : COMBI OVEN 480v Types'
+  allow_unmatched_parents: true
+  id: EQ-037
+  ced_truth_source_id: EQ-037
+- equipment_properties: {}
+  version: 1
+  prompt_on_parent_mismatch: false
+  schema_version: 4
+  allow_parentless: true
+  ced_truth_source_name: "1536, 1537, 1538, 1585 (HILLPHOENIX, BMD-R) SERVICE CASE : 8'"
+  name: "1536, 1537, 1538, 1585 (HILLPHOENIX, BMD-R) SERVICE CASE : 8'"
+  parent_filter:
+    family_name_pattern: '1536, 1537, 1538, 1585 (HILLPHOENIX, BMD-R) SERVICE CASE'
+    parameter_filters: {}
+    category: Specialty Equipment
+    type_name_pattern: 8'
+  linked_sets:
+  - id: SET-023
+    linked_element_definitions:
+    - offsets:
+      - rotation_deg: 0.0
+        x_inches: -36.2113
+        y_inches: 11.0
+        z_inches: 18.0
+      label: 'EF-U_Receptacle_CED : Duplex Wall - GFCI'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-023-LED-001
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Product Specification: ''
+        Load Classification_CED: REC
+        CKT_Rating_CED: 20.0
+        CKT_Panel_CEDT: CP
+        Apparent Load Input_CED: 180.0
+        CKT_Schedule Notes_CEDT: IG
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-023-LED-001 Set Definition ID: SET-023 Location XYZ (ft): 78.600812,260.242428,1.500000 Rotation (deg): 225.000000 Parent Rotation (deg): -135.000000 Parent ElementId: 9638259 LevelId: 30 ElementId: 5822924 FacingOrientation: 0.707107,-0.707107,0.000000'
+        Product Datasheet URL: ''
+        Wattage Input_CED: 0.0
+        FLA Input_CED: 0.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: SCALE -  BAKERY PREP / SVC
+        Voltage_CED: 120.0
+        Number of Poles_CED: 1
+    name: "1536, 1537, 1538, 1585 (HILLPHOENIX, BMD-R) SERVICE CASE : 8' Types"
+  allow_unmatched_parents: true
+  id: EQ-023
+  ced_truth_source_id: EQ-023
+- equipment_properties: {}
+  version: 1
+  prompt_on_parent_mismatch: false
+  schema_version: 4
+  allow_parentless: true
+  ced_truth_source_name: '3001 (HEAT SEAL, 700ES D) HEAT SEAL MACHINE : HEAT SEAL WRAPPER'
+  name: '3001 (HEAT SEAL, 700ES D) HEAT SEAL MACHINE : HEAT SEAL WRAPPER'
+  parent_filter:
+    family_name_pattern: '3001 (HEAT SEAL, 700ES D) HEAT SEAL MACHINE'
+    parameter_filters: {}
+    category: Specialty Equipment
+    type_name_pattern: HEAT SEAL WRAPPER
+  linked_sets:
+  - id: SET-003
+    linked_element_definitions:
+    - offsets:
+      - rotation_deg: 0.0
+        x_inches: 0.0
+        y_inches: -15.5429
+        z_inches: 46.0
+      label: 'EF-U_Receptacle_CED : Duplex Wall Horizontal - GFCI'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-003-LED-001
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Product Specification: ''
+        Load Classification_CED: REC
+        CKT_Rating_CED: 20.0
+        CKT_Panel_CEDT: LP2
+        Apparent Load Input_CED: 0.0
+        CKT_Schedule Notes_CEDT: ''
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-003-LED-001 Set Definition ID: SET-003 Location XYZ (ft): -107.469287,316.776599,3.833333 Rotation (deg): 90.000000 Parent Rotation (deg): 90.000000 Parent ElementId: 9557537 LevelId: 30 ElementId: 5697911 FacingOrientation: -1.000000,0.000000,0.000000'
+        Product Datasheet URL: ''
+        Wattage Input_CED: 0.0
+        FLA Input_CED: 2.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: WRAPPER - PRODUCE PREP
+        Voltage_CED: 120.0
+        Number of Poles_CED: 1
+    name: '3001 (HEAT SEAL, 700ES D) HEAT SEAL MACHINE : HEAT SEAL WRAPPER Types'
+  ced_truth_source_id: EQ-003
+  allow_unmatched_parents: true
+  id: EQ-003
+- equipment_properties: {}
+  version: 1
+  prompt_on_parent_mismatch: false
+  schema_version: 4
+  allow_parentless: true
+  ced_truth_source_name: '3769, 3822, 3824, 3825, 3831 (TRUE, TWT HC) WORKTOP REFRIGERATOR : 48"'
+  name: '3769, 3822, 3824, 3825, 3831 (TRUE, TWT HC) WORKTOP REFRIGERATOR : 48"'
+  parent_filter:
+    family_name_pattern: '3769, 3822, 3824, 3825, 3831 (TRUE, TWT HC) WORKTOP REFRIGERATOR'
+    parameter_filters: {}
+    category: Specialty Equipment
+    type_name_pattern: 48"
+  linked_sets:
+  - id: SET-026
+    linked_element_definitions:
+    - offsets:
+      - rotation_deg: -180.0
+        x_inches: -0.4687
+        y_inches: 16.0
+        z_inches: 18.0
+      label: 'EF-U_Receptacle_CED : Duplex Wall Horizontal - GFCI'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-026-LED-001
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Load Classification_CED: REC
+        CKT_Rating_CED: 20.0
+        Product Specification: ''
+        CKT_Panel_CEDT: PK1
+        Apparent Load Input_CED: 0.0
+        CKT_Schedule Notes_CEDT: ''
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-026-LED-001 Set Definition ID: SET-026 Location XYZ (ft): 88.004671,277.706040,1.500000 Rotation (deg): 90.000000 Parent Rotation (deg): -90.000000 Parent ElementId: 9234849 LevelId: 30 ElementId: 6108737 FacingOrientation: -1.000000,0.000000,0.000000'
+        Product Datasheet URL: ''
+        Wattage Input_CED: 0.0
+        FLA Input_CED: 4.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: RICE COOKER REF WORKTOP
+        Voltage_CED: 120.0
+        Number of Poles_CED: 1
+    name: '3769, 3822, 3824, 3825, 3831 (TRUE, TWT HC) WORKTOP REFRIGERATOR : 48" Types'
+  allow_unmatched_parents: true
+  id: EQ-026
+  ced_truth_source_id: EQ-026
+- equipment_properties: {}
+  version: 1
+  prompt_on_parent_mismatch: false
+  schema_version: 4
+  allow_parentless: true
+  ced_truth_source_name: '9200, 9202, 9203, 9204 (SAMSUNG, QB43B QB55B QB65B QB75B) DIGITAL DISPLAY : 55"'
+  name: '9200, 9202, 9203, 9204 (SAMSUNG, QB43B QB55B QB65B QB75B) DIGITAL DISPLAY : 55"'
+  parent_filter:
+    family_name_pattern: '9200, 9202, 9203, 9204 (SAMSUNG, QB43B QB55B QB65B QB75B) DIGITAL DISPLAY'
+    parameter_filters: {}
+    category: Specialty Equipment
+    type_name_pattern: 55"
+  linked_sets:
+  - id: SET-030
+    linked_element_definitions:
+    - offsets:
+      - rotation_deg: -180.0
+        x_inches: 0.0
+        y_inches: 3.4102
+        z_inches: 134.0
+      label: 'EF-U_Receptacle_CED : Duplex Ceiling'
+      text_notes: []
+      keynotes: []
+      is_group: false
+      id: SET-030-LED-001
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        SLD_Component ID_CED: ''
+        Load Classification_CED: NC
+        CKT_Rating_CED: 20.0
+        Product Specification: ''
+        CKT_Panel_CEDT: PK1
+        Apparent Load Input_CED: 0.0
+        CKT_Schedule Notes_CEDT: ''
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-030-LED-001 Set Definition ID: SET-030 Location XYZ (ft): 79.340536,295.561812,11.166667 Rotation (deg): 90.000000 Parent Rotation (deg): -90.000000 Parent ElementId: 8847793 LevelId: 30 ElementId: 5824993 FacingOrientation: -1.000000,0.000000,0.000000'
+        Product Datasheet URL: ''
+        Wattage Input_CED: 0.0
+        FLA Input_CED: 2.0
+        SLD_Symbol ID_CED: ''
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: DEDICATED
+        CKT_Load Name_CEDT: DIGITAL MENU - PREP FOODS
+        Voltage_CED: 120.0
+        Number of Poles_CED: 1
+    name: '9200, 9202, 9203, 9204 (SAMSUNG, QB43B QB55B QB65B QB75B) DIGITAL DISPLAY : 55" Types'
+  allow_unmatched_parents: true
+  id: EQ-030
+  ced_truth_source_id: EQ-030
+- version: 1
+  equipment_properties: {}
+  prompt_on_parent_mismatch: false
+  schema_version: 4
+  allow_parentless: true
+  name: Gas Solenoid Valve
+  parent_filter:
+    family_name_pattern: EF-U_General Electrical Box_CED
+    parameter_filters: {}
+    category: Electrical Fixtures
+    type_name_pattern: Emergency Power Off Button
+  linked_sets:
+  - id: SET-043
+    linked_element_definitions:
+    - offsets:
+      - x_inches: 0.0
+        rotation_deg: 0.0
+        y_inches: 0.0
+        z_inches: 0.0
+      label: 'EF-U_General Electrical Box_CED : Emergency Power Off Button'
+      is_group: false
+      id: SET-043-LED-001
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        CKT_Rating_CED: 0.0
+        CKT_Panel_CEDT: ''
+        Apparent Load Input_CED: 0.0
+        CKT_Schedule Notes_CEDT: ''
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-043-LED-001 Set Definition ID: SET-043 Location XYZ (ft): 102.546338,286.227208,4.000000 Rotation (deg): 90.000000 Parent Rotation (deg):  Parent ElementId:  LevelId: 30 ElementId: 6039127 FacingOrientation: -1.000000,0.000000,0.000000'
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: ''
+        CKT_Load Name_CEDT: ''
+        Voltage_CED: 1291.66925001
+        Number of Poles_CED: 1
+    - offsets:
+      - rotation_deg: -90.0
+        x_inches: -10.860072
+        y_inches: 1.949132
+        z_inches: 96.0
+      label: 'EF-U_Junction Box_CED : Wall - No Stem'
+      is_group: false
+      id: SET-043-LED-002
+      category: Electrical Fixtures
+      tags: []
+      parameters:
+        CKT_Rating_CED: 20.0
+        CKT_Panel_CEDT: PK2
+        Apparent Load Input_CED: 5381.95520835
+        CKT_Schedule Notes_CEDT: ''
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-043-LED-002 Set Definition ID: SET-043 Location XYZ (ft): 102.383910,285.322202,8.000000 Rotation (deg): 0.000000 Parent Rotation (deg): 90.000000 Parent ElementId: 6039127 LevelId: 30 ElementId: 6039621 FacingOrientation: 0.000000,1.000000,0.000000'
+        dev-Group ID: ''
+        CKT_Circuit Number_CEDT: 39
+        CKT_Load Name_CEDT: GAS SOLENOID VALVE
+        Voltage_CED: 1291.66925001
+        Number of Poles_CED: 1
+    name: Gas Solenoid Valve Types
+  allow_unmatched_parents: true
+  id: EQ-043
