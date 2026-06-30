@@ -471,9 +471,10 @@ def main():
     if active_view.IsTemplate:
         forms.alert("Active view is a template. Open a working view first.", exitscript=True)
 
-    if not _id_mark.ensure_bound(doc, forms, "System Tagger", _REFOPS_SP_FILE):
-        return
-
+    # "Identity Mark" is a standard parameter already present on the cases
+    # in the project template, so we write to it directly — no shared-
+    # parameter binding or prompt is needed. Cases missing the parameter
+    # are simply skipped (logged) during the write.
     tag_type = _pick_tag_type()
     if not tag_type:
         forms.alert("No tag type available in this project.", exitscript=True)
@@ -545,5 +546,29 @@ def main():
     _clear_resume_state()
 
 
+def _show_error(message):
+    """Surface an error via Revit's native TaskDialog.
+
+    On Revit 2025 (.NET 8) pyRevit's output window is WebView2-based and
+    can render blank, swallowing a traceback. TaskDialog is native Revit
+    UI, so it always shows — use it as the visible error channel.
+    """
+    try:
+        from Autodesk.Revit.UI import TaskDialog
+        TaskDialog.Show("System Tagger - Error", message)
+    except Exception:
+        try:
+            forms.alert(message, title="System Tagger - Error")
+        except Exception:
+            print(message)
+
+
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except SystemExit:
+        raise
+    except Exception:
+        import traceback
+        _show_error(traceback.format_exc())
+        raise

@@ -1,0 +1,2418 @@
+equipment_definitions:
+- schema_version: 4
+  ced_truth_source_name: "1310, 1311, 1312, 1313 (HUSSMANN, ID5SU) MULTIDECK (VALUE ADDED) CO4 : 12' CO2 1024"
+  name: "1310, 1311, 1312, 1313 (HUSSMANN, ID5SU) MULTIDECK (VALUE ADDED) CO4 : 12' CO2 1024"
+  version: 1
+  ced_truth_source_id: EQ-001
+  id: EQ-001
+  prompt_on_parent_mismatch: false
+  linked_sets:
+  - name: "1310, 1311, 1312, 1313 (HUSSMANN, ID5SU) MULTIDECK (VALUE ADDED) CO4 : 12' CO2 1024 Types"
+    linked_element_definitions:
+    - label: "1310, 1311, 1312, 1313 (HUSSMANN, ID5SU) MULTIDECK (VALUE ADDED) CO2 : 12' (VALUE ADDED) CO2 2"
+      category: Mechanical Equipment
+      offsets:
+      - rotation_deg: 0.0
+        y_inches: 0.0
+        z_inches: 0.0
+        x_inches: 0.0
+      id: SET-001-LED-001
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-001-LED-001 Set Definition ID: SET-001 Location XYZ (ft): 259.590354,-249.609163,0.000000 Rotation (deg): 270.000000 Parent Rotation (deg): -90.000000 Parent ElementId: 1334961 LevelId: 30 ElementId: 9594958 FacingOrientation: 1.000000,0.000000,-0.000000'
+        dev-Group ID: ''
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: -0.75
+        z_inches: 42.4375
+        x_inches: 0.9979
+        family_name: REFRIG SYSTEM Tag
+        parameters: {}
+        type_name: REFRIG EQUIP SYSTEM TAG
+        category_name: Mechanical Equipment Tags
+    - label: 'EF-U_General Electrical Box-Unbalanced_CED : Refrig Case - Case Controller'
+      category: Electrical Fixtures
+      offsets:
+      - rotation_deg: 180.0
+        y_inches: -11.051125
+        z_inches: 48.0
+        x_inches: 59.6526
+      id: SET-001-LED-002
+      is_group: false
+      text_notes: []
+      parameters:
+        Comments: ''
+        CKT_Load Name_CEDT: ''
+        Product Specification: ''
+        Number of Poles_CED: 1
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-001-LED-002 Set Definition ID: SET-001 Location XYZ (ft): 258.669427,-254.580213,4.000000 Rotation (deg): 90.000000 Parent Rotation (deg): -90.000000 Parent ElementId: 1334961 LevelId: 30 ElementId: 9837217 FacingOrientation: -1.000000,0.000000,0.000000'
+        Apparent Load Input_CED: ''
+        CKT_Circuit Number_CEDT: ''
+        FLA Input_CED: ''
+        SLD_Symbol ID_CED: ''
+        Wattage Input_CED: ''
+        Voltage_CED: 120.0
+        Load Classification_CED: REF
+        Product Datasheet URL: ''
+        CKT_Schedule Notes_CEDT: ''
+        dev-Group ID: ''
+        SLD_Component ID_CED: ''
+        CKT_Panel_CEDT: ''
+        CKT_Rating_CED: 0.0
+      keynotes: []
+      tags: []
+    id: SET-001
+  allow_unmatched_parents: true
+  equipment_properties: {}
+  parent_filter:
+    parameter_filters: {}
+    category: Specialty Equipment
+    type_name_pattern: 12' CO2 1024
+    family_name_pattern: '1310, 1311, 1312, 1313 (HUSSMANN, ID5SU) MULTIDECK (VALUE ADDED) CO4'
+  allow_parentless: true
+- schema_version: 4
+  ced_truth_source_name: "1310, 1311, 1312, 1313 (HUSSMANN, ID5SU) MULTIDECK (VALUE ADDED) CO1 : 8' (VALUE ADDED) CO2"
+  name: "1310, 1311, 1312, 1313 (HUSSMANN, ID5SU) MULTIDECK (VALUE ADDED) CO1 : 8' (VALUE ADDED) CO2"
+  version: 1
+  ced_truth_source_id: EQ-002
+  id: EQ-002
+  prompt_on_parent_mismatch: false
+  linked_sets:
+  - name: "1310, 1311, 1312, 1313 (HUSSMANN, ID5SU) MULTIDECK (VALUE ADDED) CO1 : 8' (VALUE ADDED) CO2 Types"
+    linked_element_definitions:
+    - label: "1310, 1311, 1312, 1313 (HUSSMANN, ID5SU) MULTIDECK (VALUE ADDED) CO1 : 8' (VALUE ADDED) CO2"
+      category: Mechanical Equipment
+      offsets:
+      - rotation_deg: -0.0
+        y_inches: 0.0
+        z_inches: 0.0
+        x_inches: -0.0
+      id: SET-002-LED-001
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-002-LED-001 Set Definition ID: SET-002 Location XYZ (ft): 259.590354,-203.489372,0.000000 Rotation (deg): 270.000000 Parent Rotation (deg): -90.000000 Parent ElementId: 1343250 LevelId: 30 ElementId: 9595255 FacingOrientation: 1.000000,-0.000000,0.000000'
+        dev-Group ID: ''
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: 0.0
+        z_inches: 42.4375
+        x_inches: 0.997892825137
+        category_name: Mechanical Equipment Tags
+        family_name: REFRIG SYSTEM Tag
+        type_name: REFRIG EQUIP SYSTEM TAG
+        parameters: {}
+        leader_elbow: null
+        leader_end: null
+    - label: 'EF-U_General Electrical Box-Unbalanced_CED : Refrig Case - Case Controller'
+      category: Electrical Fixtures
+      offsets:
+      - rotation_deg: 180.0
+        y_inches: -11.051125
+        z_inches: 48.0
+        x_inches: 34.0901
+      id: SET-002-LED-002
+      is_group: false
+      text_notes: []
+      parameters:
+        Comments: ''
+        CKT_Load Name_CEDT: ''
+        Product Specification: ''
+        Number of Poles_CED: 1
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-002-LED-002 Set Definition ID: SET-002 Location XYZ (ft): 258.669427,-206.330213,4.000000 Rotation (deg): 90.000000 Parent Rotation (deg): -90.000000 Parent ElementId: 1343250 LevelId: 30 ElementId: 9837269 FacingOrientation: -1.000000,0.000000,0.000000'
+        Apparent Load Input_CED: ''
+        CKT_Circuit Number_CEDT: ''
+        FLA Input_CED: ''
+        SLD_Symbol ID_CED: ''
+        Wattage Input_CED: ''
+        Voltage_CED: 120.0
+        Load Classification_CED: REF
+        Product Datasheet URL: ''
+        CKT_Schedule Notes_CEDT: ''
+        dev-Group ID: ''
+        SLD_Component ID_CED: ''
+        CKT_Panel_CEDT: ''
+        CKT_Rating_CED: 0.0
+      keynotes: []
+      tags: []
+    id: SET-002
+  allow_unmatched_parents: true
+  equipment_properties: {}
+  parent_filter:
+    parameter_filters: {}
+    family_name_pattern: '1310, 1311, 1312, 1313 (HUSSMANN, ID5SU) MULTIDECK (VALUE ADDED) CO1'
+    type_name_pattern: 8' (VALUE ADDED) CO2
+    category: Specialty Equipment
+  allow_parentless: true
+- schema_version: 4
+  ced_truth_source_name: "1689, 1690, 1691, 1692 (HUSSMANN, IDD6SU) MULTIDECK CO1 : 12' CO2"
+  name: "1689, 1690, 1691, 1692 (HUSSMANN, IDD6SU) MULTIDECK CO1 : 12' CO2"
+  version: 1
+  ced_truth_source_id: EQ-003
+  id: EQ-003
+  prompt_on_parent_mismatch: false
+  linked_sets:
+  - name: "1689, 1690, 1691, 1692 (HUSSMANN, IDD6SU) MULTIDECK CO1 : 12' CO2 Types"
+    linked_element_definitions:
+    - label: "1689, 1690, 1691, 1692 (HUSSMANN, IDD6SU) MULTIDECK CO2 : 12' CO2"
+      category: Mechanical Equipment
+      offsets:
+      - rotation_deg: 0.0
+        y_inches: 0.0
+        z_inches: 0.0
+        x_inches: -0.0
+      id: SET-003-LED-001
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-003-LED-001 Set Definition ID: SET-003 Location XYZ (ft): 259.590354,-183.692408,0.000000 Rotation (deg): 270.000000 Parent Rotation (deg): -90.000000 Parent ElementId: 1374558 LevelId: 30 ElementId: 9595525 FacingOrientation: 1.000000,-0.000000,0.000000'
+        dev-Group ID: ''
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: -0.750000000001
+        z_inches: 45.4375
+        x_inches: 0.99789282514
+        category_name: Mechanical Equipment Tags
+        family_name: REFRIG SYSTEM Tag
+        type_name: REFRIG EQUIP SYSTEM TAG
+        parameters: {}
+        leader_elbow: null
+        leader_end: null
+    - label: 'EF-U_General Electrical Box-Unbalanced_CED : Refrig Case - Case Controller'
+      category: Electrical Fixtures
+      offsets:
+      - rotation_deg: -180.0
+        y_inches: -11.051125
+        z_inches: 48.0
+        x_inches: 58.1526
+      id: SET-003-LED-002
+      is_group: false
+      text_notes: []
+      parameters:
+        Comments: ''
+        CKT_Load Name_CEDT: ''
+        Product Specification: ''
+        Number of Poles_CED: 1
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-003-LED-002 Set Definition ID: SET-003 Location XYZ (ft): 258.669427,-188.538458,4.000000 Rotation (deg): 90.000000 Parent Rotation (deg): -90.000000 Parent ElementId: 1374558 LevelId: 30 ElementId: 9837295 FacingOrientation: -1.000000,0.000000,0.000000'
+        Apparent Load Input_CED: ''
+        CKT_Circuit Number_CEDT: ''
+        FLA Input_CED: ''
+        SLD_Symbol ID_CED: ''
+        Wattage Input_CED: ''
+        Voltage_CED: 120.0
+        Load Classification_CED: REF
+        Product Datasheet URL: ''
+        CKT_Schedule Notes_CEDT: ''
+        dev-Group ID: ''
+        SLD_Component ID_CED: ''
+        CKT_Panel_CEDT: ''
+        CKT_Rating_CED: 0.0
+      keynotes: []
+      tags: []
+    id: SET-003
+  allow_unmatched_parents: true
+  equipment_properties: {}
+  parent_filter:
+    parameter_filters: {}
+    family_name_pattern: '1689, 1690, 1691, 1692 (HUSSMANN, IDD6SU) MULTIDECK CO1'
+    type_name_pattern: 12' CO2
+    category: Specialty Equipment
+  allow_parentless: true
+- schema_version: 4
+  ced_truth_source_name: "1140, 1141, 1142, 1143, 1144 (HILLPHOENIX, DLPC-R) GRAB N GO CASE1 : 8' 2"
+  name: "1140, 1141, 1142, 1143, 1144 (HILLPHOENIX, DLPC-R) GRAB N GO CASE1 : 8' 2"
+  version: 1
+  ced_truth_source_id: EQ-004
+  id: EQ-004
+  prompt_on_parent_mismatch: false
+  linked_sets:
+  - name: "1140, 1141, 1142, 1143, 1144 (HILLPHOENIX, DLPC-R) GRAB N GO CASE1 : 8' 2 Types"
+    linked_element_definitions:
+    - label: "1140, 1141, 1142, 1143, 1144 (HILLPHOENIX, DLPC-R) GRAB N GO CASE : 8'"
+      category: Mechanical Equipment
+      offsets:
+      - rotation_deg: 0.0
+        y_inches: -0.0
+        z_inches: 0.0
+        x_inches: -0.25
+      id: SET-004-LED-001
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-004-LED-001 Set Definition ID: SET-004 Location XYZ (ft): 253.538271,-151.618924,0.000000 Rotation (deg): 0.000000 Parent Rotation (deg): -0.000000 Parent ElementId: 1410840 LevelId: 30 ElementId: 9625367 FacingOrientation: 0.000000,1.000000,0.000000'
+        dev-Group ID: ''
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: -6.8212102633e-13
+        z_inches: 19.96875
+        x_inches: 0.0
+        category_name: Mechanical Equipment Tags
+        family_name: REFRIG SYSTEM Tag
+        type_name: REFRIG EQUIP SYSTEM TAG
+        parameters: {}
+        leader_elbow: null
+        leader_end: null
+    - label: 'EF-U_General Electrical Box-Unbalanced_CED : Refrig Case - Case Controller'
+      category: Electrical Fixtures
+      offsets:
+      - rotation_deg: 90.0
+        y_inches: -7.98033
+        z_inches: 48.0
+        x_inches: -37.585737
+      id: SET-004-LED-002
+      is_group: false
+      text_notes: []
+      parameters:
+        Comments: ''
+        CKT_Load Name_CEDT: ''
+        Product Specification: ''
+        Number of Poles_CED: 1
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-004-LED-002 Set Definition ID: SET-004 Location XYZ (ft): 250.426959,-152.283952,4.000000 Rotation (deg): 90.000000 Parent Rotation (deg): -0.000000 Parent ElementId: 1410840 LevelId: 30 ElementId: 9837333 FacingOrientation: -1.000000,0.000000,0.000000'
+        Apparent Load Input_CED: ''
+        CKT_Circuit Number_CEDT: ''
+        FLA Input_CED: ''
+        SLD_Symbol ID_CED: ''
+        Wattage Input_CED: ''
+        Voltage_CED: 120.0
+        Load Classification_CED: REF
+        Product Datasheet URL: ''
+        CKT_Schedule Notes_CEDT: ''
+        dev-Group ID: ''
+        SLD_Component ID_CED: ''
+        CKT_Panel_CEDT: ''
+        CKT_Rating_CED: 0.0
+      keynotes: []
+      tags: []
+    id: SET-004
+  allow_unmatched_parents: true
+  equipment_properties: {}
+  parent_filter:
+    parameter_filters: {}
+    family_name_pattern: '1140, 1141, 1142, 1143, 1144 (HILLPHOENIX, DLPC-R) GRAB N GO CASE1'
+    type_name_pattern: 8' 2
+    category: Specialty Equipment
+  allow_parentless: true
+- schema_version: 4
+  ced_truth_source_name: "1070, 1071, 1072, 1073, 1074 (HILLPHOENIX, DB-R-DLS) BACK BAR : 8'"
+  name: "1070, 1071, 1072, 1073, 1074 (HILLPHOENIX, DB-R-DLS) BACK BAR : 8'"
+  version: 1
+  ced_truth_source_id: EQ-005
+  id: EQ-005
+  prompt_on_parent_mismatch: false
+  linked_sets:
+  - name: "1070, 1071, 1072, 1073, 1074 (HILLPHOENIX, DB-R-DLS) BACK BAR : 8' Types"
+    linked_element_definitions:
+    - label: "1070, 1071, 1072, 1073, 1074 (HILLPHOENIX, DB-R-DLS) BACK BAR : 8'"
+      category: Mechanical Equipment
+      offsets:
+      - rotation_deg: 0.0
+        y_inches: 0.0
+        z_inches: 4.29978939846e-16
+        x_inches: 0.0
+      id: SET-005-LED-001
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-005-LED-001 Set Definition ID: SET-005 Location XYZ (ft): 254.673687,-142.348803,0.000000 Rotation (deg): 0.000000 Parent Rotation (deg): 0.000000 Parent ElementId: 3412278 LevelId: 30 ElementId: 9625495 FacingOrientation: 0.000000,1.000000,0.000000'
+        dev-Group ID: ''
+        Comments: GLASS ENDCAPS
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: 1.0
+        z_inches: 48.25
+        x_inches: -6.8212102633e-12
+        category_name: Mechanical Equipment Tags
+        family_name: REFRIG SYSTEM Tag
+        type_name: REFRIG EQUIP SYSTEM TAG
+        parameters: {}
+        leader_elbow: null
+        leader_end: null
+    - label: 'EF-U_General Electrical Box-Unbalanced_CED : Refrig Case - Case Controller'
+      category: Electrical Fixtures
+      offsets:
+      - rotation_deg: 90.0
+        y_inches: -6.829847
+        z_inches: 48.0
+        x_inches: -39.358078
+      id: SET-005-LED-002
+      is_group: false
+      text_notes: []
+      parameters:
+        Comments: ''
+        CKT_Load Name_CEDT: ''
+        Product Specification: ''
+        Number of Poles_CED: 1
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-005-LED-002 Set Definition ID: SET-005 Location XYZ (ft): 251.393847,-142.917957,4.000000 Rotation (deg): 90.000000 Parent Rotation (deg): 0.000000 Parent ElementId: 3412278 LevelId: 30 ElementId: 9837399 FacingOrientation: -1.000000,0.000000,0.000000'
+        Apparent Load Input_CED: ''
+        CKT_Circuit Number_CEDT: ''
+        FLA Input_CED: ''
+        SLD_Symbol ID_CED: ''
+        Wattage Input_CED: ''
+        Voltage_CED: 120.0
+        Load Classification_CED: REF
+        Product Datasheet URL: ''
+        CKT_Schedule Notes_CEDT: ''
+        dev-Group ID: ''
+        SLD_Component ID_CED: ''
+        CKT_Panel_CEDT: ''
+        CKT_Rating_CED: 0.0
+      keynotes: []
+      tags: []
+    - label: THWN
+      category: Wires
+      offsets:
+      - rotation_deg: 0.0
+        y_inches: -9.95165
+        z_inches: 48.3108205597
+        x_inches: -54.752164
+      id: SET-005-LED-003
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-005-LED-003 Set Definition ID: SET-005 Location XYZ (ft): 250.111007,-143.178108,4.025902 Rotation (deg): 0.000000 Parent Rotation (deg): 0.000000 Parent ElementId: 3412278 LevelId: 30 ElementId: 9837400 FacingOrientation: '
+        dev-Group ID: ''
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: -40.2310808642
+        z_inches: -48.3108205597
+        x_inches: -25.1400925546
+        category_name: Wire Tags
+        family_name: E_Tag - Wire
+        type_name: Homerun - Panel & Circuits - Slash
+        parameters: {}
+        leader_elbow: null
+        leader_end: null
+    id: SET-005
+  allow_unmatched_parents: true
+  equipment_properties: {}
+  parent_filter:
+    parameter_filters: {}
+    family_name_pattern: '1070, 1071, 1072, 1073, 1074 (HILLPHOENIX, DB-R-DLS) BACK BAR'
+    type_name_pattern: 8'
+    category: Specialty Equipment
+  allow_parentless: true
+- schema_version: 4
+  ced_truth_source_name: "1689, 1690, 1691, 1692 (HUSSMANN, IDD6SU) MULTIDECK CO1 : 8' CO2"
+  name: "1689, 1690, 1691, 1692 (HUSSMANN, IDD6SU) MULTIDECK CO1 : 8' CO2"
+  version: 1
+  ced_truth_source_id: EQ-006
+  id: EQ-006
+  prompt_on_parent_mismatch: false
+  linked_sets:
+  - name: "1689, 1690, 1691, 1692 (HUSSMANN, IDD6SU) MULTIDECK CO1 : 8' CO2 Types"
+    linked_element_definitions:
+    - label: "1689, 1690, 1691, 1692 (HUSSMANN, IDD6SU) MULTIDECK CO8 : 8' CO2"
+      category: Mechanical Equipment
+      offsets:
+      - rotation_deg: 0.0
+        y_inches: 0.0
+        z_inches: 0.0
+        x_inches: 0.0
+      id: SET-006-LED-001
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-006-LED-001 Set Definition ID: SET-006 Location XYZ (ft): 240.784671,-92.463387,0.000000 Rotation (deg): 270.000000 Parent Rotation (deg): -90.000000 Parent ElementId: 1504071 LevelId: 30 ElementId: 9633818 FacingOrientation: 1.000000,-0.000000,0.000000'
+        dev-Group ID: ''
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: 0.750000000002
+        z_inches: 45.4375
+        x_inches: -0.344154882795
+        category_name: Mechanical Equipment Tags
+        family_name: REFRIG SYSTEM Tag
+        type_name: REFRIG EQUIP SYSTEM TAG
+        parameters: {}
+        leader_elbow: null
+        leader_end: null
+    - label: 'EF-U_General Electrical Box-Unbalanced_CED : Refrig Case - Case Controller'
+      category: Electrical Fixtures
+      offsets:
+      - rotation_deg: -180.0
+        y_inches: -11.002526
+        z_inches: 48.0
+        x_inches: 34.0901
+      id: SET-006-LED-002
+      is_group: false
+      text_notes: []
+      parameters:
+        Comments: ''
+        CKT_Load Name_CEDT: ''
+        Product Specification: ''
+        Number of Poles_CED: 1
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-006-LED-002 Set Definition ID: SET-006 Location XYZ (ft): 239.867794,-95.304228,4.000000 Rotation (deg): 90.000000 Parent Rotation (deg): -90.000000 Parent ElementId: 1504071 LevelId: 30 ElementId: 9837674 FacingOrientation: -1.000000,0.000000,0.000000'
+        Apparent Load Input_CED: ''
+        CKT_Circuit Number_CEDT: ''
+        FLA Input_CED: ''
+        SLD_Symbol ID_CED: ''
+        Wattage Input_CED: ''
+        Voltage_CED: 120.0
+        Load Classification_CED: REF
+        Product Datasheet URL: ''
+        CKT_Schedule Notes_CEDT: ''
+        dev-Group ID: ''
+        SLD_Component ID_CED: ''
+        CKT_Panel_CEDT: ''
+        CKT_Rating_CED: 0.0
+      keynotes: []
+      tags: []
+    - label: THWN
+      category: Wires
+      offsets:
+      - rotation_deg: 90.0
+        y_inches: -26.396612
+        z_inches: 48.3108205597
+        x_inches: 37.211903
+      id: SET-006-LED-003
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-006-LED-003 Set Definition ID: SET-006 Location XYZ (ft): 238.584953,-95.564379,4.025902 Rotation (deg): 0.000000 Parent Rotation (deg): -90.000000 Parent ElementId: 1504071 LevelId: 30 ElementId: 9837675 FacingOrientation: '
+        dev-Group ID: ''
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: -40.2310808642
+        z_inches: -48.3108205597
+        x_inches: -25.1400925546
+        category_name: Wire Tags
+        family_name: E_Tag - Wire
+        type_name: Homerun - Panel & Circuits - Slash
+        parameters: {}
+        leader_elbow: null
+        leader_end: null
+    id: SET-006
+  allow_unmatched_parents: true
+  equipment_properties: {}
+  parent_filter:
+    parameter_filters: {}
+    family_name_pattern: '1689, 1690, 1691, 1692 (HUSSMANN, IDD6SU) MULTIDECK CO1'
+    type_name_pattern: 8' CO2
+    category: Specialty Equipment
+  allow_parentless: true
+- schema_version: 4
+  ced_truth_source_name: "1955, 1956 (HUSSMANN, FIG) COFFIN CO2 : 8' CO2"
+  name: "1955, 1956 (HUSSMANN, FIG) COFFIN CO2 : 8' CO2"
+  version: 1
+  ced_truth_source_id: EQ-007
+  id: EQ-007
+  prompt_on_parent_mismatch: false
+  linked_sets:
+  - name: "1955, 1956 (HUSSMANN, FIG) COFFIN CO2 : 8' CO2 Types"
+    linked_element_definitions:
+    - label: "1955, 1956 (HUSSMANN, FIG) COFFIN CO1 : 8' CO2"
+      category: Mechanical Equipment
+      offsets:
+      - rotation_deg: 180.0
+        y_inches: -0.0
+        z_inches: 0.0
+        x_inches: -0.0
+      id: SET-007-LED-001
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-007-LED-001 Set Definition ID: SET-007 Location XYZ (ft): 226.090439,-101.593595,0.000000 Rotation (deg): 270.000000 Parent Rotation (deg): 90.000000 Parent ElementId: 1960227 LevelId: 30 ElementId: 9485461 FacingOrientation: 1.000000,-0.000000,0.000000'
+        dev-Group ID: ''
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: 0.0
+        z_inches: 17.9375
+        x_inches: -0.060189461452
+        category_name: Mechanical Equipment Tags
+        family_name: REFRIG SYSTEM Tag
+        type_name: REFRIG EQUIP SYSTEM TAG
+        parameters: {}
+        leader_elbow: null
+        leader_end: null
+    - label: 'EF-U_General Electrical Box-Unbalanced_CED : Refrig Case - Case Controller'
+      category: Electrical Fixtures
+      offsets:
+      - rotation_deg: -0.0
+        y_inches: -18.489429
+        z_inches: 48.0
+        x_inches: -35.242552
+      id: SET-007-LED-002
+      is_group: false
+      text_notes: []
+      parameters:
+        Comments: ''
+        CKT_Load Name_CEDT: ''
+        Product Specification: ''
+        Number of Poles_CED: 2
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-007-LED-002 Set Definition ID: SET-007 Location XYZ (ft): 227.631225,-104.530474,4.000000 Rotation (deg): 90.000000 Parent Rotation (deg): 90.000000 Parent ElementId: 1960227 LevelId: 30 ElementId: 9837620 FacingOrientation: 1.000000,-0.000000,-0.000000'
+        Apparent Load Input_CED: ''
+        CKT_Circuit Number_CEDT: ''
+        FLA Input_CED: ''
+        SLD_Symbol ID_CED: ''
+        Wattage Input_CED: ''
+        Voltage_CED: 208.0
+        Load Classification_CED: REF
+        Product Datasheet URL: ''
+        CKT_Schedule Notes_CEDT: ''
+        dev-Group ID: ''
+        SLD_Component ID_CED: ''
+        CKT_Panel_CEDT: ''
+        CKT_Rating_CED: 0.0
+      keynotes: []
+      tags: []
+    - label: THWN
+      category: Wires
+      offsets:
+      - rotation_deg: -90.0
+        y_inches: -33.883515
+        z_inches: 48.3108205597
+        x_inches: -38.364355
+      id: SET-007-LED-003
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-007-LED-003 Set Definition ID: SET-007 Location XYZ (ft): 228.914065,-104.790625,4.025902 Rotation (deg): 0.000000 Parent Rotation (deg): 90.000000 Parent ElementId: 1960227 LevelId: 30 ElementId: 9837621 FacingOrientation: '
+        dev-Group ID: ''
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: -40.2310808642
+        z_inches: -48.3108205597
+        x_inches: 25.1400925546
+        category_name: Wire Tags
+        family_name: E_Tag - Wire
+        type_name: Homerun - Panel & Circuits - Slash
+        parameters: {}
+        leader_elbow: null
+        leader_end: null
+    id: SET-007
+  allow_unmatched_parents: true
+  equipment_properties: {}
+  parent_filter:
+    parameter_filters: {}
+    family_name_pattern: '1955, 1956 (HUSSMANN, FIG) COFFIN CO2'
+    type_name_pattern: 8' CO2
+    category: Specialty Equipment
+  allow_parentless: true
+- schema_version: 4
+  ced_truth_source_name: "1677, 1678, 1679, 1680 (HUSSMANN, ID6SU) MULTIDECK CO2 : 6' CO2"
+  name: "1677, 1678, 1679, 1680 (HUSSMANN, ID6SU) MULTIDECK CO2 : 6' CO2"
+  version: 1
+  ced_truth_source_id: EQ-008
+  id: EQ-008
+  prompt_on_parent_mismatch: false
+  linked_sets:
+  - name: "1677, 1678, 1679, 1680 (HUSSMANN, ID6SU) MULTIDECK CO2 : 6' CO2 Types"
+    linked_element_definitions:
+    - label: "1677, 1678, 1679, 1680 (HUSSMANN, ID6SU) MULTIDECK CO2 : 6' CO2"
+      category: Mechanical Equipment
+      offsets:
+      - rotation_deg: 0.0
+        y_inches: 0.0
+        z_inches: 0.0
+        x_inches: -0.0
+      id: SET-008-LED-001
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-008-LED-001 Set Definition ID: SET-008 Location XYZ (ft): 226.808795,-114.053251,0.000000 Rotation (deg): 180.000000 Parent Rotation (deg): 180.000000 Parent ElementId: 1959799 LevelId: 30 ElementId: 9594829 FacingOrientation: -0.000000,-1.000000,0.000000'
+        dev-Group ID: ''
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: -0.997389785948
+        z_inches: 45.4375
+        x_inches: 2.04636307899e-12
+        category_name: Mechanical Equipment Tags
+        family_name: REFRIG SYSTEM Tag
+        type_name: REFRIG EQUIP SYSTEM TAG
+        parameters: {}
+        leader_elbow: null
+        leader_end: null
+    - label: 'EF-U_General Electrical Box-Unbalanced_CED : Refrig Case - Case Controller'
+      category: Electrical Fixtures
+      offsets:
+      - rotation_deg: -90.0
+        y_inches: 8.805052
+        z_inches: 48.0
+        x_inches: -28.25
+      id: SET-008-LED-002
+      is_group: false
+      text_notes: []
+      parameters:
+        Comments: ''
+        CKT_Load Name_CEDT: ''
+        Product Specification: ''
+        Number of Poles_CED: 1
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-008-LED-002 Set Definition ID: SET-008 Location XYZ (ft): 229.162962,-114.787005,4.000000 Rotation (deg): 90.000000 Parent Rotation (deg): 180.000000 Parent ElementId: 1959799 LevelId: 30 ElementId: 9837608 FacingOrientation: 1.000000,-0.000000,-0.000000'
+        Apparent Load Input_CED: ''
+        CKT_Circuit Number_CEDT: ''
+        FLA Input_CED: ''
+        SLD_Symbol ID_CED: ''
+        Wattage Input_CED: ''
+        Voltage_CED: 120.0
+        Load Classification_CED: REF
+        Product Datasheet URL: ''
+        CKT_Schedule Notes_CEDT: ''
+        dev-Group ID: ''
+        SLD_Component ID_CED: ''
+        CKT_Panel_CEDT: ''
+        CKT_Rating_CED: 0.0
+      keynotes: []
+      tags: []
+    - label: THWN
+      category: Wires
+      offsets:
+      - rotation_deg: -180.0
+        y_inches: 11.926855
+        z_inches: 48.3108205597
+        x_inches: -43.644087
+      id: SET-008-LED-003
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-008-LED-003 Set Definition ID: SET-008 Location XYZ (ft): 230.445803,-115.047155,4.025902 Rotation (deg): 0.000000 Parent Rotation (deg): 180.000000 Parent ElementId: 1959799 LevelId: 30 ElementId: 9837609 FacingOrientation: '
+        dev-Group ID: ''
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: -40.2310808642
+        z_inches: -48.3108205597
+        x_inches: 25.1400925546
+        category_name: Wire Tags
+        family_name: E_Tag - Wire
+        type_name: Homerun - Panel & Circuits - Slash
+        parameters: {}
+        leader_elbow: null
+        leader_end: null
+    id: SET-008
+  allow_unmatched_parents: true
+  equipment_properties: {}
+  parent_filter:
+    parameter_filters: {}
+    family_name_pattern: '1677, 1678, 1679, 1680 (HUSSMANN, ID6SU) MULTIDECK CO2'
+    type_name_pattern: 6' CO2
+    category: Specialty Equipment
+  allow_parentless: true
+- schema_version: 4
+  ced_truth_source_name: "1677, 1678, 1679, 1680 (HUSSMANN, ID6SU) MULTIDECK CO2 : 8' CO2"
+  name: "1677, 1678, 1679, 1680 (HUSSMANN, ID6SU) MULTIDECK CO2 : 8' CO2"
+  version: 1
+  ced_truth_source_id: EQ-009
+  id: EQ-009
+  prompt_on_parent_mismatch: false
+  linked_sets:
+  - name: "1677, 1678, 1679, 1680 (HUSSMANN, ID6SU) MULTIDECK CO2 : 8' CO2 Types"
+    linked_element_definitions:
+    - label: "1677, 1678, 1679, 1680 (HUSSMANN, ID6SU) MULTIDECK CO1 : 8' CO2"
+      category: Mechanical Equipment
+      offsets:
+      - rotation_deg: 0.0
+        y_inches: 0.0
+        z_inches: 0.0
+        x_inches: -0.0
+      id: SET-009-LED-001
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-009-LED-001 Set Definition ID: SET-009 Location XYZ (ft): 228.131712,-120.167834,0.000000 Rotation (deg): 90.000000 Parent Rotation (deg): 90.000000 Parent ElementId: 1959381 LevelId: 30 ElementId: 9594662 FacingOrientation: -1.000000,0.000000,0.000000'
+        dev-Group ID: ''
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: 0.75
+        z_inches: 45.4375
+        x_inches: -0.997389785948
+        category_name: Mechanical Equipment Tags
+        family_name: REFRIG SYSTEM Tag
+        type_name: REFRIG EQUIP SYSTEM TAG
+        parameters: {}
+        leader_elbow: null
+        leader_end: null
+    - label: 'EF-U_General Electrical Box-Unbalanced_CED : Refrig Case - Case Controller'
+      category: Electrical Fixtures
+      offsets:
+      - rotation_deg: 0.0
+        y_inches: -12.375
+        z_inches: 48.0
+        x_inches: -35.180052
+      id: SET-009-LED-002
+      is_group: false
+      text_notes: []
+      parameters:
+        Comments: ''
+        CKT_Load Name_CEDT: ''
+        Product Specification: ''
+        Number of Poles_CED: 1
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-009-LED-002 Set Definition ID: SET-009 Location XYZ (ft): 229.162962,-123.099505,4.000000 Rotation (deg): 90.000000 Parent Rotation (deg): 90.000000 Parent ElementId: 1959381 LevelId: 30 ElementId: 9837476 FacingOrientation: 1.000000,-0.000000,-0.000000'
+        Apparent Load Input_CED: ''
+        CKT_Circuit Number_CEDT: ''
+        FLA Input_CED: ''
+        SLD_Symbol ID_CED: ''
+        Wattage Input_CED: ''
+        Voltage_CED: 120.0
+        Load Classification_CED: REF
+        Product Datasheet URL: ''
+        CKT_Schedule Notes_CEDT: ''
+        dev-Group ID: ''
+        SLD_Component ID_CED: ''
+        CKT_Panel_CEDT: ''
+        CKT_Rating_CED: 0.0
+      keynotes: []
+      tags: []
+    id: SET-009
+  allow_unmatched_parents: true
+  equipment_properties: {}
+  parent_filter:
+    parameter_filters: {}
+    family_name_pattern: '1677, 1678, 1679, 1680 (HUSSMANN, ID6SU) MULTIDECK CO2'
+    type_name_pattern: 8' CO2
+    category: Specialty Equipment
+  allow_parentless: true
+- schema_version: 4
+  ced_truth_source_name: "1677, 1678, 1679, 1680 (HUSSMANN, ID6SU) MULTIDECK CO2 : 12' CO2"
+  name: "1677, 1678, 1679, 1680 (HUSSMANN, ID6SU) MULTIDECK CO2 : 12' CO2"
+  version: 1
+  ced_truth_source_id: EQ-010
+  id: EQ-010
+  prompt_on_parent_mismatch: false
+  linked_sets:
+  - name: "1677, 1678, 1679, 1680 (HUSSMANN, ID6SU) MULTIDECK CO2 : 12' CO2 Types"
+    linked_element_definitions:
+    - label: "1677, 1678, 1679, 1680 (HUSSMANN, ID6SU) MULTIDECK CO5 : 12' CO2"
+      category: Mechanical Equipment
+      offsets:
+      - rotation_deg: 0.0
+        y_inches: -0.0
+        z_inches: 0.0
+        x_inches: -0.0
+      id: SET-010-LED-001
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-010-LED-001 Set Definition ID: SET-010 Location XYZ (ft): 228.131712,-130.193876,0.000000 Rotation (deg): 90.000000 Parent Rotation (deg): 90.000000 Parent ElementId: 1959201 LevelId: 30 ElementId: 9594611 FacingOrientation: -1.000000,0.000000,0.000000'
+        dev-Group ID: ''
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: 0.0
+        z_inches: 45.4375
+        x_inches: -0.997389785948
+        category_name: Mechanical Equipment Tags
+        family_name: REFRIG SYSTEM Tag
+        type_name: REFRIG EQUIP SYSTEM TAG
+        parameters: {}
+        leader_elbow: null
+        leader_end: null
+    - label: 'EF-U_General Electrical Box-Unbalanced_CED : Refrig Case - Case Controller'
+      category: Electrical Fixtures
+      offsets:
+      - rotation_deg: 0.0
+        y_inches: -12.375
+        z_inches: 48.0
+        x_inches: -59.242552
+      id: SET-010-LED-002
+      is_group: false
+      text_notes: []
+      parameters:
+        Comments: ''
+        CKT_Load Name_CEDT: ''
+        Product Specification: ''
+        Number of Poles_CED: 1
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-010-LED-002 Set Definition ID: SET-010 Location XYZ (ft): 229.162962,-135.130755,4.000000 Rotation (deg): 90.000000 Parent Rotation (deg): 90.000000 Parent ElementId: 1959201 LevelId: 30 ElementId: 9837494 FacingOrientation: 1.000000,-0.000000,-0.000000'
+        Apparent Load Input_CED: ''
+        CKT_Circuit Number_CEDT: ''
+        FLA Input_CED: ''
+        SLD_Symbol ID_CED: ''
+        Wattage Input_CED: ''
+        Voltage_CED: 120.0
+        Load Classification_CED: REF
+        Product Datasheet URL: ''
+        CKT_Schedule Notes_CEDT: ''
+        dev-Group ID: ''
+        SLD_Component ID_CED: ''
+        CKT_Panel_CEDT: ''
+        CKT_Rating_CED: 0.0
+      keynotes: []
+      tags: []
+    id: SET-010
+  allow_unmatched_parents: true
+  equipment_properties: {}
+  parent_filter:
+    parameter_filters: {}
+    family_name_pattern: '1677, 1678, 1679, 1680 (HUSSMANN, ID6SU) MULTIDECK CO2'
+    type_name_pattern: 12' CO2
+    category: Specialty Equipment
+  allow_parentless: true
+- schema_version: 4
+  ced_truth_source_name: '1647, 1650, 1651, 1652 (HUSSMANN, IRLN) FROZEN CASE CO1 : 5DR CO2'
+  name: '1647, 1650, 1651, 1652 (HUSSMANN, IRLN) FROZEN CASE CO1 : 5DR CO2'
+  version: 1
+  ced_truth_source_id: EQ-011
+  id: EQ-011
+  prompt_on_parent_mismatch: false
+  linked_sets:
+  - name: '1647, 1650, 1651, 1652 (HUSSMANN, IRLN) FROZEN CASE CO1 : 5DR CO2 Types'
+    linked_element_definitions:
+    - label: '1647, 1650, 1651, 1652 (HUSSMANN, IRLN) FROZEN CASE CO3 : 5DR CO2'
+      category: Mechanical Equipment
+      offsets:
+      - rotation_deg: 0.0
+        y_inches: 2.875
+        z_inches: 0.0
+        x_inches: -0.0
+      id: SET-011-LED-001
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-011-LED-001 Set Definition ID: SET-011 Location XYZ (ft): 156.440240,-82.666710,0.000000 Rotation (deg): 360.000000 Parent Rotation (deg): -0.000000 Parent ElementId: 3384128 LevelId: 30 ElementId: 9493316 FacingOrientation: 0.000000,1.000000,-0.000000'
+        dev-Group ID: ''
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: -0.196164839413
+        z_inches: 47.5
+        x_inches: -6.8212102633e-13
+        category_name: Mechanical Equipment Tags
+        family_name: REFRIG SYSTEM Tag
+        type_name: REFRIG EQUIP SYSTEM TAG
+        parameters: {}
+        leader_elbow: null
+        leader_end: null
+    - label: 'EF-U_General Electrical Box-Unbalanced_CED : Refrig Case - Case Controller'
+      category: Electrical Fixtures
+      offsets:
+      - rotation_deg: 90.0
+        y_inches: 7.097267
+        z_inches: 48.0
+        x_inches: -69.18684
+      id: SET-011-LED-002
+      is_group: false
+      text_notes: []
+      parameters:
+        Comments: ''
+        CKT_Load Name_CEDT: ''
+        Product Specification: ''
+        Number of Poles_CED: 2
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-011-LED-002 Set Definition ID: SET-011 Location XYZ (ft): 150.674670,-82.314854,4.000000 Rotation (deg): 90.000000 Parent Rotation (deg): -0.000000 Parent ElementId: 3384128 LevelId: 30 ElementId: 9836235 FacingOrientation: -1.000000,0.000000,0.000000'
+        Apparent Load Input_CED: ''
+        CKT_Circuit Number_CEDT: ''
+        FLA Input_CED: ''
+        SLD_Symbol ID_CED: ''
+        Wattage Input_CED: ''
+        Voltage_CED: 208.0
+        Load Classification_CED: REF
+        Product Datasheet URL: ''
+        CKT_Schedule Notes_CEDT: ''
+        dev-Group ID: ''
+        SLD_Component ID_CED: ''
+        CKT_Panel_CEDT: ''
+        CKT_Rating_CED: 0.0
+      keynotes: []
+      tags: []
+    - label: THWN
+      category: Wires
+      offsets:
+      - rotation_deg: 0.0
+        y_inches: 3.975464
+        z_inches: 48.3108205597
+        x_inches: -53.792753
+      id: SET-011-LED-003
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-011-LED-003 Set Definition ID: SET-011 Location XYZ (ft): 151.957511,-82.575004,4.025902 Rotation (deg): 0.000000 Parent Rotation (deg): -0.000000 Parent ElementId: 3384128 LevelId: 30 ElementId: 9837696 FacingOrientation: '
+        dev-Group ID: ''
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: -40.2310808642
+        z_inches: -48.3108205597
+        x_inches: 25.1400925546
+        category_name: Wire Tags
+        family_name: E_Tag - Wire
+        type_name: Homerun - Panel & Circuits - Slash
+        parameters: {}
+        leader_elbow: null
+        leader_end: null
+    id: SET-011
+  allow_unmatched_parents: true
+  equipment_properties: {}
+  parent_filter:
+    parameter_filters: {}
+    family_name_pattern: '1647, 1650, 1651, 1652 (HUSSMANN, IRLN) FROZEN CASE CO1'
+    type_name_pattern: 5DR CO2
+    category: Specialty Equipment
+  allow_parentless: true
+- schema_version: 4
+  ced_truth_source_name: '1647, 1650, 1651, 1652 (HUSSMANN, IRLN) FROZEN CASE CO2 : 3DR CO2'
+  name: '1647, 1650, 1651, 1652 (HUSSMANN, IRLN) FROZEN CASE CO2 : 3DR CO2'
+  version: 1
+  ced_truth_source_id: EQ-012
+  id: EQ-012
+  prompt_on_parent_mismatch: false
+  linked_sets:
+  - name: '1647, 1650, 1651, 1652 (HUSSMANN, IRLN) FROZEN CASE CO2 : 3DR CO2 Types'
+    linked_element_definitions:
+    - label: '1647, 1650, 1651, 1652 (HUSSMANN, IRLN) FROZEN CASE CO2 : 3DR CO2'
+      category: Mechanical Equipment
+      offsets:
+      - rotation_deg: 0.0
+        y_inches: 1.4375
+        z_inches: 0.0
+        x_inches: -0.0
+      id: SET-012-LED-001
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-012-LED-001 Set Definition ID: SET-012 Location XYZ (ft): 181.725856,-155.801928,0.000000 Rotation (deg): 270.000000 Parent Rotation (deg): -90.000000 Parent ElementId: 3477565 LevelId: 30 ElementId: 9485003 FacingOrientation: 1.000000,-0.000000,0.000000'
+        dev-Group ID: ''
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: -0.999999999999
+        z_inches: 47.5
+        x_inches: -2.17143946916
+        category_name: Mechanical Equipment Tags
+        family_name: REFRIG SYSTEM Tag
+        type_name: REFRIG EQUIP SYSTEM TAG
+        parameters: {}
+        leader_elbow: null
+        leader_end: null
+    - label: 'EF-U_General Electrical Box-Unbalanced_CED : Refrig Case - Case Controller'
+      category: Electrical Fixtures
+      offsets:
+      - rotation_deg: -180.0
+        y_inches: -7.359411
+        z_inches: 48.0
+        x_inches: 34.0276
+      id: SET-012-LED-002
+      is_group: false
+      text_notes: []
+      parameters:
+        Comments: ''
+        CKT_Load Name_CEDT: ''
+        Product Specification: ''
+        Number of Poles_CED: 2
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-012-LED-002 Set Definition ID: SET-012 Location XYZ (ft): 180.992780,-158.637562,4.000000 Rotation (deg): 90.000000 Parent Rotation (deg): -90.000000 Parent ElementId: 3477565 LevelId: 30 ElementId: 9837113 FacingOrientation: -1.000000,0.000000,0.000000'
+        Apparent Load Input_CED: ''
+        CKT_Circuit Number_CEDT: ''
+        FLA Input_CED: ''
+        SLD_Symbol ID_CED: ''
+        Wattage Input_CED: ''
+        Voltage_CED: 208.0
+        Load Classification_CED: REF
+        Product Datasheet URL: ''
+        CKT_Schedule Notes_CEDT: ''
+        dev-Group ID: ''
+        SLD_Component ID_CED: ''
+        CKT_Panel_CEDT: ''
+        CKT_Rating_CED: 0.0
+      keynotes: []
+      tags: []
+    - label: THWN
+      category: Wires
+      offsets:
+      - rotation_deg: 90.0
+        y_inches: -22.753497
+        z_inches: 48.3108205597
+        x_inches: 37.149403
+      id: SET-012-LED-003
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-012-LED-003 Set Definition ID: SET-012 Location XYZ (ft): 179.709939,-158.897712,4.025902 Rotation (deg): 0.000000 Parent Rotation (deg): -90.000000 Parent ElementId: 3477565 LevelId: 30 ElementId: 9837114 FacingOrientation: '
+        dev-Group ID: ''
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: -40.2310808642
+        z_inches: -48.3108205597
+        x_inches: -25.1400925546
+        category_name: Wire Tags
+        family_name: E_Tag - Wire
+        type_name: Homerun - Panel & Circuits - Slash
+        parameters: {}
+        leader_elbow: null
+        leader_end: null
+    id: SET-012
+  allow_unmatched_parents: true
+  equipment_properties: {}
+  parent_filter:
+    parameter_filters: {}
+    family_name_pattern: '1647, 1650, 1651, 1652 (HUSSMANN, IRLN) FROZEN CASE CO2'
+    type_name_pattern: 3DR CO2
+    category: Specialty Equipment
+  allow_parentless: true
+- schema_version: 4
+  ced_truth_source_name: '1647, 1650, 1651, 1652 (HUSSMANN, IRLN) FROZEN CASE CO2 : 4DR CO2'
+  name: '1647, 1650, 1651, 1652 (HUSSMANN, IRLN) FROZEN CASE CO2 : 4DR CO2'
+  version: 1
+  ced_truth_source_id: EQ-013
+  id: EQ-013
+  prompt_on_parent_mismatch: false
+  linked_sets:
+  - name: '1647, 1650, 1651, 1652 (HUSSMANN, IRLN) FROZEN CASE CO2 : 4DR CO2 Types'
+    linked_element_definitions:
+    - label: '1647, 1650, 1651, 1652 (HUSSMANN, IRLN) FROZEN CASE CO1 : 4DR CO2'
+      category: Mechanical Equipment
+      offsets:
+      - rotation_deg: 0.0
+        y_inches: 1.4375
+        z_inches: 0.0
+        x_inches: -0.0
+      id: SET-013-LED-001
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-013-LED-001 Set Definition ID: SET-013 Location XYZ (ft): 168.476925,-145.822762,0.000000 Rotation (deg): 90.000000 Parent Rotation (deg): 90.000000 Parent ElementId: 3377457 LevelId: 30 ElementId: 9484512 FacingOrientation: -1.000000,0.000000,0.000000'
+        dev-Group ID: ''
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: 0.0
+        z_inches: 47.5
+        x_inches: 0.019208011788
+        category_name: Mechanical Equipment Tags
+        family_name: REFRIG SYSTEM Tag
+        type_name: REFRIG EQUIP SYSTEM TAG
+        parameters: {}
+        leader_elbow: null
+        leader_end: null
+    - label: 'EF-U_General Electrical Box-Unbalanced_CED : Refrig Case - Case Controller'
+      category: Electrical Fixtures
+      offsets:
+      - rotation_deg: 0.0
+        y_inches: -8.687573
+        z_inches: 48.0
+        x_inches: -48.867552
+      id: SET-013-LED-002
+      is_group: false
+      text_notes: []
+      parameters:
+        Comments: ''
+        CKT_Load Name_CEDT: ''
+        Product Specification: ''
+        Number of Poles_CED: 2
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-013-LED-002 Set Definition ID: SET-013 Location XYZ (ft): 169.320681,-149.895058,4.000000 Rotation (deg): 90.000000 Parent Rotation (deg): 90.000000 Parent ElementId: 3377457 LevelId: 30 ElementId: 9837462 FacingOrientation: 1.000000,-0.000000,-0.000000'
+        Apparent Load Input_CED: ''
+        CKT_Circuit Number_CEDT: ''
+        FLA Input_CED: ''
+        SLD_Symbol ID_CED: ''
+        Wattage Input_CED: ''
+        Voltage_CED: 208.0
+        Load Classification_CED: REF
+        Product Datasheet URL: ''
+        CKT_Schedule Notes_CEDT: ''
+        dev-Group ID: ''
+        SLD_Component ID_CED: ''
+        CKT_Panel_CEDT: ''
+        CKT_Rating_CED: 0.0
+      keynotes: []
+      tags: []
+    - label: THWN
+      category: Wires
+      offsets:
+      - rotation_deg: -90.0
+        y_inches: -24.081659
+        z_inches: 48.3108205597
+        x_inches: -51.989355
+      id: SET-013-LED-003
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-013-LED-003 Set Definition ID: SET-013 Location XYZ (ft): 170.603522,-150.155208,4.025902 Rotation (deg): 0.000000 Parent Rotation (deg): 90.000000 Parent ElementId: 3377457 LevelId: 30 ElementId: 9837463 FacingOrientation: '
+        dev-Group ID: ''
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: -41.2310808642
+        z_inches: -48.3108205597
+        x_inches: 25.1400925546
+        category_name: Wire Tags
+        family_name: E_Tag - Wire
+        type_name: Homerun - Panel & Circuits - Slash
+        parameters: {}
+        leader_elbow: null
+        leader_end: null
+    id: SET-013
+  allow_unmatched_parents: true
+  equipment_properties: {}
+  parent_filter:
+    parameter_filters: {}
+    family_name_pattern: '1647, 1650, 1651, 1652 (HUSSMANN, IRLN) FROZEN CASE CO2'
+    type_name_pattern: 4DR CO2
+    category: Specialty Equipment
+  allow_parentless: true
+- schema_version: 4
+  ced_truth_source_name: '1647, 1650, 1651, 1652 (HUSSMANN, IRLN) FROZEN CASE CO2 : 2DR CO2'
+  name: '1647, 1650, 1651, 1652 (HUSSMANN, IRLN) FROZEN CASE CO2 : 2DR CO2'
+  version: 1
+  ced_truth_source_id: EQ-014
+  id: EQ-014
+  prompt_on_parent_mismatch: false
+  linked_sets:
+  - name: '1647, 1650, 1651, 1652 (HUSSMANN, IRLN) FROZEN CASE CO2 : 2DR CO2 Types'
+    linked_element_definitions:
+    - label: '1647, 1650, 1651, 1652 (HUSSMANN, IRLN) FROZEN CASE CO8 : 2DR CO2'
+      category: Mechanical Equipment
+      offsets:
+      - rotation_deg: 0.0
+        y_inches: 1.4375
+        z_inches: 0.0
+        x_inches: -0.0
+      id: SET-014-LED-001
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-014-LED-001 Set Definition ID: SET-014 Location XYZ (ft): 166.531040,-160.494637,0.000000 Rotation (deg): 360.000000 Parent Rotation (deg): -0.000000 Parent ElementId: 3405761 LevelId: 30 ElementId: 9493169 FacingOrientation: 0.000000,1.000000,-0.000000'
+        dev-Group ID: ''
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: -1.55642509559
+        z_inches: 47.5
+        x_inches: -1.02318153949e-12
+        category_name: Mechanical Equipment Tags
+        family_name: REFRIG SYSTEM Tag
+        type_name: REFRIG EQUIP SYSTEM TAG
+        parameters: {}
+        leader_elbow: null
+        leader_end: null
+    - label: 'EF-U_General Electrical Box-Unbalanced_CED : Refrig Case - Case Controller'
+      category: Electrical Fixtures
+      offsets:
+      - rotation_deg: 90.0
+        y_inches: 6.262082
+        z_inches: 48.0
+        x_inches: -22.18631
+      id: SET-014-LED-002
+      is_group: false
+      text_notes: []
+      parameters:
+        Comments: ''
+        CKT_Load Name_CEDT: ''
+        Product Specification: ''
+        Number of Poles_CED: 2
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-014-LED-002 Set Definition ID: SET-014 Location XYZ (ft): 164.682180,-160.092588,4.000000 Rotation (deg): 90.000000 Parent Rotation (deg): -0.000000 Parent ElementId: 3405761 LevelId: 30 ElementId: 9837010 FacingOrientation: -1.000000,0.000000,0.000000'
+        Apparent Load Input_CED: ''
+        CKT_Circuit Number_CEDT: ''
+        FLA Input_CED: ''
+        SLD_Symbol ID_CED: ''
+        Wattage Input_CED: ''
+        Voltage_CED: 208.0
+        Load Classification_CED: REF
+        Product Datasheet URL: ''
+        CKT_Schedule Notes_CEDT: ''
+        dev-Group ID: ''
+        SLD_Component ID_CED: ''
+        CKT_Panel_CEDT: ''
+        CKT_Rating_CED: 0.0
+      keynotes: []
+      tags: []
+    - label: THWN
+      category: Wires
+      offsets:
+      - rotation_deg: 0.0
+        y_inches: 3.140279
+        z_inches: 48.3108205597
+        x_inches: -37.580397
+      id: SET-014-LED-003
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-014-LED-003 Set Definition ID: SET-014 Location XYZ (ft): 163.399340,-160.352738,4.025902 Rotation (deg): 0.000000 Parent Rotation (deg): -0.000000 Parent ElementId: 3405761 LevelId: 30 ElementId: 9837011 FacingOrientation: '
+        dev-Group ID: ''
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: -40.2310808642
+        z_inches: -48.3108205597
+        x_inches: -25.1400925546
+        category_name: Wire Tags
+        family_name: E_Tag - Wire
+        type_name: Homerun - Panel & Circuits - Slash
+        parameters: {}
+        leader_elbow: null
+        leader_end: null
+    id: SET-014
+  allow_unmatched_parents: true
+  equipment_properties: {}
+  parent_filter:
+    parameter_filters: {}
+    family_name_pattern: '1647, 1650, 1651, 1652 (HUSSMANN, IRLN) FROZEN CASE CO2'
+    type_name_pattern: 2DR CO2
+    category: Specialty Equipment
+  allow_parentless: true
+- schema_version: 4
+  ced_truth_source_name: "1113, 1114, 1115, 1116 (HILLPHOENIX, S2SGC-R) SERVICE CASE1 : 12' 2"
+  name: "1113, 1114, 1115, 1116 (HILLPHOENIX, S2SGC-R) SERVICE CASE1 : 12' 2"
+  version: 1
+  ced_truth_source_id: EQ-015
+  id: EQ-015
+  prompt_on_parent_mismatch: false
+  linked_sets:
+  - name: "1113, 1114, 1115, 1116 (HILLPHOENIX, S2SGC-R) SERVICE CASE1 : 12' 2 Types"
+    linked_element_definitions:
+    - label: "1113, 1114, 1115, 1116 (HILLPHOENIX, S2SGC-R) SERVICE CASE1 : 12' 2"
+      category: Mechanical Equipment
+      offsets:
+      - rotation_deg: -180.0
+        y_inches: 0.0
+        z_inches: 0.0
+        x_inches: -0.0
+      id: SET-015-LED-001
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-015-LED-001 Set Definition ID: SET-015 Location XYZ (ft): 143.647395,-89.409255,0.000000 Rotation (deg): 60.000000 Parent Rotation (deg): -120.000000 Parent ElementId: 1935880 LevelId: 30 ElementId: 9553504 FacingOrientation: -0.866025,0.500000,0.000000'
+        dev-Group ID: ''
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: -0.109749694429
+        z_inches: 26.4375000000
+        x_inches: 0.173754329528
+        category_name: Mechanical Equipment Tags
+        family_name: REFRIG SYSTEM Tag
+        type_name: REFRIG EQUIP SYSTEM TAG
+        parameters: {}
+        leader_elbow: null
+        leader_end: null
+    - label: 'EF-U_General Electrical Box-Unbalanced_CED : Refrig Case - Case Controller'
+      category: Electrical Fixtures
+      offsets:
+      - rotation_deg: 180.0
+        y_inches: 14.544443
+        z_inches: 48.0
+        x_inches: 59.849995
+      id: SET-015-LED-002
+      is_group: false
+      text_notes: []
+      parameters:
+        Comments: ''
+        CKT_Load Name_CEDT: ''
+        Product Specification: ''
+        Number of Poles_CED: 1
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-015-LED-002 Set Definition ID: SET-015 Location XYZ (ft): 142.203300,-94.334575,4.000000 Rotation (deg): 60.000000 Parent Rotation (deg): -120.000000 Parent ElementId: 1935880 LevelId: 30 ElementId: 9836228 FacingOrientation: -0.866025,0.500000,0.000000'
+        Apparent Load Input_CED: ''
+        CKT_Circuit Number_CEDT: ''
+        FLA Input_CED: ''
+        SLD_Symbol ID_CED: ''
+        Wattage Input_CED: ''
+        Voltage_CED: 120.0
+        Load Classification_CED: REF
+        Product Datasheet URL: ''
+        CKT_Schedule Notes_CEDT: ''
+        dev-Group ID: ''
+        SLD_Component ID_CED: ''
+        CKT_Panel_CEDT: ''
+        CKT_Rating_CED: 0.0
+      keynotes: []
+      tags: []
+    id: SET-015
+  allow_unmatched_parents: true
+  equipment_properties: {}
+  parent_filter:
+    parameter_filters: {}
+    family_name_pattern: '1113, 1114, 1115, 1116 (HILLPHOENIX, S2SGC-R) SERVICE CASE1'
+    type_name_pattern: 12' 2
+    category: Specialty Equipment
+  allow_parentless: true
+- schema_version: 4
+  ced_truth_source_name: "1113, 1114, 1115, 1116 (HILLPHOENIX, S2SGC-R) SERVICE CASE LEFT END PANEL : 8'"
+  name: "1113, 1114, 1115, 1116 (HILLPHOENIX, S2SGC-R) SERVICE CASE LEFT END PANEL : 8'"
+  version: 1
+  ced_truth_source_id: EQ-016
+  id: EQ-016
+  prompt_on_parent_mismatch: false
+  linked_sets:
+  - name: "1113, 1114, 1115, 1116 (HILLPHOENIX, S2SGC-R) SERVICE CASE LEFT END PANEL : 8' Types"
+    linked_element_definitions:
+    - label: "1113, 1114, 1115, 1116 (HILLPHOENIX, S2SGC-R) SERVICE CASE LEFT END PANEL : 8'"
+      category: Mechanical Equipment
+      offsets:
+      - rotation_deg: 0.0
+        y_inches: 0.0
+        z_inches: 0.0
+        x_inches: -0.0
+      id: SET-016-LED-001
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-016-LED-001 Set Definition ID: SET-016 Location XYZ (ft): 140.339752,-115.141211,0.000000 Rotation (deg): 90.000000 Parent Rotation (deg): 90.000000 Parent ElementId: 1926805 LevelId: 30 ElementId: 9537768 FacingOrientation: -1.000000,-0.000000,0.000000'
+        dev-Group ID: ''
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: 0.5
+        z_inches: 26.4375000000
+        x_inches: 0.205350510604
+        category_name: Mechanical Equipment Tags
+        family_name: REFRIG SYSTEM Tag
+        type_name: REFRIG EQUIP SYSTEM TAG
+        parameters: {}
+        leader_elbow: null
+        leader_end: null
+    - label: 'EF-U_General Electrical Box-Unbalanced_CED : Refrig Case - Case Controller'
+      category: Electrical Fixtures
+      offsets:
+      - rotation_deg: -0.0
+        y_inches: -14.7156
+        z_inches: 48.0
+        x_inches: -37.132885
+      id: SET-016-LED-002
+      is_group: false
+      text_notes: []
+      parameters:
+        Comments: ''
+        CKT_Load Name_CEDT: ''
+        Product Specification: ''
+        Number of Poles_CED: 1
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-016-LED-002 Set Definition ID: SET-016 Location XYZ (ft): 141.566052,-118.235619,4.000000 Rotation (deg): 90.000000 Parent Rotation (deg): 90.000000 Parent ElementId: 1926805 LevelId: 30 ElementId: 9836181 FacingOrientation: -1.000000,0.000000,0.000000'
+        Apparent Load Input_CED: ''
+        CKT_Circuit Number_CEDT: ''
+        FLA Input_CED: ''
+        SLD_Symbol ID_CED: ''
+        Wattage Input_CED: ''
+        Voltage_CED: 120.0
+        Load Classification_CED: REF
+        Product Datasheet URL: ''
+        CKT_Schedule Notes_CEDT: ''
+        dev-Group ID: ''
+        SLD_Component ID_CED: ''
+        CKT_Panel_CEDT: ''
+        CKT_Rating_CED: 0.0
+      keynotes: []
+      tags: []
+    id: SET-016
+  allow_unmatched_parents: true
+  equipment_properties: {}
+  parent_filter:
+    parameter_filters: {}
+    family_name_pattern: '1113, 1114, 1115, 1116 (HILLPHOENIX, S2SGC-R) SERVICE CASE LEFT END PANEL'
+    type_name_pattern: 8'
+    category: Specialty Equipment
+  allow_parentless: true
+- schema_version: 4
+  ced_truth_source_name: "1135, 1136 (HILLPHOENIX, DLPF-R) MULTIDECK : 6'"
+  name: "1135, 1136 (HILLPHOENIX, DLPF-R) MULTIDECK : 6'"
+  version: 1
+  ced_truth_source_id: EQ-017
+  id: EQ-017
+  prompt_on_parent_mismatch: false
+  linked_sets:
+  - name: "1135, 1136 (HILLPHOENIX, DLPF-R) MULTIDECK : 6' Types"
+    linked_element_definitions:
+    - label: "1135, 1136 (HILLPHOENIX, DLPF-R) MULTIDECK : 6'"
+      category: Mechanical Equipment
+      offsets:
+      - rotation_deg: 0.0
+        y_inches: -0.0
+        z_inches: 0.0
+        x_inches: -0.0
+      id: SET-017-LED-001
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-017-LED-001 Set Definition ID: SET-017 Location XYZ (ft): 140.331939,-134.276628,0.000000 Rotation (deg): 90.000000 Parent Rotation (deg): 90.000000 Parent ElementId: 1765918 LevelId: 30 ElementId: 9528885 FacingOrientation: -1.000000,0.000000,0.000000'
+        dev-Group ID: ''
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: 3.41060513165e-13
+        z_inches: 26.3125
+        x_inches: 1.36424205266e-12
+        category_name: Mechanical Equipment Tags
+        family_name: REFRIG SYSTEM Tag
+        type_name: REFRIG EQUIP SYSTEM TAG
+        parameters: {}
+        leader_elbow: null
+        leader_end: null
+    - label: 'EF-U_General Electrical Box-Unbalanced_CED : Refrig Case - Case Controller'
+      category: Electrical Fixtures
+      offsets:
+      - rotation_deg: -180.0
+        y_inches: -14.80935
+        z_inches: 48.0
+        x_inches: -24.507885
+      id: SET-017-LED-002
+      is_group: false
+      text_notes: []
+      parameters:
+        Comments: ''
+        CKT_Load Name_CEDT: ''
+        Product Specification: ''
+        Number of Poles_CED: 1
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-017-LED-002 Set Definition ID: SET-017 Location XYZ (ft): 141.566052,-136.318952,4.000000 Rotation (deg): 270.000000 Parent Rotation (deg): 90.000000 Parent ElementId: 1765918 LevelId: 30 ElementId: 9835341 FacingOrientation: 1.000000,-0.000000,0.000000'
+        Apparent Load Input_CED: ''
+        CKT_Circuit Number_CEDT: ''
+        FLA Input_CED: ''
+        SLD_Symbol ID_CED: ''
+        Wattage Input_CED: ''
+        Voltage_CED: 120.0
+        Load Classification_CED: REF
+        Product Datasheet URL: ''
+        CKT_Schedule Notes_CEDT: ''
+        dev-Group ID: ''
+        SLD_Component ID_CED: ''
+        CKT_Panel_CEDT: ''
+        CKT_Rating_CED: 0.0
+      keynotes: []
+      tags: []
+    - label: THWN
+      category: Wires
+      offsets:
+      - rotation_deg: -90.0
+        y_inches: -30.203436
+        z_inches: 48.3108205597
+        x_inches: -27.629688
+      id: SET-017-LED-003
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-017-LED-003 Set Definition ID: SET-017 Location XYZ (ft): 142.848892,-136.579102,4.025902 Rotation (deg): 0.000000 Parent Rotation (deg): 90.000000 Parent ElementId: 1765918 LevelId: 30 ElementId: 9837741 FacingOrientation: '
+        dev-Group ID: ''
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: -32.2310808642
+        z_inches: -48.3108205597
+        x_inches: 25.1400925546
+        category_name: Wire Tags
+        family_name: E_Tag - Wire
+        type_name: Homerun - Panel & Circuits - Slash
+        parameters: {}
+        leader_elbow: null
+        leader_end: null
+    id: SET-017
+  allow_unmatched_parents: true
+  equipment_properties: {}
+  parent_filter:
+    parameter_filters: {}
+    family_name_pattern: '1135, 1136 (HILLPHOENIX, DLPF-R) MULTIDECK'
+    type_name_pattern: 6'
+    category: Specialty Equipment
+  allow_parentless: true
+- schema_version: 4
+  ced_truth_source_name: "1635, 1636 (HILLPHOENIX, PT-R-RRS) SUSHI CASE : 8' SUSHI"
+  name: "1635, 1636 (HILLPHOENIX, PT-R-RRS) SUSHI CASE : 8' SUSHI"
+  version: 1
+  ced_truth_source_id: EQ-018
+  id: EQ-018
+  prompt_on_parent_mismatch: false
+  linked_sets:
+  - name: "1635, 1636 (HILLPHOENIX, PT-R-RRS) SUSHI CASE : 8' SUSHI Types"
+    linked_element_definitions:
+    - label: "1635, 1636 (HILLPHOENIX, PT-R-RRS) SUSHI CASE : 8' SUSHI"
+      category: Mechanical Equipment
+      offsets:
+      - rotation_deg: 0.0
+        y_inches: -0.0
+        z_inches: 0.0
+        x_inches: -0.0
+      id: SET-018-LED-001
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-018-LED-001 Set Definition ID: SET-018 Location XYZ (ft): 134.746524,-160.617305,0.000000 Rotation (deg): 90.000000 Parent Rotation (deg): 90.000000 Parent ElementId: 3341908 LevelId: 30 ElementId: 9519546 FacingOrientation: -1.000000,0.000000,0.000000'
+        dev-Group ID: ''
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: -65.7409324290
+        z_inches: 28.7463245860
+        x_inches: 30.2801173387
+        category_name: Mechanical Equipment Tags
+        family_name: REFRIG SYSTEM Tag
+        type_name: REFRIG EQUIP SYSTEM TAG
+        parameters: {}
+        leader_elbow: null
+        leader_end: null
+    - label: 'EF-U_General Electrical Box-Unbalanced_CED : Refrig Case - Case Controller'
+      category: Electrical Fixtures
+      offsets:
+      - rotation_deg: -0.0
+        y_inches: 20.576437
+        z_inches: 48.0
+        x_inches: -35.057744
+      id: SET-018-LED-002
+      is_group: false
+      text_notes: []
+      parameters:
+        Comments: ''
+        CKT_Load Name_CEDT: ''
+        Product Specification: ''
+        Number of Poles_CED: 1
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-018-LED-002 Set Definition ID: SET-018 Location XYZ (ft): 133.031821,-163.538784,4.000000 Rotation (deg): 90.000000 Parent Rotation (deg): 90.000000 Parent ElementId: 3341908 LevelId: 30 ElementId: 9835178 FacingOrientation: -1.000000,0.000000,0.000000'
+        Apparent Load Input_CED: ''
+        CKT_Circuit Number_CEDT: ''
+        FLA Input_CED: ''
+        SLD_Symbol ID_CED: ''
+        Wattage Input_CED: ''
+        Voltage_CED: 120.0
+        Load Classification_CED: REF
+        Product Datasheet URL: ''
+        CKT_Schedule Notes_CEDT: ''
+        dev-Group ID: ''
+        SLD_Component ID_CED: ''
+        CKT_Panel_CEDT: ''
+        CKT_Rating_CED: 0.0
+      keynotes: []
+      tags: []
+    - label: THWN
+      category: Wires
+      offsets:
+      - rotation_deg: -90.0
+        y_inches: 35.970523
+        z_inches: 48.3108205597
+        x_inches: -38.179547
+      id: SET-018-LED-003
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-018-LED-003 Set Definition ID: SET-018 Location XYZ (ft): 131.748980,-163.798934,4.025902 Rotation (deg): 0.000000 Parent Rotation (deg): 90.000000 Parent ElementId: 3341908 LevelId: 30 ElementId: 9837880 FacingOrientation: '
+        dev-Group ID: ''
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: -32.2310808642
+        z_inches: -48.3108205597
+        x_inches: -25.1400925546
+        category_name: Wire Tags
+        family_name: E_Tag - Wire
+        type_name: Homerun - Panel & Circuits - Slash
+        parameters: {}
+        leader_elbow: null
+        leader_end: null
+    id: SET-018
+  allow_unmatched_parents: true
+  equipment_properties: {}
+  parent_filter:
+    parameter_filters: {}
+    family_name_pattern: '1635, 1636 (HILLPHOENIX, PT-R-RRS) SUSHI CASE'
+    type_name_pattern: 8' SUSHI
+    category: Specialty Equipment
+  allow_parentless: true
+- schema_version: 4
+  ced_truth_source_name: "1603, 1604 (HILLPHOENIX, PT-R-RRS) SANDWICH CASE : 8' SANDWICH"
+  name: "1603, 1604 (HILLPHOENIX, PT-R-RRS) SANDWICH CASE : 8' SANDWICH"
+  version: 1
+  ced_truth_source_id: EQ-019
+  id: EQ-019
+  prompt_on_parent_mismatch: false
+  linked_sets:
+  - name: "1603, 1604 (HILLPHOENIX, PT-R-RRS) SANDWICH CASE : 8' SANDWICH Types"
+    linked_element_definitions:
+    - label: "1603, 1604 (HILLPHOENIX, PT-R-RRS) SANDWICH CASE : 8' SANDWICH"
+      category: Mechanical Equipment
+      offsets:
+      - rotation_deg: 0.0
+        y_inches: -0.0
+        z_inches: 0.0
+        x_inches: -0.0
+      id: SET-019-LED-001
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-019-LED-001 Set Definition ID: SET-019 Location XYZ (ft): 134.491316,-172.310042,0.000000 Rotation (deg): 90.000000 Parent Rotation (deg): 90.000000 Parent ElementId: 3345794 LevelId: 30 ElementId: 9511681 FacingOrientation: -1.000000,0.000000,0.000000'
+        dev-Group ID: ''
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: 66.6807302902
+        z_inches: 28.75
+        x_inches: -27.9956574897
+        category_name: Mechanical Equipment Tags
+        family_name: REFRIG SYSTEM Tag
+        type_name: REFRIG EQUIP SYSTEM TAG
+        parameters: {}
+        leader_elbow: null
+        leader_end: null
+    - label: 'EF-U_General Electrical Box-Unbalanced_CED : Refrig Case - Case Controller'
+      category: Electrical Fixtures
+      offsets:
+      - rotation_deg: -0.0
+        y_inches: 20.576437
+        z_inches: 48.0
+        x_inches: -34.057744
+      id: SET-019-LED-002
+      is_group: false
+      text_notes: []
+      parameters:
+        Comments: ''
+        CKT_Load Name_CEDT: ''
+        Product Specification: ''
+        Number of Poles_CED: 1
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-019-LED-002 Set Definition ID: SET-019 Location XYZ (ft): 132.776613,-175.148187,4.000000 Rotation (deg): 90.000000 Parent Rotation (deg): 90.000000 Parent ElementId: 3345794 LevelId: 30 ElementId: 9835108 FacingOrientation: -1.000000,0.000000,0.000000'
+        Apparent Load Input_CED: ''
+        CKT_Circuit Number_CEDT: ''
+        FLA Input_CED: ''
+        SLD_Symbol ID_CED: ''
+        Wattage Input_CED: ''
+        Voltage_CED: 120.0
+        Load Classification_CED: REF
+        Product Datasheet URL: ''
+        CKT_Schedule Notes_CEDT: ''
+        dev-Group ID: ''
+        SLD_Component ID_CED: ''
+        CKT_Panel_CEDT: ''
+        CKT_Rating_CED: 0.0
+      keynotes: []
+      tags: []
+    - label: THWN
+      category: Wires
+      offsets:
+      - rotation_deg: -90.0
+        y_inches: 5.18235
+        z_inches: 48.3108205597
+        x_inches: -37.179547
+      id: SET-019-LED-003
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-019-LED-003 Set Definition ID: SET-019 Location XYZ (ft): 134.059453,-175.408338,4.025902 Rotation (deg): 0.000000 Parent Rotation (deg): 90.000000 Parent ElementId: 3345794 LevelId: 30 ElementId: 9837783 FacingOrientation: '
+        dev-Group ID: ''
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: -30.2310808642
+        z_inches: -48.3108205597
+        x_inches: 29.1400925546
+        category_name: Wire Tags
+        family_name: E_Tag - Wire
+        type_name: Homerun - Panel & Circuits - Slash
+        parameters: {}
+        leader_elbow: null
+        leader_end: null
+    id: SET-019
+  allow_unmatched_parents: true
+  equipment_properties: {}
+  parent_filter:
+    parameter_filters: {}
+    family_name_pattern: '1603, 1604 (HILLPHOENIX, PT-R-RRS) SANDWICH CASE'
+    type_name_pattern: 8' SANDWICH
+    category: Specialty Equipment
+  allow_parentless: true
+- schema_version: 4
+  ced_truth_source_name: "1146, 1147, 1148, 1149 (HILLPHOENIX, SMD-R) CHEF CHARCUTERIE CASE w-LF ENDCAP : 8'"
+  name: "1146, 1147, 1148, 1149 (HILLPHOENIX, SMD-R) CHEF CHARCUTERIE CASE w-LF ENDCAP : 8'"
+  version: 1
+  ced_truth_source_id: EQ-020
+  id: EQ-020
+  prompt_on_parent_mismatch: false
+  linked_sets:
+  - name: "1146, 1147, 1148, 1149 (HILLPHOENIX, SMD-R) CHEF CHARCUTERIE CASE w-LF ENDCAP : 8' Types"
+    linked_element_definitions:
+    - label: "1146, 1147, 1148, 1149 (HILL PHOENIX, SMD R) CHEF CHARCUTERIE CASE : 8'"
+      category: Mechanical Equipment
+      offsets:
+      - rotation_deg: 180.0
+        y_inches: 0.0
+        z_inches: 0.0
+        x_inches: -0.0
+      id: SET-020-LED-001
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-020-LED-001 Set Definition ID: SET-020 Location XYZ (ft): 133.741316,-180.567550,0.000000 Rotation (deg): 90.000000 Parent Rotation (deg): -90.000000 Parent ElementId: 2692662 LevelId: 30 ElementId: 9502692 FacingOrientation: -1.000000,0.000000,0.000000'
+        dev-Group ID: ''
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: 0.5
+        z_inches: 26.0
+        x_inches: 0.0208900397538
+        category_name: Mechanical Equipment Tags
+        family_name: REFRIG SYSTEM Tag
+        type_name: REFRIG EQUIP SYSTEM TAG
+        parameters: {}
+        leader_elbow: null
+        leader_end: null
+    - label: 'EF-U_General Electrical Box-Unbalanced_CED : Refrig Case - Case Controller'
+      category: Electrical Fixtures
+      offsets:
+      - rotation_deg: 180.0
+        y_inches: -11.576437
+        z_inches: 48.0
+        x_inches: -37.032351
+      id: SET-020-LED-002
+      is_group: false
+      text_notes: []
+      parameters:
+        Comments: ''
+        CKT_Load Name_CEDT: ''
+        Product Specification: ''
+        Number of Poles_CED: 1
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-020-LED-002 Set Definition ID: SET-020 Location XYZ (ft): 132.776613,-177.481521,4.000000 Rotation (deg): 90.000000 Parent Rotation (deg): -90.000000 Parent ElementId: 2692662 LevelId: 30 ElementId: 9835079 FacingOrientation: -1.000000,0.000000,0.000000'
+        Apparent Load Input_CED: ''
+        CKT_Circuit Number_CEDT: ''
+        FLA Input_CED: ''
+        SLD_Symbol ID_CED: ''
+        Wattage Input_CED: ''
+        Voltage_CED: 120.0
+        Load Classification_CED: REF
+        Product Datasheet URL: ''
+        CKT_Schedule Notes_CEDT: ''
+        dev-Group ID: ''
+        SLD_Component ID_CED: ''
+        CKT_Panel_CEDT: ''
+        CKT_Rating_CED: 0.0
+      keynotes: []
+      tags: []
+    id: SET-020
+  allow_unmatched_parents: true
+  equipment_properties: {}
+  parent_filter:
+    parameter_filters: {}
+    family_name_pattern: '1146, 1147, 1148, 1149 (HILLPHOENIX, SMD-R) CHEF CHARCUTERIE CASE w-LF ENDCAP'
+    type_name_pattern: 8'
+    category: Specialty Equipment
+  allow_parentless: true
+- schema_version: 4
+  ced_truth_source_name: "1146, 1147, 1148, 1149 (HILLPHOENIX, SMD-R) CHEF CHARCUTERIE CASE w-LF ENDCAP : 12'"
+  name: "1146, 1147, 1148, 1149 (HILLPHOENIX, SMD-R) CHEF CHARCUTERIE CASE w-LF ENDCAP : 12'"
+  version: 1
+  ced_truth_source_id: EQ-021
+  id: EQ-021
+  prompt_on_parent_mismatch: false
+  linked_sets:
+  - name: "1146, 1147, 1148, 1149 (HILLPHOENIX, SMD-R) CHEF CHARCUTERIE CASE w-LF ENDCAP : 12' Types"
+    linked_element_definitions:
+    - label: "1146, 1147, 1148, 1149 (HILLPHOENIX, SMD-R) CHEF CHARCUTERIE CASE w-LF ENDCAP : 12'"
+      category: Mechanical Equipment
+      offsets:
+      - rotation_deg: 0.0
+        y_inches: -0.0
+        z_inches: 0.0
+        x_inches: 0.0
+      id: SET-021-LED-001
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-021-LED-001 Set Definition ID: SET-021 Location XYZ (ft): 133.741316,-190.588383,0.000000 Rotation (deg): 90.000000 Parent Rotation (deg): 90.000000 Parent ElementId: 2692661 LevelId: 30 ElementId: 9502842 FacingOrientation: 1.000000,0.000000,-0.000000'
+        dev-Group ID: ''
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: -0.5
+        z_inches: 26.0
+        x_inches: 0.0
+        category_name: Mechanical Equipment Tags
+        family_name: REFRIG SYSTEM Tag
+        type_name: REFRIG EQUIP SYSTEM TAG
+        parameters: {}
+        leader_elbow: null
+        leader_end: null
+    - label: 'EF-U_General Electrical Box-Unbalanced_CED : Refrig Case - Case Controller'
+      category: Electrical Fixtures
+      offsets:
+      - rotation_deg: -0.0
+        y_inches: 11.576437
+        z_inches: 48.0
+        x_inches: 59.424961
+      id: SET-021-LED-002
+      is_group: false
+      text_notes: []
+      parameters:
+        Comments: ''
+        CKT_Load Name_CEDT: ''
+        Product Specification: ''
+        Number of Poles_CED: 1
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-021-LED-002 Set Definition ID: SET-021 Location XYZ (ft): 132.776613,-185.636303,4.000000 Rotation (deg): 90.000000 Parent Rotation (deg): 90.000000 Parent ElementId: 2692661 LevelId: 30 ElementId: 9835023 FacingOrientation: -1.000000,0.000000,0.000000'
+        Apparent Load Input_CED: ''
+        CKT_Circuit Number_CEDT: ''
+        FLA Input_CED: ''
+        SLD_Symbol ID_CED: ''
+        Wattage Input_CED: ''
+        Voltage_CED: 120.0
+        Load Classification_CED: REF
+        Product Datasheet URL: ''
+        CKT_Schedule Notes_CEDT: ''
+        dev-Group ID: ''
+        SLD_Component ID_CED: ''
+        CKT_Panel_CEDT: ''
+        CKT_Rating_CED: 0.0
+      keynotes: []
+      tags: []
+    - label: THWN
+      category: Wires
+      offsets:
+      - rotation_deg: -90.0
+        y_inches: -2.944418
+        z_inches: 39.2868761102
+        x_inches: 53.241706
+      id: SET-021-LED-003
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-021-LED-003 Set Definition ID: SET-021 Location XYZ (ft): 133.986684,-186.151575,3.273906 Rotation (deg): 0.000000 Parent Rotation (deg): 90.000000 Parent ElementId: 2692661 LevelId: 30 ElementId: 9967070 FacingOrientation: '
+        dev-Group ID: ''
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: -20.2478640118
+        z_inches: -39.2868761102
+        x_inches: 30.0133241762
+        category_name: Wire Tags
+        family_name: E_Tag - Wire
+        type_name: Homerun - Panel & Circuits - Slash
+        parameters: {}
+        leader_elbow: null
+        leader_end: null
+    id: SET-021
+  allow_unmatched_parents: true
+  equipment_properties: {}
+  parent_filter:
+    parameter_filters: {}
+    family_name_pattern: '1146, 1147, 1148, 1149 (HILLPHOENIX, SMD-R) CHEF CHARCUTERIE CASE w-LF ENDCAP'
+    type_name_pattern: 12'
+    category: Specialty Equipment
+  allow_parentless: true
+- schema_version: 4
+  ced_truth_source_name: "1075, 1076, 1077, 1078 (HILLPHOENIX, PF-R) MULTIDECK2 : 8'"
+  name: "1075, 1076, 1077, 1078 (HILLPHOENIX, PF-R) MULTIDECK2 : 8'"
+  version: 1
+  ced_truth_source_id: EQ-022
+  id: EQ-022
+  prompt_on_parent_mismatch: false
+  linked_sets:
+  - name: "1075, 1076, 1077, 1078 (HILLPHOENIX, PF-R) MULTIDECK2 : 8' Types"
+    linked_element_definitions:
+    - label: "1075, 1076, 1077, 1078 (HILLPHOENIX, PF-R) MULTIDECK2 : 8'"
+      category: Mechanical Equipment
+      offsets:
+      - rotation_deg: 0.0
+        y_inches: 0.0
+        z_inches: 0.0
+        x_inches: 0.0
+      id: SET-022-LED-001
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-022-LED-001 Set Definition ID: SET-022 Location XYZ (ft): 135.881941,-230.307133,0.000000 Rotation (deg): 270.000000 Parent Rotation (deg): -90.000000 Parent ElementId: 3224877 LevelId: 30 ElementId: 9498547 FacingOrientation: -1.000000,0.000000,-0.000000'
+        dev-Group ID: ''
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: 0.0
+        z_inches: 27.0
+        x_inches: 6.8212102633e-13
+        category_name: Mechanical Equipment Tags
+        family_name: REFRIG SYSTEM Tag
+        type_name: REFRIG EQUIP SYSTEM TAG
+        parameters: {}
+        leader_elbow: null
+        leader_end: null
+    - label: 'EF-U_General Electrical Box-Unbalanced_CED : Refrig Case - Case Controller'
+      category: Electrical Fixtures
+      offsets:
+      - rotation_deg: -180.0
+        y_inches: -11.981124
+        z_inches: 48.0
+        x_inches: 33.092649
+      id: SET-022-LED-002
+      is_group: false
+      text_notes: []
+      parameters:
+        Comments: ''
+        CKT_Load Name_CEDT: ''
+        Product Specification: ''
+        Number of Poles_CED: 1
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-022-LED-002 Set Definition ID: SET-022 Location XYZ (ft): 134.883514,-233.064854,4.000000 Rotation (deg): 90.000000 Parent Rotation (deg): -90.000000 Parent ElementId: 3224877 LevelId: 30 ElementId: 9834887 FacingOrientation: -1.000000,0.000000,0.000000'
+        Apparent Load Input_CED: ''
+        CKT_Circuit Number_CEDT: ''
+        FLA Input_CED: ''
+        SLD_Symbol ID_CED: ''
+        Wattage Input_CED: ''
+        Voltage_CED: 120.0
+        Load Classification_CED: REF
+        Product Datasheet URL: ''
+        CKT_Schedule Notes_CEDT: ''
+        dev-Group ID: ''
+        SLD_Component ID_CED: ''
+        CKT_Panel_CEDT: ''
+        CKT_Rating_CED: 0.0
+      keynotes: []
+      tags: []
+    - label: THWN
+      category: Wires
+      offsets:
+      - rotation_deg: 90.0
+        y_inches: 3.412963
+        z_inches: 48.3108205597
+        x_inches: 36.214452
+      id: SET-022-LED-003
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-022-LED-003 Set Definition ID: SET-022 Location XYZ (ft): 136.166354,-233.325004,4.025902 Rotation (deg): 0.000000 Parent Rotation (deg): -90.000000 Parent ElementId: 3224877 LevelId: 30 ElementId: 9955629 FacingOrientation: '
+        dev-Group ID: ''
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: -33.2310808642
+        z_inches: -48.3108205597
+        x_inches: 25.1400925546
+        category_name: Wire Tags
+        family_name: E_Tag - Wire
+        type_name: Homerun - Panel & Circuits - Slash
+        parameters: {}
+        leader_elbow: null
+        leader_end: null
+    id: SET-022
+  allow_unmatched_parents: true
+  equipment_properties: {}
+  parent_filter:
+    parameter_filters: {}
+    family_name_pattern: '1075, 1076, 1077, 1078 (HILLPHOENIX, PF-R) MULTIDECK2'
+    type_name_pattern: 8'
+    category: Specialty Equipment
+  allow_parentless: true
+- schema_version: 4
+  ced_truth_source_name: "1536, 1537, 1538, 1585 (HILLPHOENIX, BMD-R) SERVICE CASE : 8'"
+  name: "1536, 1537, 1538, 1585 (HILLPHOENIX, BMD-R) SERVICE CASE : 8'"
+  version: 1
+  ced_truth_source_id: EQ-023
+  id: EQ-023
+  prompt_on_parent_mismatch: false
+  linked_sets:
+  - name: "1536, 1537, 1538, 1585 (HILLPHOENIX, BMD-R) SERVICE CASE : 8' Types"
+    linked_element_definitions:
+    - label: "1536, 1537, 1538, 1585 (HILL PHOENIX, BMD R) SERVICE CASE : 8'"
+      category: Mechanical Equipment
+      offsets:
+      - rotation_deg: 0.0
+        y_inches: 0.0
+        z_inches: 0.0
+        x_inches: -0.0
+      id: SET-023-LED-001
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-023-LED-001 Set Definition ID: SET-023 Location XYZ (ft): 135.881941,-238.411300,0.000000 Rotation (deg): 90.000000 Parent Rotation (deg): 90.000000 Parent ElementId: 1673213 LevelId: 30 ElementId: 9497575 FacingOrientation: -1.000000,0.000000,0.000000'
+        dev-Group ID: ''
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: 0.0
+        z_inches: 27.5
+        x_inches: -0.146446609407
+        category_name: Mechanical Equipment Tags
+        family_name: REFRIG SYSTEM Tag
+        type_name: REFRIG EQUIP SYSTEM TAG
+        parameters: {}
+        leader_elbow: null
+        leader_end: null
+    - label: 'EF-U_General Electrical Box-Unbalanced_CED : Refrig Case - Case Controller'
+      category: Electrical Fixtures
+      offsets:
+      - rotation_deg: 0.0
+        y_inches: 11.981124
+        z_inches: 48.0
+        x_inches: -33.842649
+      id: SET-023-LED-002
+      is_group: false
+      text_notes: []
+      parameters:
+        Comments: ''
+        CKT_Load Name_CEDT: ''
+        Product Specification: ''
+        Number of Poles_CED: 1
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-023-LED-002 Set Definition ID: SET-023 Location XYZ (ft): 134.883514,-241.231521,4.000000 Rotation (deg): 90.000000 Parent Rotation (deg): 90.000000 Parent ElementId: 1673213 LevelId: 30 ElementId: 9835001 FacingOrientation: -1.000000,0.000000,0.000000'
+        Apparent Load Input_CED: ''
+        CKT_Circuit Number_CEDT: ''
+        FLA Input_CED: ''
+        SLD_Symbol ID_CED: ''
+        Wattage Input_CED: ''
+        Voltage_CED: 120.0
+        Load Classification_CED: REF
+        Product Datasheet URL: ''
+        CKT_Schedule Notes_CEDT: ''
+        dev-Group ID: ''
+        SLD_Component ID_CED: ''
+        CKT_Panel_CEDT: ''
+        CKT_Rating_CED: 0.0
+      keynotes: []
+      tags: []
+    - label: THWN
+      category: Wires
+      offsets:
+      - rotation_deg: -90.0
+        y_inches: -3.412963
+        z_inches: 48.3108205597
+        x_inches: -36.964452
+      id: SET-023-LED-003
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-023-LED-003 Set Definition ID: SET-023 Location XYZ (ft): 136.166354,-241.491671,4.025902 Rotation (deg): 0.000000 Parent Rotation (deg): 90.000000 Parent ElementId: 1673213 LevelId: 30 ElementId: 9955638 FacingOrientation: '
+        dev-Group ID: ''
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: -33.2310808642
+        z_inches: -48.3108205597
+        x_inches: 25.1400925546
+        category_name: Wire Tags
+        family_name: E_Tag - Wire
+        type_name: Homerun - Panel & Circuits - Slash
+        parameters: {}
+        leader_elbow: null
+        leader_end: null
+    id: SET-023
+  allow_unmatched_parents: true
+  equipment_properties: {}
+  parent_filter:
+    parameter_filters: {}
+    family_name_pattern: '1536, 1537, 1538, 1585 (HILLPHOENIX, BMD-R) SERVICE CASE'
+    type_name_pattern: 8'
+    category: Specialty Equipment
+  allow_parentless: true
+- schema_version: 4
+  ced_truth_source_name: "1689, 1690, 1691, 1692 (HUSSMANN, IDD6SU) MULTIDECK CO1 : 6' CO2"
+  name: "1689, 1690, 1691, 1692 (HUSSMANN, IDD6SU) MULTIDECK CO1 : 6' CO2"
+  version: 1
+  ced_truth_source_id: EQ-024
+  id: EQ-024
+  prompt_on_parent_mismatch: false
+  linked_sets:
+  - name: "1689, 1690, 1691, 1692 (HUSSMANN, IDD6SU) MULTIDECK CO1 : 6' CO2 Types"
+    linked_element_definitions:
+    - label: "1689, 1690, 1691, 1692 (HUSSMANN, IDD6SU) MULTIDECK CO5 : 6' CO2"
+      category: Mechanical Equipment
+      offsets:
+      - rotation_deg: 0.0
+        y_inches: -0.0
+        z_inches: 0.0
+        x_inches: -0.0625
+      id: SET-024-LED-001
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-024-LED-001 Set Definition ID: SET-024 Location XYZ (ft): 170.168578,-196.730779,0.000000 Rotation (deg): 270.000000 Parent Rotation (deg): -90.000000 Parent ElementId: 1850316 LevelId: 30 ElementId: 9555432 FacingOrientation: 1.000000,-0.000000,0.000000'
+        dev-Group ID: ''
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: 0.0
+        z_inches: 45.4375
+        x_inches: -1.32454284684
+        category_name: Mechanical Equipment Tags
+        family_name: REFRIG SYSTEM Tag
+        type_name: REFRIG EQUIP SYSTEM TAG
+        parameters: {}
+        leader_elbow: null
+        leader_end: null
+    - label: 'EF-U_General Electrical Box-Unbalanced_CED : Refrig Case - Case Controller'
+      category: Electrical Fixtures
+      offsets:
+      - rotation_deg: -180.0
+        y_inches: -11.003573
+        z_inches: 48.0
+        x_inches: 22.0276
+      id: SET-024-LED-002
+      is_group: false
+      text_notes: []
+      parameters:
+        Comments: ''
+        CKT_Load Name_CEDT: ''
+        Product Specification: ''
+        Number of Poles_CED: 1
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-024-LED-002 Set Definition ID: SET-024 Location XYZ (ft): 169.251613,-198.571620,4.000000 Rotation (deg): 90.000000 Parent Rotation (deg): -90.000000 Parent ElementId: 1850316 LevelId: 30 ElementId: 9837171 FacingOrientation: -1.000000,0.000000,0.000000'
+        Apparent Load Input_CED: ''
+        CKT_Circuit Number_CEDT: ''
+        FLA Input_CED: ''
+        SLD_Symbol ID_CED: ''
+        Wattage Input_CED: ''
+        Voltage_CED: 120.0
+        Load Classification_CED: REF
+        Product Datasheet URL: ''
+        CKT_Schedule Notes_CEDT: ''
+        dev-Group ID: ''
+        SLD_Component ID_CED: ''
+        CKT_Panel_CEDT: ''
+        CKT_Rating_CED: 0.0
+      keynotes: []
+      tags: []
+    - label: THWN
+      category: Wires
+      offsets:
+      - rotation_deg: 90.0
+        y_inches: -26.39766
+        z_inches: 48.3108205597
+        x_inches: 25.149403
+      id: SET-024-LED-003
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-024-LED-003 Set Definition ID: SET-024 Location XYZ (ft): 167.968773,-198.831770,4.025902 Rotation (deg): 0.000000 Parent Rotation (deg): -90.000000 Parent ElementId: 1850316 LevelId: 30 ElementId: 9837172 FacingOrientation: '
+        dev-Group ID: ''
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: -40.2310808642
+        z_inches: -48.3108205597
+        x_inches: -25.1400925546
+        category_name: Wire Tags
+        family_name: E_Tag - Wire
+        type_name: Homerun - Panel & Circuits - Slash
+        parameters: {}
+        leader_elbow: null
+        leader_end: null
+    id: SET-024
+  allow_unmatched_parents: true
+  equipment_properties: {}
+  parent_filter:
+    parameter_filters: {}
+    family_name_pattern: '1689, 1690, 1691, 1692 (HUSSMANN, IDD6SU) MULTIDECK CO1'
+    type_name_pattern: 6' CO2
+    category: Specialty Equipment
+  allow_parentless: true
+- schema_version: 4
+  ced_truth_source_name: "1064, 1066, 1068 (HILLPHOENIX, QC-24-R) MULTIDECK : 8'"
+  name: "1064, 1066, 1068 (HILLPHOENIX, QC-24-R) MULTIDECK : 8'"
+  version: 1
+  ced_truth_source_id: EQ-025
+  id: EQ-025
+  prompt_on_parent_mismatch: false
+  linked_sets:
+  - name: "1064, 1066, 1068 (HILLPHOENIX, QC-24-R) MULTIDECK : 8' Types"
+    linked_element_definitions:
+    - label: "1064, 1066, 1068 (HILLPHOENIX, QC-24-R) MULTIDECK1 : 8'"
+      category: Mechanical Equipment
+      offsets:
+      - rotation_deg: 0.0
+        y_inches: -0.0
+        z_inches: 0.0
+        x_inches: -0.0
+      id: SET-025-LED-001
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-025-LED-001 Set Definition ID: SET-025 Location XYZ (ft): 212.501812,-176.975569,0.000000 Rotation (deg): 270.000000 Parent Rotation (deg): -90.000000 Parent ElementId: 1403014 LevelId: 30 ElementId: 9586544 FacingOrientation: 1.000000,-0.000000,0.000000'
+        dev-Group ID: ''
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: 6.8212102633e-13
+        z_inches: 41.0
+        x_inches: 3.15625
+        category_name: Mechanical Equipment Tags
+        family_name: REFRIG SYSTEM Tag
+        type_name: REFRIG EQUIP SYSTEM TAG
+        parameters: {}
+        leader_elbow: null
+        leader_end: null
+    - label: 'EF-U_General Electrical Box-Unbalanced_CED : Refrig Case - Case Controller'
+      category: Electrical Fixtures
+      offsets:
+      - rotation_deg: -180.0
+        y_inches: 0.0
+        z_inches: 48.0
+        x_inches: 36.351374
+      id: SET-025-LED-002
+      is_group: false
+      text_notes: []
+      parameters:
+        Comments: ''
+        CKT_Load Name_CEDT: ''
+        Product Specification: ''
+        Number of Poles_CED: 1
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-025-LED-002 Set Definition ID: SET-025 Location XYZ (ft): 212.501812,-180.004850,4.000000 Rotation (deg): 90.000000 Parent Rotation (deg): -90.000000 Parent ElementId: 1403014 LevelId: 30 ElementId: 9837415 FacingOrientation: -1.000000,0.000000,0.000000'
+        Apparent Load Input_CED: ''
+        CKT_Circuit Number_CEDT: ''
+        FLA Input_CED: ''
+        SLD_Symbol ID_CED: ''
+        Wattage Input_CED: ''
+        Voltage_CED: 120.0
+        Load Classification_CED: REF
+        Product Datasheet URL: ''
+        CKT_Schedule Notes_CEDT: ''
+        dev-Group ID: ''
+        SLD_Component ID_CED: ''
+        CKT_Panel_CEDT: ''
+        CKT_Rating_CED: 0.0
+      keynotes: []
+      tags: []
+    - label: THWN
+      category: Wires
+      offsets:
+      - rotation_deg: 90.0
+        y_inches: -15.394087
+        z_inches: 48.3108205597
+        x_inches: 39.473176
+      id: SET-025-LED-003
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-025-LED-003 Set Definition ID: SET-025 Location XYZ (ft): 211.218972,-180.265001,4.025902 Rotation (deg): 0.000000 Parent Rotation (deg): -90.000000 Parent ElementId: 1403014 LevelId: 30 ElementId: 9837416 FacingOrientation: '
+        dev-Group ID: ''
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: -40.2310808642
+        z_inches: -48.3108205597
+        x_inches: -25.1400925546
+        category_name: Wire Tags
+        family_name: E_Tag - Wire
+        type_name: Homerun - Panel & Circuits - Slash
+        parameters: {}
+        leader_elbow: null
+        leader_end: null
+    id: SET-025
+  allow_unmatched_parents: true
+  equipment_properties: {}
+  parent_filter:
+    parameter_filters: {}
+    family_name_pattern: '1064, 1066, 1068 (HILLPHOENIX, QC-24-R) MULTIDECK'
+    type_name_pattern: 8'
+    category: Specialty Equipment
+  allow_parentless: true
+- schema_version: 4
+  ced_truth_source_name: "1314, 1315, 1316, 1317 (HUSSMANN, IDD5SU) MULTIDECK CO2 : 8' CO2"
+  name: "1314, 1315, 1316, 1317 (HUSSMANN, IDD5SU) MULTIDECK CO2 : 8' CO2"
+  version: 1
+  ced_truth_source_id: EQ-026
+  id: EQ-026
+  prompt_on_parent_mismatch: false
+  linked_sets:
+  - name: "1314, 1315, 1316, 1317 (HUSSMANN, IDD5SU) MULTIDECK CO2 : 8' CO2 Types"
+    linked_element_definitions:
+    - label: "1314, 1315, 1316, 1317 (HUSSMANN, IDD5SU) MULTIDECK CO2 : 8' CO2"
+      category: Mechanical Equipment
+      offsets:
+      - rotation_deg: 0.0
+        y_inches: 0.0
+        z_inches: 0.0
+        x_inches: -0.0
+      id: SET-026-LED-001
+      is_group: false
+      text_notes: []
+      parameters:
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-026-LED-001 Set Definition ID: SET-026 Location XYZ (ft): 215.986187,-217.173486,0.000000 Rotation (deg): 90.000000 Parent Rotation (deg): 90.000000 Parent ElementId: 1367377 LevelId: 30 ElementId: 9569814 FacingOrientation: -1.000000,-0.000000,0.000000'
+        dev-Group ID: ''
+      keynotes: []
+      tags:
+      - offsets:
+        rotation_deg: 0.0
+        y_inches: 0.75
+        z_inches: 42.4375
+        x_inches: -0.230373176284
+        category_name: Mechanical Equipment Tags
+        family_name: REFRIG SYSTEM Tag
+        type_name: REFRIG EQUIP SYSTEM TAG
+        parameters: {}
+        leader_elbow: null
+        leader_end: null
+    - label: 'EF-U_General Electrical Box-Unbalanced_CED : Refrig Case - Case Controller'
+      category: Electrical Fixtures
+      offsets:
+      - rotation_deg: -0.0
+        y_inches: -12.21875
+        z_inches: 48.0
+        x_inches: -35.180052
+      id: SET-026-LED-002
+      is_group: false
+      text_notes: []
+      parameters:
+        Comments: ''
+        CKT_Load Name_CEDT: ''
+        Product Specification: ''
+        Number of Poles_CED: 1
+        Power Factor_CED: 1.0
+        Element_Linker Parameter: 'Linked Element Definition ID: SET-026-LED-002 Set Definition ID: SET-026 Location XYZ (ft): 217.004416,-220.105157,4.000000 Rotation (deg): 90.000000 Parent Rotation (deg): 90.000000 Parent ElementId: 1367377 LevelId: 30 ElementId: 9837546 FacingOrientation: 1.000000,-0.000000,-0.000000'
+        Apparent Load Input_CED: ''
+        CKT_Circuit Number_CEDT: ''
+        FLA Input_CED: ''
+        SLD_Symbol ID_CED: ''
+        Wattage Input_CED: ''
+        Voltage_CED: 120.0
+        Load Classification_CED: REF
+        Product Datasheet URL: ''
+        CKT_Schedule Notes_CEDT: ''
+        dev-Group ID: ''
+        SLD_Component ID_CED: ''
+        CKT_Panel_CEDT: ''
+        CKT_Rating_CED: 0.0
+      keynotes: []
+      tags: []
+    id: SET-026
+  allow_unmatched_parents: true
+  equipment_properties: {}
+  parent_filter:
+    parameter_filters: {}
+    family_name_pattern: '1314, 1315, 1316, 1317 (HUSSMANN, IDD5SU) MULTIDECK CO2'
+    type_name_pattern: 8' CO2
+    category: Specialty Equipment
+  allow_parentless: true

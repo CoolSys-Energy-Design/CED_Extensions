@@ -54,6 +54,27 @@ def make_spec(shared_param_file, builtin_categories=None):
     )
 
 
+def _confirm(forms_module, prompt, title):
+    """Yes/No prompt that works with either forms module.
+
+    ``forms_compat`` exposes ``confirm()``, but ``pyrevit.forms`` does
+    not — it offers ``alert(..., yes=True, no=True)`` instead (returns
+    True only when the user clicks Yes). Try ``confirm`` first, then fall
+    back to ``alert`` so callers can pass either module.
+    """
+    confirm_fn = getattr(forms_module, "confirm", None)
+    if callable(confirm_fn):
+        return bool(confirm_fn(prompt, title=title))
+    alert_fn = getattr(forms_module, "alert", None)
+    if callable(alert_fn):
+        try:
+            return bool(alert_fn(prompt, title=title, yes=True, no=True))
+        except TypeError:
+            return bool(alert_fn(prompt, title=title))
+    # No usable prompt available — don't silently bind; treat as declined.
+    return False
+
+
 def ensure_bound(doc, forms_module, title, shared_param_file, builtin_categories=None):
     """One-call wrapper: needs-check, prompt-on-first-bind, transactional ReInsert.
 
@@ -75,7 +96,7 @@ def ensure_bound(doc, forms_module, title, shared_param_file, builtin_categories
             "The {!r} shared parameter is not bound in this project.\n"
             "Bind it now? (used by Ref Ops tools to read/write per-element identity)"
         ).format(spec.name)
-        if not forms_module.confirm(prompt, title=title):
+        if not _confirm(forms_module, prompt, title):
             return False
 
     try:
@@ -106,17 +127,17 @@ def _is_first_time_bind(doc, param_name):
 
 
 def lookup_identity_param(elem):
-    """Find the canonical Identity Mark parameter on an element.
+    """Find the Identity Mark parameter on an element.
 
-    Tries ``Identity Mark_CEDT`` first (canonical), then ``Identity Mark``
-    (legacy data already in the project), then falls back to the built-in
-    ``Mark`` parameter so older models keep working until they're rebound.
-    Returns the ``Parameter`` or ``None``.
+    Tries plain ``Identity Mark`` first (the firm-standard template
+    parameter), then ``Identity Mark_CEDT`` (legacy/shared variant), then
+    falls back to the built-in ``Mark`` parameter so older models keep
+    working. Returns the ``Parameter`` or ``None``.
     """
     if elem is None:
         return None
     from Autodesk.Revit.DB import BuiltInParameter
-    for name in (IDENTITY_MARK_PARAM_NAME, "Identity Mark"):
+    for name in ("Identity Mark", IDENTITY_MARK_PARAM_NAME):
         try:
             param = elem.LookupParameter(name)
         except Exception:
