@@ -1198,53 +1198,70 @@ class PlacementEngine(object):
                 continue
         return False
 
-    def _normalize_instance_world_z(self, instance, target_point, target_level):
+    def _location_z(self, instance):
+        location = _as_location_point(instance)
+        if location is None:
+            return None
+        try:
+            return float(location.Point.Z)
+        except Exception:
+            return None
+
+    def _normalization_delta(self, instance, target_point):
         if instance is None or target_point is None:
-            return
+            return None
+        actual_z = self._location_z(instance)
+        if actual_z is None:
+            return None
         try:
             desired_z = float(target_point.Z)
         except Exception:
+            return None
+        delta = desired_z - actual_z
+        if abs(delta) <= 1e-6:
+            return 0.0
+        return delta
+
+    def _normalize_world_z_bulk(self, records, report):
+        pending = []
+        for instance, target_point, target_level in list(records or []):
+            delta = self._normalization_delta(instance, target_point)
+            if delta is None or abs(float(delta)) <= 1e-6:
+                continue
+            pending.append((instance, target_point, target_level, float(delta)))
+
+        if not pending:
             return
 
-        location = _as_location_point(instance)
-        if location is None:
-            return
+        transaction = Transaction(self.doc, "Normalize Lighting Fixture Elevations")
+        transaction.Start()
         try:
-            actual_z = float(location.Point.Z)
-        except Exception:
-            return
+            for instance, target_point, target_level, delta in pending:
+                try:
+                    ElementTransformUtils.MoveElement(self.doc, instance.Id, XYZ(0.0, 0.0, delta))
+                    continue
+                except Exception:
+                    pass
 
-        if abs(desired_z - actual_z) <= 1e-6:
-            return
+                try:
+                    if not self._try_set_level_offset(instance, target_level, float(target_point.Z)):
+                        report.add_error(
+                            "Elevation normalization failed for placed fixture id {}.".format(_idval(instance.Id))
+                        )
+                except Exception as ex:
+                    report.add_error(
+                        "Elevation normalization failed for placed fixture id {}: {}".format(
+                            _idval(instance.Id), ex
+                        )
+                    )
 
-        if self._try_set_level_offset(instance, target_level, desired_z):
+            transaction.Commit()
+        except Exception as ex:
+            report.add_error("Bulk elevation normalization failed: {}".format(ex))
             try:
-                self.doc.Regenerate()
+                transaction.RollBack()
             except Exception:
                 pass
-            location = _as_location_point(instance)
-            if location is not None:
-                try:
-                    actual_z = float(location.Point.Z)
-                except Exception:
-                    actual_z = None
-                if actual_z is not None and abs(desired_z - actual_z) <= 1e-6:
-                    return
-
-        location = _as_location_point(instance)
-        if location is None:
-            return
-        try:
-            actual_z = float(location.Point.Z)
-        except Exception:
-            return
-        delta = float(desired_z) - float(actual_z)
-        if abs(delta) <= 1e-6:
-            return
-        try:
-            ElementTransformUtils.MoveElement(self.doc, instance.Id, XYZ(0.0, 0.0, delta))
-        except Exception:
-            pass
 
     def place(
         self,
@@ -1275,6 +1292,7 @@ class PlacementEngine(object):
         transaction = Transaction(self.doc, "Place Lighting Fixtures")
         group.Start()
         transaction.Start()
+        normalization_records = []
         try:
             self._activate_symbols(list(fixture_symbol_by_source.values()))
 
@@ -1307,17 +1325,10 @@ class PlacementEngine(object):
 
                 try:
                     instance = self._create_instance(point, symbol, target_level)
-                    self._normalize_instance_world_z(instance, point, target_level)
-                    axis_origin = point
-                    loc_after = _as_location_point(instance)
-                    if loc_after is not None:
-                        try:
-                            axis_origin = loc_after.Point
-                        except Exception:
-                            pass
                     if abs(float(data.rotation or 0.0)) > 1e-9:
-                        axis = Line.CreateBound(axis_origin, axis_origin + XYZ(0.0, 0.0, 1.0))
+                        axis = Line.CreateBound(point, point + XYZ(0.0, 0.0, 1.0))
                         ElementTransformUtils.RotateElement(self.doc, instance.Id, axis, float(data.rotation))
+                    normalization_records.append((instance, point, target_level))
                     report.placed += 1
                     if skip_duplicates:
                         existing_index.add(dup_key)
@@ -1327,6 +1338,7 @@ class PlacementEngine(object):
                     report.add_error("Placement failed for '{}': {}".format(data.source_id, ex))
 
             transaction.Commit()
+            self._normalize_world_z_bulk(normalization_records, report)
             group.Assimilate()
         except Exception as ex:
             report.fatal_error = _safe_text(ex)
