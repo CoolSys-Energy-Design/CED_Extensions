@@ -43,6 +43,21 @@ def main():
     if picked:
         sel_ids = [cg_collect.element_id_value(eid) for eid in picked]
         scope_label = "selection"
+    else:
+        # No selection -> whole-model scan. Warn before the (potentially slow)
+        # collection and let the user back out and select first.
+        proceed = forms.alert(
+            "Nothing is selected, so Circuit Grouper will scan the ENTIRE "
+            "model for circuitable elements.\n\n"
+            "Run time may drastically increase - especially as you change the "
+            "parameter to group by, since every element is regrouped.\n\n"
+            "Select the elements you want to circuit first for a faster, more "
+            "focused run.\n\n"
+            "Scan the whole model anyway?",
+            title=TITLE, yes=True, no=True,
+        )
+        if not proceed:
+            return
 
     rows_data = cg_collect.collect_devices(doc, sel_ids)
     if not rows_data:

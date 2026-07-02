@@ -27,6 +27,16 @@ DEVICE_SPECS = {
 DEFAULT_SPEC_KEY = "case_controllers"
 
 # ---------------------------------------------------------------------------
+# Group-by Space (a location property, not a parameter)
+# ---------------------------------------------------------------------------
+# Space is not a LookupParameter - it is the Space the element physically sits
+# in. cg_collect stores a per-element Space label under this synthetic key so
+# the same grouping machinery can group on it, but the window offers it through
+# a SEPARATE control (checkbox) rather than the parameter combo, so it is
+# excluded from the parameter option list.
+SPACE_GROUP_KEY = "Space"
+
+# ---------------------------------------------------------------------------
 # Group-by parameter selection
 # ---------------------------------------------------------------------------
 # The window lets the user pick which parameter the circuits are grouped on.
@@ -54,6 +64,8 @@ def common_group_params(rows):
     common = name_sets[0]
     for s in name_sets[1:]:
         common = common & s
+    # Space is offered through its own control, never the parameter combo.
+    common = common - set([SPACE_GROUP_KEY])
     preferred = [p for p in PREFERRED_GROUP_PARAMS if p in common]
     rest = sorted(n for n in common if n not in PREFERRED_GROUP_PARAMS)
     return preferred + rest
@@ -137,6 +149,36 @@ def format_amps(amps):
     """Float amps -> display string with unit, e.g. 20.0 -> '20 A'."""
     n = format_amps_number(amps)
     return (n + " A") if n else ""
+
+
+# ---------------------------------------------------------------------------
+# Voltage normalization
+# ---------------------------------------------------------------------------
+# Revit's internal unit for electrical potential is NOT volts, so a raw
+# AsDouble() reads as a large number (e.g. ~1291 for a 120 V connector). The
+# caller must first convert to volts with the Forge unit id
+# (UnitUtils.ConvertFromInternalUnits(raw, UnitTypeId.Volts)); snap_voltage then
+# rounds that measured value to the nearest standard nominal so mismatch flags
+# read "120", "208", "240", "480" - not 119.98 or a raw internal value.
+STANDARD_VOLTAGES = [120, 208, 240, 277, 347, 480, 600]
+
+
+def snap_voltage(volts, tolerance=6.0):
+    """Snap a measured (already volt-converted) voltage to the nearest standard
+    nominal voltage when within ``tolerance``; otherwise return the rounded
+    integer volts. Returns None for missing / non-positive input."""
+    if volts is None:
+        return None
+    try:
+        v = float(volts)
+    except (TypeError, ValueError):
+        return None
+    if v <= 0:
+        return None
+    best = min(STANDARD_VOLTAGES, key=lambda s: abs(s - v))
+    if abs(best - v) <= tolerance:
+        return best
+    return int(round(v))
 
 
 def poles_label(value):

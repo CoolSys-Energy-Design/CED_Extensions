@@ -200,6 +200,10 @@ class CircuitGrouperWindow(forms.WPFWindow):
         # which parameter the circuits are grouped on (user-switchable)
         self._group_param = default_group_param or (
             group_param_options[0] if group_param_options else "")
+        # when True, group on the Space property instead of the parameter combo
+        self._group_by_space = False
+        # the key currently driving grouping (a parameter name, or SPACE_GROUP_KEY)
+        self._active_key = self._group_param
 
         # build the row VMs, then group them by the chosen parameter
         self._rows = [RowVM(d) for d in rows_data]
@@ -212,6 +216,7 @@ class CircuitGrouperWindow(forms.WPFWindow):
         self.SummaryText = self.FindName("SummaryText")
         self.ValidationText = self.FindName("ValidationText")
         self.GroupByCombo = self.FindName("GroupByCombo")
+        self.GroupBySpaceCheck = self.FindName("GroupBySpaceCheck")
 
         self._items = ObservableCollection[object]()
         for vm in self._rows:
@@ -242,9 +247,10 @@ class CircuitGrouperWindow(forms.WPFWindow):
         self._revalidate()
 
     def _rebuild_groups(self, param_name):
-        """(Re)build the GroupVMs by grouping every row on ``param_name``.
-        Pure model work - does not touch the view (callers refresh)."""
-        self._group_param = param_name
+        """(Re)build the GroupVMs by grouping every row on ``param_name`` (a
+        parameter name or cg_core.SPACE_GROUP_KEY). Pure model work - does not
+        touch the view (callers refresh)."""
+        self._active_key = param_name
         groups_by_key = {}
         self._groups = []
         for r in self._rows:
@@ -273,13 +279,27 @@ class CircuitGrouperWindow(forms.WPFWindow):
         self._revalidate()
 
     def group_param_changed(self, sender, args):
-        if self._suppress_regroup:
+        if self._suppress_regroup or self._group_by_space:
             return
         item = sender.SelectedItem
         value = str(item) if item is not None else ""
         if not value or value == self._group_param:
             return
+        self._group_param = value
         self._apply_grouping(value)
+
+    def group_by_space_changed(self, sender, args):
+        """Toggle grouping between the Space property and the parameter combo.
+        Space is a location property, not a parameter, so it is driven from
+        this separate control; the parameter combo is disabled while it is on."""
+        if self._suppress_regroup:
+            return
+        self._group_by_space = bool(sender.IsChecked)
+        if self.GroupByCombo is not None:
+            self.GroupByCombo.IsEnabled = not self._group_by_space
+        key = cg_core.SPACE_GROUP_KEY if self._group_by_space else self._group_param
+        if key and key != self._active_key:
+            self._apply_grouping(key)
 
     # -- setup helpers ----------------------------------------------------
     def _members(self, group):

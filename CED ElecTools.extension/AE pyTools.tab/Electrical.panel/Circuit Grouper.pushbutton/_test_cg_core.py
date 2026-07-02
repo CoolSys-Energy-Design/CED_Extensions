@@ -90,6 +90,24 @@ def run():
           cg_core.default_group_param(["Level", "Family:Type"]) == "Level")
     check("default empty when none", cg_core.default_group_param([]) == "")
 
+    # --- Space is offered via its own control, never the parameter combo ---
+    space_rows = [
+        {"group_values": {"Identity Mark": "RA-1", "Space": "101 - Office"}},
+        {"group_values": {"Identity Mark": "RA-2", "Space": "102 - Lab"}},
+    ]
+    space_opts = cg_core.common_group_params(space_rows)
+    check("space excluded from param combo", cg_core.SPACE_GROUP_KEY not in space_opts)
+    check("space rows keep real params", "Identity Mark" in space_opts)
+
+    # --- voltage snapping (input is already volt-converted) ---
+    check("snap 119.98 -> 120", cg_core.snap_voltage(119.98) == 120)
+    check("snap 207.6 -> 208", cg_core.snap_voltage(207.6) == 208)
+    check("snap 480.2 -> 480", cg_core.snap_voltage(480.2) == 480)
+    check("snap 277 -> 277", cg_core.snap_voltage(277) == 277)
+    check("snap non-standard stays rounded", cg_core.snap_voltage(190) == 190)
+    check("snap None -> None", cg_core.snap_voltage(None) is None)
+    check("snap zero -> None", cg_core.snap_voltage(0) is None)
+
     print("\nAll tests passed.")
 
 

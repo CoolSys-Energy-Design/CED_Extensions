@@ -65,6 +65,11 @@
     <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,8">
       <Button Content="New Group from Selected" MinWidth="170" Click="new_group_clicked"/>
       <Button Content="Toggle Checked" MinWidth="120" Click="toggle_checked_clicked"/>
+      <CheckBox Name="GroupBySpaceCheck" Content="Group by Space"
+                VerticalAlignment="Center" Margin="16,0,0,0"
+                Foreground="{StaticResource Text}"
+                Checked="group_by_space_changed" Unchecked="group_by_space_changed"
+                ToolTip="Group elements by the Space they occupy (a location property) instead of by a parameter"/>
       <TextBlock Text="Group by:" Margin="16,0,4,0" Foreground="{StaticResource SubText}"/>
       <ComboBox Name="GroupByCombo" Width="220" VerticalAlignment="Center"
                 ItemsSource="{Binding GroupParamOptions}"

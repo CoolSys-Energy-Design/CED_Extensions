@@ -70,23 +70,43 @@ def _first_param(elem, names):
     return None
 
 
+def _volts_from_internal(raw):
+    """Convert a raw internal electrical-potential value to volts using the
+    Forge unit id. Revit's internal unit for ELECTRICAL_POTENTIAL is NOT volts
+    (a raw 120 V reads as ~1291), so this conversion is required for the value
+    to display / compare as a real nominal voltage."""
+    try:
+        from Autodesk.Revit.DB import UnitUtils, UnitTypeId
+        return UnitUtils.ConvertFromInternalUnits(raw, UnitTypeId.Volts)
+    except Exception:
+        pass
+    try:  # Revit 2021 and earlier (pre-ForgeTypeId)
+        from Autodesk.Revit.DB import UnitUtils, DisplayUnitType
+        return UnitUtils.ConvertFromInternalUnits(raw, DisplayUnitType.DUT_VOLTS)
+    except Exception:
+        return raw
+
+
 def _read_voltage(elem):
-    """Return (display_text, integer_key) for the voltage column."""
+    """Return (display_text, integer_key) for the voltage column.
+
+    The key is the Forge-converted voltage snapped to the nearest standard
+    nominal (120 / 208 / 240 / 480 ...), so both the column and the mismatch
+    flag show a real voltage instead of a raw internal value."""
     p = _first_param(elem, VOLTAGE_PARAM_NAMES)
     if p is None:
         return "", None
-    text = _as_text(p)
     key = None
     try:
         raw = p.AsDouble()
-        # Revit stores ELECTRICAL_POTENTIAL internally in volts.
         if raw:
-            key = int(round(raw))
+            key = cg_core.snap_voltage(_volts_from_internal(raw))
     except Exception:
         key = None
-    if not text and key is not None:
-        text = "{} V".format(key)
-    return text, key
+    if key is not None:
+        return "{} V".format(key), key
+    # No usable numeric value - fall back to whatever text the param carries.
+    return _as_text(p), None
 
 
 def _read_poles(elem):
@@ -310,6 +330,61 @@ def _collect_group_values(elem):
     return vals
 
 
+def _last_phase(doc):
+    """The project's last phase (used to resolve the Space overload), or None."""
+    try:
+        phases = doc.Phases
+        if phases is not None and phases.Size > 0:
+            last = phases.Size - 1
+            try:
+                return phases.get_Item(last)
+            except Exception:
+                return phases[last]
+    except Exception:
+        pass
+    return None
+
+
+def _read_space_label(doc, elem):
+    """Human label for the Space the element occupies ('101 - Office'), or
+    '(No Space)' when it is not inside one.
+
+    Space is a *property* of the element (its physical location inside a Space),
+    not a lookup parameter, so it is read from the FamilyInstance.Space
+    property, falling back to the phase overload when the direct property is
+    null."""
+    sp = None
+    try:
+        sp = getattr(elem, "Space", None)
+    except Exception:
+        sp = None
+    if sp is None:
+        get_space = getattr(elem, "get_Space", None)
+        if callable(get_space):
+            phase = _last_phase(doc)
+            try:
+                sp = get_space(phase) if phase is not None else None
+            except Exception:
+                sp = None
+    if sp is None:
+        return "(No Space)"
+    number = ""
+    name = ""
+    try:
+        number = (sp.Number or "").strip()
+    except Exception:
+        number = ""
+    try:
+        p = sp.get_Parameter(DB.BuiltInParameter.ROOM_NAME)
+        if p is not None and p.HasValue:
+            name = (p.AsString() or "").strip()
+    except Exception:
+        name = ""
+    if number and name:
+        return "{} - {}".format(number, name)
+    return number or name or "(No Space)"
+
+
 def _family_type_label(doc, elem):
     try:
         sym = doc.GetElement(elem.GetTypeId())
@@ -386,6 +461,9 @@ def collect_devices(doc, element_ids=None):
         group_values = _collect_group_values(elem)
         group_values["Family:Type"] = family_type
         group_values["Level"] = level_name
+        # Space is a location property, offered via its own control (see
+        # cg_core.SPACE_GROUP_KEY); stored here so grouping can key on it.
+        group_values[cg_core.SPACE_GROUP_KEY] = _read_space_label(doc, elem)
 
         rows.append({
             "element_id": eid,
