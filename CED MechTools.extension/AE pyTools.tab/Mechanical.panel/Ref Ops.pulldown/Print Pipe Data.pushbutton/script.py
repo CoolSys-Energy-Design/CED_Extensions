@@ -23,10 +23,15 @@ from LogicClasses.PipeSegment import (
     SumHorizontalPipeLengthPerID,
     SumVerticalPipeLengthPerID,
 )
+from Snippets import revit_helpers
 
 logger = script.get_logger()
 output = script.get_output()
 doc = revit.doc
+
+
+def _elid_value(item, default=0):
+    return revit_helpers.get_elementid_value(item, default=default)
 
 try:
     if sys.getrecursionlimit() < 20000:
@@ -174,7 +179,7 @@ def _fast_order_system_ids(pipe_elements, identity_by_pipe_id, pipe_segments):
 
     for pipe in (pipe_elements or []):
         try:
-            pid = pipe.Id.IntegerValue
+            pid = _elid_value(pipe.Id)
         except Exception:
             continue
         sid = _safe_text(identity_by_pipe_id.get(pid)) or "<Unassigned ID>"
@@ -322,7 +327,7 @@ def _collect_all_pipes():
         collector = DB.FilteredElementCollector(doc).OfCategory(bic).WhereElementIsNotElementType()
         for elem in collector:
             try:
-                elem_id = elem.Id.IntegerValue
+                elem_id = _elid_value(elem.Id)
             except Exception:
                 continue
             if elem_id in seen:
@@ -419,7 +424,7 @@ def _connected_pipe_ids(pipe, pipe_ids, fitting_pipe_cache=None, max_fitting_dep
         return out
 
     try:
-        this_id = pipe.Id.IntegerValue
+        this_id = _elid_value(pipe.Id)
     except Exception:
         return out
 
@@ -427,7 +432,7 @@ def _connected_pipe_ids(pipe, pipe_ids, fitting_pipe_cache=None, max_fitting_dep
         if elem is None:
             return False
         try:
-            eid = elem.Id.IntegerValue
+            eid = _elid_value(elem.Id)
         except Exception:
             return False
         if eid in pipe_ids:
@@ -468,7 +473,7 @@ def _connected_pipe_ids(pipe, pipe_ids, fitting_pipe_cache=None, max_fitting_dep
             return set()
 
         try:
-            start_id = start_fitting.Id.IntegerValue
+            start_id = _elid_value(start_fitting.Id)
         except Exception:
             return set()
 
@@ -484,7 +489,7 @@ def _connected_pipe_ids(pipe, pipe_ids, fitting_pipe_cache=None, max_fitting_dep
             if fitting is None:
                 continue
             try:
-                fid = fitting.Id.IntegerValue
+                fid = _elid_value(fitting.Id)
             except Exception:
                 continue
             if fid in visited:
@@ -499,7 +504,7 @@ def _connected_pipe_ids(pipe, pipe_ids, fitting_pipe_cache=None, max_fitting_dep
                 for ref in refs:
                     try:
                         owner = ref.Owner
-                        owner_id = owner.Id.IntegerValue
+                        owner_id = _elid_value(owner.Id)
                     except Exception:
                         continue
 
@@ -530,7 +535,7 @@ def _connected_pipe_ids(pipe, pipe_ids, fitting_pipe_cache=None, max_fitting_dep
         for ref in refs:
             try:
                 owner = ref.Owner
-                owner_id = owner.Id.IntegerValue
+                owner_id = _elid_value(owner.Id)
             except Exception:
                 continue
 
@@ -573,7 +578,7 @@ def _order_system_ids_by_connectivity(pipe_elements, identity_by_pipe_id, pipe_s
 
     for idx, pipe in enumerate(pipe_elements or []):
         try:
-            pid = pipe.Id.IntegerValue
+            pid = _elid_value(pipe.Id)
         except Exception:
             continue
         sid = _safe_text(identity_by_pipe_id.get(pid)) or "<Unassigned ID>"
@@ -729,7 +734,7 @@ def _order_system_ids_by_connectivity(pipe_elements, identity_by_pipe_id, pipe_s
             if owner is None:
                 return False
             try:
-                oid = owner.Id.IntegerValue
+                oid = _elid_value(owner.Id)
             except Exception:
                 return False
             if oid in pipe_ids:
@@ -764,7 +769,7 @@ def _order_system_ids_by_connectivity(pipe_elements, identity_by_pipe_id, pipe_s
                 for ref in refs:
                     try:
                         owner = ref.Owner
-                        owner_id = owner.Id.IntegerValue
+                        owner_id = _elid_value(owner.Id)
                     except Exception:
                         continue
 
@@ -790,7 +795,7 @@ def _order_system_ids_by_connectivity(pipe_elements, identity_by_pipe_id, pipe_s
                         for fref in frefs:
                             try:
                                 fowner = fref.Owner
-                                fowner_id = fowner.Id.IntegerValue
+                                fowner_id = _elid_value(fowner.Id)
                             except Exception:
                                 continue
                             if fowner_id in pipe_ids and fowner_id != spid:
@@ -1074,7 +1079,38 @@ def _order_ids_from_topology_segments(topo_segments, allowed_ids=None):
 
     return ordered
 
-def _rows_from_totals(pipe_segments, ordered_ids=None):
+def _element_ids_by_system_id(identity_by_pipe_id, pipe_segments):
+    by_sid = {}
+
+    for pid, identity in (identity_by_pipe_id or {}).items():
+        try:
+            pid_int = int(pid)
+        except Exception:
+            continue
+        if pid_int <= 0:
+            continue
+        sid = _safe_text(identity) or "<Unassigned ID>"
+        by_sid.setdefault(sid, set()).add(pid_int)
+
+    for seg in (pipe_segments or []):
+        sid = _safe_text(getattr(seg, "identity_mark", None)) or "<Unassigned ID>"
+        try:
+            seg_pid = int(getattr(seg, "source_element_id", None))
+        except Exception:
+            seg_pid = None
+        if seg_pid is not None and seg_pid > 0:
+            by_sid.setdefault(sid, set()).add(seg_pid)
+
+    return by_sid
+
+
+def _format_element_ids(ids):
+    if not ids:
+        return ""
+    return ", ".join(str(pid) for pid in sorted(ids))
+
+
+def _rows_from_totals(pipe_segments, ordered_ids=None, element_ids_by_sid=None):
     vertical = SumVerticalPipeLengthPerID(pipe_segments)
     horizontal = SumHorizontalPipeLengthPerID(pipe_segments)
     evap = SumEvaporationCapacityPerID(pipe_segments)
@@ -1099,9 +1135,12 @@ def _rows_from_totals(pipe_segments, ordered_ids=None):
             return 0.0
         return float(math.ceil(v))
 
+    id_lookup = element_ids_by_sid or {}
+
     rows = []
     for sid in ordered_keys:
         rows.append({
+            "Element IDs": _format_element_ids(id_lookup.get(sid)),
             "System ID": sid,
             "Vertical Length Total": _threshold(vertical.get(sid, 0.0)),
             "Horizontal Length Total": _threshold(horizontal.get(sid, 0.0)),
@@ -1143,6 +1182,7 @@ def _write_excel_xlsx(path, rows):
         cells = _get(worksheet, "Cells")
 
         headers = [
+            "Element IDs",
             "System ID",
             "Vertical Length Total",
             "Horizontal Length Total",
@@ -1154,12 +1194,14 @@ def _write_excel_xlsx(path, rows):
 
         for row_idx, row in enumerate(rows, 2):
             cell = _call(cells, "Item", row_idx, 1)
-            _set(cell, "Value2", row.get("System ID", ""))
+            _set(cell, "Value2", row.get("Element IDs", ""))
             cell = _call(cells, "Item", row_idx, 2)
-            _set(cell, "Value2", _safe_float(row.get("Vertical Length Total", 0.0), 0.0))
+            _set(cell, "Value2", row.get("System ID", ""))
             cell = _call(cells, "Item", row_idx, 3)
-            _set(cell, "Value2", _safe_float(row.get("Horizontal Length Total", 0.0), 0.0))
+            _set(cell, "Value2", _safe_float(row.get("Vertical Length Total", 0.0), 0.0))
             cell = _call(cells, "Item", row_idx, 4)
+            _set(cell, "Value2", _safe_float(row.get("Horizontal Length Total", 0.0), 0.0))
+            cell = _call(cells, "Item", row_idx, 5)
             _set(cell, "Value2", _safe_float(row.get("Evaporation Capacity Total", 0.0), 0.0))
 
         _call(_get(worksheet, "Columns"), "AutoFit")
@@ -1186,6 +1228,7 @@ def _write_excel_xlsx(path, rows):
 
 def _write_csv(path, rows):
     headers = [
+        "Element IDs",
         "System ID",
         "Vertical Length Total",
         "Horizontal Length Total",
@@ -1196,6 +1239,7 @@ def _write_csv(path, rows):
         writer.writeheader()
         for row in rows:
             writer.writerow({
+                "Element IDs": row.get("Element IDs", ""),
                 "System ID": row.get("System ID", ""),
                 "Vertical Length Total": "{:.6f}".format(_safe_float(row.get("Vertical Length Total", 0.0), 0.0)),
                 "Horizontal Length Total": "{:.6f}".format(_safe_float(row.get("Horizontal Length Total", 0.0), 0.0)),
@@ -1234,7 +1278,7 @@ def main():
     identity_by_pipe_id = {}
     for pipe in pipe_elements:
         try:
-            pipe_id = pipe.Id.IntegerValue
+            pipe_id = _elid_value(pipe.Id)
         except Exception:
             continue
         identity_by_pipe_id[pipe_id] = _direct_identity_mark(pipe)
@@ -1257,7 +1301,13 @@ def main():
 
     _ = PrintPipeSegmentTotalsPerID(pipe_segments, ordered_ids=ordered_ids)
 
-    rows = _rows_from_totals(pipe_segments, ordered_ids=ordered_ids)
+    element_ids_by_sid = _element_ids_by_system_id(identity_by_pipe_id, pipe_segments)
+
+    rows = _rows_from_totals(
+        pipe_segments,
+        ordered_ids=ordered_ids,
+        element_ids_by_sid=element_ids_by_sid,
+    )
     if not rows:
         forms.alert("No pipe totals were generated.", title=__title__, exitscript=True)
 
