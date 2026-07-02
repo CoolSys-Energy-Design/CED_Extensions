@@ -3,39 +3,92 @@ __title__ = "System Tagger"
 __doc__ = "Place system ID tags on refrigerated cases from a pasted SYS NO. list."
 
 import re
-import time
 
 from Autodesk.Revit.DB.ExtensibleStorage import AccessLevel
 from Autodesk.Revit.DB.ExtensibleStorage import Entity, Schema, SchemaBuilder
-from Autodesk.Revit.UI.Selection import ObjectType
+from Autodesk.Revit.UI.Selection import ISelectionFilter, ObjectType
 from System import Guid, String, Int32
 from pyrevit import revit, DB, forms, script
+
+from Snippets import revit_helpers
 
 logger = script.get_logger()
 doc = revit.doc
 uidoc = revit.uidoc
 
+
+def _elid_value(item, default=0):
+    return revit_helpers.get_elementid_value(item, default=default)
+
+
+def _elid_from_value(value):
+    return revit_helpers.elementid_from_value(value)
+
 ORANGE_RGB = (255, 128, 0)
 RESUME_SCHEMA_GUID = Guid("5f1a3c2e-9e4c-4e42-9f26-9c8f8f5c6f14")
 RESUME_SCHEMA_NAME = "CED_SystemTagger_Resume"
+RESUME_DATA_STORAGE_NAME = "CED_SystemTagger_Resume"
+
+ACTION_MODE_TAG_AND_MARK = "Tag + Identity Mark"
+ACTION_MODE_MARK_ONLY = "Identity Mark only"
+ACTION_MODE_TAG_ONLY = "Tag only"
+
+
+class _MechEquipmentSelectionFilter(ISelectionFilter):
+    def AllowElement(self, elem):  # noqa: N802
+        if elem is None:
+            return False
+        try:
+            cat = elem.Category
+        except Exception:
+            return False
+        if cat is None:
+            return False
+        try:
+            return _elid_value(cat.Id) == int(DB.BuiltInCategory.OST_MechanicalEquipment)
+        except Exception:
+            return False
+
+    def AllowReference(self, reference, position):  # noqa: N802
+        return False
+
+
+_MECH_FILTER = _MechEquipmentSelectionFilter()
 
 
 def _rgb(r, g, b):
     return DB.Color(bytearray([r])[0], bytearray([g])[0], bytearray([b])[0])
 
 
-def _load_resume_state():
-    if doc is None:
-        return None, None
+def _get_resume_schema():
+    schema = Schema.Lookup(RESUME_SCHEMA_GUID)
+    if schema is not None:
+        return schema
+    sb = SchemaBuilder(RESUME_SCHEMA_GUID)
+    sb.SetSchemaName(RESUME_SCHEMA_NAME)
+    sb.SetReadAccessLevel(AccessLevel.Public)
+    sb.SetWriteAccessLevel(AccessLevel.Public)
+    sb.AddSimpleField("ExcelPath", String)
+    sb.AddSimpleField("Index", Int32)
+    return sb.Finish()
+
+
+def _build_resume_entity(path, idx):
     schema = _get_resume_schema()
-    proj_info = doc.ProjectInformation
-    if proj_info is None:
-        return None, None
+    entity = Entity(schema)
     try:
-        entity = proj_info.GetEntity(schema)
+        entity.Set[String](schema.GetField("ExcelPath"), path or "")
     except Exception:
-        return None, None
-    if not entity or not entity.IsValid():
+        pass
+    try:
+        entity.Set[Int32](schema.GetField("Index"), int(idx))
+    except Exception:
+        pass
+    return entity
+
+
+def _read_entity_values(entity, schema):
+    if entity is None or not entity.IsValid():
         return None, None
     try:
         path = entity.Get[String](schema.GetField("ExcelPath"))
@@ -50,41 +103,138 @@ def _load_resume_state():
     return path or None, idx
 
 
-def _save_resume_state(path, idx):
+def _find_resume_storage():
     if doc is None:
-        return
+        return None
+    schema = _get_resume_schema()
+    try:
+        collector = DB.FilteredElementCollector(doc).OfClass(DB.ExtensibleStorage.DataStorage)
+    except Exception:
+        return None
+    for ds in collector:
+        try:
+            entity = ds.GetEntity(schema)
+        except Exception:
+            entity = None
+        if entity and entity.IsValid():
+            return ds
+    return None
+
+
+def _project_info_resume_entity():
+    if doc is None:
+        return None
     schema = _get_resume_schema()
     proj_info = doc.ProjectInformation
     if proj_info is None:
+        return None
+    try:
+        entity = proj_info.GetEntity(schema)
+    except Exception:
+        return None
+    if not entity or not entity.IsValid():
+        return None
+    return entity
+
+
+def _migrate_from_project_info_if_needed():
+    """One-time migration: if ProjectInformation has the legacy schema entity and
+    no DataStorage entity exists yet, copy it across and wipe the old one.
+    All in a single transaction. Returns True if a migration write occurred."""
+    if doc is None:
+        return False
+    schema = _get_resume_schema()
+
+    # If a DataStorage already holds the entity, nothing to do.
+    if _find_resume_storage() is not None:
+        return False
+
+    legacy = _project_info_resume_entity()
+    if legacy is None:
+        return False
+
+    path, idx = _read_entity_values(legacy, schema)
+    proj_info = doc.ProjectInformation
+    if proj_info is None:
+        return False
+
+    with revit.Transaction("System Tagger - Migrate Resume State"):
+        ds = DB.ExtensibleStorage.DataStorage.Create(doc)
+        try:
+            ds.Name = RESUME_DATA_STORAGE_NAME
+        except Exception:
+            pass
+        ds.SetEntity(_build_resume_entity(path, idx if idx is not None else -1))
+        try:
+            proj_info.DeleteEntity(schema)
+        except Exception:
+            # Best-effort: leave a tombstone so future loads ignore it.
+            try:
+                proj_info.SetEntity(_build_resume_entity("", -1))
+            except Exception:
+                pass
+    logger.info(
+        "System Tagger: migrated resume state from ProjectInformation to DataStorage."
+    )
+    return True
+
+
+def _ensure_resume_storage():
+    """Get or create the DataStorage element. Creation requires its own transaction."""
+    ds = _find_resume_storage()
+    if ds is not None:
+        return ds
+    with revit.Transaction("System Tagger - Create Resume Storage"):
+        ds = DB.ExtensibleStorage.DataStorage.Create(doc)
+        try:
+            ds.Name = RESUME_DATA_STORAGE_NAME
+        except Exception:
+            pass
+        ds.SetEntity(_build_resume_entity("", -1))
+    return ds
+
+
+def _load_resume_state():
+    if doc is None:
+        return None, None
+    schema = _get_resume_schema()
+    ds = _find_resume_storage()
+    if ds is None:
+        return None, None
+    try:
+        entity = ds.GetEntity(schema)
+    except Exception:
+        return None, None
+    return _read_entity_values(entity, schema)
+
+
+def _save_resume_state(path, idx):
+    """Save resume state in its own transaction. Use at startup / for one-shot writes."""
+    if doc is None:
         return
-    entity = Entity(schema)
-    try:
-        entity.Set[String](schema.GetField("ExcelPath"), path or "")
-    except Exception:
-        pass
-    try:
-        entity.Set[Int32](schema.GetField("Index"), int(idx))
-    except Exception:
-        pass
+    ds = _ensure_resume_storage()
+    if ds is None:
+        return
+    entity = _build_resume_entity(path, idx)
     with revit.Transaction("System Tagger - Save Resume State"):
-        proj_info.SetEntity(entity)
+        ds.SetEntity(entity)
+
+
+def _save_resume_state_no_tx(path, idx):
+    """Save resume state inside an already-open transaction. The DataStorage element
+    must already exist (call _ensure_resume_storage() once before the picking loop)."""
+    if doc is None:
+        return
+    ds = _find_resume_storage()
+    if ds is None:
+        # Fall back to opening our own tx so we don't silently drop state.
+        _save_resume_state(path, idx)
+        return
+    ds.SetEntity(_build_resume_entity(path, idx))
 
 
 def _clear_resume_state():
     _save_resume_state("", -1)
-
-
-def _get_resume_schema():
-    schema = Schema.Lookup(RESUME_SCHEMA_GUID)
-    if schema is not None:
-        return schema
-    sb = SchemaBuilder(RESUME_SCHEMA_GUID)
-    sb.SetSchemaName(RESUME_SCHEMA_NAME)
-    sb.SetReadAccessLevel(AccessLevel.Public)
-    sb.SetWriteAccessLevel(AccessLevel.Public)
-    sb.AddSimpleField("ExcelPath", String)
-    sb.AddSimpleField("Index", Int32)
-    return sb.Finish()
 
 
 def _get_solid_fill_pattern_id():
@@ -131,7 +281,7 @@ def _apply_highlights(view, element_ids, ogs):
     if not element_ids:
         return
     for elem_int in element_ids:
-        _apply_override(view, DB.ElementId(elem_int), ogs)
+        _apply_override(view, _elid_from_value(elem_int), ogs)
 
 
 def _clear_highlights_in_tx(view, element_ids):
@@ -139,7 +289,7 @@ def _clear_highlights_in_tx(view, element_ids):
         return
     clear_ogs = DB.OverrideGraphicSettings()
     for elem_int in element_ids:
-        view.SetElementOverrides(DB.ElementId(elem_int), clear_ogs)
+        view.SetElementOverrides(_elid_from_value(elem_int), clear_ogs)
 
 
 def _update_preview_highlights(view, ogs, new_ids, prev_ids):
@@ -257,6 +407,9 @@ def _pick_tag_type():
     tag_types = _collect_tag_types()
     if not tag_types:
         return None
+
+    label_to_type = {}
+    default_label = None
     for tag_type in tag_types:
         try:
             fam_name = tag_type.get_Parameter(DB.BuiltInParameter.SYMBOL_FAMILY_NAME_PARAM).AsString() or ""
@@ -266,9 +419,17 @@ def _pick_tag_type():
             type_name = tag_type.get_Parameter(DB.BuiltInParameter.SYMBOL_NAME_PARAM).AsString() or ""
         except Exception:
             type_name = ""
+        label = _tag_type_label(tag_type)
         if fam_name == "M_Mechanical Eqmt Tag" and type_name == "Identity":
-            return tag_type
-    options = [_tag_type_label(t) for t in tag_types]
+            label = "(default) " + label
+            default_label = label
+        label_to_type[label] = tag_type
+
+    options = sorted(label_to_type.keys())
+    if default_label and default_label in options:
+        options.remove(default_label)
+        options.insert(0, default_label)
+
     picked = forms.SelectFromList.show(
         options,
         multiselect=False,
@@ -276,11 +437,17 @@ def _pick_tag_type():
     )
     if not picked:
         return None
-    try:
-        idx = options.index(picked)
-    except Exception:
+    return label_to_type.get(picked)
+
+
+def _prompt_action_mode():
+    choice = forms.CommandSwitchWindow.show(
+        [ACTION_MODE_TAG_AND_MARK, ACTION_MODE_MARK_ONLY, ACTION_MODE_TAG_ONLY],
+        message="What should the System Tagger do for each picked element?",
+    )
+    if not choice:
         return None
-    return tag_types[idx]
+    return choice
 
 
 def _parse_system_ids(raw_text):
@@ -303,26 +470,26 @@ def _toggle_pick_cases(system_id, view, ogs):
     selected_ids = []
     selected_set = set()
     preview_ids = []
-    last_preview_time = 0.0
     preview_group = DB.TransactionGroup(doc, "System Tagger - Preview Highlights")
     preview_group.Start()
 
     try:
         while True:
             with forms.WarningBar(
-                title="System ID {}: pick refrigerated cases (ESC to finish)".format(system_id)
+                title="System ID {}: pick Mechanical Equipment (ESC to finish)".format(system_id)
             ):
                 while True:
                     try:
                         ref = uidoc.Selection.PickObject(
                             ObjectType.Element,
-                            "Pick case (click again to unselect). ESC when done."
+                            _MECH_FILTER,
+                            "Pick Mechanical Equipment (click again to unselect). ESC when done."
                         )
                     except Exception:
                         break
 
-                    elem_int = ref.ElementId.IntegerValue
-                    elem_id = DB.ElementId(elem_int)
+                    elem_int = _elid_value(ref.ElementId)
+                    elem_id = _elid_from_value(elem_int)
 
                     if elem_int in selected_set:
                         selected_set.remove(elem_int)
@@ -331,10 +498,7 @@ def _toggle_pick_cases(system_id, view, ogs):
                         selected_set.add(elem_int)
                         selected_ids.append(elem_int)
 
-                    now = time.time()
-                    if now - last_preview_time >= 1.0:
-                        preview_ids = _update_preview_highlights(view, ogs, selected_ids, preview_ids)
-                        last_preview_time = now
+                    preview_ids = _update_preview_highlights(view, ogs, selected_ids, preview_ids)
 
             choice = forms.CommandSwitchWindow.show(
                 ["Done", "Pick More", "Pause"],
@@ -389,7 +553,7 @@ def _apply_identity_mark(element_ids, labels):
     if not element_ids or not labels:
         return
     for elem_int, label in zip(element_ids, labels):
-        elem = doc.GetElement(DB.ElementId(elem_int))
+        elem = doc.GetElement(_elid_from_value(elem_int))
         if not elem:
             continue
         try:
@@ -415,7 +579,7 @@ def _place_tags(element_ids, labels, view, tag_type):
         doc.Regenerate()
     count = 0
     for elem_int, label in zip(element_ids, labels):
-        elem = doc.GetElement(DB.ElementId(elem_int))
+        elem = doc.GetElement(_elid_from_value(elem_int))
         if not elem:
             continue
         pt = _get_element_center(elem, view)
@@ -444,9 +608,18 @@ def main():
     if active_view.IsTemplate:
         forms.alert("Active view is a template. Open a working view first.", exitscript=True)
 
-    tag_type = _pick_tag_type()
-    if not tag_type:
-        forms.alert("No tag type available in this project.", exitscript=True)
+    action_mode = _prompt_action_mode()
+    if not action_mode:
+        script.exit()
+
+    tag_type = None
+    if action_mode != ACTION_MODE_MARK_ONLY:
+        tag_type = _pick_tag_type()
+        if tag_type is None:
+            forms.alert("No tag type selected.", exitscript=True)
+
+    # One-time migration from legacy ProjectInformation storage to DataStorage.
+    _migrate_from_project_info_if_needed()
 
     resume_path, resume_index = _load_resume_state()
     system_ids = None
@@ -484,17 +657,28 @@ def main():
 
     highlight_ogs = _build_highlight_ogs()
 
+    if action_mode == ACTION_MODE_MARK_ONLY:
+        action_text = "Identity Mark will be set on each picked element (no tag will be placed)."
+    elif action_mode == ACTION_MODE_TAG_ONLY:
+        action_text = "A tag will be placed on each picked element (Identity Mark will not be changed)."
+    else:
+        action_text = "Identity Mark will be set and a tag placed on each picked element."
+
     forms.alert(
-        "Select refrigerated cases for each System ID.\n"
-        "- Click a case again to unselect.\n"
+        "Select Mechanical Equipment for each System ID.\n"
+        "- Click an element again to unselect.\n"
         "- Press ESC when done selecting, then click Done.\n"
         "- Click Pause to save progress and exit.\n"
-        "The script will advance to the next System ID."
+        "The script will advance to the next System ID.\n\n"
+        + action_text
     )
+
+    # One-shot save of starting index. Also ensures the DataStorage element exists
+    # so subsequent saves can ride inside the placement transaction (no extra tx).
+    _save_resume_state(raw_text, start_index)
 
     for idx in range(start_index, len(system_ids)):
         system_id = system_ids[idx]
-        _save_resume_state(raw_text, idx)
         status, picked_ids = _toggle_pick_cases(system_id, active_view, highlight_ogs)
         if status == "cancel":
             return
@@ -502,10 +686,12 @@ def main():
             labels = _build_labels(system_id, picked_ids)
             with revit.Transaction("System Tagger - Place Labels {}".format(system_id)):
                 _apply_highlights(active_view, picked_ids, highlight_ogs)
-                _apply_identity_mark(picked_ids, labels)
-                _place_tags(picked_ids, labels, active_view, tag_type)
+                if action_mode != ACTION_MODE_TAG_ONLY:
+                    _apply_identity_mark(picked_ids, labels)
+                if action_mode != ACTION_MODE_MARK_ONLY and tag_type is not None:
+                    _place_tags(picked_ids, labels, active_view, tag_type)
                 _clear_highlights_in_tx(active_view, picked_ids)
-            _save_resume_state(raw_text, idx + 1)
+                _save_resume_state_no_tx(raw_text, idx + 1)
         except Exception:
             raise
         if status == "pause":
