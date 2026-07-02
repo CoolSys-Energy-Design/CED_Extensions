@@ -15,7 +15,13 @@ TITLE = "Place Identity Mark"
 XY_TOLERANCE_FT = 0.1
 ORANGE_RGB = (255, 128, 0)
 ZOOM_TIGHTEN = 0.6
-TARGET_CONTROLLER_FAMILY = "RCD-U_General Refrigeration Device_CED"
+TARGET_CONTROLLER_FAMILIES = (
+    "RCD-U_General Refrigeration Device_CED",
+    "EF-U_General Electrical Box-Unbalanced_CED",
+)
+TARGET_CONTROLLER_TYPES = (
+    "Refrig Case - Case Controller",
+)
 PANEL_VALUE = "RA, RB, RC, RD"
 CIRCUIT_SUFFIX = "_CASECONTROLLER"
 
@@ -302,6 +308,27 @@ def _controller_family(elem):
     return ""
 
 
+def _controller_type(elem):
+    if elem is None:
+        return ""
+    try:
+        symbol = getattr(elem, "Symbol", None)
+        type_name = getattr(symbol, "Name", None) if symbol else None
+        if type_name:
+            return str(type_name)
+    except Exception:
+        pass
+    try:
+        param = elem.get_Parameter(DB.BuiltInParameter.ELEM_TYPE_PARAM)
+        if param:
+            value = param.AsValueString()
+            if value:
+                return str(value)
+    except Exception:
+        pass
+    return ""
+
+
 def _strip_trailing_letter(value):
     if not value:
         return ""
@@ -367,12 +394,24 @@ def _collect_cases(doc):
     return cases, blank_cases
 
 
+CONTROLLER_CATEGORIES = (
+    DB.BuiltInCategory.OST_MechanicalControlDevices,
+    DB.BuiltInCategory.OST_ElectricalFixtures,
+)
+
+
 def _collect_controllers(doc):
     if not doc:
         return []
-    collector = DB.FilteredElementCollector(doc).OfCategory(DB.BuiltInCategory.OST_MechanicalControlDevices)
-    collector = collector.WhereElementIsNotElementType()
-    return list(collector)
+    controllers = []
+    for bic in CONTROLLER_CATEGORIES:
+        try:
+            collector = DB.FilteredElementCollector(doc).OfCategory(bic)
+            collector = collector.WhereElementIsNotElementType()
+            controllers.extend(list(collector))
+        except Exception:
+            continue
+    return controllers
 
 
 def _match_case_for_controller(doc, controller, cases_by_id, cases_with_bbox):
@@ -444,7 +483,9 @@ def main():
         for controller in controllers:
             stats["controllers_total"] += 1
             fam_name = _controller_family(controller)
-            if fam_name != TARGET_CONTROLLER_FAMILY:
+            type_name = _controller_type(controller)
+            if (fam_name not in TARGET_CONTROLLER_FAMILIES
+                    and type_name not in TARGET_CONTROLLER_TYPES):
                 stats["controllers_skipped_type"] += 1
                 continue
             case = _match_case_for_controller(doc, controller, cases_by_id, cases_with_bbox)
