@@ -155,18 +155,20 @@ def format_amps(amps):
 # Voltage normalization
 # ---------------------------------------------------------------------------
 # Revit's internal unit for electrical potential is NOT volts, so a raw
-# AsDouble() reads as a large number (e.g. ~1291 for a 120 V connector). The
-# caller must first convert to volts with the Forge unit id
-# (UnitUtils.ConvertFromInternalUnits(raw, UnitTypeId.Volts)); snap_voltage then
-# rounds that measured value to the nearest standard nominal so mismatch flags
-# read "120", "208", "240", "480" - not 119.98 or a raw internal value.
-STANDARD_VOLTAGES = [120, 208, 240, 277, 347, 480, 600]
+# AsDouble() reads as a large number (~10.764x the real voltage, e.g. ~1291 for
+# 120 V, ~2239 for 208 V). The caller converts to volts first (via the Forge
+# unit id when the spec is ElectricalPotential); snap_voltage then accepts the
+# value ONLY if it lands on a recognized nominal. This is the guard that keeps
+# an unconverted value from ever being displayed: 1291 / 2239 match no nominal,
+# so they are rejected (None) rather than shown.
+STANDARD_VOLTAGES = [24, 48, 120, 208, 240, 277, 347, 480, 600]
 
 
-def snap_voltage(volts, tolerance=6.0):
+def snap_voltage(volts, tolerance=8.0):
     """Snap a measured (already volt-converted) voltage to the nearest standard
-    nominal voltage when within ``tolerance``; otherwise return the rounded
-    integer volts. Returns None for missing / non-positive input."""
+    nominal when within ``tolerance``. Returns None for missing / non-positive
+    input OR for any value that does not resolve to a nominal - so unconverted
+    internal readings (1291, 2239, ...) are never emitted."""
     if volts is None:
         return None
     try:
@@ -178,7 +180,7 @@ def snap_voltage(volts, tolerance=6.0):
     best = min(STANDARD_VOLTAGES, key=lambda s: abs(s - v))
     if abs(best - v) <= tolerance:
         return best
-    return int(round(v))
+    return None
 
 
 def poles_label(value):

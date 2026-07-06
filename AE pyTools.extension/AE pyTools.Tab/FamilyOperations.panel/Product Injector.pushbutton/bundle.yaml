@@ -1,0 +1,6 @@
+title: Product Injector
+
+tooltip: >-
+  Pick MasterProductList.xlsx, a Product Type (sheet), a Model (row) and a
+  Revit category, then auto-build a "<Product Type>_CED" family with that
+  model's specs injected as type parameters and enter click-to-place mode.

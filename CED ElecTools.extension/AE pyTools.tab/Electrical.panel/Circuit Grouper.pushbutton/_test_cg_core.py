@@ -99,12 +99,16 @@ def run():
     check("space excluded from param combo", cg_core.SPACE_GROUP_KEY not in space_opts)
     check("space rows keep real params", "Identity Mark" in space_opts)
 
-    # --- voltage snapping (input is already volt-converted) ---
+    # --- voltage snapping: standard-or-reject (input already volt-converted) ---
     check("snap 119.98 -> 120", cg_core.snap_voltage(119.98) == 120)
     check("snap 207.6 -> 208", cg_core.snap_voltage(207.6) == 208)
     check("snap 480.2 -> 480", cg_core.snap_voltage(480.2) == 480)
     check("snap 277 -> 277", cg_core.snap_voltage(277) == 277)
-    check("snap non-standard stays rounded", cg_core.snap_voltage(190) == 190)
+    check("snap 24 -> 24", cg_core.snap_voltage(24) == 24)
+    # unconverted internal readings must never resolve to a nominal
+    check("snap 1291 (unconv 120) -> None", cg_core.snap_voltage(1291) is None)
+    check("snap 2239 (unconv 208) -> None", cg_core.snap_voltage(2239) is None)
+    check("snap odd 190 -> None", cg_core.snap_voltage(190) is None)
     check("snap None -> None", cg_core.snap_voltage(None) is None)
     check("snap zero -> None", cg_core.snap_voltage(0) is None)
 

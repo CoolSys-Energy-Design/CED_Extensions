@@ -87,42 +87,121 @@ def _volts_from_internal(raw):
         return raw
 
 
+def _parse_leading_number(text):
+    """First numeric token in a string ('208 V' -> 208.0), or None."""
+    if not text:
+        return None
+    num = ""
+    for ch in str(text).strip():
+        if ch.isdigit() or ch in ".-":
+            num += ch
+        elif num:
+            break
+    try:
+        return float(num) if num not in ("", "-", ".", "-.") else None
+    except ValueError:
+        return None
+
+
+def _spec_is_electrical_potential(param):
+    """True when the parameter's Forge spec is ElectricalPotential, i.e. its
+    AsDouble is an internal value that must be unit-converted. Only these need
+    conversion; a plain Number 'Voltage' does not (converting it is exactly what
+    produced the bogus '2239 V' readings). Falls back to the pre-2022
+    ParameterType enum on older Revit."""
+    try:
+        defn = param.Definition
+    except Exception:
+        return False
+    try:
+        from Autodesk.Revit.DB import SpecTypeId
+        return defn.GetDataType() == SpecTypeId.ElectricalPotential
+    except Exception:
+        pass
+    try:
+        from Autodesk.Revit.DB import ParameterType
+        return defn.ParameterType == ParameterType.ElectricalPotential
+    except Exception:
+        return False
+
+
+def _param_volts(param):
+    """Numeric voltage in volts for a parameter, or None.
+
+    Convert from internal units ONLY when the Forge spec is ElectricalPotential;
+    a unitless Number/Integer 'Voltage' is taken at face value, and anything
+    else is parsed from its formatted value string."""
+    try:
+        st = param.StorageType
+    except Exception:
+        st = None
+    if st == DB.StorageType.Double:
+        try:
+            raw = param.AsDouble()
+        except Exception:
+            raw = None
+        if not raw:
+            return None
+        if _spec_is_electrical_potential(param):
+            return _volts_from_internal(raw)
+        return raw
+    if st == DB.StorageType.Integer:
+        try:
+            v = param.AsInteger()
+        except Exception:
+            v = None
+        return float(v) if v else None
+    try:
+        return _parse_leading_number(param.AsValueString() or param.AsString())
+    except Exception:
+        return None
+
+
 def _read_voltage(elem):
     """Return (display_text, integer_key) for the voltage column.
 
-    The key is the Forge-converted voltage snapped to the nearest standard
-    nominal (120 / 208 / 240 / 480 ...), so both the column and the mismatch
-    flag show a real voltage instead of a raw internal value."""
+    The key is the voltage snapped to the nearest standard nominal
+    (120 / 208 / 240 / 480 ...), converted from internal units only when the
+    parameter's spec is ElectricalPotential, so both the column and the
+    mismatch flag show a real voltage instead of a raw internal value."""
     p = _first_param(elem, VOLTAGE_PARAM_NAMES)
     if p is None:
         return "", None
-    key = None
-    try:
-        raw = p.AsDouble()
-        if raw:
-            key = cg_core.snap_voltage(_volts_from_internal(raw))
-    except Exception:
-        key = None
+    key = cg_core.snap_voltage(_param_volts(p))
     if key is not None:
         return "{} V".format(key), key
-    # No usable numeric value - fall back to whatever text the param carries.
-    return _as_text(p), None
+    # Value did not resolve to a recognized nominal - show nothing rather than
+    # risk displaying an unconverted internal value.
+    return "", None
 
 
 def _read_poles(elem):
     """Return (display_text, integer_value) for the poles column."""
     p = _first_param(elem, POLES_PARAM_NAMES)
     if p is None:
+        # fall back to the built-in poles parameter (not found by name)
+        bip = getattr(DB.BuiltInParameter, "RBS_ELEC_NUMBER_OF_POLES", None)
+        if bip is not None:
+            try:
+                cand = elem.get_Parameter(bip)
+                if cand is not None and cand.HasValue:
+                    p = cand
+            except Exception:
+                p = None
+    if p is None:
         return "", None
     val = None
     try:
-        val = p.AsInteger()
+        if p.StorageType == DB.StorageType.Double:
+            d = p.AsDouble()
+            val = int(round(d)) if d else None
+        else:
+            val = p.AsInteger()
     except Exception:
         val = None
     if not val:
         # some families type it as text
-        txt = _as_text(p)
-        digits = "".join(ch for ch in txt if ch.isdigit())
+        digits = "".join(ch for ch in _as_text(p) if ch.isdigit())
         if digits:
             try:
                 val = int(digits)
