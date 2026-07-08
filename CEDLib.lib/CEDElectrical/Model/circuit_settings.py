@@ -12,6 +12,40 @@ class FeederVDMethod(object):
         return [cls.DEMAND, cls.CONNECTED, cls.EIGHTY_PERCENT, cls.HUNDRED_PERCENT]
 
 
+class CircuitVDMethod(object):
+    GLOBAL = 0
+    DEMAND = 1
+    CONNECTED = 2
+    EIGHTY_PERCENT = 3
+    HUNDRED_PERCENT = 4
+
+    @classmethod
+    def all(cls):
+        return [cls.GLOBAL, cls.DEMAND, cls.CONNECTED, cls.EIGHTY_PERCENT, cls.HUNDRED_PERCENT]
+
+    @classmethod
+    def normalize(cls, value, default_value=None):
+        fallback = cls.GLOBAL if default_value is None else default_value
+        try:
+            numeric = int(value)
+        except Exception:
+            numeric = fallback
+        return numeric if numeric in cls.all() else fallback
+
+    @classmethod
+    def to_feeder_method(cls, value, global_method):
+        method = cls.normalize(value, cls.GLOBAL)
+        if method == cls.DEMAND:
+            return FeederVDMethod.DEMAND
+        if method == cls.CONNECTED:
+            return FeederVDMethod.CONNECTED
+        if method == cls.EIGHTY_PERCENT:
+            return FeederVDMethod.EIGHTY_PERCENT
+        if method == cls.HUNDRED_PERCENT:
+            return FeederVDMethod.HUNDRED_PERCENT
+        return global_method if global_method in FeederVDMethod.all() else FeederVDMethod.DEMAND
+
+
 class NeutralBehavior(object):
     MATCH_HOT = "match_hot"
     MANUAL = "manual"

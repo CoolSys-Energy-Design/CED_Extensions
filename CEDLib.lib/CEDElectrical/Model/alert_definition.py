@@ -5,13 +5,14 @@
 class AlertDefinition(object):
     """Lightweight alert definition similar to Revit failure definitions."""
 
-    def __init__(self, alert_id, message, group, severity="NONE", resolutions=None, persistent=True):
+    def __init__(self, alert_id, message, group, severity="NONE", resolutions=None, persistent=True, category=None):
         self._id = alert_id
         self._message = message
         self._group = group
         self._severity = severity
         self._resolutions = resolutions or []
         self._persistent = bool(persistent)
+        self._category = category
 
     # Accessor-style methods mirroring Revit's API naming
     def GetApplicableResolutionTypes(self):
@@ -35,6 +36,10 @@ class AlertDefinition(object):
     @property
     def group(self):
         return self._group
+
+    @property
+    def category(self):
+        return self._category
 
     @property
     def message(self):
