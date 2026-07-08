@@ -3,6 +3,7 @@
 
 import Autodesk.Revit.DB.Electrical as DBE
 from pyrevit import DB
+from System import Guid
 
 from CEDElectrical.Model.distribution_equipment import DistributionEquipment, PowerBus, Transformer
 from CEDElectrical.part_types import (
@@ -70,20 +71,135 @@ BIP_PANEL_FEED = DB.BuiltInParameter.RBS_ELEC_PANEL_FEED_PARAM
 BIP_PANEL_MAX_BREAKERS = DB.BuiltInParameter.RBS_ELEC_MAX_POLE_BREAKERS
 BIP_PANEL_MAX_CIRCUITS = DB.BuiltInParameter.RBS_ELEC_NUMBER_OF_CIRCUITS
 BIP_PANEL_SHORT_CIRCUIT_RATING = DB.BuiltInParameter.RBS_ELEC_SHORT_CIRCUIT_RATING
+BIP_PANEL_MAINS_TYPE = getattr(DB.BuiltInParameter, "RBS_ELEC_PANEL_MAINS_TYPE_PARAM", None)
+BIP_PANEL_NEUTRAL_BUS = getattr(DB.BuiltInParameter, "RBS_ELEC_PANEL_NEUTRAL_BUS_PARAM", None)
 
 
-def _param_from_names(element, names, include_type=True):
-    """Return first matching parameter by name from instance/type."""
-    for name in list(names or []):
-        param = revit_helpers.get_parameter(
-            element,
-            name,
-            include_type=bool(include_type),
-            case_insensitive=False,
-        )
-        if param is not None:
-            return param
-    return None
+EQUIPMENT_PARAMETER_DEFINITIONS = {
+    "isolated_ground_bus": {
+        "shared": {
+            "name": "Isolated Ground Bus_CED",
+            "guid": "fce623e5-837b-448f-a4a9-0e6bb9b3fbe9",
+            "include_type": False,
+        },
+        "builtins": [],
+        "value_type": "yesno",
+    },
+    "main_breaker_rating": {
+        "shared": {
+            "name": "Main Breaker Rating_CED",
+            "guid": "fac2a3cf-802d-4ccf-8854-91da0b41d091",
+            "include_type": False,
+        },
+        "builtins": [{"bip": BIP_PANEL_MCB_RATING, "include_type": False}],
+        "value_type": "current",
+    },
+    "mains_rating": {
+        "shared": {
+            "name": "Mains Rating_CED",
+            "guid": "7e6dfe1f-1be5-4493-aa4e-012e9e3802fe",
+            "include_type": True,
+        },
+        "builtins": [{"bip": BIP_PANEL_MAINS_RATING, "include_type": False}],
+        "value_type": "current",
+    },
+    "mains_type": {
+        "shared": {
+            "name": "Mains Type_CEDT",
+            "guid": "cd8f0de1-db57-4638-946c-caf8d2594aa4",
+            "include_type": True,
+        },
+        "builtins": [{"bip": BIP_PANEL_MAINS_TYPE, "include_type": True}],
+        "value_type": "text",
+    },
+    "neutral_bus": {
+        "shared": {
+            "name": "Neutral Bus_CED",
+            "guid": "65a0822e-c08c-43f8-980c-3ebd59d66a27",
+            "include_type": True,
+        },
+        "builtins": [{"bip": BIP_PANEL_NEUTRAL_BUS, "include_type": True}],
+        "value_type": "yesno",
+    },
+    "panel_name": {
+        "shared": {
+            "name": "Panel Name_CEDT",
+            "guid": "43088534-de5e-4b2a-a001-4190a054bb94",
+            "include_type": False,
+        },
+        "builtins": [{"bip": BIP_PANEL_NAME, "include_type": False}],
+        "value_type": "text",
+    },
+    "short_circuit_rating": {
+        "shared": {
+            "name": "Short Circuit Rating_CEDT",
+            "guid": "fd6628b7-d134-4eec-87b0-6f1e50242ffe",
+            "include_type": False,
+        },
+        "builtins": [{"bip": BIP_PANEL_SHORT_CIRCUIT_RATING, "include_type": False}],
+        "value_type": "text",
+    },
+    "transformer_impedance_percent": {
+        "shared": {
+            "name": "Transformer %Z_CED",
+            "guid": "76b07259-7a21-45a3-8d23-5cb68af8fd7d",
+            "include_type": True,
+        },
+        "builtins": [],
+        "value_type": "number",
+    },
+    "transformer_rating": {
+        "shared": {
+            "name": "Transformer Rating_CED",
+            "guid": "1f76eb82-5f63-41c4-89d0-dd5697ae5dd6",
+            "include_type": True,
+        },
+        "builtins": [],
+        "value_type": "apparent_power",
+    },
+    "distribution_system": {
+        "shared": None,
+        "builtins": [{"bip": BIP_FAMILY_DIST_SYSTEM, "include_type": False}],
+        "value_type": "elementid",
+    },
+    "secondary_distribution_system": {
+        "shared": None,
+        "builtins": [{"bip": BIP_FAMILY_SECONDARY_DIST_SYSTEM, "include_type": False}],
+        "value_type": "elementid",
+    },
+    "feed_thru_lugs": {
+        "shared": None,
+        "builtins": [{"bip": BIP_PANEL_FEED_THRU_LUGS, "include_type": False}],
+        "value_type": "yesno",
+    },
+    "max_single_pole_breakers": {
+        "shared": None,
+        "builtins": [{"bip": BIP_PANEL_MAX_BREAKERS, "include_type": False}],
+        "value_type": "integer",
+    },
+    "max_circuits": {
+        "shared": None,
+        "builtins": [{"bip": BIP_PANEL_MAX_CIRCUITS, "include_type": False}],
+        "value_type": "integer",
+    },
+}
+
+
+def _param_has_value(param):
+    if param is None:
+        return False
+    try:
+        return bool(param.HasValue)
+    except Exception:
+        return True
+
+
+def _value_is_present(value):
+    if value is None:
+        return False
+    if isinstance(value, str):
+        return bool(value.strip())
+    return True
 
 
 def _param_value(param, default=None):
@@ -91,19 +207,132 @@ def _param_value(param, default=None):
     return revit_helpers.get_parameter_value(param, default=default)
 
 
-def _param_from_bips(element, bips):
-    """Return first non-empty built-in parameter value."""
-    for bip in list(bips or []):
+def _param_from_guid(element, guid_text, include_type=False):
+    """Return shared parameter by GUID, optionally falling back to type."""
+    if element is None or not guid_text:
+        return None
+
+    def _lookup(owner):
+        if owner is None:
+            return None
         try:
-            param = element.get_Parameter(bip)
+            param = owner.get_Parameter(Guid(str(guid_text)))
         except Exception:
             param = None
-        if param is None or not param.HasValue:
+        if _param_has_value(param):
+            return param
+        return None
+
+    param = _lookup(element)
+    if param is not None or not bool(include_type):
+        return param
+    return _lookup(revit_helpers.get_type_element(element))
+
+
+def _param_from_bips(element, bips, include_type=False):
+    """Return first non-empty built-in parameter value."""
+    owners = [element]
+    if bool(include_type):
+        owners.append(revit_helpers.get_type_element(element))
+    for bip in list(bips or []):
+        if bip is None:
+            continue
+        for owner in owners:
+            if owner is None:
+                continue
+            try:
+                param = owner.get_Parameter(bip)
+            except Exception:
+                param = None
+            if not _param_has_value(param):
+                continue
+            value = _param_value(param, default=None)
+            if _value_is_present(value):
+                return value
+    return None
+
+
+def _param_record_from_bip(element, bip, include_type=False):
+    """Return parameter record for an approved built-in fallback."""
+    if bip is None:
+        return None
+    owners = [("builtin", element)]
+    if bool(include_type):
+        owners.append(("builtin_type", revit_helpers.get_type_element(element)))
+    for source_kind, owner in owners:
+        if owner is None:
+            continue
+        try:
+            param = owner.get_Parameter(bip)
+        except Exception:
+            param = None
+        if not _param_has_value(param):
             continue
         value = _param_value(param, default=None)
-        if value is not None:
-            return value
+        if not _value_is_present(value):
+            continue
+        return {
+            "value": value,
+            "source": source_kind,
+            "builtin": str(bip),
+            "name": "",
+            "guid": "",
+        }
     return None
+
+
+def _equipment_parameter_record(equipment, key):
+    """Resolve one standardized equipment parameter from exact shared/BIP rules."""
+    definition = EQUIPMENT_PARAMETER_DEFINITIONS.get(key) or {}
+    shared = definition.get("shared")
+    if shared:
+        param = _param_from_guid(
+            equipment,
+            shared.get("guid"),
+            include_type=bool(shared.get("include_type", False)),
+        )
+        if param is not None:
+            value = _param_value(param, default=None)
+            if _value_is_present(value):
+                return {
+                    "value": value,
+                    "source": "shared",
+                    "builtin": "",
+                    "name": shared.get("name", ""),
+                    "guid": shared.get("guid", ""),
+                }
+
+    for item in list(definition.get("builtins") or []):
+        record = _param_record_from_bip(
+            equipment,
+            item.get("bip"),
+            include_type=bool(item.get("include_type", False)),
+        )
+        if record is not None:
+            return record
+    return {"value": None, "source": "", "builtin": "", "name": "", "guid": ""}
+
+
+def _equipment_parameter_value(equipment, key, default=None):
+    record = _equipment_parameter_record(equipment, key)
+    value = record.get("value")
+    return default if value is None else value
+
+
+def _equipment_parameter_snapshot(equipment):
+    """Return values and source metadata for standardized equipment parameters."""
+    values = {}
+    sources = {}
+    for key in sorted(EQUIPMENT_PARAMETER_DEFINITIONS.keys()):
+        record = _equipment_parameter_record(equipment, key)
+        values[key] = record.get("value")
+        sources[key] = {
+            "source": record.get("source", ""),
+            "name": record.get("name", ""),
+            "guid": record.get("guid", ""),
+            "builtin": record.get("builtin", ""),
+        }
+    return values, sources
 
 
 def _enum_equals(value, target):
@@ -341,6 +570,201 @@ def _system_ids(systems):
     return ids
 
 
+def _connector_bool_attr(connector, names):
+    for name in list(names or []):
+        try:
+            value = getattr(connector, name)
+        except Exception:
+            continue
+        try:
+            if callable(value):
+                value = value()
+        except Exception:
+            continue
+        if value is not None:
+            return bool(value)
+    return None
+
+
+def _connector_system_ids(connector):
+    ids = []
+
+    def _add_system(system):
+        try:
+            sid = _idval(system.Id)
+        except Exception:
+            sid = 0
+        if sid > 0 and sid not in ids:
+            ids.append(sid)
+
+    for attr_name in ("MEPSystem", "ElectricalSystem"):
+        try:
+            system = getattr(connector, attr_name, None)
+        except Exception:
+            system = None
+        if system is not None:
+            _add_system(system)
+
+    for method_name in ("GetMEPSystems", "GetElectricalSystems"):
+        try:
+            method = getattr(connector, method_name, None)
+            systems = list(method() or []) if callable(method) else []
+        except Exception:
+            systems = []
+        for system in systems:
+            _add_system(system)
+
+    return ids
+
+
+def _equipment_connectors(equipment):
+    connectors = []
+    try:
+        mep = equipment.MEPModel
+    except Exception:
+        mep = None
+    try:
+        connector_manager = getattr(mep, "ConnectorManager", None)
+    except Exception:
+        connector_manager = None
+    if connector_manager is None:
+        return connectors
+    for attr_name in ("Connectors", "UnusedConnectors"):
+        try:
+            for connector in list(getattr(connector_manager, attr_name, None) or []):
+                if connector is not None and connector not in connectors:
+                    connectors.append(connector)
+        except Exception:
+            continue
+    return connectors
+
+
+def _supply_connection_records(equipment, supply_systems):
+    """Return connector-aware supply records for distribution equipment."""
+    records = []
+    by_id = {}
+    for system in list(supply_systems or []):
+        try:
+            circuit_id = _idval(system.Id)
+        except Exception:
+            circuit_id = 0
+        if circuit_id <= 0 or circuit_id in by_id:
+            continue
+        record = {
+            "circuit_id": circuit_id,
+            "is_primary": None,
+            "connector_id": 0,
+        }
+        by_id[circuit_id] = record
+        records.append(record)
+
+    if not records:
+        return records
+
+    for connector in _equipment_connectors(equipment):
+        is_primary = _connector_bool_attr(connector, ("IsPrimary", "isPrimary", "isprimary"))
+        connector_id = _idval(getattr(connector, "Id", None))
+        for system_id in _connector_system_ids(connector):
+            record = by_id.get(system_id)
+            if record is None:
+                continue
+            if is_primary is not None:
+                record["is_primary"] = bool(is_primary)
+            if connector_id > 0:
+                record["connector_id"] = connector_id
+
+    primary_records = [x for x in records if bool(x.get("is_primary"))]
+    if not primary_records and records:
+        records[0]["is_primary"] = True
+    for record in records:
+        if record.get("is_primary") is None:
+            record["is_primary"] = False
+    records.sort(key=lambda x: (0 if bool(x.get("is_primary")) else 1, int(x.get("circuit_id") or 0)))
+    return records
+
+
+def electrical_systems_for_element(element):
+    """Return unique electrical systems assigned to an MEP-backed element."""
+    systems = []
+    seen = set()
+    if element is None:
+        return systems
+    try:
+        mep_model = getattr(element, "MEPModel", None)
+    except Exception:
+        mep_model = None
+    if mep_model is None:
+        return systems
+
+    candidates = []
+    for method_name in ("GetAssignedElectricalSystems", "GetElectricalSystems"):
+        try:
+            method = getattr(mep_model, method_name, None)
+        except Exception:
+            method = None
+        if method is None:
+            continue
+        try:
+            candidates.extend(list(method() or []))
+        except Exception:
+            pass
+    try:
+        candidates.extend(list(getattr(mep_model, "ElectricalSystems", None) or []))
+    except Exception:
+        pass
+
+    for system in candidates:
+        system_id = _idval(getattr(system, "Id", None))
+        if system_id <= 0 or system_id in seen:
+            continue
+        if not isinstance(system, DBE.ElectricalSystem):
+            continue
+        seen.add(system_id)
+        systems.append(system)
+    return systems
+
+
+def supply_circuits_for_model(doc, model, primary_only=False):
+    """Resolve a distribution equipment model's supply records to Revit circuits."""
+    circuits = []
+    if doc is None or model is None:
+        return circuits
+    if bool(primary_only):
+        primary = getattr(model, "primary_supply", None)
+        records = [primary] if primary else []
+    else:
+        records = list(getattr(model, "supply_connections", []) or [])
+        if not records:
+            records = [
+                {"circuit_id": int(circuit_id or 0), "is_primary": False}
+                for circuit_id in list(getattr(model, "supply_circuits", []) or [])
+            ]
+
+    for record in records:
+        try:
+            circuit_id = int(record.get("circuit_id") or 0)
+        except Exception:
+            circuit_id = 0
+        if circuit_id <= 0:
+            continue
+        try:
+            circuit = doc.GetElement(revit_helpers.elementid_from_value(circuit_id))
+        except Exception:
+            circuit = None
+        if isinstance(circuit, DBE.ElectricalSystem):
+            circuits.append(circuit)
+    return circuits
+
+
+def primary_supply_circuit_for_model(doc, model):
+    """Resolve the primary supply circuit for a distribution equipment model."""
+    for circuit in supply_circuits_for_model(doc, model, primary_only=True):
+        return circuit
+    for circuit in supply_circuits_for_model(doc, model, primary_only=False):
+        return circuit
+    return None
+
+
 def _schedule_slot_count(schedule_view):
     """Return schedule slot count from PanelScheduleView."""
     if schedule_view is None:
@@ -412,14 +836,10 @@ def build_distribution_equipment(doc, equipment, schedule_view=None):
     part_type = get_family_part_type(equipment)
     equipment_type = equipment_type_from_part_type(part_type)
 
-    primary_dist_id = _param_from_bips(
-        equipment,
-        [BIP_FAMILY_DIST_SYSTEM],
-    )
-    secondary_dist_id = _param_from_bips(
-        equipment,
-        [BIP_FAMILY_SECONDARY_DIST_SYSTEM],
-    )
+    parameter_values, parameter_sources = _equipment_parameter_snapshot(equipment)
+
+    primary_dist_id = parameter_values.get("distribution_system")
+    secondary_dist_id = parameter_values.get("secondary_distribution_system")
     primary_profile = _distribution_system_snapshot(doc, primary_dist_id)
     secondary_profile = _distribution_system_snapshot(doc, secondary_dist_id)
 
@@ -450,47 +870,15 @@ def build_distribution_equipment(doc, equipment, schedule_view=None):
         if sid > 0 and sid not in assigned_ids:
             supply_systems.append(system)
 
-    mains_rating = _param_value(
-        _param_from_names(equipment, ["Mains Rating_CED", "Mains Rating"], include_type=True),
-        default=None,
-    )
-    mains_type = _param_value(
-        _param_from_names(equipment, ["Mains Type_CEDT", "Mains Type"], include_type=True),
-        default=None,
-    )
-    ocp_rating = _param_value(
-        _param_from_names(equipment, ["Main Breaker Rating_CED", "Main Breaker Rating"], include_type=True),
-        default=None,
-    )
-    short_circuit_rating = _param_value(
-        _param_from_names(equipment, ["Short Circuit Rating_CEDT", "Short Circuit Rating"], include_type=True),
-        default=None,
-    )
-
-    has_feed_thru_lugs = _param_bool(
-        _param_value(
-            _param_from_names(equipment, ["Feed Thru Lugs_CED"], include_type=True),
-            default=None,
-        )
-    )
-    has_neutral_bus = _param_bool(
-        _param_value(
-            _param_from_names(equipment, ["Neutral Bus_CED"], include_type=True),
-            default=None,
-        )
-    )
-    has_ground_bus = _param_bool(
-        _param_value(
-            _param_from_names(equipment, ["Ground Bus_CED"], include_type=True),
-            default=None,
-        )
-    )
-    has_isolated_ground_bus = _param_bool(
-        _param_value(
-            _param_from_names(equipment, ["Isolated Ground Bus_CED"], include_type=True),
-            default=None,
-        )
-    )
+    mains_rating = parameter_values.get("mains_rating")
+    mains_type = parameter_values.get("mains_type")
+    ocp_rating = parameter_values.get("main_breaker_rating")
+    short_circuit_rating = parameter_values.get("short_circuit_rating")
+    panel_name = parameter_values.get("panel_name")
+    has_feed_thru_lugs = _param_bool(parameter_values.get("feed_thru_lugs"))
+    has_neutral_bus = _param_bool(parameter_values.get("neutral_bus"))
+    has_ground_bus = None
+    has_isolated_ground_bus = _param_bool(parameter_values.get("isolated_ground_bus"))
 
     totals = _total_power_current_snapshot(equipment)
     options = _branch_circuit_options(primary_profile, secondary_profile)
@@ -500,22 +888,11 @@ def build_distribution_equipment(doc, equipment, schedule_view=None):
     if options:
         poles = max([int(x.get("poles", 0) or 0) for x in options if int(x.get("poles", 0) or 0) > 0] or [None])
 
+    supply_connections = _supply_connection_records(equipment, supply_systems)
+
     max_poles = None
     if part_type in (PART_TYPE_PANELBOARD, PART_TYPE_TRANSFORMER, PART_TYPE_OTHER_PANEL):
-        max_poles = _param_from_bips(equipment, [BIP_PANEL_MAX_BREAKERS])
-        try:
-            max_poles = int(max_poles or 0)
-        except Exception:
-            max_poles = 0
-        if max_poles <= 0:
-            max_poles = _param_value(
-                _param_from_names(
-                    equipment,
-                    ["Max Number of Single Pole Breakers_CED", "Max Number of Single Pole Breakers"],
-                    include_type=True,
-                ),
-                default=None,
-            )
+        max_poles = parameter_values.get("max_single_pole_breakers")
         try:
             max_poles = int(max_poles or 0)
         except Exception:
@@ -535,22 +912,9 @@ def build_distribution_equipment(doc, equipment, schedule_view=None):
                     max_poles = int(value)
                     break
         if max_poles <= 0:
-            value = _param_from_bips(equipment, [BIP_PANEL_MAX_CIRCUITS])
+            value = parameter_values.get("max_circuits")
             try:
                 max_poles = int(value or 0)
-            except Exception:
-                max_poles = 0
-        if max_poles <= 0:
-            max_poles = _param_value(
-                _param_from_names(
-                    equipment,
-                    ["Max Number of Circuits_CED", "Max Number of Circuits"],
-                    include_type=True,
-                ),
-                default=None,
-            )
-            try:
-                max_poles = int(max_poles or 0)
             except Exception:
                 max_poles = 0
         if max_poles <= 0:
@@ -564,14 +928,19 @@ def build_distribution_equipment(doc, equipment, schedule_view=None):
 
     base_kwargs = {
         "id": _idval(equipment.Id),
-        "name": _to_text(equipment_name, None),
+        "name": _to_text(panel_name, None) or _to_text(equipment_name, None),
+        "element_name": _to_text(equipment_name, None),
+        "panel_name": _to_text(panel_name, None),
         "part_type": part_type,
         "equipment_type": equipment_type,
+        "parameter_values": parameter_values,
+        "parameter_sources": parameter_sources,
         "voltage": voltage,
         "poles": poles,
         "distribution_system": primary_profile,
         "distribution_system_secondary": secondary_profile,
-        "supply_circuits": _system_ids(supply_systems),
+        "supply_connections": supply_connections,
+        "supply_circuits": [int(x.get("circuit_id") or 0) for x in supply_connections],
         "branch_circuits": _system_ids(assigned_systems),
         "branch_circuit_options": options,
         "mains_rating": mains_rating,
@@ -600,18 +969,9 @@ def build_distribution_equipment(doc, equipment, schedule_view=None):
     if part_type == PART_TYPE_TRANSFORMER:
         base_kwargs.update(
             {
-                "xfmr_rating": _param_value(
-                    _param_from_names(equipment, ["Transformer Rating_CED"], include_type=True),
-                    default=None,
-                ),
-                "xfmr_impedance": _param_value(
-                    _param_from_names(equipment, ["Transformer %Z_CED"], include_type=True),
-                    default=None,
-                ),
-                "xfmr_kfactor": _param_value(
-                    _param_from_names(equipment, ["Transformer K-Factor_CEDT"], include_type=True),
-                    default=None,
-                ),
+                "xfmr_rating": parameter_values.get("transformer_rating"),
+                "xfmr_impedance": parameter_values.get("transformer_impedance_percent"),
+                "xfmr_kfactor": None,
             }
         )
         return Transformer(**base_kwargs)

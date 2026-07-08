@@ -1858,17 +1858,30 @@ def build_empty_row(option, slot, metadata=None):
     slot_value = int(slot or 0)
     meta = dict(metadata or {})
     is_valid_slot = bool(is_slot_valid_for_option(option, slot_value))
+    kind = _to_text(meta.get("kind", ""), "").strip().lower()
+    if kind not in ("spare", "space"):
+        if bool(meta.get("is_spare", False)):
+            kind = "spare"
+        elif bool(meta.get("is_space", False)):
+            kind = "space"
+        else:
+            kind = "empty"
+    circuit = meta.get("circuit") if kind in ("spare", "space") else None
+    try:
+        circuit_id = int(meta.get("circuit_id", 0) or 0)
+    except Exception:
+        circuit_id = 0
     return {
-        "row_key": "panel:{0}|slot:{1}|empty".format(option.get("panel_id", 0), slot_value),
+        "row_key": "panel:{0}|slot:{1}|{2}".format(option.get("panel_id", 0), slot_value, kind),
         "panel_id": option.get("panel_id", 0),
         "panel_name": option.get("panel_name", ""),
         "slot": slot_value,
         "span": 1,
         "covered_slots": [slot_value],
-        "kind": "empty",
+        "kind": kind,
         "is_regular_circuit": False,
-        "circuit": None,
-        "circuit_id": 0,
+        "circuit": circuit,
+        "circuit_id": circuit_id,
         "circuit_number": "",
         "load_name": "",
         "schedule_notes_text": "",
@@ -1880,10 +1893,12 @@ def build_empty_row(option, slot, metadata=None):
         "is_slot_grouped": bool(meta.get("is_grouped", False)),
         "slot_group_number": int(meta.get("group_number", 0) or 0),
         "slot_cells": list(meta.get("cells", []) or []),
-        "is_spare_removable": False,
-        "is_space_removable": False,
+        "is_spare": bool(kind == "spare"),
+        "is_space": bool(kind == "space"),
+        "is_spare_removable": bool(meta.get("is_spare_removable", False)),
+        "is_space_removable": bool(meta.get("is_space_removable", False)),
         "is_slot_locked": bool(meta.get("is_slot_locked", False)),
-        "edited_by": "",
+        "edited_by": _to_text(meta.get("edited_by", ""), ""),
         "is_editable": bool(is_valid_slot),
         "is_valid_slot": bool(is_valid_slot),
         "is_excess_slot": bool(not is_valid_slot),
