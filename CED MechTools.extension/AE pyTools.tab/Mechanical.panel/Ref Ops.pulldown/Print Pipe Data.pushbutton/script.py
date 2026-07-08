@@ -23,10 +23,15 @@ from LogicClasses.PipeSegment import (
     SumHorizontalPipeLengthPerID,
     SumVerticalPipeLengthPerID,
 )
+from Snippets import revit_helpers
 
 logger = script.get_logger()
 output = script.get_output()
 doc = revit.doc
+
+
+def _elid_value(item, default=0):
+    return revit_helpers.get_elementid_value(item, default=default)
 
 try:
     if sys.getrecursionlimit() < 20000:
@@ -174,7 +179,7 @@ def _fast_order_system_ids(pipe_elements, identity_by_pipe_id, pipe_segments):
 
     for pipe in (pipe_elements or []):
         try:
-            pid = pipe.Id.IntegerValue
+            pid = _elid_value(pipe.Id)
         except Exception:
             continue
         sid = _safe_text(identity_by_pipe_id.get(pid)) or "<Unassigned ID>"
@@ -322,7 +327,7 @@ def _collect_all_pipes():
         collector = DB.FilteredElementCollector(doc).OfCategory(bic).WhereElementIsNotElementType()
         for elem in collector:
             try:
-                elem_id = elem.Id.IntegerValue
+                elem_id = _elid_value(elem.Id)
             except Exception:
                 continue
             if elem_id in seen:
@@ -419,7 +424,7 @@ def _connected_pipe_ids(pipe, pipe_ids, fitting_pipe_cache=None, max_fitting_dep
         return out
 
     try:
-        this_id = pipe.Id.IntegerValue
+        this_id = _elid_value(pipe.Id)
     except Exception:
         return out
 
@@ -427,7 +432,7 @@ def _connected_pipe_ids(pipe, pipe_ids, fitting_pipe_cache=None, max_fitting_dep
         if elem is None:
             return False
         try:
-            eid = elem.Id.IntegerValue
+            eid = _elid_value(elem.Id)
         except Exception:
             return False
         if eid in pipe_ids:
@@ -468,7 +473,7 @@ def _connected_pipe_ids(pipe, pipe_ids, fitting_pipe_cache=None, max_fitting_dep
             return set()
 
         try:
-            start_id = start_fitting.Id.IntegerValue
+            start_id = _elid_value(start_fitting.Id)
         except Exception:
             return set()
 
@@ -484,7 +489,7 @@ def _connected_pipe_ids(pipe, pipe_ids, fitting_pipe_cache=None, max_fitting_dep
             if fitting is None:
                 continue
             try:
-                fid = fitting.Id.IntegerValue
+                fid = _elid_value(fitting.Id)
             except Exception:
                 continue
             if fid in visited:
@@ -499,7 +504,7 @@ def _connected_pipe_ids(pipe, pipe_ids, fitting_pipe_cache=None, max_fitting_dep
                 for ref in refs:
                     try:
                         owner = ref.Owner
-                        owner_id = owner.Id.IntegerValue
+                        owner_id = _elid_value(owner.Id)
                     except Exception:
                         continue
 
@@ -530,7 +535,7 @@ def _connected_pipe_ids(pipe, pipe_ids, fitting_pipe_cache=None, max_fitting_dep
         for ref in refs:
             try:
                 owner = ref.Owner
-                owner_id = owner.Id.IntegerValue
+                owner_id = _elid_value(owner.Id)
             except Exception:
                 continue
 
@@ -573,7 +578,7 @@ def _order_system_ids_by_connectivity(pipe_elements, identity_by_pipe_id, pipe_s
 
     for idx, pipe in enumerate(pipe_elements or []):
         try:
-            pid = pipe.Id.IntegerValue
+            pid = _elid_value(pipe.Id)
         except Exception:
             continue
         sid = _safe_text(identity_by_pipe_id.get(pid)) or "<Unassigned ID>"
@@ -729,7 +734,7 @@ def _order_system_ids_by_connectivity(pipe_elements, identity_by_pipe_id, pipe_s
             if owner is None:
                 return False
             try:
-                oid = owner.Id.IntegerValue
+                oid = _elid_value(owner.Id)
             except Exception:
                 return False
             if oid in pipe_ids:
@@ -764,7 +769,7 @@ def _order_system_ids_by_connectivity(pipe_elements, identity_by_pipe_id, pipe_s
                 for ref in refs:
                     try:
                         owner = ref.Owner
-                        owner_id = owner.Id.IntegerValue
+                        owner_id = _elid_value(owner.Id)
                     except Exception:
                         continue
 
@@ -790,7 +795,7 @@ def _order_system_ids_by_connectivity(pipe_elements, identity_by_pipe_id, pipe_s
                         for fref in frefs:
                             try:
                                 fowner = fref.Owner
-                                fowner_id = fowner.Id.IntegerValue
+                                fowner_id = _elid_value(fowner.Id)
                             except Exception:
                                 continue
                             if fowner_id in pipe_ids and fowner_id != spid:
@@ -1273,7 +1278,7 @@ def main():
     identity_by_pipe_id = {}
     for pipe in pipe_elements:
         try:
-            pipe_id = pipe.Id.IntegerValue
+            pipe_id = _elid_value(pipe.Id)
         except Exception:
             continue
         identity_by_pipe_id[pipe_id] = _direct_identity_mark(pipe)

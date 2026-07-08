@@ -6,8 +6,14 @@ import math
 
 from pyrevit import revit, DB, forms, script
 
+from Snippets import revit_helpers
+
 logger = script.get_logger()
 doc = revit.doc
+
+
+def _elid_value(item, default=0):
+    return revit_helpers.get_elementid_value(item, default=default)
 
 DEFAULT_WALL_OFFSET_IN = 15.0
 STYLE_WALL = "Wall distribution"
@@ -623,7 +629,7 @@ def _build_item_data(coils, axis, direction):
     for coil in coils:
         bbox = _get_bbox(coil)
         if not bbox:
-            logger.warning("Skipping coil {}: no bounding box".format(coil.Id.IntegerValue))
+            logger.warning("Skipping coil {}: no bounding box".format(_elid_value(coil.Id)))
             continue
         center = (bbox.Min + bbox.Max) * 0.5
         if axis == "X":
@@ -658,7 +664,7 @@ def _coil_bbox_data(coil):
     loc = _get_location_point(coil)
     symbol_id = None
     try:
-        symbol_id = coil.Symbol.Id.IntegerValue
+        symbol_id = _elid_value(coil.Symbol.Id)
     except Exception:
         symbol_id = None
     return {
@@ -819,7 +825,7 @@ def _place_center_distribution(coils, rows, cols, use_current_layout_template=Fa
     for coil in coils:
         item = _coil_bbox_data(coil)
         if not item:
-            logger.warning("Skipping coil {}: no bounding box".format(coil.Id.IntegerValue))
+            logger.warning("Skipping coil {}: no bounding box".format(_elid_value(coil.Id)))
             continue
         data.append(item)
 
@@ -945,7 +951,7 @@ def _place_center_distribution(coils, rows, cols, use_current_layout_template=Fa
             delta_y = target_y - base_y
             logger.info(
                 "Center distribution: coil=%s row=%s col=%s locY=%s centerY=%s targetY=%s baseY=%s deltaY=%s",
-                item["id"].IntegerValue,
+                _elid_value(item["id"]),
                 row_idx,
                 col_idx,
                 "{:.4f}".format(loc.Y) if loc else "None",
