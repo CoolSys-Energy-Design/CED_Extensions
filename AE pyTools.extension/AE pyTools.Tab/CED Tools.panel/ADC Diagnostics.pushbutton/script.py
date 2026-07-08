@@ -24,6 +24,22 @@ def _bool_text(flag):
     return "YES" if bool(flag) else "NO"
 
 
+def _md_cell(value):
+    text = str(value)
+    return text.replace("|", "\\|").replace("\r", " ").replace("\n", " ")
+
+
+def _selected_project_root(selected_root):
+    selected_root = os.path.normpath(selected_root or "")
+    if not selected_root:
+        return ""
+
+    if os.path.basename(selected_root).lower() == "project files":
+        return os.path.dirname(selected_root)
+
+    return selected_root
+
+
 def _print_diagnostics():
     username = telemetry_route.get_username()
     result = telemetry_route.resolve_usage_route(username=username, persist=False)
@@ -53,16 +69,16 @@ def _print_diagnostics():
         return
 
     output.print_md("## Candidates")
-    output.print_md(
+    table_lines = [
         "| Score | Root | Exists | Usage Base | Usage Subfolders | PF Subfolders | Only Automations | Only Current User | Key Match |"
-    )
-    output.print_md("| ---: | --- | :---: | :---: | ---: | ---: | :---: | :---: | :---: |")
+    ]
+    table_lines.append("| ---: | --- | :---: | :---: | ---: | ---: | :---: | :---: | :---: |")
 
     for item in scored:
-        output.print_md(
+        table_lines.append(
             "| {} | `{}` | {} | {} | {} | {} | {} | {} | {} |".format(
                 item.get("score", 0),
-                item.get("root", ""),
+                _md_cell(item.get("root", "")),
                 _bool_text(item.get("root_exists")),
                 _bool_text(item.get("usage_base_exists")),
                 item.get("usage_subfolder_count", 0),
@@ -72,6 +88,7 @@ def _print_diagnostics():
                 _bool_text((item.get("key_info") or {}).get("matches_expected_route")),
             )
         )
+    output.print_md("\n".join(table_lines))
 
 
 def _manual_resolve():
@@ -80,20 +97,13 @@ def _manual_resolve():
     candidate_count = int(result.get("candidate_count", 0) or 0)
     resolved_root = result.get("resolved_root", "")
 
-    if candidate_count == 1:
-        forms.alert(
-            "Manual resolver is only enabled when candidate count is 0 or more than 1.\n\n"
-            "Current resolved root:\n{}".format(resolved_root or "(none)"),
-            title="ACC Path Resolver",
-            ok=True,
-        )
-        return
-
     prompt = (
         "Detected candidate count: {}\n"
-        "Current status: {}\n\n"
-        "Pick the CED Content Collection root folder now?"
-    ).format(candidate_count, result.get("status", ""))
+        "Current status: {}\n"
+        "Current resolved root:\n{}\n\n"
+        "If this path is wrong, pick the correct ACC CED Content Collection root now.\n\n"
+        "Continue?"
+    ).format(candidate_count, result.get("status", ""), resolved_root or "(none)")
     if not forms.alert(prompt, title="ACC Path Resolver", yes=True, no=True):
         return
 
@@ -101,6 +111,7 @@ def _manual_resolve():
     if not selected_root:
         return
 
+    selected_root = _selected_project_root(selected_root)
     save_result = telemetry_route.set_manual_approved_root(selected_root, username=username)
     if not save_result.get("success"):
         inspected = save_result.get("inspected", {})
@@ -121,7 +132,28 @@ def _manual_resolve():
         return
 
     user_folder_result = telemetry_route.ensure_user_folder(selected_root, username=username)
-    cleanup_result = telemetry_route.cleanup_stale_user_folders(selected_root, username=username)
+    recovery_result = {
+        "status": "not_available",
+        "files_found": 0,
+        "files_moved": 0,
+        "files_failed": 0,
+    }
+    if hasattr(telemetry_route, "recover_stale_usage_jsons"):
+        try:
+            recovery_result = telemetry_route.recover_stale_usage_jsons(
+                selected_root,
+                username=username,
+            )
+            if hasattr(telemetry_route, "record_recovery_state"):
+                telemetry_route.record_recovery_state(recovery_result)
+        except Exception as ex:
+            recovery_result = {
+                "status": "error",
+                "files_found": 0,
+                "files_moved": 0,
+                "files_failed": 0,
+                "error": str(ex),
+            }
     refreshed = telemetry_route.resolve_usage_route(username=username, persist=True)
 
     forms.alert(
@@ -130,15 +162,19 @@ def _manual_resolve():
         "Resolved status: {}\n"
         "Resolved root:\n{}\n\n"
         "User folder created: {}\n"
-        "Cleanup removed empty stale folders: {}\n"
-        "Cleanup skipped folders: {}\n\n"
+        "Stale recovery status: {}\n"
+        "Stale JSON files found: {}\n"
+        "Stale JSON files moved: {}\n"
+        "Stale JSON files failed: {}\n\n"
         "State file:\n{}".format(
             selected_root,
             refreshed.get("status", ""),
             refreshed.get("resolved_root", ""),
             user_folder_result.get("created", False),
-            len(cleanup_result.get("removed", [])),
-            len(cleanup_result.get("skipped", [])),
+            recovery_result.get("status", ""),
+            recovery_result.get("files_found", 0),
+            recovery_result.get("files_moved", 0),
+            recovery_result.get("files_failed", 0),
             refreshed.get("state_file", ""),
         ),
         title="ACC Path Resolver",

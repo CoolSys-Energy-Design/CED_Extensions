@@ -4,6 +4,7 @@
 import getpass
 import json
 import os
+import shutil
 import time
 from collections import deque
 
@@ -46,6 +47,13 @@ def _to_text(value):
         return str(value)
     except Exception:
         return repr(value)
+
+
+def _to_int(value):
+    try:
+        return int(value or 0)
+    except Exception:
+        return 0
 
 
 def get_username():
@@ -244,9 +252,11 @@ def _discover_candidates_by_scope():
     drive_root = os.path.splitdrive(os.path.expanduser("~"))[0] + os.sep
     home_root = os.path.expanduser("~")
 
-    anchors = _top_level_anchor_dirs(drive_root)
-    if not anchors:
-        anchors = _top_level_anchor_dirs(home_root)
+    anchors = []
+    for scope_root in [drive_root, home_root]:
+        for anchor in _top_level_anchor_dirs(scope_root):
+            if anchor and anchor not in anchors:
+                anchors.append(anchor)
 
     candidates = []
     for anchor in anchors:
@@ -255,9 +265,33 @@ def _discover_candidates_by_scope():
                 candidates.append(candidate)
     return candidates
 
+def _known_candidate_roots():
+    home_root = os.path.expanduser("~")
+    drive_root = os.path.splitdrive(home_root)[0] + os.sep
+
+    accdocs_roots = [
+        os.path.join(drive_root, "ACC", "ACCDocs"),
+        os.path.join(drive_root, "DC", "ACCDocs"),
+        os.path.join(home_root, "ACC", "ACCDocs"),
+        os.path.join(home_root, "DC", "ACCDocs"),
+        os.path.join(home_root, "ACCDocs"),
+    ]
+
+    candidates = []
+    for accdocs_root in accdocs_roots:
+        candidate = os.path.join(accdocs_root, ORG_NAME, PROJECT_NAME)
+        normed = _norm(candidate)
+        if normed and normed not in candidates:
+            candidates.append(normed)
+    return candidates
 
 def build_candidate_roots(source_folder=None, extra_roots=None):
     candidates = []
+
+    for path in _known_candidate_roots():
+        normed = _norm(path)
+        if normed and normed not in candidates:
+            candidates.append(normed)
 
     for path in _discover_candidates_by_scope():
         normed = _norm(path)
@@ -565,6 +599,143 @@ def cleanup_stale_user_folders(approved_root, username=None, source_folder=None)
             skipped.append(user_folder)
 
     return {"removed": removed, "skipped": skipped}
+
+
+def _nonclobber_file_path(dst_path):
+    if not os.path.exists(dst_path):
+        return dst_path
+
+    base, ext = os.path.splitext(dst_path)
+    tick = int(time.time())
+    candidate = "{}_{}{}".format(base, tick, ext)
+    if not os.path.exists(candidate):
+        return candidate
+
+    index = 1
+    while True:
+        candidate = "{}_{}_{}{}".format(base, tick, index, ext)
+        if not os.path.exists(candidate):
+            return candidate
+        index += 1
+
+
+def _json_files_in_folder(folder_path):
+    if not os.path.isdir(folder_path):
+        return []
+
+    results = []
+    try:
+        names = sorted(os.listdir(folder_path))
+    except Exception:
+        return results
+
+    for name in names:
+        source_path = os.path.join(folder_path, name)
+        if not os.path.isfile(source_path):
+            continue
+        if name.lower() == STATE_FILE_NAME.lower():
+            continue
+        if not name.lower().endswith(".json"):
+            continue
+        results.append((name, source_path))
+
+    return results
+
+
+def recover_stale_usage_jsons(resolved_root, username=None, source_folder=None, extra_roots=None):
+    username = _to_text(username or get_username()).strip()
+    resolved_root = _norm(resolved_root)
+
+    result = {
+        "status": "unknown",
+        "username": username,
+        "resolved_root": resolved_root,
+        "destination_folder": "",
+        "stale_folders_checked": [],
+        "files_found": 0,
+        "files_moved": 0,
+        "files_failed": 0,
+        "error": "",
+    }
+
+    if not username:
+        result["status"] = "username_missing"
+        return result
+
+    if not resolved_root:
+        result["status"] = "no_resolved_root"
+        return result
+
+    destination_score = score_candidate(resolved_root, username=username)
+    if not _is_viable(destination_score):
+        result["status"] = "resolved_root_not_viable"
+        return result
+
+    folder_result = ensure_user_folder(resolved_root, username=username)
+    result["destination_folder"] = folder_result.get("path", "")
+
+    if not folder_result.get("ok"):
+        result["status"] = folder_result.get("reason", "destination_unavailable")
+        return result
+
+    destination_folder = folder_result.get("path")
+
+    for root in build_candidate_roots(source_folder=source_folder, extra_roots=extra_roots):
+        root_norm = _norm(root)
+        if not root_norm or root_norm == resolved_root:
+            continue
+
+        stale_user_folder = os.path.join(root_norm, USAGE_RELATIVE_PATH, username)
+        if not os.path.isdir(stale_user_folder):
+            continue
+
+        result["stale_folders_checked"].append(stale_user_folder)
+        stale_jsons = _json_files_in_folder(stale_user_folder)
+        result["files_found"] += len(stale_jsons)
+
+        for name, source_path in stale_jsons:
+            try:
+                destination_path = _nonclobber_file_path(
+                    os.path.join(destination_folder, name)
+                )
+                shutil.move(source_path, destination_path)
+                result["files_moved"] += 1
+            except Exception as ex:
+                result["files_failed"] += 1
+                result["error"] = _to_text(ex)
+
+    if result["files_failed"] > 0:
+        result["status"] = "partial_success"
+    elif result["files_moved"] > 0:
+        result["status"] = "success"
+    else:
+        result["status"] = "no_stale_jsons"
+
+    return result
+
+
+def record_recovery_state(recovery_result, source_folder=None):
+    recovery_result = dict(recovery_result or {})
+    stale_folders = recovery_result.get("stale_folders_checked") or []
+    try:
+        stale_folders = list(stale_folders)
+    except Exception:
+        stale_folders = []
+
+    state_payload = load_state(source_folder=source_folder)
+    state_payload["last_stale_recovery"] = {
+        "status": _to_text(recovery_result.get("status", "")),
+        "username": _to_text(recovery_result.get("username", "")),
+        "resolved_root": _to_text(recovery_result.get("resolved_root", "")),
+        "destination_folder": _to_text(recovery_result.get("destination_folder", "")),
+        "stale_folders_checked": stale_folders,
+        "files_found": _to_int(recovery_result.get("files_found", 0)),
+        "files_moved": _to_int(recovery_result.get("files_moved", 0)),
+        "files_failed": _to_int(recovery_result.get("files_failed", 0)),
+        "error": _to_text(recovery_result.get("error", "")),
+        "updated_utc": _utc_now(),
+    }
+    return save_state(state_payload, source_folder=source_folder)
 
 
 def record_transfer_state(status, username=None, resolved_root="", files_found=0, files_copied=0, files_failed=0, source_folder=None, note=""):

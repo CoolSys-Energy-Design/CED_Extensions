@@ -69,6 +69,33 @@ def _normalize_path(value):
     return os.path.normcase(os.path.normpath(value))
 
 
+def _fallback_acc_root_is_viable(candidate_root):
+    if not candidate_root or not os.path.isdir(candidate_root):
+        return False
+
+    project_files_path = os.path.join(candidate_root, "Project Files")
+    usage_base_path = os.path.join(project_files_path, "03 Automations", "Usage")
+    if not os.path.isdir(project_files_path) or not os.path.isdir(usage_base_path):
+        return False
+
+    try:
+        project_folders = [
+            name for name in os.listdir(project_files_path)
+            if os.path.isdir(os.path.join(project_files_path, name))
+        ]
+    except Exception:
+        return False
+
+    has_automations = any(
+        _normalize_path(name).lower() == _normalize_path("03 Automations").lower()
+        for name in project_folders
+    )
+    if len(project_folders) == 1 and has_automations:
+        return False
+
+    return True
+
+
 def _event_flags_to_int(value):
     if value in (None, ""):
         return 0
@@ -166,7 +193,7 @@ def _find_acc_root():
         os.path.join(os.path.expanduser("~"), "DC", "ACCDocs", "CoolSys", "CED Content Collection"),
     ]
     for path in candidates:
-        if os.path.exists(path):
+        if _fallback_acc_root_is_viable(path):
             return path
     return None
 
@@ -435,6 +462,8 @@ def _on_app_closing(sender, args):
         "route_status": None,
         "route_reason": None,
         "route_root": None,
+        "recovery_status": None,
+        "recovery_error": None,
     }
 
     try:
@@ -497,12 +526,17 @@ def _on_app_closing(sender, args):
                 )
             return
 
-        user_folder = os.path.join(base_path, username)
-
         try:
-            if not os.path.exists(user_folder):
-                # Intentionally create only the username folder under an existing Usage base.
-                os.mkdir(user_folder)
+            if telemetry_route is not None and hasattr(telemetry_route, "ensure_user_folder"):
+                folder_result = telemetry_route.ensure_user_folder(acc_root, username=username)
+                user_folder = folder_result.get("path") or os.path.join(base_path, username)
+                if not folder_result.get("ok"):
+                    raise Exception(folder_result.get("reason", "user_folder_unavailable"))
+            else:
+                user_folder = os.path.join(base_path, username)
+                if not os.path.exists(user_folder):
+                    # Intentionally create only the username folder under an existing Usage base.
+                    os.mkdir(user_folder)
         except Exception as e:
             log_data["status"] = "failed_create_user_folder"
             log_data["error"] = str(e)
@@ -520,6 +554,43 @@ def _on_app_closing(sender, args):
             # from Snippets import hooks_logger
             # hooks_logger.log_hook(__file__, log_data)
             return
+
+        recovery_result = None
+        if telemetry_route is not None and hasattr(telemetry_route, "recover_stale_usage_jsons"):
+            try:
+                recovery_result = telemetry_route.recover_stale_usage_jsons(
+                    acc_root,
+                    username=username,
+                    source_folder=source_folder,
+                )
+                log_data["recovery_status"] = recovery_result.get("status")
+                if hasattr(telemetry_route, "record_recovery_state"):
+                    telemetry_route.record_recovery_state(
+                        recovery_result,
+                        source_folder=source_folder,
+                    )
+            except Exception as e:
+                recovery_result = {
+                    "status": "error",
+                    "username": username,
+                    "resolved_root": acc_root,
+                    "destination_folder": user_folder,
+                    "stale_folders_checked": [],
+                    "files_found": 0,
+                    "files_moved": 0,
+                    "files_failed": 0,
+                    "error": str(e),
+                }
+                log_data["recovery_status"] = "error"
+                log_data["recovery_error"] = str(e)
+                if hasattr(telemetry_route, "record_recovery_state"):
+                    try:
+                        telemetry_route.record_recovery_state(
+                            recovery_result,
+                            source_folder=source_folder,
+                        )
+                    except Exception:
+                        pass
 
         files = os.listdir(source_folder)
         log_data["files_found"] = len(files)

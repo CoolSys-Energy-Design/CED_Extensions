@@ -225,6 +225,30 @@ class _PyRevitShim(object):
             "candidate_count": 1,
         }
         self.route.record_transfer_state = lambda **kwargs: None
+        self.route.ensure_user_folder = lambda resolved_root, username=None: {
+            "ok": True,
+            "created": False,
+            "reason": "already_exists",
+            "path": os.path.join(
+                resolved_root,
+                "Project Files",
+                "03 Automations",
+                "Usage",
+                username or "UnknownUser",
+            ),
+        }
+        self.route.recover_stale_usage_jsons = lambda *args, **kwargs: {
+            "status": "no_stale_jsons",
+            "username": kwargs.get("username", ""),
+            "resolved_root": args[0] if args else "",
+            "destination_folder": "",
+            "stale_folders_checked": [],
+            "files_found": 0,
+            "files_moved": 0,
+            "files_failed": 0,
+            "error": "",
+        }
+        self.route.record_recovery_state = lambda *args, **kwargs: None
 
     def modules(self):
         return {
@@ -396,6 +420,112 @@ class TelemetryRouteTests(unittest.TestCase):
             self.assertTrue(partial["project_files_only_automations"])
             self.assertTrue(partial["usage_only_current_user"])
 
+    def test_discovery_scans_drive_root_and_home_root(self):
+        home_root = r"C:\Users\TestUser"
+        calls = []
+
+        def fake_top_level_anchor_dirs(scope_root):
+            calls.append(scope_root)
+            if scope_root == home_root:
+                return ["home_anchor", "shared_anchor"]
+            return ["drive_anchor", "shared_anchor"]
+
+        def fake_discover_project_roots(anchor):
+            if anchor == "drive_anchor":
+                return ["drive_candidate", "duplicate_candidate"]
+            if anchor == "shared_anchor":
+                return ["shared_candidate"]
+            if anchor == "home_anchor":
+                return ["home_candidate", "duplicate_candidate"]
+            return []
+
+        with mock.patch.object(
+            self.route.os.path,
+            "expanduser",
+            return_value=home_root,
+        ), mock.patch.object(
+            self.route,
+            "_top_level_anchor_dirs",
+            side_effect=fake_top_level_anchor_dirs,
+        ), mock.patch.object(
+            self.route,
+            "_discover_project_roots_under",
+            side_effect=fake_discover_project_roots,
+        ):
+            candidates = self.route._discover_candidates_by_scope()
+
+        self.assertEqual(2, len(calls))
+        self.assertEqual(home_root, calls[1])
+        self.assertEqual(
+            [
+                "drive_candidate",
+                "duplicate_candidate",
+                "shared_candidate",
+                "home_candidate",
+            ],
+            candidates,
+        )
+
+    def test_recover_stale_usage_jsons_moves_only_jsons(self):
+        with tempfile.TemporaryDirectory(prefix="ced_adc_recover_") as temp_dir:
+            correct_root = _make_candidate(
+                temp_dir,
+                "ACC",
+                ["01 Projects", "03 Automations", "04 Resources"],
+                ["ExistingUser"],
+                include_route_key=True,
+            )
+            stale_root = _make_candidate(
+                temp_dir,
+                "DC",
+                ["03 Automations"],
+                ["TestUser"],
+                include_route_key=False,
+            )
+
+            correct_user = os.path.join(
+                correct_root,
+                "Project Files",
+                "03 Automations",
+                "Usage",
+                "TestUser",
+            )
+            stale_user = os.path.join(
+                stale_root,
+                "Project Files",
+                "03 Automations",
+                "Usage",
+                "TestUser",
+            )
+
+            _make_dir(correct_user)
+            _write_text(os.path.join(stale_user, "old_session.json"), '{"old": true}')
+            _write_text(os.path.join(stale_user, "notes.txt"), "leave this")
+            _write_text(
+                os.path.join(stale_user, self.route.STATE_FILE_NAME),
+                '{"state": true}',
+            )
+
+            with mock.patch.object(
+                self.route,
+                "build_candidate_roots",
+                return_value=[correct_root, stale_root],
+            ):
+                result = self.route.recover_stale_usage_jsons(
+                    correct_root,
+                    username="TestUser",
+                    source_folder=os.path.join(temp_dir, "state"),
+                )
+
+            self.assertEqual("success", result["status"])
+            self.assertEqual(1, result["files_found"])
+            self.assertEqual(1, result["files_moved"])
+            self.assertTrue(os.path.isfile(os.path.join(correct_user, "old_session.json")))
+            self.assertFalse(os.path.isfile(os.path.join(stale_user, "old_session.json")))
+            self.assertTrue(os.path.isfile(os.path.join(stale_user, "notes.txt")))
+            self.assertTrue(os.path.isfile(os.path.join(stale_user, self.route.STATE_FILE_NAME)))
+            self.assertTrue(os.path.isdir(stale_user))
+
     def test_manual_approval_and_user_folder_are_persisted(self):
         with tempfile.TemporaryDirectory(prefix="ced_adc_manual_") as temp_dir:
             root = _make_candidate(
@@ -522,6 +652,23 @@ class StartupTests(unittest.TestCase):
         )
 
         transfer_calls = []
+        recovery_calls = []
+        recovery_state_calls = []
+
+        def recover_stale_usage_jsons(*args, **kwargs):
+            recovery_calls.append((args, kwargs))
+            return {
+                "status": "no_stale_jsons",
+                "username": kwargs.get("username", ""),
+                "resolved_root": args[0] if args else "",
+                "destination_folder": destination_user,
+                "stale_folders_checked": [],
+                "files_found": 0,
+                "files_moved": 0,
+                "files_failed": 0,
+                "error": "",
+            }
+
         route_stub = types.SimpleNamespace(
             STATE_FILE_NAME=state_name,
             telemetry_source_folder=lambda: self.source_folder,
@@ -530,6 +677,16 @@ class StartupTests(unittest.TestCase):
                 "reason": "test_route",
                 "resolved_root": acc_root,
             },
+            ensure_user_folder=lambda resolved_root, username=None: {
+                "ok": True,
+                "created": False,
+                "reason": "already_exists",
+                "path": destination_user,
+            },
+            recover_stale_usage_jsons=recover_stale_usage_jsons,
+            record_recovery_state=lambda *args, **kwargs: recovery_state_calls.append(
+                (args, kwargs)
+            ),
             record_transfer_state=lambda **kwargs: transfer_calls.append(
                 dict(kwargs)
             ),
@@ -555,10 +712,95 @@ class StartupTests(unittest.TestCase):
         self.assertTrue(os.path.isfile(source_state))
         self.assertTrue(os.path.isfile(copied_path))
         self.assertFalse(os.path.isfile(os.path.join(destination_user, state_name)))
+        self.assertEqual(1, len(recovery_calls))
+        self.assertEqual(acc_root, recovery_calls[0][0][0])
+        self.assertEqual("TestUser", recovery_calls[0][1]["username"])
+        self.assertEqual(1, len(recovery_state_calls))
         self.assertEqual(1, len(transfer_calls))
         self.assertEqual("success", transfer_calls[0]["status"])
         self.assertEqual(1, transfer_calls[0]["files_copied"])
         self.assertEqual(0, transfer_calls[0]["files_failed"])
+
+    def test_shutdown_does_not_recover_when_route_unresolved(self):
+        _write_text(os.path.join(self.source_folder, "session.json"), '{"event": 1}')
+
+        transfer_calls = []
+        recovery_calls = []
+        state_name = self.startup.telemetry_route.STATE_FILE_NAME
+        route_stub = types.SimpleNamespace(
+            STATE_FILE_NAME=state_name,
+            telemetry_source_folder=lambda: self.source_folder,
+            resolve_usage_route=lambda **kwargs: {
+                "status": "not_found",
+                "reason": "no_viable_candidates",
+                "resolved_root": "",
+                "candidate_count": 1,
+            },
+            recover_stale_usage_jsons=lambda *args, **kwargs: recovery_calls.append(
+                (args, kwargs)
+            ),
+            record_recovery_state=lambda *args, **kwargs: None,
+            record_transfer_state=lambda **kwargs: transfer_calls.append(
+                dict(kwargs)
+            ),
+        )
+        self.startup.telemetry_route = route_stub
+
+        with mock.patch.object(
+            self.startup.getpass,
+            "getuser",
+            return_value="TestUser",
+        ):
+            self.startup._on_app_closing(None, None)
+
+        self.assertEqual([], recovery_calls)
+        self.assertEqual(1, len(transfer_calls))
+        self.assertEqual("route_unresolved", transfer_calls[0]["status"])
+
+    def test_shutdown_does_not_recover_when_usage_base_missing(self):
+        _write_text(os.path.join(self.source_folder, "session.json"), '{"event": 1}')
+        acc_root = _make_dir(
+            os.path.join(
+                self.temp_dir,
+                "ACC",
+                "ACCDocs",
+                "CoolSys",
+                "CED Content Collection",
+            )
+        )
+
+        transfer_calls = []
+        recovery_calls = []
+        state_name = self.startup.telemetry_route.STATE_FILE_NAME
+        route_stub = types.SimpleNamespace(
+            STATE_FILE_NAME=state_name,
+            telemetry_source_folder=lambda: self.source_folder,
+            resolve_usage_route=lambda **kwargs: {
+                "status": "resolved",
+                "reason": "test_route",
+                "resolved_root": acc_root,
+                "candidate_count": 1,
+            },
+            recover_stale_usage_jsons=lambda *args, **kwargs: recovery_calls.append(
+                (args, kwargs)
+            ),
+            record_recovery_state=lambda *args, **kwargs: None,
+            record_transfer_state=lambda **kwargs: transfer_calls.append(
+                dict(kwargs)
+            ),
+        )
+        self.startup.telemetry_route = route_stub
+
+        with mock.patch.object(
+            self.startup.getpass,
+            "getuser",
+            return_value="TestUser",
+        ):
+            self.startup._on_app_closing(None, None)
+
+        self.assertEqual([], recovery_calls)
+        self.assertEqual(1, len(transfer_calls))
+        self.assertEqual("usage_base_missing", transfer_calls[0]["status"])
 
 
 class DiagnosticsButtonTests(unittest.TestCase):
@@ -605,8 +847,185 @@ class DiagnosticsButtonTests(unittest.TestCase):
             self.assertIn("# CED Telemetry Route Diagnostics", report)
             self.assertIn("single_viable_candidate", report)
             self.assertIn("| 123 |", report)
+            table_blocks = [
+                line for line in shim.output.lines
+                if "| Score | Root | Exists |" in line
+            ]
+            self.assertEqual(1, len(table_blocks))
+            self.assertIn("| ---: | --- | :---: |", table_blocks[0])
+            self.assertIn("| 123 |", table_blocks[0])
             self.assertIn("YES", report)
             self.assertEqual([], shim.forms.alerts)
+
+    def test_manual_resolver_allows_single_unresolved_candidate(self):
+        with tempfile.TemporaryDirectory(
+            prefix="ced_adc_resolver_"
+        ) as temp_dir:
+            shim = _PyRevitShim(temp_dir)
+            selected_root = os.path.join(
+                temp_dir,
+                "ACC",
+                "ACCDocs",
+                "CoolSys",
+                "CED Content Collection",
+            )
+            alert_messages = []
+            pick_calls = []
+            manual_calls = []
+            resolve_calls = {"count": 0}
+
+            def alert(message, **kwargs):
+                alert_messages.append(str(message))
+                if kwargs.get("yes") and kwargs.get("no"):
+                    return True
+                return False
+
+            def pick_folder(**kwargs):
+                pick_calls.append(dict(kwargs))
+                return selected_root
+
+            def resolve_usage_route(**kwargs):
+                resolve_calls["count"] += 1
+                if resolve_calls["count"] == 1:
+                    return {
+                        "status": "not_found",
+                        "reason": "no_viable_candidates",
+                        "resolved_root": "",
+                        "candidate_count": 1,
+                    }
+                return {
+                    "status": "resolved",
+                    "reason": "manual_approval_saved",
+                    "resolved_root": selected_root,
+                    "candidate_count": 1,
+                    "state_file": os.path.join(temp_dir, "state.json"),
+                }
+
+            def set_manual_approved_root(root, username=None):
+                manual_calls.append((root, username))
+                return {"success": True, "inspected": {}}
+
+            shim.forms.alert = alert
+            shim.forms.pick_folder = pick_folder
+            shim.route.get_username = lambda: "TestUser"
+            shim.route.resolve_usage_route = resolve_usage_route
+            shim.route.set_manual_approved_root = set_manual_approved_root
+            shim.route.ensure_user_folder = lambda root, username=None: {
+                "ok": True,
+                "created": True,
+                "path": os.path.join(root, "Project Files", "03 Automations", "Usage", username),
+            }
+            shim.route.recover_stale_usage_jsons = lambda *args, **kwargs: {
+                "status": "no_stale_jsons",
+                "files_found": 0,
+                "files_moved": 0,
+                "files_failed": 0,
+            }
+            shim.route.record_recovery_state = lambda *args, **kwargs: None
+
+            with mock.patch.dict(sys.modules, shim.modules(), clear=False):
+                runpy.run_path(
+                    DIAGNOSTICS_PATH,
+                    init_globals={"__shiftclick__": False},
+                )
+
+            self.assertEqual(1, len(pick_calls))
+            self.assertEqual([(selected_root, "TestUser")], manual_calls)
+            self.assertFalse(
+                any(
+                    "Manual resolver is only enabled" in message
+                    for message in alert_messages
+                )
+            )
+
+    def test_manual_resolver_allows_resolved_path_override(self):
+        with tempfile.TemporaryDirectory(
+            prefix="ced_adc_resolver_override_"
+        ) as temp_dir:
+            shim = _PyRevitShim(temp_dir)
+            old_root = os.path.join(
+                temp_dir,
+                "Old",
+                "ACCDocs",
+                "CoolSys",
+                "CED Content Collection",
+            )
+            selected_root = os.path.join(
+                temp_dir,
+                "New",
+                "ACCDocs",
+                "CoolSys",
+                "CED Content Collection",
+            )
+            selected_project_files = os.path.join(selected_root, "Project Files")
+            alert_messages = []
+            pick_calls = []
+            manual_calls = []
+            resolve_calls = {"count": 0}
+
+            def alert(message, **kwargs):
+                alert_messages.append(str(message))
+                if kwargs.get("yes") and kwargs.get("no"):
+                    return True
+                return False
+
+            def pick_folder(**kwargs):
+                pick_calls.append(dict(kwargs))
+                return selected_project_files
+
+            def resolve_usage_route(**kwargs):
+                resolve_calls["count"] += 1
+                if resolve_calls["count"] == 1:
+                    return {
+                        "status": "resolved",
+                        "reason": "single_viable_candidate",
+                        "resolved_root": old_root,
+                        "candidate_count": 1,
+                    }
+                return {
+                    "status": "resolved",
+                    "reason": "manual_approval_saved",
+                    "resolved_root": selected_root,
+                    "candidate_count": 1,
+                    "state_file": os.path.join(temp_dir, "state.json"),
+                }
+
+            def set_manual_approved_root(root, username=None):
+                manual_calls.append((root, username))
+                return {"success": True, "inspected": {}}
+
+            shim.forms.alert = alert
+            shim.forms.pick_folder = pick_folder
+            shim.route.get_username = lambda: "TestUser"
+            shim.route.resolve_usage_route = resolve_usage_route
+            shim.route.set_manual_approved_root = set_manual_approved_root
+            shim.route.ensure_user_folder = lambda root, username=None: {
+                "ok": True,
+                "created": True,
+                "path": os.path.join(root, "Project Files", "03 Automations", "Usage", username),
+            }
+            shim.route.recover_stale_usage_jsons = lambda *args, **kwargs: {
+                "status": "no_stale_jsons",
+                "files_found": 0,
+                "files_moved": 0,
+                "files_failed": 0,
+            }
+            shim.route.record_recovery_state = lambda *args, **kwargs: None
+
+            with mock.patch.dict(sys.modules, shim.modules(), clear=False):
+                runpy.run_path(
+                    DIAGNOSTICS_PATH,
+                    init_globals={"__shiftclick__": False},
+                )
+
+            self.assertEqual(1, len(pick_calls))
+            self.assertEqual([(selected_root, "TestUser")], manual_calls)
+            self.assertTrue(
+                any(old_root in message for message in alert_messages)
+            )
+            self.assertTrue(
+                any("If this path is wrong" in message for message in alert_messages)
+            )
 
 
 if __name__ == "__main__":
