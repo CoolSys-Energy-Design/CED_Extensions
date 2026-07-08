@@ -143,6 +143,14 @@ CIRCUIT_TYPE_TAG_COMPACT_TEXT = {
     "SPACE": "SPC",
 }
 OCP_TABLE_KEYS = sorted([int(k) for k in BREAKER_FRAME_SWITCH_TABLE.keys()])
+OCP_TABLE_KEY_SET = set(OCP_TABLE_KEYS)
+OCP_FRAME_KEY_SET = set(
+    [
+        int(record.get("frame"))
+        for record in BREAKER_FRAME_SWITCH_TABLE.values()
+        if record.get("frame") is not None
+    ]
+)
 _DOC_SENTINEL = object()
 DEFAULT_HIDDEN_TYPE_FILTERS = set(["SPARE", "SPACE"])
 TYPE_FILTER_NO_SHADE_TAG = "__ced_type_filter_no_shade__"
@@ -1283,7 +1291,7 @@ class NeutralIGActionWindow(forms.WPFWindow):
         self._sync_action_buttons()
 
     def _selected_rows(self):
-        if self._grid is None:
+        if getattr(self, "_grid", None) is None:
             return []
         try:
             return list(self._grid.SelectedItems or [])
@@ -1530,20 +1538,30 @@ class BreakerActionRow(object):
         self.new_frame_warning = bool(
             rating_value is not None and frame_value is not None and int(frame_value) < int(rating_value)
         )
+        rating_warnings = []
+        frame_warnings = []
+        if warning_short:
+            rating_warnings.append(warning_short)
+        if rating_value is not None and int(rating_value) not in OCP_TABLE_KEY_SET:
+            rating_warnings.append("Non-standard rating")
+        if self.new_frame_warning:
+            frame_warnings.append("Frame is below breaker rating")
+        if frame_value is not None and int(frame_value) not in OCP_FRAME_KEY_SET:
+            frame_warnings.append("Non-standard frame")
 
         if not self.is_enabled:
             self.remarks = "Blocked - {}".format(self.reason or "Unsupported")
         else:
             lines = []
-            if self.new_rating_changed or warning_short:
+            if self.new_rating_changed or rating_warnings:
                 breaker_line = "Breaker will be modified" if self.new_rating_changed else "No change"
-                if warning_short:
-                    breaker_line += " - WARNING: {}".format(warning_short)
+                if rating_warnings:
+                    breaker_line += " - WARNING: {}".format("; ".join(rating_warnings))
                 lines.append(breaker_line)
-            if self.new_frame_changed or self.new_frame_warning:
+            if self.new_frame_changed or frame_warnings:
                 frame_line = "Frame will be modified" if self.new_frame_changed else "No change"
-                if self.new_frame_warning:
-                    frame_line += " - WARNING: Frame is below breaker rating"
+                if frame_warnings:
+                    frame_line += " - WARNING: {}".format("; ".join(frame_warnings))
                 lines.append(frame_line)
             if not lines:
                 lines.append("No change")
@@ -1929,6 +1947,7 @@ class MarkExistingActionRow(object):
         self.preview_mode = "existing"
         self.preview_clear_wire = False
         self.preview_clear_conduit = False
+        self.preview_recalculate_wire_conduit = False
         self.new_notes_changed = False
         self.new_wire_changed = False
         self.is_changed = False
@@ -1954,33 +1973,54 @@ class MarkExistingActionRow(object):
 
     def _existing_conduit_only_display(self):
         conduit = str(self.current_conduit_size or "").strip()
-        if not conduit:
+        if not conduit or conduit == "-":
             return "-"
         sets = int(self.current_sets or 0)
         sets_text = str(sets if sets > 0 else 1)
+        if conduit.upper().endswith("C"):
+            return "({}) {}".format(sets_text, conduit)
         return "({}) {}C".format(sets_text, conduit)
+
+    @staticmethod
+    def _is_cleared_size(value):
+        text = str(value or "").strip()
+        return bool(not text or text == "-")
 
     def recompute_state(self):
         self.new_notes_changed = str(self.new_notes or "") != str(self.current_notes or "")
         self.new_wire_changed = str(self.new_wire or "") != str(self.current_wire or "")
-        self.is_changed = bool(self.new_notes_changed or self.new_wire_changed)
+        clear_wire_changed = bool(self.preview_clear_wire and not self._is_cleared_size(self.current_wire_size))
+        clear_conduit_changed = bool(self.preview_clear_conduit and not self._is_cleared_size(self.current_conduit_size))
+        recalculate_requested = bool(self.preview_recalculate_wire_conduit)
+        self.is_changed = bool(
+            self.new_notes_changed
+            or self.new_wire_changed
+            or clear_wire_changed
+            or clear_conduit_changed
+            or recalculate_requested
+        )
         if not self.is_enabled:
             self.remarks = "Blocked - {}".format(self.reason or "Unsupported")
-        elif self.is_changed:
+        elif self.is_changed or self.preview_clear_wire or self.preview_clear_conduit or recalculate_requested:
             mode_text = str(self.preview_mode or "existing").strip().lower()
-            if mode_text == "new":
-                self.remarks = "Will be modified - Conduit and Wire will recalculate"
-            else:
-                suffix = ""
-                if bool(self.preview_clear_wire) and bool(self.preview_clear_conduit):
-                    suffix = "Wire and Conduit Cleared"
-                elif bool(self.preview_clear_wire):
-                    suffix = "Wire Cleared"
-                elif bool(self.preview_clear_conduit):
-                    suffix = "Conduit Cleared"
-                self.remarks = "Will be modified"
-                if suffix:
-                    self.remarks = "{} - {}".format(self.remarks, suffix)
+            parts = []
+            if self.new_notes_changed:
+                current_notes = str(self.current_notes or "").strip() or "blank"
+                new_notes = str(self.new_notes or "").strip() or "blank"
+                parts.append("Notes: {} -> {}".format(current_notes, new_notes))
+            if mode_text == "new" and recalculate_requested:
+                parts.append("Conduit/wire will be recalculated")
+            elif bool(self.preview_clear_wire):
+                parts.append("Wire cleared" if clear_wire_changed else "Wire already cleared")
+            if bool(self.preview_clear_conduit):
+                parts.append("Conduit cleared" if clear_conduit_changed else "Conduit already cleared")
+            if not self.new_wire_changed and not recalculate_requested:
+                parts.append("Conduit/wire unchanged by action")
+            if self.is_changed and not (mode_text == "new" and recalculate_requested):
+                parts.append("Recalculation checked after Apply")
+            if mode_text == "new" and not self.new_notes_changed:
+                parts.insert(0, "Marked as new")
+            self.remarks = "; ".join(parts)
         else:
             self.remarks = "No change"
 
@@ -2006,23 +2046,33 @@ class MarkExistingActionWindow(forms.WPFWindow):
         self._status = self.FindName("ChangedStatusText")
         self._checked_status = self.FindName("CheckedStatusText")
         self._show_unsupported_cb = self.FindName("ShowUnsupportedToggle")
+        self._existing_mode_radio = self.FindName("ExistingModeRadio")
+        self._new_mode_radio = self.FindName("NewModeRadio")
         self._set_notes_cb = self.FindName("SetNotesCheck")
         self._clear_wire_cb = self.FindName("ClearWireCheck")
         self._clear_conduit_cb = self.FindName("ClearConduitCheck")
-        self._set_existing_btn = self.FindName("SetExistingButton")
-        self._set_new_btn = self.FindName("SetNewButton")
+        self._recalculate_wire_conduit_cb = self.FindName("RecalculateWireConduitCheck")
+        self._existing_options_panel = self.FindName("ExistingOptionsPanel")
+        self._new_options_panel = self.FindName("NewOptionsPanel")
+        self._preview_btn = self.FindName("PreviewButton")
         self._reset_selected_btn = self.FindName("ResetSelectedButton")
         self._apply_btn = self.FindName("ApplyButton")
         self._last_mode = "existing"
 
         if self._show_unsupported_cb is not None:
             self._show_unsupported_cb.IsChecked = True
+        if self._existing_mode_radio is not None:
+            self._existing_mode_radio.IsChecked = True
+        if self._new_mode_radio is not None:
+            self._new_mode_radio.IsChecked = False
         if self._set_notes_cb is not None:
             self._set_notes_cb.IsChecked = True
         if self._clear_wire_cb is not None:
             self._clear_wire_cb.IsChecked = False
         if self._clear_conduit_cb is not None:
             self._clear_conduit_cb.IsChecked = False
+        if self._recalculate_wire_conduit_cb is not None:
+            self._recalculate_wire_conduit_cb.IsChecked = True
 
         for row in self._rows:
             row.is_checked = bool(getattr(row, "is_enabled", False))
@@ -2067,20 +2117,29 @@ class MarkExistingActionWindow(forms.WPFWindow):
         self._sync_button_states()
 
     def _sync_option_controls(self):
-        pass
+        is_new_mode = bool(getattr(getattr(self, "_new_mode_radio", None), "IsChecked", False))
+        self._last_mode = "new" if is_new_mode else "existing"
+        existing_panel = getattr(self, "_existing_options_panel", None)
+        new_panel = getattr(self, "_new_options_panel", None)
+        if existing_panel is not None:
+            existing_panel.Visibility = Visibility.Collapsed if is_new_mode else Visibility.Visible
+        if new_panel is not None:
+            new_panel.Visibility = Visibility.Visible if is_new_mode else Visibility.Collapsed
 
     def _sync_button_states(self):
-        checked_count = len([x for x in self._rows if x.is_enabled and x.is_checked])
-        changed_count = len([x for x in self._rows if x.is_enabled and x.is_changed])
+        rows = list(getattr(self, "_rows", []) or [])
+        checked_count = len([x for x in rows if x.is_enabled and x.is_checked])
+        changed_count = len([x for x in rows if x.is_enabled and x.is_changed])
         selected_changed = len([x for x in self._selected_rows() if x.is_enabled and x.is_changed])
-        if self._set_existing_btn is not None:
-            self._set_existing_btn.IsEnabled = checked_count > 0
-        if self._set_new_btn is not None:
-            self._set_new_btn.IsEnabled = checked_count > 0
-        if self._reset_selected_btn is not None:
-            self._reset_selected_btn.IsEnabled = selected_changed > 0
-        if self._apply_btn is not None:
-            self._apply_btn.IsEnabled = changed_count > 0
+        preview_btn = getattr(self, "_preview_btn", None)
+        reset_btn = getattr(self, "_reset_selected_btn", None)
+        apply_btn = getattr(self, "_apply_btn", None)
+        if preview_btn is not None:
+            preview_btn.IsEnabled = checked_count > 0
+        if reset_btn is not None:
+            reset_btn.IsEnabled = selected_changed > 0
+        if apply_btn is not None:
+            apply_btn.IsEnabled = changed_count > 0
 
     def _selected_rows(self):
         if self._grid is None:
@@ -2121,10 +2180,21 @@ class MarkExistingActionWindow(forms.WPFWindow):
             self._suppress_check_events = False
 
     def _option_values(self):
-        set_notes = bool(getattr(self._set_notes_cb, "IsChecked", True))
-        clear_wire = bool(getattr(self._clear_wire_cb, "IsChecked", False))
-        clear_conduit = bool(getattr(self._clear_conduit_cb, "IsChecked", False))
-        return set_notes, clear_wire, clear_conduit
+        mode = "new" if bool(getattr(getattr(self, "_new_mode_radio", None), "IsChecked", False)) else "existing"
+        set_notes = bool(getattr(getattr(self, "_set_notes_cb", None), "IsChecked", True))
+        clear_wire = bool(getattr(getattr(self, "_clear_wire_cb", None), "IsChecked", False))
+        clear_conduit = bool(getattr(getattr(self, "_clear_conduit_cb", None), "IsChecked", False))
+        recalculate_wire_conduit = bool(getattr(getattr(self, "_recalculate_wire_conduit_cb", None), "IsChecked", True))
+        if mode == "new":
+            clear_wire = False
+            clear_conduit = False
+        else:
+            recalculate_wire_conduit = False
+        return mode, set_notes, clear_wire, clear_conduit, recalculate_wire_conduit
+
+    def mode_changed(self, sender, args):
+        self._sync_option_controls()
+        self._sync_button_states()
 
     def options_changed(self, sender, args):
         self._sync_option_controls()
@@ -2165,29 +2235,34 @@ class MarkExistingActionWindow(forms.WPFWindow):
         finally:
             self._suppress_check_events = False
 
-    def set_existing_clicked(self, sender, args):
-        set_notes, clear_wire, clear_conduit = self._option_values()
-        self._last_mode = "existing"
+    def preview_clicked(self, sender, args):
+        mode, set_notes, clear_wire, clear_conduit, recalculate_wire_conduit = self._option_values()
+        self._last_mode = mode
         target_rows = [x for x in self._rows if x.is_enabled and x.is_checked]
         if not target_rows:
             self._sync_button_states()
             return
-        self._preview_callback(target_rows, "existing", set_notes, clear_wire, clear_conduit)
+        self._preview_callback(
+            target_rows,
+            mode,
+            set_notes,
+            clear_wire,
+            clear_conduit,
+            recalculate_wire_conduit,
+        )
         for row in target_rows:
             row.is_checked = False
         self._refresh_grid(refresh_items=False)
 
+    def set_existing_clicked(self, sender, args):
+        if self._existing_mode_radio is not None:
+            self._existing_mode_radio.IsChecked = True
+        self.preview_clicked(sender, args)
+
     def set_new_clicked(self, sender, args):
-        set_notes, _, _ = self._option_values()
-        self._last_mode = "new"
-        target_rows = [x for x in self._rows if x.is_enabled and x.is_checked]
-        if not target_rows:
-            self._sync_button_states()
-            return
-        self._preview_callback(target_rows, "new", set_notes, False, False)
-        for row in target_rows:
-            row.is_checked = False
-        self._refresh_grid(refresh_items=False)
+        if self._new_mode_radio is not None:
+            self._new_mode_radio.IsChecked = True
+        self.preview_clicked(sender, args)
 
     def reset_selected_clicked(self, sender, args):
         targets = self._selected_rows()
@@ -2204,16 +2279,21 @@ class MarkExistingActionWindow(forms.WPFWindow):
             row.preview_mode = "existing"
             row.preview_clear_wire = False
             row.preview_clear_conduit = False
+            row.preview_recalculate_wire_conduit = False
             row.is_checked = False
             row.recompute_state()
         self._refresh_grid(refresh_items=False)
 
     def apply_clicked(self, sender, args):
-        set_notes, clear_wire, clear_conduit = self._option_values()
-        if str(self._last_mode or "").strip().lower() == "new":
-            clear_wire = False
-            clear_conduit = False
-        if self._apply_callback(self._rows, self._last_mode, set_notes, clear_wire, clear_conduit):
+        mode, set_notes, clear_wire, clear_conduit, recalculate_wire_conduit = self._option_values()
+        if self._apply_callback(
+            self._rows,
+            mode,
+            set_notes,
+            clear_wire,
+            clear_conduit,
+            recalculate_wire_conduit,
+        ):
             self.Close()
 
     def cancel_clicked(self, sender, args):
@@ -2647,19 +2727,22 @@ class CircuitBrowserPanel(forms.WPFPanel):
         if not decision:
             self._set_status("Calculation cancelled (preview closed)")
             return
-        if decision == "skip":
-            self._set_status("Calculation skipped by preview")
-            return
+        operation_key = getattr(request, "operation_key", "calculate_circuits")
 
         options = dict(getattr(request, "options", None) or {})
         options["calc_preview_decision"] = decision
         if self._operation_gateway.is_busy():
             forms.alert("An operation is already running. Please wait.", title=TITLE)
             return
-        decision_label = "keeping existing sizes" if decision == "keep_existing" else "keeping new sizes"
+        if decision == "keep_existing":
+            decision_label = "keeping existing sizes"
+        elif decision == "skip":
+            decision_label = "skipping calculations"
+        else:
+            decision_label = "keeping new sizes"
         self._set_status("Calculating circuits ({})...".format(decision_label))
         raised = self._operation_gateway.raise_operation(
-            operation_key=getattr(request, "operation_key", "calculate_circuits"),
+            operation_key=operation_key,
             circuit_ids=list(getattr(request, "circuit_ids", []) or []),
             source=getattr(request, "source", "pane"),
             options=options,
@@ -4698,11 +4781,17 @@ class CircuitBrowserPanel(forms.WPFPanel):
             forms.alert("An operation is already running. Please wait.", title=TITLE)
             return False
         self._set_status("Applying action...")
+        operation_options = dict(options or {})
+        if str(operation_key or "").endswith("_and_recalculate"):
+            calc_options = self._calculation_options()
+            for key, value in calc_options.items():
+                if key not in operation_options:
+                    operation_options[key] = value
         raised = self._operation_gateway.raise_operation(
             operation_key=operation_key,
             circuit_ids=list(circuit_ids or []),
             source="pane",
-            options=dict(options or {}),
+            options=operation_options,
             callback=callback or self._on_operation_complete,
         )
         if not raised:
@@ -5143,9 +5232,43 @@ class CircuitBrowserPanel(forms.WPFPanel):
             rows.append(row)
         return rows
 
-    def _preview_mark_existing_rows(self, rows, mode, set_notes, clear_wire, clear_conduit):
+    def _preview_recalculated_conduit_wire_for_row(self, row, settings):
+        try:
+            branch = CircuitBranch(
+                row.circuit,
+                settings=settings,
+                preview_values={"CKT_User Override_CED": 0},
+            )
+            if not branch.is_power_circuit or branch.is_space or branch.is_spare:
+                return row.current_wire
+            branch.calculate_hot_wire_size()
+            branch.calculate_neutral_wire_size()
+            branch.calculate_ground_wire_size()
+            branch.calculate_isolated_ground_wire_size()
+            branch.calculate_conduit_size()
+            return str(branch.get_conduit_and_wire_size() or "-").strip() or "-"
+        except Exception:
+            return "Recalculate on Apply"
+
+    def _preview_mark_existing_rows(
+            self,
+            rows,
+            mode,
+            set_notes,
+            clear_wire,
+            clear_conduit,
+            recalculate_wire_conduit=False,
+    ):
         mode_text = str(mode or "existing").lower()
         is_new_mode = mode_text == "new"
+        settings = None
+        if is_new_mode and recalculate_wire_conduit:
+            try:
+                doc = self._get_active_doc()
+                if doc is not None:
+                    settings = settings_manager.load_circuit_settings(doc)
+            except Exception:
+                settings = None
         for row in rows:
             row.new_notes = row.current_notes
             row.new_wire = row.current_wire
@@ -5154,6 +5277,7 @@ class CircuitBrowserPanel(forms.WPFPanel):
             row.preview_mode = mode_text
             row.preview_clear_wire = bool(clear_wire) and not is_new_mode
             row.preview_clear_conduit = bool(clear_conduit) and not is_new_mode
+            row.preview_recalculate_wire_conduit = bool(recalculate_wire_conduit) and is_new_mode
             if not row.is_enabled:
                 row.is_checked = False
                 row.recompute_state()
@@ -5164,7 +5288,10 @@ class CircuitBrowserPanel(forms.WPFPanel):
             if set_notes:
                 row.new_notes = "" if is_new_mode else "EX"
             if is_new_mode:
-                row.new_wire = "Auto Calculated"
+                if recalculate_wire_conduit:
+                    row.new_wire = self._preview_recalculated_conduit_wire_for_row(row, settings)
+                else:
+                    row.new_wire = row.current_wire
             else:
                 if clear_wire or clear_conduit:
                     if clear_wire and clear_conduit:
@@ -5177,7 +5304,15 @@ class CircuitBrowserPanel(forms.WPFPanel):
                     row.new_wire = row.current_wire
             row.recompute_state()
 
-    def _apply_mark_existing_rows(self, rows, mode, set_notes, clear_wire, clear_conduit):
+    def _apply_mark_existing_rows(
+            self,
+            rows,
+            mode=None,
+            set_notes=None,
+            clear_wire=None,
+            clear_conduit=None,
+            recalculate_wire_conduit=None,
+    ):
         updates = []
         changed_ids = []
         for row in list(rows or []):
@@ -5192,6 +5327,7 @@ class CircuitBrowserPanel(forms.WPFPanel):
                 "set_notes": bool(getattr(row, "action_set_notes", True)),
                 "clear_wire": bool(getattr(row, "preview_clear_wire", False)),
                 "clear_conduit": bool(getattr(row, "preview_clear_conduit", False)),
+                "recalculate_wire_conduit": bool(getattr(row, "preview_recalculate_wire_conduit", False)),
             }
             if mode_text == "new":
                 update["clear_wire"] = False
@@ -5389,6 +5525,9 @@ class CircuitBrowserPanel(forms.WPFPanel):
 
         payload = dict(result or {})
         self._update_session_sync_lock_map(payload)
+        if payload.get("status") == "preview_required":
+            self._show_calculation_preview(request, payload)
+            return
         locked_rows = list(payload.get("locked_rows") or [])
         self._refresh_items_by_circuit_ids(request_ids, reselect_ids=reselect_ids)
 

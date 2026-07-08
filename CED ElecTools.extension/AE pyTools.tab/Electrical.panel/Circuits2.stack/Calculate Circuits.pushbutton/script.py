@@ -179,11 +179,9 @@ def main():
             window = CalculationPreviewWindow(result.get("preview_rows") or [])
             window.ShowDialog()
             decision = getattr(window, "decision", None)
-            if decision in ("keep_new", "keep_existing"):
+            if decision in ("keep_new", "keep_existing", "skip"):
                 options["calc_preview_decision"] = decision
                 continue
-            if decision == "skip":
-                return
             logger.info("Calculate circuits request ended: %s", result)
             return
         if result.get("status") != "ok":

@@ -650,19 +650,34 @@
             <ColumnDefinition Width="Auto"/>
           </Grid.ColumnDefinitions>
           <TextBlock Grid.Column="0" Text="Calc Preview:" Style="{DynamicResource CED.Text.CaptionStrong}" FontSize="12" VerticalAlignment="Center"/>
-          <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="6,0,0,0" VerticalAlignment="Center">
-            <CheckBox Name="CalcPreviewToggle"
-                      Style="{StaticResource CircuitBrowser.ToggleSwitch}"
-                      Checked="calc_preview_toggled"
-                      Unchecked="calc_preview_toggled"
-                      ToolTip="When enabled, calculations pause before writing if conduit or wire sizes will change, so you can keep new sizes, keep existing sizes as overrides, or skip the run."/>
-            <TextBlock Name="CalcPreviewStateText"
-                       Text="Off"
-                       Style="{DynamicResource CED.Text.Secondary}"
-                       FontSize="12"
-                       VerticalAlignment="Center"
-                       Margin="6,0,0,0"/>
-          </StackPanel>
+<StackPanel Grid.Column="1"
+            Orientation="Horizontal"
+            Margin="6,0,0,0"
+            VerticalAlignment="Center">
+
+  <CheckBox Name="CalcPreviewToggle"
+            Style="{StaticResource CircuitBrowser.ToggleSwitch}"
+            Checked="calc_preview_toggled"
+            Unchecked="calc_preview_toggled">
+
+    <CheckBox.ToolTip>
+      <ToolTip>
+        <TextBlock TextWrapping="Wrap"
+                   MaxWidth="320"
+                   Text="When enabled, calculations pause before writing if conduit or wire sizes will change, so you can keep new sizes, keep existing sizes as overrides, or skip the run."/>
+      </ToolTip>
+    </CheckBox.ToolTip>
+
+  </CheckBox>
+
+  <TextBlock Name="CalcPreviewStateText"
+             Text="Off"
+             Style="{DynamicResource CED.Text.Secondary}"
+             FontSize="12"
+             VerticalAlignment="Center"
+             Margin="6,0,0,0"/>
+
+</StackPanel>
         </Grid>
 
         <Grid Grid.Row="2" Margin="0,6,0,0">

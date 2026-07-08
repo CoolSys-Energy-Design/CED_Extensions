@@ -95,7 +95,7 @@
               Margin="0,0,8,0"
               Click="keep_existing_clicked"/>
       <Button Grid.Column="4"
-              Style="{DynamicResource CED.Button.Primary}"
+              Style="{DynamicResource CED.Button.Apply}"
               Content="Keep New"
               MinWidth="92"
               Height="24"
