@@ -75,6 +75,16 @@ class Alerts(object):
         }
 
     @staticmethod
+    def InvalidWireSets(override_value, default_value):
+        return {
+            "definition": get_alert_definition("overrides_invalid_wire_sets"),
+            "data": {
+                "override_value": override_value,
+                "default_value": default_value,
+            },
+        }
+
+    @staticmethod
     def InvalidEquipmentGround(override_value):
         return {
             "definition": get_alert_definition("overrides_invalid_equipment_ground"),
@@ -219,6 +229,17 @@ class Alerts(object):
             "data": {
                 "circuit_load_current": round(circuit_load_current,1),
                 "breaker_rating": int(round(breaker_rating)),
+            },
+        }
+
+    @staticmethod
+    def NearOCPRating(circuit_load_current, breaker_rating, load_ratio):
+        return {
+            "definition": get_alert_definition("design_near_ocp_rating"),
+            "data": {
+                "circuit_load_current": round(circuit_load_current, 1),
+                "breaker_rating": int(round(breaker_rating)),
+                "load_ratio_percent": round(load_ratio * 100.0, 1),
             },
         }
 

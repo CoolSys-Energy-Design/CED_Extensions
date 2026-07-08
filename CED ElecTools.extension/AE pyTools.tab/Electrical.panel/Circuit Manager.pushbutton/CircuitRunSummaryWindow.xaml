@@ -12,7 +12,7 @@
     </ResourceDictionary>
   </Window.Resources>
 
-  <Grid Margin="{DynamicResource CED.Thickness.ContentMargin}">
+  <Grid Name="SummaryRoot" Margin="{DynamicResource CED.Thickness.ContentMargin}">
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto"/>
       <RowDefinition Height="*"/>
@@ -23,7 +23,7 @@
 
     <TextBlock Grid.Row="0" Text="Calculation Summary" Style="{DynamicResource CED.Text.SectionHeader}" Margin="0,0,0,8"/>
 
-    <Grid Grid.Row="1">
+    <Grid Grid.Row="1" Name="RuntimeSection">
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto"/>
         <RowDefinition Height="*"/>
@@ -64,7 +64,7 @@
       </Border>
     </Grid>
 
-    <Grid Grid.Row="3">
+    <Grid Grid.Row="3" Name="LockedSection">
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto"/>
         <RowDefinition Height="Auto"/>

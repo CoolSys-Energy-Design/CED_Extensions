@@ -16,6 +16,22 @@ def _elid_from_value(value):
     return revit_helpers.elementid_from_value(value)
 
 
+def _calc_options_from_request(request):
+    options = {
+        'show_output': bool(request.options.get('show_output', False)),
+        'use_existing_transaction_group': True,
+    }
+    if request.options.get('calc_preview_enabled') is not None:
+        options['calc_preview_enabled'] = bool(request.options.get('calc_preview_enabled', False))
+    preview_decision = str(request.options.get('calc_preview_decision') or '').strip().lower()
+    if preview_decision:
+        options['calc_preview_decision'] = preview_decision
+    ignored_fields = request.options.get('calc_preview_ignore_fields_by_id')
+    if isinstance(ignored_fields, dict) and ignored_fields:
+        options['calc_preview_ignore_fields_by_id'] = ignored_fields
+    return options
+
+
 class MarkExistingAndRecalculateOperation(object):
     """Sets override/notes/clear flags then recalculates affected circuits."""
 
@@ -48,6 +64,7 @@ class MarkExistingAndRecalculateOperation(object):
                 'set_notes': bool(raw.get('set_notes', True)),
                 'clear_wire': bool(raw.get('clear_wire', False)),
                 'clear_conduit': bool(raw.get('clear_conduit', False)),
+                'recalculate_wire_conduit': bool(raw.get('recalculate_wire_conduit', False)),
             }
 
         mode = str(request.options.get('mode', 'existing') or 'existing').strip().lower()
@@ -56,8 +73,11 @@ class MarkExistingAndRecalculateOperation(object):
         set_notes = bool(request.options.get('set_notes', True))
         clear_wire = bool(request.options.get('clear_wire', False))
         clear_conduit = bool(request.options.get('clear_conduit', False))
+        recalculate_wire_conduit = bool(request.options.get('recalculate_wire_conduit', False))
 
         changed_ids = []
+        force_auto_for_ids = []
+        ignored_preview_fields_by_id = {}
         locked_rows = []
         tg = DB.TransactionGroup(doc, 'Mark New/Existing + Calculate Circuits')
         tg.Start()
@@ -77,14 +97,31 @@ class MarkExistingAndRecalculateOperation(object):
                 circuit_set_notes = bool(per.get('set_notes', set_notes)) if per else bool(set_notes)
                 circuit_clear_wire = bool(per.get('clear_wire', clear_wire)) if per else bool(clear_wire)
                 circuit_clear_conduit = bool(per.get('clear_conduit', clear_conduit)) if per else bool(clear_conduit)
+                circuit_recalculate_wire_conduit = (
+                    bool(per.get('recalculate_wire_conduit', recalculate_wire_conduit))
+                    if per else bool(recalculate_wire_conduit)
+                )
                 if circuit_mode == 'new':
                     circuit_clear_wire = False
                     circuit_clear_conduit = False
+                else:
+                    circuit_recalculate_wire_conduit = False
+
+                clears_conduit_wire = bool(
+                    circuit_mode == 'existing' and (circuit_clear_wire or circuit_clear_conduit)
+                )
+                if clears_conduit_wire:
+                    ignored_preview_fields_by_id[circuit_id] = '*'
+                if circuit_mode == 'new' and circuit_recalculate_wire_conduit:
+                    ignored_preview_fields_by_id[circuit_id] = '*'
+                    force_auto_for_ids.append(circuit_id)
 
                 notes_text = '' if circuit_mode == 'new' else 'EX'
-                user_override_value = 0 if circuit_mode == 'new' else 1
                 did_change = False
-                did_change = self._set_int_param(circuit, 'CKT_User Override_CED', user_override_value) or did_change
+                if circuit_mode == 'new' and circuit_recalculate_wire_conduit:
+                    did_change = self._set_int_param(circuit, 'CKT_User Override_CED', 0) or did_change
+                elif circuit_clear_wire or circuit_clear_conduit:
+                    did_change = self._set_int_param(circuit, 'CKT_User Override_CED', 1) or did_change
 
                 if circuit_set_notes:
                     did_change = self._set_schedule_notes(circuit, notes_text) or did_change
@@ -97,7 +134,7 @@ class MarkExistingAndRecalculateOperation(object):
                 if circuit_mode == 'existing' and circuit_clear_conduit:
                     did_change = self._set_str_param(circuit, 'Conduit Size_CEDT', '-') or did_change
 
-                if did_change:
+                if did_change or circuit_recalculate_wire_conduit:
                     changed_ids.append(circuit_id)
 
             tx.Commit()
@@ -121,17 +158,41 @@ class MarkExistingAndRecalculateOperation(object):
                 'runtime_alert_rows': [],
             }
 
+        calc_options = _calc_options_from_request(request)
+        if force_auto_for_ids:
+            calc_options['calc_force_auto_for_ids'] = force_auto_for_ids
+        if ignored_preview_fields_by_id:
+            calc_options['calc_preview_ignore_fields_by_id'] = ignored_preview_fields_by_id
+
         calc_request = OperationRequest(
             operation_key='calculate_circuits',
             circuit_ids=changed_ids,
             source=request.source,
-            options={
-                'show_output': bool(request.options.get('show_output', False)),
-                'use_existing_transaction_group': True,
-            },
+            options=calc_options,
         )
         try:
             calc_result = self._calculate_operation.execute(calc_request, doc) or {}
+            if (
+                str(calc_result.get('status') or '').strip().lower() == 'cancelled'
+                and str(calc_result.get('reason') or '').strip().lower() == 'calc_preview_skipped'
+            ):
+                try:
+                    tg.RollBack()
+                except Exception:
+                    pass
+                if locked_rows:
+                    existing = list(calc_result.get('locked_rows') or [])
+                    calc_result['locked_rows'] = existing + locked_rows
+                return calc_result
+            if str(calc_result.get('status') or '').strip().lower() == 'preview_required':
+                try:
+                    tg.RollBack()
+                except Exception:
+                    pass
+                if locked_rows:
+                    existing = list(calc_result.get('locked_rows') or [])
+                    calc_result['locked_rows'] = existing + locked_rows
+                return calc_result
             tg.Assimilate()
         except Exception:
             try:

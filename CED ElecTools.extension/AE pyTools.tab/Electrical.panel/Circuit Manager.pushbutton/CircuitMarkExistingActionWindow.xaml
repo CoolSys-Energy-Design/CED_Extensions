@@ -101,50 +101,104 @@
         </StackPanel>
 
         <Border Margin="12,0,0,0"
-                Padding="8,5,10,5"
+                Padding="8,5"
+                Width="322"
                 BorderBrush="{DynamicResource CED.Brush.InfoPanelBorder}"
                 BorderThickness="1"
                 CornerRadius="4"
                 Background="{DynamicResource CED.Brush.InfoPanelBackground}"
                 VerticalAlignment="Top">
-          <StackPanel>
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="142"/>
+              <ColumnDefinition Width="14"/>
+              <ColumnDefinition Width="150"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"/>
+              <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal">
+              <RadioButton Name="ExistingModeRadio"
+                           Content="Existing"
+                           GroupName="MarkMode"
+                           IsChecked="True"
+                           Style="{DynamicResource CED.Input.RadioButton}"
+                           Checked="mode_changed"/>
+              <RadioButton Name="NewModeRadio"
+                           Content="New"
+                           GroupName="MarkMode"
+                           Style="{DynamicResource CED.Input.RadioButton}"
+                           Margin="12,0,0,0"
+                           Checked="mode_changed"/>
+            </StackPanel>
+
             <CheckBox Name="SetNotesCheck"
-                      Content="Set Circuit Notes (EX / blank)"
+                      Grid.Row="1"
+                      Grid.Column="0"
+                      Content="Set Circuit Notes"
                       IsChecked="True"
                       Style="{DynamicResource CED.Input.CheckBox}"
+                      Margin="0,5,0,0"
                       Checked="options_changed"
                       Unchecked="options_changed"/>
-            <CheckBox Name="ClearWireCheck"
-                      Content="Clear Wire"
-                      IsChecked="False"
-                      Style="{DynamicResource CED.Input.CheckBox}"
-                      Margin="0,4,0,0"
-                      Checked="options_changed"
-                      Unchecked="options_changed"/>
-            <CheckBox Name="ClearConduitCheck"
-                      Content="Clear Conduit"
-                      IsChecked="False"
-                      Style="{DynamicResource CED.Input.CheckBox}"
-                      Margin="0,2,0,0"
-                      Checked="options_changed"
-                      Unchecked="options_changed"/>
-          </StackPanel>
+
+            <Border Grid.Row="0"
+                    Grid.Column="1"
+                    Grid.RowSpan="2"
+                    Width="1"
+                    HorizontalAlignment="Left"
+                    Margin="0,-1,0,-1"
+                    Background="{DynamicResource CED.Brush.InfoPanelBorder}"/>
+
+            <StackPanel Name="ExistingOptionsPanel"
+                        Grid.Row="0"
+                        Grid.Column="2"
+                        Grid.RowSpan="2">
+              <CheckBox Name="ClearWireCheck"
+                        Content="Clear Wire"
+                        IsChecked="False"
+                        Style="{DynamicResource CED.Input.CheckBox}"
+                        Checked="options_changed"
+                        Unchecked="options_changed"/>
+              <CheckBox Name="ClearConduitCheck"
+                        Content="Clear Conduit"
+                        IsChecked="False"
+                        Style="{DynamicResource CED.Input.CheckBox}"
+                        Margin="0,5,0,0"
+                        Checked="options_changed"
+                        Unchecked="options_changed"/>
+            </StackPanel>
+
+            <StackPanel Name="NewOptionsPanel"
+                        Grid.Row="0"
+                        Grid.Column="2"
+                        Grid.RowSpan="2"
+                        Visibility="Collapsed">
+              <CheckBox Name="RecalculateWireConduitCheck"
+                        IsChecked="True"
+                        Style="{DynamicResource CED.Input.CheckBox}"
+                        Checked="options_changed"
+                        Unchecked="options_changed">
+              <TextBlock TextWrapping="Wrap"
+                         Width="122">
+                <Run Text="Recalculate"/>
+                <LineBreak/>
+                <Run Text="conduit/wire size"/>
+              </TextBlock>
+              </CheckBox>
+            </StackPanel>
+          </Grid>
         </Border>
 
-        <StackPanel Orientation="Vertical" Margin="12,0,0,0">
-          <Button Name="SetExistingButton"
+        <StackPanel Orientation="Vertical" Margin="12,0,0,0" VerticalAlignment="Top">
+          <Button Name="PreviewButton"
                   Style="{DynamicResource CED.Button.Apply}"
-                  Content="Set as Existing"
+                  Content="Preview"
                   Width="116"
                   Height="28"
-                  Click="set_existing_clicked"/>
-          <Button Name="SetNewButton"
-                  Style="{DynamicResource CED.Button.Base}"
-                  Content="Set as New"
-                  Width="116"
-                  Height="28"
-                  Margin="0,6,0,0"
-                  Click="set_new_clicked"/>
+                  Click="preview_clicked"/>
         </StackPanel>
         <Button Name="ResetSelectedButton"
                 Style="{DynamicResource CED.Button.Base}"
@@ -152,6 +206,7 @@
                 Width="110"
                 Height="28"
                 Margin="8,0,0,0"
+                VerticalAlignment="Top"
                 Click="reset_selected_clicked"/>
       </StackPanel>
 
