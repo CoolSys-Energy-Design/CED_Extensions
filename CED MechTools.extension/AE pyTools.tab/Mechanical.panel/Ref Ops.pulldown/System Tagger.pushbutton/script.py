@@ -10,9 +10,19 @@ from Autodesk.Revit.UI.Selection import ISelectionFilter, ObjectType
 from System import Guid, String, Int32
 from pyrevit import revit, DB, forms, script
 
+from Snippets import revit_helpers
+
 logger = script.get_logger()
 doc = revit.doc
 uidoc = revit.uidoc
+
+
+def _elid_value(item, default=0):
+    return revit_helpers.get_elementid_value(item, default=default)
+
+
+def _elid_from_value(value):
+    return revit_helpers.elementid_from_value(value)
 
 ORANGE_RGB = (255, 128, 0)
 RESUME_SCHEMA_GUID = Guid("5f1a3c2e-9e4c-4e42-9f26-9c8f8f5c6f14")
@@ -35,7 +45,7 @@ class _MechEquipmentSelectionFilter(ISelectionFilter):
         if cat is None:
             return False
         try:
-            return cat.Id.IntegerValue == int(DB.BuiltInCategory.OST_MechanicalEquipment)
+            return _elid_value(cat.Id) == int(DB.BuiltInCategory.OST_MechanicalEquipment)
         except Exception:
             return False
 
@@ -271,7 +281,7 @@ def _apply_highlights(view, element_ids, ogs):
     if not element_ids:
         return
     for elem_int in element_ids:
-        _apply_override(view, DB.ElementId(elem_int), ogs)
+        _apply_override(view, _elid_from_value(elem_int), ogs)
 
 
 def _clear_highlights_in_tx(view, element_ids):
@@ -279,7 +289,7 @@ def _clear_highlights_in_tx(view, element_ids):
         return
     clear_ogs = DB.OverrideGraphicSettings()
     for elem_int in element_ids:
-        view.SetElementOverrides(DB.ElementId(elem_int), clear_ogs)
+        view.SetElementOverrides(_elid_from_value(elem_int), clear_ogs)
 
 
 def _update_preview_highlights(view, ogs, new_ids, prev_ids):
@@ -478,8 +488,8 @@ def _toggle_pick_cases(system_id, view, ogs):
                     except Exception:
                         break
 
-                    elem_int = ref.ElementId.IntegerValue
-                    elem_id = DB.ElementId(elem_int)
+                    elem_int = _elid_value(ref.ElementId)
+                    elem_id = _elid_from_value(elem_int)
 
                     if elem_int in selected_set:
                         selected_set.remove(elem_int)
@@ -543,7 +553,7 @@ def _apply_identity_mark(element_ids, labels):
     if not element_ids or not labels:
         return
     for elem_int, label in zip(element_ids, labels):
-        elem = doc.GetElement(DB.ElementId(elem_int))
+        elem = doc.GetElement(_elid_from_value(elem_int))
         if not elem:
             continue
         try:
@@ -569,7 +579,7 @@ def _place_tags(element_ids, labels, view, tag_type):
         doc.Regenerate()
     count = 0
     for elem_int, label in zip(element_ids, labels):
-        elem = doc.GetElement(DB.ElementId(elem_int))
+        elem = doc.GetElement(_elid_from_value(elem_int))
         if not elem:
             continue
         pt = _get_element_center(elem, view)

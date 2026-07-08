@@ -30,9 +30,15 @@ from System.Drawing import Size, Point
 from pyrevit import revit, DB, forms, script
 from pyrevit.revit import query
 
+from Snippets import revit_helpers
+
 
 logger = script.get_logger()
 doc = revit.doc
+
+
+def _elid_value(item, default=0):
+    return revit_helpers.get_elementid_value(item, default=default)
 
 VERTICAL_OFFSET_FT = 2.0
 SPACE_MATCH_THRESHOLD = 0.6
@@ -378,7 +384,7 @@ def _collect_host_spaces():
     for cat in categories:
         elements = DB.FilteredElementCollector(doc).OfCategory(cat).WhereElementIsNotElementType()
         for space in elements:
-            sid = space.Id.IntegerValue
+            sid = _elid_value(space.Id)
             if sid in seen:
                 continue
             seen.add(sid)
@@ -412,7 +418,7 @@ def _collect_linked_spaces():
         if link_doc is None:
             continue
         transform = link.GetTransform()
-        link_name = getattr(link, "Name", None) or "Link {}".format(link.Id.IntegerValue)
+        link_name = getattr(link, "Name", None) or "Link {}".format(_elid_value(link.Id))
         for cat in categories:
             elements = DB.FilteredElementCollector(link_doc).OfCategory(cat).WhereElementIsNotElementType()
             for space in elements:
@@ -432,7 +438,7 @@ def _collect_linked_spaces():
                         level_name = level_elem.Name if level_elem else None
                 except Exception:
                     level_name = None
-                space_key = "{}:{}".format(link.Id.IntegerValue, space.Id.IntegerValue)
+                space_key = "{}:{}".format(_elid_value(link.Id), _elid_value(space.Id))
                 spaces.append({
                     "element": space,
                     "name": name,
@@ -703,7 +709,7 @@ def _collect_mech_symbols():
     cat_id = int(DB.BuiltInCategory.OST_MechanicalEquipment)
     for symbol in DB.FilteredElementCollector(doc).OfClass(DB.FamilySymbol):
         try:
-            if symbol.Category and symbol.Category.Id.IntegerValue == cat_id:
+            if symbol.Category and _elid_value(symbol.Category.Id) == cat_id:
                 symbols.append(symbol)
         except Exception:
             continue
@@ -738,9 +744,9 @@ def _collect_symbols_by_space(spaces):
         link_doc = space.get("link_doc")
         if not link or not link_doc:
             continue
-        link_id = link.Id.IntegerValue
+        link_id = _elid_value(link.Id)
         link_instances[link_id] = link
-        space_key_lookup[(link_id, space["element"].Id.IntegerValue)] = space.get("key")
+        space_key_lookup[(link_id, _elid_value(space["element"].Id))] = space.get("key")
 
     if not link_instances:
         return symbol_map
@@ -764,7 +770,7 @@ def _collect_symbols_by_space(spaces):
             spatial = _find_linked_spatial_element(link_doc, link_point)
             if not spatial:
                 continue
-            key = space_key_lookup.get((link_id, spatial.Id.IntegerValue))
+            key = space_key_lookup.get((link_id, _elid_value(spatial.Id)))
             if not key:
                 continue
             symbol_map.setdefault(key, set()).add(symbol)
@@ -1182,7 +1188,7 @@ def _build_placements(rows, spaces, symbol_by_space, all_symbols, chosen_level=N
             )
             continue
 
-        space_key = space.get("key") or space["element"].Id.IntegerValue
+        space_key = space.get("key") or _elid_value(space["element"].Id)
         symbols = list(symbol_by_space.get(space_key, [])) or list(all_symbols)
         if not symbols:
             stats["skipped_no_symbols"] += 1
@@ -1329,7 +1335,7 @@ def _place_instances(placements):
                         DB.XYZ(0, float(item["offset"]), 0),
                     )
             except Exception as ex:
-                failures.append("Failed to offset {}: {}".format(inst.Id.IntegerValue, ex))
+                failures.append("Failed to offset {}: {}".format(_elid_value(inst.Id), ex))
 
             placed_ids.append(inst.Id)
 
