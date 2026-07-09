@@ -1,0 +1,64 @@
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        Title="One Line Diagram"
+        Height="760"
+        Width="1240"
+        MinHeight="420"
+        MinWidth="840"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource CED.Brush.WindowBackground}">
+  <Grid Margin="{DynamicResource CED.Thickness.ContentMargin}">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+
+    <Grid Grid.Row="0" Margin="0,0,0,8">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto"/>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="Auto"/>
+      </Grid.ColumnDefinitions>
+
+      <StackPanel Grid.Column="0" Orientation="Horizontal">
+        <TextBlock Text="One Line Diagram" Style="{DynamicResource CED.Text.SectionHeader}" VerticalAlignment="Center" Margin="0,0,14,0"/>
+        <Button Name="RefreshDiagramButton" Style="{DynamicResource CED.Button.Base}" Content="Refresh" Width="72" Height="24" Click="refresh_diagram_clicked" ToolTip="Rebuild the diagram from the current model"/>
+        <Button Name="CardModeButton" Style="{DynamicResource CED.Button.Base}" Content="Compact Cards" Width="112" Height="24" Margin="6,0,0,0" Click="toggle_card_mode_clicked" ToolTip="Toggle between full and compact equipment cards"/>
+        <Button Name="LoadsModeButton" Style="{DynamicResource CED.Button.Base}" Content="Loads: 50 HP+" Width="104" Height="24" Margin="6,0,0,0" Click="toggle_loads_mode_clicked" ToolTip="Cycle which loads are shown: 50 HP+ only, all loads (including 120V), or none"/>
+        <Button Name="ZoomOutButton" Style="{DynamicResource CED.Button.Base}" Content="-" Width="28" Height="24" Margin="12,0,0,0" Click="zoom_out_clicked" ToolTip="Zoom out (Ctrl+Wheel)"/>
+        <Button Name="ZoomResetButton" Style="{DynamicResource CED.Button.Base}" Content="100%" Width="52" Height="24" Margin="4,0,0,0" Click="zoom_reset_clicked" ToolTip="Reset zoom"/>
+        <Button Name="ZoomInButton" Style="{DynamicResource CED.Button.Base}" Content="+" Width="28" Height="24" Margin="4,0,0,0" Click="zoom_in_clicked" ToolTip="Zoom in (Ctrl+Wheel)"/>
+      </StackPanel>
+
+      <TextBlock Grid.Column="2" Name="OneLineStatusText" Text="" Style="{DynamicResource CED.Text.Secondary}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+    </Grid>
+
+    <Border Grid.Row="1" BorderBrush="{DynamicResource CED.Brush.ListBorder}" BorderThickness="1" Background="{DynamicResource CED.Brush.ListBackground}">
+      <ScrollViewer Name="DiagramScroll"
+                    HorizontalScrollBarVisibility="Hidden"
+                    VerticalScrollBarVisibility="Hidden"
+                    PanningMode="None"
+                    Background="Transparent"
+                    PreviewMouseWheel="diagram_preview_mouse_wheel"
+                    PreviewMouseDown="diagram_pan_mouse_down"
+                    PreviewMouseMove="diagram_pan_mouse_move"
+                    PreviewMouseUp="diagram_pan_mouse_up">
+        <Canvas Name="DiagramCanvas" Background="Transparent" AllowDrop="False"/>
+      </ScrollViewer>
+    </Border>
+
+    <Grid Grid.Row="2" Margin="0,8,0,0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="Auto"/>
+      </Grid.ColumnDefinitions>
+      <TextBlock Grid.Column="0"
+                 Name="OneLineHintText"
+                 Text="Mouse wheel: zoom | Drag empty space: pan | Drag an equipment card onto its new supply equipment to re-feed it (runs a real circuit move; offers to overwrite blocking spares)."
+                 Style="{DynamicResource CED.Text.Secondary}"
+                 TextWrapping="Wrap"
+                 VerticalAlignment="Center"/>
+      <Button Grid.Column="1" Style="{DynamicResource CED.Button.Base}" Content="Close" Width="80" Height="24" Margin="12,0,0,0" Click="close_clicked"/>
+    </Grid>
+  </Grid>
+</Window>

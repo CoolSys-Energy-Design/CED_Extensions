@@ -12,6 +12,7 @@ from Autodesk.Revit.DB.Events import (
 )
 from Autodesk.Revit.UI import ExternalEvent, IExternalEventHandler
 from Autodesk.Revit.UI.Events import ViewActivatedEventArgs
+from Autodesk.Revit.UI.Selection import ObjectType
 from System import EventHandler, Action
 from System.Collections.Generic import List
 from System.Collections.ObjectModel import ObservableCollection
@@ -22,10 +23,26 @@ for _wpf_asm in ("PresentationFramework", "PresentationCore", "WindowsBase"):
     except Exception:
         pass
 
-from System.Windows import GridLength, GridUnitType, Visibility
+from System.Windows import (
+    CornerRadius,
+    DataObject,
+    DragDrop,
+    DragDropEffects,
+    FontWeights,
+    GridLength,
+    GridUnitType,
+    HorizontalAlignment,
+    TextTrimming,
+    TextWrapping,
+    Thickness,
+    Visibility,
+)
 from System.Windows.Controls import (
+    Border,
+    Canvas,
     ContextMenu,
     MenuItem,
+    Orientation,
     Separator,
     DataGridRow,
     ListViewItem,
@@ -33,10 +50,21 @@ from System.Windows.Controls import (
     DataGridTextColumn,
     ScrollViewer,
     ScrollBarVisibility,
+    StackPanel,
+    TextBlock,
+    ToolTipService,
 )
-from System.Windows.Input import Keyboard, ModifierKeys, Key
-from System.Windows.Media import BrushConverter, Stretch, VisualTreeHelper
+from System.Windows.Input import Keyboard, ModifierKeys, Key, MouseButton, MouseButtonState
+from System.Windows.Media import (
+    BrushConverter,
+    DoubleCollection,
+    ScaleTransform,
+    Stretch,
+    VisualTreeHelper,
+)
+from System.Windows.Shapes import Line as ShapeLine
 from System.Windows.Shapes import Path as ShapePath
+from System.Windows.Shapes import Rectangle as ShapeRectangle
 from pyrevit import forms, revit, DB, script, HOST_APP
 
 _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -48,11 +76,20 @@ from CEDElectrical.Application.dto.operation_request import OperationRequest
 from CEDElectrical.Application.services.operation_runner import build_default_runner
 from CEDElectrical.Domain import settings_manager
 from CEDElectrical.refdata.standard_ocp_table import BREAKER_FRAME_SWITCH_TABLE
+from CEDElectrical.refdata.detail_item_value_maps import (
+    DETAIL_PARAM_CKT_NUMBER,
+    DETAIL_PARAM_CKT_PANEL,
+    DETAIL_PARAM_PANEL_NAME,
+    inject_circuit_values,
+    inject_matching_values,
+    inject_panel_values,
+)
 from CEDElectrical.Infrastructure.Revit.external_events.circuit_operation_event import (
     CircuitOperationExternalEventGateway,
 )
 from CEDElectrical.ui.circuit_properties_editor import CircuitPropertiesEditorWindow
 from CEDElectrical.Infrastructure.Revit.repositories.revit_circuit_repository import RevitCircuitRepository
+from CEDElectrical.Domain.TraversalTree import get_all_equipment_nodes
 from Snippets.circuit_ui_actions import (
     clear_revit_selection,
     collect_circuit_targets,
@@ -2443,7 +2480,7 @@ class MoveCircuitsExternalEventGateway(object):
         except Exception:
             return False
 
-    def raise_move(self, circuit_ids, target_panel_id, callback=None):
+    def raise_move(self, circuit_ids, target_panel_id, callback=None, clear_spares=False):
         if self._pending is not None:
             return False
         try:
@@ -2455,6 +2492,7 @@ class MoveCircuitsExternalEventGateway(object):
             "circuit_ids": [int(x) for x in list(circuit_ids or []) if int(x or 0) > 0],
             "target_panel_id": int(target_panel_id or 0),
             "callback": callback,
+            "clear_spares": bool(clear_spares),
         }
         try:
             self._event.Raise()
@@ -2491,10 +2529,11 @@ class _MoveCircuitsHandler(IExternalEventHandler):
                 raise Exception("No active Revit document available.")
 
             target_panel_id = int(pending.get("target_panel_id", 0) or 0)
+            circuit_ids = [int(x) for x in list(pending.get("circuit_ids") or []) if int(x or 0) > 0]
             runner = build_default_runner(alert_parameter_name=self._gateway.alert_parameter_name)
             request = OperationRequest(
                 operation_key="move_selected_circuits",
-                circuit_ids=[int(x) for x in list(pending.get("circuit_ids") or []) if int(x or 0) > 0],
+                circuit_ids=circuit_ids,
                 source="pane_move",
                 options={
                     "target_panel_id": int(target_panel_id or 0),
@@ -2502,7 +2541,15 @@ class _MoveCircuitsHandler(IExternalEventHandler):
                     "show_recalc_output": False,
                 },
             )
-            payload = runner.run(request, doc) or {}
+            try:
+                payload = runner.run(request, doc) or {}
+            except Exception as move_ex:
+                if not bool(pending.get("clear_spares", False)):
+                    raise
+                if not self._offer_spare_overwrite(doc, target_panel_id, circuit_ids, move_ex):
+                    raise
+                payload = runner.run(request, doc) or {}
+                payload["spares_overwritten"] = True
         except Exception as ex:
             status = "error"
             error = ex
@@ -2516,8 +2563,1569 @@ class _MoveCircuitsHandler(IExternalEventHandler):
                 if self._gateway.logger:
                     self._gateway.logger.exception("Move Circuits callback failed: %s", cb_ex)
 
+    def _offer_spare_overwrite(self, doc, target_panel_id, circuit_ids, first_error):
+        """After a failed move, offer to delete SPARE circuits on the target and retry.
+
+        Deletes only as many spares as the incoming circuits need (largest pole
+        counts first). Returns True when at least one spare was removed.
+        """
+        spares = []
+        try:
+            collector = (
+                DB.FilteredElementCollector(doc)
+                .OfClass(DBE.ElectricalSystem)
+                .WhereElementIsNotElementType()
+            )
+            for system in collector:
+                try:
+                    if system.CircuitType != DBE.CircuitType.Spare:
+                        continue
+                    base = getattr(system, "BaseEquipment", None)
+                    if base is None or _elid_value(base.Id) != int(target_panel_id):
+                        continue
+                    spares.append(system)
+                except Exception:
+                    continue
+        except Exception:
+            spares = []
+        if not spares:
+            return False
+
+        needed_poles = 0
+        for cid in list(circuit_ids or []):
+            try:
+                circuit = doc.GetElement(revit_helpers.elementid_from_value(int(cid)))
+                if not isinstance(circuit, DBE.ElectricalSystem):
+                    continue
+                base = getattr(circuit, "BaseEquipment", None)
+                if base is not None and _elid_value(base.Id) == int(target_panel_id):
+                    continue
+                needed_poles += max(1, int(getattr(circuit, "PolesNumber", 1) or 1))
+            except Exception:
+                continue
+        if needed_poles <= 0:
+            needed_poles = 1
+
+        target_name = "target panel"
+        try:
+            target = doc.GetElement(revit_helpers.elementid_from_value(int(target_panel_id)))
+            target_name = getattr(target, "Name", target_name) or target_name
+        except Exception:
+            pass
+
+        message = (
+            "The move failed:\n{}\n\n"
+            "'{}' has {} SPARE circuit(s). Overwrite spares to make room and retry the move?\n\n"
+            "Only as many spares as needed will be deleted."
+        ).format(first_error, target_name, len(spares))
+        if not forms.alert(message, title="Move Selected Circuits", ok=False, yes=True, no=True):
+            return False
+
+        def _spare_poles(system):
+            try:
+                return max(1, int(getattr(system, "PolesNumber", 1) or 1))
+            except Exception:
+                return 1
+
+        spares.sort(key=_spare_poles, reverse=True)
+        transaction = DB.Transaction(doc, "Overwrite Spares For Circuit Move")
+        transaction.Start()
+        deleted = 0
+        freed_poles = 0
+        try:
+            for spare in spares:
+                if freed_poles >= needed_poles:
+                    break
+                poles = _spare_poles(spare)
+                try:
+                    doc.Delete(spare.Id)
+                    deleted += 1
+                    freed_poles += poles
+                except Exception:
+                    continue
+            transaction.Commit()
+        except Exception:
+            try:
+                transaction.RollBack()
+            except Exception:
+                pass
+            raise
+        if self._gateway.logger:
+            self._gateway.logger.info(
+                "Overwrote %s spare(s) (%s poles) on panel id %s before move retry.",
+                deleted, freed_poles, target_panel_id,
+            )
+        return deleted > 0
+
     def GetName(self):
         return "CED Move Circuits External Event"
+
+
+class InjectDetailItemExternalEventGateway(object):
+    """Runs inject-circuit-data-into-detail-item in API context from the modeless pane."""
+
+    def __init__(self, logger=None):
+        self.logger = logger
+        self._pending = None
+        self._handler = _InjectDetailItemHandler(self)
+        self._event = ExternalEvent.Create(self._handler)
+
+    def is_busy(self):
+        if self._pending is not None:
+            return True
+        try:
+            return bool(self._event.IsPending)
+        except Exception:
+            return False
+
+    def raise_inject(self, circuit_id, callback=None):
+        if self._pending is not None:
+            return False
+        try:
+            if bool(self._event.IsPending):
+                return False
+        except Exception:
+            pass
+        self._pending = {
+            "circuit_id": int(circuit_id or 0),
+            "callback": callback,
+        }
+        try:
+            self._event.Raise()
+            return True
+        except Exception as ex:
+            self._pending = None
+            if self.logger:
+                self.logger.warning("Failed to raise Inject Detail Item ExternalEvent: %s", ex)
+            return False
+
+    def _consume_pending(self):
+        pending = self._pending
+        self._pending = None
+        return pending
+
+
+class _InjectDetailItemHandler(IExternalEventHandler):
+    def __init__(self, gateway):
+        self._gateway = gateway
+
+    def Execute(self, application):
+        pending = self._gateway._consume_pending()
+        if not pending:
+            return
+
+        callback = pending.get("callback")
+        status = "ok"
+        error = None
+        payload = {}
+        try:
+            status, payload = self._execute_inject(application, pending)
+        except Exception as ex:
+            status = "error"
+            error = ex
+            if self._gateway.logger:
+                self._gateway.logger.exception("Inject Detail Item ExternalEvent failed: %s", ex)
+
+        if callback:
+            try:
+                callback(status, payload, error)
+            except Exception as cb_ex:
+                if self._gateway.logger:
+                    self._gateway.logger.exception("Inject Detail Item callback failed: %s", cb_ex)
+
+    def _execute_inject(self, application, pending):
+        uidoc = application.ActiveUIDocument
+        doc = uidoc.Document if uidoc else None
+        if doc is None:
+            raise Exception("No active Revit document available.")
+
+        active_view = doc.ActiveView
+        if active_view is None or active_view.ViewType != DB.ViewType.DraftingView:
+            return "not_drafting", {}
+
+        circuit_id = int(pending.get("circuit_id", 0) or 0)
+        circuit = doc.GetElement(revit_helpers.elementid_from_value(circuit_id))
+        if circuit is None or not isinstance(circuit, DBE.ElectricalSystem):
+            raise Exception("The checked circuit no longer exists in the model.")
+
+        detail_item, resolve_status = self._resolve_target_detail_item(uidoc, doc, active_view)
+        if resolve_status is not None:
+            return resolve_status, {}
+
+        source_panel = self._param_text(circuit, DB.BuiltInParameter.RBS_ELEC_CIRCUIT_PANEL_PARAM)
+        source_number = self._param_text(circuit, DB.BuiltInParameter.RBS_ELEC_CIRCUIT_NUMBER)
+        source_load = self._param_text(circuit, DB.BuiltInParameter.RBS_ELEC_CIRCUIT_NAME)
+        source_label = "{} / {}".format(source_panel or "?", source_number or "?")
+
+        if not self._confirm_identity_mismatch(
+            detail_item, source_panel, source_number, source_load, source_label
+        ):
+            return "declined", {}
+
+        panel_elem = self._resolve_panel_source(doc, circuit, detail_item)
+
+        transaction = DB.Transaction(doc, "Inject Circuit Data Into Detail Item")
+        transaction.Start()
+        try:
+            # Priority: circuit map > panel map > name-match sweeps. Later
+            # stages skip anything an earlier stage already wrote.
+            circuit_result = inject_circuit_values(circuit, detail_item)
+            written_names = set(circuit_result.get("written") or [])
+            missing_names = set(circuit_result.get("missing") or [])
+            panel_written = 0
+            if panel_elem is not None:
+                panel_result = inject_panel_values(panel_elem, detail_item)
+                panel_written += len(panel_result.get("written") or [])
+                written_names.update(panel_result.get("written") or [])
+                missing_names.update(panel_result.get("missing") or [])
+                panel_sweep = inject_matching_values(panel_elem, detail_item, skip_names=written_names)
+                panel_written += len(panel_sweep.get("written") or [])
+                written_names.update(panel_sweep.get("written") or [])
+            circuit_sweep = inject_matching_values(circuit, detail_item, skip_names=written_names)
+            written_names.update(circuit_sweep.get("written") or [])
+            transaction.Commit()
+        except Exception:
+            try:
+                transaction.RollBack()
+            except Exception:
+                pass
+            raise
+
+        payload = {
+            "written": len(written_names),
+            "circuit_written": len(circuit_result.get("written") or []) + len(circuit_sweep.get("written") or []),
+            "panel_written": panel_written,
+            "panel_label": self._param_text(panel_elem, DB.BuiltInParameter.RBS_ELEC_PANEL_NAME) if panel_elem is not None else "",
+            "missing": sorted(missing_names - written_names),
+            "detail_id": revit_helpers.get_elementid_value(detail_item.Id),
+            "detail_label": self._detail_type_label(doc, detail_item),
+            "source_label": source_label,
+        }
+        return "ok", payload
+
+    def _resolve_panel_source(self, doc, circuit, detail_item):
+        """Panel whose data accompanies the circuit injection.
+
+        Prefer the equipment the circuit feeds (the detail item usually
+        symbolizes that panel); otherwise fall back to the panel named by
+        the detail item's existing Panel Name_CEDT identity.
+        """
+        fed = []
+        try:
+            for elem in circuit.Elements:
+                category = getattr(elem, "Category", None)
+                if category is None:
+                    continue
+                if revit_helpers.get_elementid_value(category.Id) == int(DB.BuiltInCategory.OST_ElectricalEquipment):
+                    fed.append(elem)
+        except Exception:
+            fed = []
+        if len(fed) == 1:
+            return fed[0]
+
+        identity = (self._param_text(detail_item, DETAIL_PARAM_PANEL_NAME) or "").strip()
+        if not identity:
+            return None
+        matches = []
+        try:
+            collector = (
+                DB.FilteredElementCollector(doc)
+                .OfCategory(DB.BuiltInCategory.OST_ElectricalEquipment)
+                .WhereElementIsNotElementType()
+            )
+            for panel in collector:
+                name = self._param_text(panel, DB.BuiltInParameter.RBS_ELEC_PANEL_NAME)
+                if name and name.strip().upper() == identity.upper():
+                    matches.append(panel)
+        except Exception:
+            matches = []
+        if not matches:
+            return None
+        # Duplicate names: lowest element id wins, same as Sync One Line.
+        matches.sort(key=lambda p: revit_helpers.get_elementid_value(p.Id))
+        return matches[0]
+
+    def _resolve_target_detail_item(self, uidoc, doc, active_view):
+        selected = []
+        try:
+            for eid in list(uidoc.Selection.GetElementIds() or []):
+                elem = doc.GetElement(eid)
+                if elem is not None:
+                    selected.append(elem)
+        except Exception:
+            selected = []
+
+        detail_items = [
+            elem for elem in selected
+            if self._is_detail_component(elem) and self._is_in_view(elem, active_view)
+        ]
+        if len(detail_items) > 1:
+            return None, "too_many"
+        if len(detail_items) == 1:
+            if not self._is_ungrouped(detail_items[0]):
+                return None, "grouped"
+            return detail_items[0], None
+
+        # Nothing usable selected: prompt the user to pick one. PickObject is
+        # valid here because Execute() runs in API context.
+        for _attempt in range(3):
+            try:
+                reference = uidoc.Selection.PickObject(
+                    ObjectType.Element,
+                    "Select the detail item to receive circuit data",
+                )
+            except Exception:
+                return None, "cancelled"
+            picked = doc.GetElement(reference.ElementId) if reference else None
+            if not self._is_detail_component(picked):
+                forms.alert(
+                    "That element is not a detail item.\n\nPick a detail component in this drafting view.",
+                    title=TITLE,
+                )
+                continue
+            if not self._is_ungrouped(picked):
+                return None, "grouped"
+            return picked, None
+        return None, "cancelled"
+
+    def _confirm_identity_mismatch(self, detail_item, source_panel, source_number, source_load, source_label):
+        existing_panel = self._param_text(detail_item, DETAIL_PARAM_CKT_PANEL)
+        existing_number = self._param_text(detail_item, DETAIL_PARAM_CKT_NUMBER)
+        identity_panel = self._param_text(detail_item, DETAIL_PARAM_PANEL_NAME)
+
+        conflicts = []
+        if existing_panel and source_panel and existing_panel.strip().upper() != source_panel.strip().upper():
+            conflicts.append(
+                "Detail item circuit panel is '{}' but the checked circuit is on panel '{}'.".format(
+                    existing_panel, source_panel
+                )
+            )
+        if existing_number and source_number and existing_number.strip() != source_number.strip():
+            conflicts.append(
+                "Detail item circuit number is '{}' but the checked circuit is number '{}'.".format(
+                    existing_number, source_number
+                )
+            )
+        if identity_panel and source_load and identity_panel.strip().upper() != source_load.strip().upper():
+            conflicts.append(
+                "Detail item represents panel '{}' but the checked circuit's load name is '{}'.".format(
+                    identity_panel, source_load
+                )
+            )
+        if not conflicts:
+            return True
+
+        message = (
+            "The selected detail item does not match the checked circuit:\n\n- "
+            + "\n- ".join(conflicts)
+            + "\n\nOverwrite the detail item with data from {}?".format(source_label)
+        )
+        return bool(forms.alert(message, title=TITLE, ok=False, yes=True, no=True))
+
+    @staticmethod
+    def _is_detail_component(elem):
+        if elem is None:
+            return False
+        try:
+            category = elem.Category
+            if category is None:
+                return False
+            return revit_helpers.get_elementid_value(category.Id) == int(DB.BuiltInCategory.OST_DetailComponents)
+        except Exception:
+            return False
+
+    @staticmethod
+    def _is_in_view(elem, view):
+        try:
+            return revit_helpers.get_elementid_value(elem.OwnerViewId) == revit_helpers.get_elementid_value(view.Id)
+        except Exception:
+            return False
+
+    @staticmethod
+    def _is_ungrouped(elem):
+        try:
+            return elem.GroupId == DB.ElementId.InvalidElementId
+        except Exception:
+            return True
+
+    @staticmethod
+    def _param_text(elem, param_key):
+        try:
+            if isinstance(param_key, DB.BuiltInParameter):
+                param = elem.get_Parameter(param_key)
+            else:
+                param = elem.LookupParameter(param_key)
+            if param is None:
+                return ""
+            if param.StorageType == DB.StorageType.String:
+                return param.AsString() or ""
+            return param.AsValueString() or ""
+        except Exception:
+            return ""
+
+    @staticmethod
+    def _detail_type_label(doc, detail_item):
+        try:
+            type_elem = doc.GetElement(detail_item.GetTypeId())
+            if type_elem is not None:
+                family_name = getattr(type_elem, "FamilyName", "") or ""
+                type_name = getattr(type_elem, "Name", "") or ""
+                if family_name and type_name:
+                    return "{}: {}".format(family_name, type_name)
+                return type_name or family_name or "detail item"
+        except Exception:
+            pass
+        return "detail item"
+
+    def GetName(self):
+        return "CED Inject Detail Item External Event"
+
+
+# ---------------------------------------------------------------------------
+# One Line Diagram
+# ---------------------------------------------------------------------------
+
+# Large-load visibility threshold (~50 HP): show a device circuit on the one
+# line when its apparent load or current meets either limit.
+LARGE_LOAD_MIN_KVA = 48.0   # ~50 HP at 0.8 PF
+LARGE_LOAD_MIN_AMPS = 60.0  # ~50 HP FLC territory at 460 V
+
+_DND_EFFECT_NONE = getattr(DragDropEffects, "None")
+ONE_LINE_TITLE = "One Line Diagram"
+
+
+class OneLineLoad(object):
+    def __init__(self, circuit_id, circuit_number, name, amps, kva, is_large=False):
+        self.circuit_id = int(circuit_id or 0)
+        self.circuit_number = str(circuit_number or "")
+        self.name = str(name or "LOAD")
+        self.amps = float(amps or 0.0)
+        self.kva = float(kva or 0.0)
+        self.is_large = bool(is_large)
+
+    def metrics_text(self):
+        parts = []
+        if self.amps > 0:
+            parts.append("{} A".format(int(round(self.amps))))
+        if self.kva > 0:
+            parts.append("{} kVA".format(int(round(self.kva))))
+        if self.circuit_number:
+            parts.append("Ckt {}".format(self.circuit_number))
+        return " | ".join(parts) if parts else "-"
+
+
+class OneLineEquip(object):
+    def __init__(self, element_id, name, equip_type):
+        self.element_id = int(element_id or 0)
+        self.name = str(name or "?")
+        self.equip_type = str(equip_type or "Unknown")
+        self.voltage = None
+        self.dist_name = ""
+        self.rating_text = ""
+        self.demand_load_text = ""
+        self.demand_current_text = ""
+        self.parent_id = None
+        self.feeder_circuit_id = 0
+        self.feeder_label = ""
+        self.feeder_breaker_text = ""
+        self.feeder_wire_text = ""
+        self.alt_feeds = []   # [(parent_id, circuit_id, label)]
+        self.children = []
+        self.loads = []
+        self.tier = 0
+
+
+# Revit internal units for electrical potential/power differ from volts/VA by
+# the m^2 -> ft^2 factor (10.7639...). Convert via UnitUtils, oldest-API last.
+_INTERNAL_UNIT_FACTOR = 10.763910416709722
+
+
+def _volts_from_internal(value):
+    try:
+        raw = float(value or 0.0)
+    except Exception:
+        return None
+    if raw <= 0.0:
+        return None
+    try:
+        return float(DB.UnitUtils.ConvertFromInternalUnits(raw, DB.UnitTypeId.Volts))
+    except Exception:
+        pass
+    try:
+        return float(DB.UnitUtils.ConvertFromInternalUnits(raw, DB.DisplayUnitType.DUT_VOLTS))
+    except Exception:
+        pass
+    return raw / _INTERNAL_UNIT_FACTOR
+
+
+def _va_from_internal(value):
+    try:
+        raw = float(value or 0.0)
+    except Exception:
+        return 0.0
+    if raw <= 0.0:
+        return 0.0
+    try:
+        return float(DB.UnitUtils.ConvertFromInternalUnits(raw, DB.UnitTypeId.VoltAmperes))
+    except Exception:
+        pass
+    try:
+        return float(DB.UnitUtils.ConvertFromInternalUnits(raw, DB.DisplayUnitType.DUT_VOLT_AMPERES))
+    except Exception:
+        pass
+    return raw / _INTERNAL_UNIT_FACTOR
+
+
+def _one_line_value_string(elem, param_key):
+    """Project-formatted display value ('225 A', '29.5 kVA') for a parameter."""
+    try:
+        if isinstance(param_key, DB.BuiltInParameter):
+            param = elem.get_Parameter(param_key)
+        else:
+            param = elem.LookupParameter(param_key)
+        if param is None or not param.HasValue:
+            return ""
+        if param.StorageType == DB.StorageType.String:
+            return param.AsString() or ""
+        return param.AsValueString() or ""
+    except Exception:
+        return ""
+
+
+def _one_line_system_feeds_equipment(system):
+    try:
+        for elem in system.Elements:
+            category = getattr(elem, "Category", None)
+            if category is not None and _elid_value(category.Id) == int(DB.BuiltInCategory.OST_ElectricalEquipment):
+                return True
+    except Exception:
+        pass
+    return False
+
+
+def _one_line_load_metrics(system):
+    kva = 0.0
+    try:
+        kva = _va_from_internal(system.ApparentLoad) / 1000.0
+    except Exception:
+        kva = 0.0
+    amps = 0.0
+    try:
+        amps = float(_lookup_param_value(system, "Circuit Load Current_CED") or 0.0)
+    except Exception:
+        amps = 0.0
+    if amps <= 0.0 and kva > 0.0:
+        try:
+            voltage = None
+            vparam = system.get_Parameter(DB.BuiltInParameter.RBS_ELEC_VOLTAGE)
+            if vparam is not None and vparam.HasValue:
+                voltage = _volts_from_internal(vparam.AsDouble())
+            poles = int(getattr(system, "PolesNumber", 0) or 0)
+            if voltage:
+                amps = kva * 1000.0 / (voltage * (1.7320508 if poles >= 3 else 1.0))
+        except Exception:
+            pass
+    return amps, kva
+
+
+def _build_one_line_model(doc):
+    """Build the equipment tree + large loads that back the one line window."""
+    raw_nodes = get_all_equipment_nodes(doc)
+
+    equips = {}
+    for tnode in raw_nodes.values():
+        eid = _elid_value(tnode.element_id)
+        equip = OneLineEquip(eid, tnode.panel_name, tnode.equipment_type)
+        try:
+            dist = get_panel_dist_system(tnode.element, doc)
+        except Exception:
+            dist = None
+        if dist:
+            equip.voltage = _volts_from_internal(dist.get("ll_voltage") or dist.get("lg_voltage"))
+            equip.dist_name = dist.get("dist_system_name") or ""
+
+        equip.rating_text = (
+            _one_line_value_string(tnode.element, "Mains Rating_CED")
+            or _one_line_value_string(tnode.element, getattr(DB.BuiltInParameter, "RBS_ELEC_PANEL_MAINS_PARAM", None))
+        )
+        equip.demand_load_text = _one_line_value_string(
+            tnode.element, getattr(DB.BuiltInParameter, "RBS_ELEC_PANEL_TOTALESTLOAD_PARAM", None)
+        )
+        equip.demand_current_text = _one_line_value_string(
+            tnode.element, getattr(DB.BuiltInParameter, "RBS_ELEC_PANEL_TOTAL_DEMAND_CURRENT_PARAM", None)
+        )
+
+        feeds = []
+        for branch in tnode.upstream:
+            if branch.base_eq is None:
+                continue
+            feeds.append((
+                _elid_value(branch.base_eq_id),
+                _elid_value(branch.element_id),
+                "{} / {}".format(branch.base_eq_name, branch.circuit_number or "?"),
+                branch.system,
+            ))
+        if feeds:
+            equip.parent_id, equip.feeder_circuit_id, equip.feeder_label = feeds[0][:3]
+            feeder_system = feeds[0][3]
+            rating_text = _one_line_value_string(
+                feeder_system, DB.BuiltInParameter.RBS_ELEC_CIRCUIT_RATING_PARAM
+            ).replace(" ", "")
+            if rating_text:
+                try:
+                    poles = int(getattr(feeder_system, "PolesNumber", 0) or 0)
+                except Exception:
+                    poles = 0
+                equip.feeder_breaker_text = "{}/{}P".format(rating_text, poles) if poles else rating_text
+            wire_text = (
+                _lookup_param_value(feeder_system, "Conduit and Wire Size_CEDT")
+                or _lookup_param_value(feeder_system, "Wire Size_CEDT")
+            )
+            equip.feeder_wire_text = str(wire_text or "").strip()
+            equip.alt_feeds = [feed[:3] for feed in feeds[1:]]
+
+        for branch in tnode.downstream:
+            system = branch.system
+            try:
+                if system.CircuitType != DBE.CircuitType.Circuit:
+                    continue
+            except Exception:
+                pass
+            if _one_line_system_feeds_equipment(system):
+                continue
+            amps, kva = _one_line_load_metrics(system)
+            equip.loads.append(OneLineLoad(
+                _elid_value(branch.element_id),
+                branch.circuit_number,
+                branch.load_name,
+                amps,
+                kva,
+                is_large=bool(amps >= LARGE_LOAD_MIN_AMPS or kva >= LARGE_LOAD_MIN_KVA),
+            ))
+        equip.loads.sort(key=lambda ld: -max(ld.amps, ld.kva))
+        equips[eid] = equip
+
+    for equip in equips.values():
+        if equip.parent_id and equip.parent_id in equips:
+            equips[equip.parent_id].children.append(equip.element_id)
+        elif equip.parent_id:
+            equip.parent_id = None
+            equip.feeder_circuit_id = 0
+            equip.feeder_label = ""
+            equip.feeder_breaker_text = ""
+            equip.feeder_wire_text = ""
+
+    # Keep only equipment that participates in distribution.
+    keep = {}
+    for eid, equip in equips.items():
+        if equip.parent_id or equip.children or equip.loads:
+            keep[eid] = equip
+    hidden = len(equips) - len(keep)
+
+    for equip in keep.values():
+        equip.children = sorted(
+            [cid for cid in equip.children if cid in keep],
+            key=lambda cid: str(keep[cid].name).upper(),
+        )
+        equip.alt_feeds = [feed for feed in equip.alt_feeds if feed[0] in keep]
+
+    # Voltage tiers, highest at the top like a classic one line.
+    voltage_keys = sorted(
+        set([int(round(equip.voltage)) for equip in keep.values() if equip.voltage]),
+        reverse=True,
+    )
+    vtier = dict([(volts, idx) for idx, volts in enumerate(voltage_keys)])
+
+    def _voltage_tier(equip, default):
+        if not equip.voltage:
+            return default
+        return vtier.get(int(round(equip.voltage)), default)
+
+    roots = [equip for equip in keep.values() if not equip.parent_id]
+    visited = set()
+
+    def _bfs_assign(start_ids):
+        queue = list(start_ids)
+        while queue:
+            eid = queue.pop(0)
+            if eid in visited:
+                continue
+            visited.add(eid)
+            node = keep[eid]
+            for cid in node.children:
+                child = keep[cid]
+                child.tier = max(child.tier, _voltage_tier(child, node.tier + 1), node.tier + 1)
+                if cid not in visited:
+                    queue.append(cid)
+
+    for root in roots:
+        root.tier = _voltage_tier(root, 0)
+    _bfs_assign([root.element_id for root in roots])
+
+    # Anything unreachable is part of a feed cycle - break it and treat as root.
+    for eid in list(keep.keys()):
+        if eid in visited:
+            continue
+        node = keep[eid]
+        old_parent = keep.get(node.parent_id) if node.parent_id else None
+        if old_parent is not None and eid in old_parent.children:
+            old_parent.children.remove(eid)
+        node.parent_id = None
+        node.tier = _voltage_tier(node, 0)
+        roots.append(node)
+        _bfs_assign([eid])
+
+    return {
+        "nodes": keep,
+        "roots": sorted(roots, key=lambda r: (r.tier, str(r.name).upper())),
+        "hidden_isolated": hidden,
+        "load_count": sum([len(equip.loads) for equip in keep.values()]),
+        "large_load_count": sum([len([ld for ld in equip.loads if ld.is_large]) for equip in keep.values()]),
+    }
+
+
+class OneLineDiagramWindow(forms.WPFWindow):
+    CARD_W_FULL = 186.0
+    CARD_H_FULL = 86.0
+    CARD_W_COMPACT = 124.0
+    CARD_H_COMPACT = 44.0
+    LOAD_W = 150.0
+    LOAD_H = 34.0
+    SLOT_GAP = 26.0
+    TIER_VGAP = 96.0
+    MARGIN_LEFT = 112.0
+    MARGIN_TOP = 42.0
+
+    def __init__(self, pane, model, theme_mode="light", accent_mode="blue"):
+        xaml = os.path.abspath(os.path.join(_THIS_DIR, "OneLineDiagramWindow.xaml"))
+        self._theme_mode = theme_mode or "light"
+        self._accent_mode = accent_mode or "blue"
+        forms.WPFWindow.__init__(self, xaml)
+        _try_apply_theme(self)
+        self._pane = pane
+        self._logger = script.get_logger()
+        self._model = model or {}
+        self._compact_cards = False
+        self._zoom = 1.0
+        self._canvas = self.FindName("DiagramCanvas")
+        self._scroll = self.FindName("DiagramScroll")
+        self._status_text = self.FindName("OneLineStatusText")
+        self._card_mode_button = self.FindName("CardModeButton")
+        self._loads_mode_button = self.FindName("LoadsModeButton")
+        self._cards_by_id = {}
+        self._drag_candidate = None
+        self._drag_source_id = None
+        self._valid_targets = set()
+        self._highlighted = []
+        self._move_in_flight = False
+        self._loads_mode = "large"  # large | all | none
+        self._pan_active = False
+        self._pan_origin = None
+        self._pan_start_h = 0.0
+        self._pan_start_v = 0.0
+        self._render()
+
+    # ---- infrastructure -------------------------------------------------
+
+    def _set_status(self, message):
+        if self._status_text is not None:
+            try:
+                self._status_text.Text = str(message or "")
+            except Exception:
+                pass
+
+    def _brush(self, key, fallback_hex):
+        try:
+            resource = self.TryFindResource(key)
+            if resource is not None:
+                return resource
+        except Exception:
+            pass
+        try:
+            return BrushConverter().ConvertFromString(fallback_hex)
+        except Exception:
+            return None
+
+    def _text(self, content, style_key, bold=False, size=None):
+        block = TextBlock()
+        block.Text = str(content or "")
+        _set_if_resource(self, block, "Style", style_key)
+        block.TextTrimming = TextTrimming.CharacterEllipsis
+        if bold:
+            block.FontWeight = FontWeights.SemiBold
+        if size:
+            block.FontSize = float(size)
+        return block
+
+    def _card_size(self):
+        if self._compact_cards:
+            return self.CARD_W_COMPACT, self.CARD_H_COMPACT
+        return self.CARD_W_FULL, self.CARD_H_FULL
+
+    @staticmethod
+    def _fmt_voltage(volts):
+        if not volts:
+            return ""
+        try:
+            volts = float(volts)
+        except Exception:
+            return ""
+        if volts >= 1000.0:
+            return "{:.4g} kV".format(volts / 1000.0)
+        return "{} V".format(int(round(volts)))
+
+    def _visible_loads(self, equip):
+        if self._loads_mode == "none":
+            return []
+        if self._loads_mode == "all":
+            return list(equip.loads or [])
+        return [load for load in (equip.loads or []) if load.is_large]
+
+    def _summary_text(self):
+        nodes = (self._model or {}).get("nodes") or {}
+        shown = sum([len(self._visible_loads(equip)) for equip in nodes.values()])
+        total = int((self._model or {}).get("load_count", 0) or 0)
+        mode_label = {"large": "50 HP+", "all": "all", "none": "hidden"}.get(self._loads_mode, self._loads_mode)
+        return "{} equipment | loads: {}/{} ({}) | {} isolated hidden".format(
+            len(nodes),
+            shown,
+            total,
+            mode_label,
+            int((self._model or {}).get("hidden_isolated", 0) or 0),
+        )
+
+    # ---- rendering -------------------------------------------------------
+
+    def _add_line(self, x1, y1, x2, y2, thickness=1.6, dashed=False):
+        line = ShapeLine()
+        line.X1 = float(x1)
+        line.Y1 = float(y1)
+        line.X2 = float(x2)
+        line.Y2 = float(y2)
+        line.Stroke = self._line_brush
+        line.StrokeThickness = float(thickness)
+        if dashed:
+            try:
+                line.StrokeDashArray = DoubleCollection([4.0, 3.0])
+            except Exception:
+                pass
+        self._canvas.Children.Add(line)
+
+    def _add_breaker_symbol(self, center_x, top_y, size=9.0):
+        """Small square on a feeder drop, like the breaker symbols on a one line."""
+        square = ShapeRectangle()
+        square.Width = float(size)
+        square.Height = float(size)
+        square.Stroke = self._line_brush
+        square.StrokeThickness = 1.4
+        square.Fill = self._brush("CED.Brush.ListBackground", "#FFFFFF")
+        Canvas.SetLeft(square, float(center_x) - size / 2.0)
+        Canvas.SetTop(square, float(top_y))
+        self._canvas.Children.Add(square)
+
+    def _add_feeder_labels(self, child, center_x, bus_y, slot_w):
+        """Breaker rating and wire size annotated beside the child's feeder drop."""
+        label_x = float(center_x) + 8.0
+        max_width = max(60.0, float(slot_w) - 34.0)
+        if child.feeder_breaker_text:
+            breaker_block = self._text(child.feeder_breaker_text, "CED.Text.Secondary", size=10)
+            breaker_block.MaxWidth = max_width
+            Canvas.SetLeft(breaker_block, label_x)
+            Canvas.SetTop(breaker_block, float(bus_y) + 6.0)
+            self._canvas.Children.Add(breaker_block)
+        if child.feeder_wire_text:
+            wire_block = self._text(child.feeder_wire_text, "CED.Text.Secondary", size=10)
+            wire_block.MaxWidth = max_width
+            wire_block.ToolTip = child.feeder_wire_text
+            Canvas.SetLeft(wire_block, label_x)
+            Canvas.SetTop(wire_block, float(bus_y) + 20.0)
+            self._canvas.Children.Add(wire_block)
+
+    def _render(self):
+        canvas = self._canvas
+        if canvas is None:
+            return
+        canvas.Children.Clear()
+        self._cards_by_id = {}
+        self._line_brush = self._brush("CED.Brush.ListBorder", "#7A8698")
+        self._accent_brush = self._brush("CED.Brush.InfoPanelBorder", "#2F81F7")
+
+        nodes = (self._model or {}).get("nodes") or {}
+        roots = (self._model or {}).get("roots") or []
+        if not nodes:
+            canvas.Width = 400.0
+            canvas.Height = 200.0
+            self._set_status("No connected electrical equipment found")
+            return
+
+        card_w, card_h = self._card_size()
+        slot_w = card_w + self.SLOT_GAP
+
+        tier_count = max([equip.tier for equip in nodes.values()]) + 1
+        max_loads = [0] * tier_count
+        for equip in nodes.values():
+            max_loads[equip.tier] = max(max_loads[equip.tier], len(self._visible_loads(equip)))
+
+        tier_tops = []
+        y_cursor = self.MARGIN_TOP
+        for tier in range(tier_count):
+            tier_tops.append(y_cursor)
+            extra = (14.0 + max_loads[tier] * (self.LOAD_H + 8.0)) if max_loads[tier] else 0.0
+            y_cursor += card_h + extra + self.TIER_VGAP
+        total_height = y_cursor + 40.0
+
+        # --- horizontal layout: DFS slot allocation, parents centered ------
+        slot_cache = {}
+
+        def subtree_slots(eid, stack):
+            if eid in slot_cache:
+                return slot_cache[eid]
+            if eid in stack or eid not in nodes:
+                return 1.0
+            node = nodes[eid]
+            stack.add(eid)
+            total = 0.0
+            for cid in node.children:
+                total += subtree_slots(cid, stack)
+            stack.discard(eid)
+            width = max(1.0, total)
+            slot_cache[eid] = width
+            return width
+
+        positions = {}
+        placed = set()
+
+        def place(eid, start):
+            if eid in placed or eid not in nodes:
+                return start
+            placed.add(eid)
+            node = nodes[eid]
+            width = subtree_slots(eid, set())
+            if node.children:
+                cursor = start
+                centers = []
+                for cid in node.children:
+                    child_width = subtree_slots(cid, set())
+                    place(cid, cursor)
+                    if cid in positions:
+                        centers.append(positions[cid])
+                    cursor += child_width
+                if centers:
+                    positions[eid] = (centers[0] + centers[-1]) / 2.0
+                else:
+                    positions[eid] = self.MARGIN_LEFT + (start + width / 2.0) * slot_w
+            else:
+                positions[eid] = self.MARGIN_LEFT + (start + width / 2.0) * slot_w
+            return start + width
+
+        slot_cursor = 0.0
+        for root in roots:
+            slot_cursor = place(root.element_id, slot_cursor)
+        total_width = self.MARGIN_LEFT + slot_cursor * slot_w + 80.0
+
+        canvas.Width = max(total_width, 640.0)
+        canvas.Height = max(total_height, 360.0)
+
+        # --- tier labels ----------------------------------------------------
+        for tier in range(tier_count):
+            tier_volts = [equip.voltage for equip in nodes.values() if equip.tier == tier and equip.voltage]
+            label = ""
+            if tier_volts:
+                rounded = set([int(round(v)) for v in tier_volts])
+                if len(rounded) == 1:
+                    label = self._fmt_voltage(tier_volts[0])
+            if label:
+                text = self._text(label, "CED.Text.CaptionStrong", bold=True)
+                Canvas.SetLeft(text, 10.0)
+                Canvas.SetTop(text, tier_tops[tier] + card_h / 2.0 - 9.0)
+                canvas.Children.Add(text)
+
+        # --- connectors (drawn under cards) --------------------------------
+        for equip in nodes.values():
+            if equip.element_id not in positions:
+                continue
+            ex = positions[equip.element_id]
+            e_bottom = tier_tops[equip.tier] + card_h
+
+            drawn_children = [cid for cid in equip.children if cid in positions]
+            if drawn_children:
+                bus_y = min([tier_tops[nodes[cid].tier] for cid in drawn_children]) - 52.0
+                span_xs = [positions[cid] for cid in drawn_children] + [ex]
+                self._add_line(ex, e_bottom, ex, bus_y, 2.0)
+                self._add_line(min(span_xs), bus_y, max(span_xs), bus_y, 3.2)
+                for cid in drawn_children:
+                    child = nodes[cid]
+                    cx = positions[cid]
+                    child_top = tier_tops[child.tier]
+                    self._add_line(cx, bus_y, cx, child_top, 1.6)
+                    self._add_breaker_symbol(cx, bus_y + 7.0)
+                    self._add_feeder_labels(child, cx, bus_y, slot_w)
+
+            for feed in equip.alt_feeds:
+                pid = feed[0]
+                if pid not in positions:
+                    continue
+                px = positions[pid]
+                p_bottom = tier_tops[nodes[pid].tier] + card_h
+                nx = ex + card_w * 0.25
+                ny = tier_tops[equip.tier]
+                mid_y = ny - 12.0
+                self._add_line(px, p_bottom, px, mid_y, 1.3, dashed=True)
+                self._add_line(px, mid_y, nx, mid_y, 1.3, dashed=True)
+                self._add_line(nx, mid_y, nx, ny, 1.3, dashed=True)
+
+            visible_loads = self._visible_loads(equip)
+            if visible_loads:
+                last_top = e_bottom + 14.0 + (len(visible_loads) - 1) * (self.LOAD_H + 8.0)
+                self._add_line(ex, e_bottom, ex, last_top + self.LOAD_H / 2.0, 1.4)
+
+        # --- equipment cards ------------------------------------------------
+        for equip in nodes.values():
+            if equip.element_id not in positions:
+                continue
+            ex = positions[equip.element_id]
+            ey = tier_tops[equip.tier]
+            card = self._make_equip_card(equip, card_w, card_h)
+            Canvas.SetLeft(card, ex - card_w / 2.0)
+            Canvas.SetTop(card, ey)
+            canvas.Children.Add(card)
+            self._cards_by_id[equip.element_id] = card
+
+            for idx, load in enumerate(self._visible_loads(equip)):
+                load_top = ey + card_h + 14.0 + idx * (self.LOAD_H + 8.0)
+                load_card = self._make_load_card(load)
+                Canvas.SetLeft(load_card, ex - self.LOAD_W / 2.0)
+                Canvas.SetTop(load_card, load_top)
+                canvas.Children.Add(load_card)
+
+        self._apply_zoom()
+        if not self._move_in_flight:
+            self._set_status(self._summary_text())
+
+    def _make_equip_card(self, equip, card_w, card_h):
+        border = Border()
+        border.Width = card_w
+        border.Height = card_h
+        border.CornerRadius = CornerRadius(4.0)
+        border.Background = self._brush("CED.Brush.InfoPanelBackground", "#F2F5F8")
+        border.BorderBrush = self._brush("CED.Brush.ListBorder", "#7A8698")
+        is_heavy = equip.equip_type in ("Switchboard", "Transformer")
+        border.BorderThickness = Thickness(2.0 if is_heavy else 1.2)
+        border.Tag = str(equip.element_id)
+        border.AllowDrop = True
+
+        stack = StackPanel()
+        stack.Margin = Thickness(7.0, 4.0, 7.0, 3.0)
+        stack.Children.Add(self._text(equip.name, "CED.Text.Primary", bold=True))
+        subtitle_parts = []
+        if equip.equip_type and equip.equip_type != "Unknown":
+            subtitle_parts.append("XFMR" if equip.equip_type == "Transformer" else equip.equip_type)
+        voltage_text = self._fmt_voltage(equip.voltage)
+        if voltage_text:
+            subtitle_parts.append(voltage_text)
+        stack.Children.Add(self._text(" | ".join(subtitle_parts) or "-", "CED.Text.Secondary", size=11))
+        if not self._compact_cards:
+            fed_text = "Fed: {}".format(equip.feeder_label) if equip.feeder_label else "Source"
+            if equip.alt_feeds:
+                fed_text += "  (+{} alt)".format(len(equip.alt_feeds))
+            stack.Children.Add(self._text(fed_text, "CED.Text.Secondary", size=11))
+
+            ratings_parts = []
+            if equip.rating_text:
+                ratings_parts.append(equip.rating_text)
+            demand_parts = []
+            if equip.demand_load_text:
+                demand_parts.append(equip.demand_load_text)
+            if equip.demand_current_text:
+                demand_parts.append(equip.demand_current_text)
+            if demand_parts:
+                ratings_parts.append("Dmd: {}".format(" / ".join(demand_parts)))
+            if ratings_parts:
+                stack.Children.Add(self._text(" | ".join(ratings_parts), "CED.Text.Secondary", size=10.5))
+        border.Child = stack
+
+        tooltip_lines = [
+            equip.name,
+            "Type: {}".format(equip.equip_type),
+        ]
+        if equip.dist_name:
+            tooltip_lines.append("Dist System: {}".format(equip.dist_name))
+        if voltage_text:
+            tooltip_lines.append("Voltage: {}".format(voltage_text))
+        if equip.rating_text:
+            tooltip_lines.append("Mains Rating: {}".format(equip.rating_text))
+        if equip.demand_load_text:
+            tooltip_lines.append("Total Demand Load: {}".format(equip.demand_load_text))
+        if equip.demand_current_text:
+            tooltip_lines.append("Total Demand Current: {}".format(equip.demand_current_text))
+        tooltip_lines.append("Fed from: {}".format(equip.feeder_label or "- (source)"))
+        if equip.feeder_breaker_text:
+            tooltip_lines.append("Feeder OCP: {}".format(equip.feeder_breaker_text))
+        if equip.feeder_wire_text:
+            tooltip_lines.append("Feeder Wire: {}".format(equip.feeder_wire_text))
+        if equip.loads:
+            tooltip_lines.append("Large loads: {}".format(len(equip.loads)))
+        tooltip_lines.append("")
+        tooltip_lines.append("Drag onto new supply equipment to re-feed." if equip.feeder_circuit_id else "No feeder circuit - cannot be moved.")
+        border.ToolTip = "\n".join(tooltip_lines)
+
+        border.PreviewMouseLeftButtonDown += self._card_mouse_down
+        border.PreviewMouseMove += self._card_mouse_move
+        border.DragOver += self._card_drag_over
+        border.Drop += self._card_drop
+        return border
+
+    def _make_load_card(self, load):
+        border = Border()
+        border.Width = self.LOAD_W
+        border.Height = self.LOAD_H
+        border.CornerRadius = CornerRadius(3.0)
+        border.Background = self._brush("CED.Brush.ListBackground", "#FFFFFF")
+        border.BorderBrush = self._brush("CED.Brush.ListBorder", "#7A8698")
+        border.BorderThickness = Thickness(3.0, 1.0, 1.0, 1.0)
+
+        stack = StackPanel()
+        stack.Margin = Thickness(6.0, 2.0, 6.0, 2.0)
+        stack.Children.Add(self._text(load.name, "CED.Text.Primary", size=11))
+        stack.Children.Add(self._text(load.metrics_text(), "CED.Text.Secondary", size=10))
+        border.Child = stack
+        border.ToolTip = "{}\n{}".format(load.name, load.metrics_text())
+        return border
+
+    # ---- drag & drop re-feed ---------------------------------------------
+
+    def _card_mouse_down(self, sender, args):
+        try:
+            eid = int(sender.Tag)
+        except Exception:
+            return
+        if getattr(args, "ClickCount", 1) == 2:
+            self._select_equipment_in_model(eid)
+            args.Handled = True
+            return
+        try:
+            self._drag_candidate = (eid, args.GetPosition(self._canvas))
+        except Exception:
+            self._drag_candidate = None
+
+    def _card_mouse_move(self, sender, args):
+        if self._drag_candidate is None:
+            return
+        try:
+            if args.LeftButton != MouseButtonState.Pressed:
+                self._drag_candidate = None
+                return
+            eid, origin = self._drag_candidate
+            pos = args.GetPosition(self._canvas)
+            if abs(pos.X - origin.X) < 5.0 and abs(pos.Y - origin.Y) < 5.0:
+                return
+        except Exception:
+            self._drag_candidate = None
+            return
+        self._drag_candidate = None
+        self._begin_drag(eid, sender)
+
+    def _begin_drag(self, eid, border):
+        if self._move_in_flight:
+            self._set_status("A move is already running - please wait")
+            return
+        nodes = (self._model or {}).get("nodes") or {}
+        node = nodes.get(eid)
+        if node is None:
+            return
+        if not node.feeder_circuit_id:
+            self._set_status("'{}' has no feeder circuit to move".format(node.name))
+            return
+        targets = self._compute_valid_targets(node)
+        if not targets:
+            self._set_status("No compatible re-feed targets for '{}'".format(node.name))
+            return
+        self._drag_source_id = eid
+        self._valid_targets = targets
+        self._highlight_targets(targets)
+        self._set_status("Drop '{}' on a highlighted card to re-feed it".format(node.name))
+        try:
+            data = DataObject("ced_oneline_equip", str(eid))
+            DragDrop.DoDragDrop(border, data, DragDropEffects.Move)
+        except Exception as ex:
+            self._logger.warning("One line drag failed: %s", ex)
+        finally:
+            self._clear_highlights()
+            self._drag_source_id = None
+            self._valid_targets = set()
+            if not self._move_in_flight:
+                self._set_status(self._summary_text())
+
+    def _descendants(self, eid):
+        nodes = (self._model or {}).get("nodes") or {}
+        result = set()
+        queue = list((nodes.get(eid).children if nodes.get(eid) else []) or [])
+        while queue:
+            cid = queue.pop(0)
+            if cid in result:
+                continue
+            result.add(cid)
+            child = nodes.get(cid)
+            if child is not None:
+                queue.extend(child.children)
+        return result
+
+    def _compute_valid_targets(self, node):
+        doc = self._pane._get_active_doc()
+        if doc is None:
+            return set()
+        circuit = None
+        try:
+            circuit = doc.GetElement(revit_helpers.elementid_from_value(int(node.feeder_circuit_id)))
+        except Exception:
+            circuit = None
+        if circuit is None:
+            return set()
+        try:
+            compat = get_compatible_panels(circuit, list(get_all_panels(doc) or []), doc) or []
+        except Exception as ex:
+            self._logger.warning("One line compatibility check failed: %s", ex)
+            compat = []
+        compat_ids = set([_elid_value(panel.Id) for panel in compat])
+        nodes = (self._model or {}).get("nodes") or {}
+        blocked = set([node.element_id])
+        if node.parent_id:
+            blocked.add(node.parent_id)
+        blocked |= self._descendants(node.element_id)
+        return set([eid for eid in nodes if eid in compat_ids and eid not in blocked])
+
+    def _highlight_targets(self, targets):
+        self._clear_highlights()
+        for eid in targets:
+            card = self._cards_by_id.get(eid)
+            if card is None:
+                continue
+            self._highlighted.append((card, card.BorderBrush, card.BorderThickness))
+            try:
+                card.BorderBrush = self._accent_brush
+                card.BorderThickness = Thickness(2.6)
+            except Exception:
+                pass
+
+    def _clear_highlights(self):
+        for card, brush, thickness in self._highlighted:
+            try:
+                card.BorderBrush = brush
+                card.BorderThickness = thickness
+            except Exception:
+                pass
+        self._highlighted = []
+
+    def _card_drag_over(self, sender, args):
+        try:
+            eid = int(sender.Tag)
+        except Exception:
+            eid = 0
+        args.Effects = DragDropEffects.Move if eid in self._valid_targets else _DND_EFFECT_NONE
+        args.Handled = True
+
+    def _card_drop(self, sender, args):
+        args.Handled = True
+        try:
+            target_id = int(sender.Tag)
+        except Exception:
+            return
+        source_id = self._drag_source_id
+        try:
+            if args.Data is not None and args.Data.GetDataPresent("ced_oneline_equip"):
+                source_id = int(str(args.Data.GetData("ced_oneline_equip")))
+        except Exception:
+            pass
+        if not source_id or target_id not in self._valid_targets:
+            return
+        self._request_refeed(source_id, target_id)
+
+    def _request_refeed(self, source_id, target_id):
+        nodes = (self._model or {}).get("nodes") or {}
+        source = nodes.get(source_id)
+        target = nodes.get(target_id)
+        if source is None or target is None:
+            return
+        doc = self._pane._get_active_doc()
+        if doc is None:
+            return
+        target_elem = None
+        try:
+            target_elem = doc.GetElement(revit_helpers.elementid_from_value(int(target_id)))
+        except Exception:
+            target_elem = None
+        if target_elem is None:
+            return
+        if not panel_has_schedule_view(doc, target_elem):
+            forms.alert(
+                "'{}' does not have a panel schedule view yet.\n\n"
+                "Create the panel schedule first, then retry the re-feed.".format(target.name),
+                title=ONE_LINE_TITLE,
+            )
+            return
+        if self._pane._move_gateway.is_busy() or self._pane._operation_gateway.is_busy():
+            forms.alert("An operation is already running. Please wait.", title=ONE_LINE_TITLE)
+            return
+
+        move_circuit_id, move_feed_label = self._pick_feed_to_move(source, target)
+        if not move_circuit_id:
+            self._set_status(self._summary_text())
+            return
+        if int(move_circuit_id) != int(source.feeder_circuit_id):
+            if not self._validate_alt_feed_target(doc, move_circuit_id, target_id, target.name):
+                self._set_status(self._summary_text())
+                return
+
+        message = (
+            "Re-feed '{}'?\n\n"
+            "Feeder circuit: {}\n"
+            "New supply: {}\n\n"
+            "This moves the actual feeder circuit in the model (recalculation included). "
+            "If the target is full, you will be offered the option to overwrite spares."
+        ).format(source.name, move_feed_label or "?", target.name)
+        if not forms.alert(message, title=ONE_LINE_TITLE, ok=False, yes=True, no=True):
+            self._set_status(self._summary_text())
+            return
+        self._move_in_flight = True
+        self._set_status("Moving '{}' to '{}'...".format(source.name, target.name))
+        raised = self._pane._move_gateway.raise_move(
+            circuit_ids=[int(move_circuit_id)],
+            target_panel_id=int(target_id),
+            callback=self._on_refeed_complete,
+            clear_spares=True,
+        )
+        if not raised:
+            self._move_in_flight = False
+            self._set_status("Unable to queue the move operation")
+
+    def _pick_feed_to_move(self, source, target):
+        """Return (circuit_id, label) of the feed to move; prompts when multi-fed.
+
+        Returns (0, "") when the user cancels the prompt.
+        """
+        feed_options = [(int(source.feeder_circuit_id), source.feeder_label or "?")]
+        for feed in list(source.alt_feeds or []):
+            try:
+                feed_options.append((int(feed[1]), str(feed[2] or "?")))
+            except Exception:
+                continue
+        if len(feed_options) <= 1:
+            return feed_options[0] if feed_options else (0, "")
+
+        label_map = {}
+        labels = []
+        for idx, (circuit_id, label) in enumerate(feed_options):
+            text = label or "Feed {}".format(idx + 1)
+            if idx == 0:
+                text = "{}  (primary)".format(text)
+            while text in label_map:
+                text = "{} .".format(text)
+            label_map[text] = (circuit_id, label)
+            labels.append(text)
+
+        choice = forms.alert(
+            "'{}' has {} feed sources.\n\nWhich feed should move to '{}'?".format(
+                source.name, len(feed_options), target.name
+            ),
+            title=ONE_LINE_TITLE,
+            options=labels,
+        )
+        if not choice or choice not in label_map:
+            return 0, ""
+        return label_map[choice]
+
+    def _validate_alt_feed_target(self, doc, circuit_id, target_id, target_name):
+        """Re-check compatibility when a non-primary feed was chosen at drop time
+        (the drag highlights were computed for the primary feeder)."""
+        circuit = None
+        try:
+            circuit = doc.GetElement(revit_helpers.elementid_from_value(int(circuit_id)))
+        except Exception:
+            circuit = None
+        if circuit is None:
+            return False
+        try:
+            base = getattr(circuit, "BaseEquipment", None)
+            if base is not None and _elid_value(base.Id) == int(target_id):
+                forms.alert(
+                    "That feed already comes from '{}'.".format(target_name),
+                    title=ONE_LINE_TITLE,
+                )
+                return False
+        except Exception:
+            pass
+        try:
+            compat = get_compatible_panels(circuit, list(get_all_panels(doc) or []), doc) or []
+        except Exception as ex:
+            self._logger.warning("Alt feed compatibility check failed: %s", ex)
+            compat = []
+        if int(target_id) not in set([_elid_value(panel.Id) for panel in compat]):
+            forms.alert(
+                "The selected feed circuit is not compatible with '{}' (voltage/poles).".format(target_name),
+                title=ONE_LINE_TITLE,
+            )
+            return False
+        return True
+
+    def _on_refeed_complete(self, status, payload, error):
+        self._move_in_flight = False
+        if status == "error":
+            self._set_status("Move failed")
+            forms.alert("Failed to re-feed equipment:\n\n{}".format(error), title=ONE_LINE_TITLE)
+            return
+        try:
+            self._pane._safe_load_items()
+        except Exception:
+            pass
+        self._rebuild()
+
+    def _select_equipment_in_model(self, eid):
+        doc = self._pane._get_active_doc()
+        if doc is None:
+            return
+        try:
+            elem = doc.GetElement(revit_helpers.elementid_from_value(int(eid)))
+        except Exception:
+            elem = None
+        if elem is None:
+            return
+        try:
+            self._pane._set_revit_selection([elem])
+        except Exception:
+            pass
+
+    # ---- toolbar ----------------------------------------------------------
+
+    def _rebuild(self):
+        doc = self._pane._get_active_doc()
+        if doc is None:
+            self._set_status("No active document")
+            return
+        try:
+            self._model = _build_one_line_model(doc)
+        except Exception as ex:
+            self._logger.exception("One line rebuild failed: %s", ex)
+            forms.alert("Failed to rebuild the one line diagram:\n\n{}".format(ex), title=ONE_LINE_TITLE)
+            return
+        self._render()
+
+    def refresh_diagram_clicked(self, sender, args):
+        self._rebuild()
+
+    def toggle_card_mode_clicked(self, sender, args):
+        self._compact_cards = not self._compact_cards
+        if self._card_mode_button is not None:
+            self._card_mode_button.Content = "Full Cards" if self._compact_cards else "Compact Cards"
+        self._render()
+
+    def _apply_zoom(self):
+        try:
+            self._canvas.LayoutTransform = ScaleTransform(self._zoom, self._zoom)
+        except Exception:
+            pass
+
+    def _set_zoom(self, zoom):
+        self._zoom = max(0.3, min(2.5, float(zoom)))
+        self._apply_zoom()
+
+    def zoom_in_clicked(self, sender, args):
+        self._set_zoom(self._zoom * 1.15)
+
+    def zoom_out_clicked(self, sender, args):
+        self._set_zoom(self._zoom / 1.15)
+
+    def zoom_reset_clicked(self, sender, args):
+        self._set_zoom(1.0)
+
+    def toggle_loads_mode_clicked(self, sender, args):
+        order = {"large": "all", "all": "none", "none": "large"}
+        self._loads_mode = order.get(self._loads_mode, "large")
+        if self._loads_mode_button is not None:
+            labels = {"large": "Loads: 50 HP+", "all": "Loads: All", "none": "Loads: None"}
+            self._loads_mode_button.Content = labels.get(self._loads_mode, "Loads")
+        self._render()
+
+    def diagram_preview_mouse_wheel(self, sender, args):
+        # Wheel zooms, anchored at the cursor so the point under the mouse stays put.
+        try:
+            position = args.GetPosition(self._scroll)
+            old_zoom = self._zoom
+            self._set_zoom(old_zoom * (1.1 if args.Delta > 0 else 1.0 / 1.1))
+            if abs(self._zoom - old_zoom) > 1e-9 and self._scroll is not None:
+                scale = self._zoom / old_zoom
+                self._scroll.UpdateLayout()
+                self._scroll.ScrollToHorizontalOffset(
+                    (self._scroll.HorizontalOffset + position.X) * scale - position.X
+                )
+                self._scroll.ScrollToVerticalOffset(
+                    (self._scroll.VerticalOffset + position.Y) * scale - position.Y
+                )
+            args.Handled = True
+        except Exception:
+            pass
+
+    @staticmethod
+    def _find_card_ancestor(source):
+        current = source
+        while current is not None:
+            if isinstance(current, Border) and getattr(current, "Tag", None):
+                return current
+            if isinstance(current, ScrollViewer):
+                return None
+            try:
+                current = VisualTreeHelper.GetParent(current)
+            except Exception:
+                return None
+        return None
+
+    def diagram_pan_mouse_down(self, sender, args):
+        try:
+            changed = args.ChangedButton
+        except Exception:
+            return
+        if changed == MouseButton.Left:
+            # Equipment cards keep their drag gesture; empty space pans.
+            source = getattr(args, "OriginalSource", None)
+            if source is not None and self._find_card_ancestor(source) is not None:
+                return
+        elif changed != MouseButton.Middle:
+            return
+        if self._scroll is None:
+            return
+        self._pan_active = True
+        self._pan_origin = args.GetPosition(self._scroll)
+        self._pan_start_h = self._scroll.HorizontalOffset
+        self._pan_start_v = self._scroll.VerticalOffset
+        try:
+            self._scroll.CaptureMouse()
+        except Exception:
+            pass
+        if changed == MouseButton.Middle:
+            args.Handled = True
+
+    def diagram_pan_mouse_move(self, sender, args):
+        if not self._pan_active or self._scroll is None:
+            return
+        try:
+            position = args.GetPosition(self._scroll)
+            self._scroll.ScrollToHorizontalOffset(self._pan_start_h - (position.X - self._pan_origin.X))
+            self._scroll.ScrollToVerticalOffset(self._pan_start_v - (position.Y - self._pan_origin.Y))
+            args.Handled = True
+        except Exception:
+            pass
+
+    def diagram_pan_mouse_up(self, sender, args):
+        if not self._pan_active:
+            return
+        self._pan_active = False
+        self._pan_origin = None
+        try:
+            self._scroll.ReleaseMouseCapture()
+        except Exception:
+            pass
+
+    def close_clicked(self, sender, args):
+        self.Close()
 
 
 class CircuitBrowserPanel(forms.WPFPanel):
@@ -2578,6 +4186,10 @@ class CircuitBrowserPanel(forms.WPFPanel):
             logger=self._logger,
             alert_parameter_name=ALERT_DATA_PARAM,
         )
+        self._inject_gateway = InjectDetailItemExternalEventGateway(logger=self._logger)
+        self._active_view_is_drafting = False
+        self._refresh_active_view_state()
+        self._one_line_window = None
         self._lock_repository = RevitCircuitRepository()
 
         self._list = self.FindName("CircuitList")
@@ -2862,6 +4474,23 @@ class CircuitBrowserPanel(forms.WPFPanel):
         except Exception:
             return True
 
+    @staticmethod
+    def _view_is_drafting(view):
+        try:
+            return view is not None and view.ViewType == DB.ViewType.DraftingView
+        except Exception:
+            return False
+
+    def _refresh_active_view_state(self):
+        view = None
+        try:
+            uiapp = self._get_uiapp()
+            uidoc = getattr(uiapp, "ActiveUIDocument", None) if uiapp is not None else None
+            view = getattr(uidoc, "ActiveView", None) if uidoc is not None else None
+        except Exception:
+            view = None
+        self._active_view_is_drafting = self._view_is_drafting(view)
+
     def _attach_event_handlers(self):
         if self._events_attached:
             return True
@@ -2938,6 +4567,10 @@ class CircuitBrowserPanel(forms.WPFPanel):
         self._safe_load_items(doc_override=doc)
 
     def _on_view_activated(self, sender, args):
+        try:
+            self._active_view_is_drafting = self._view_is_drafting(getattr(args, "CurrentActiveView", None))
+        except Exception:
+            self._active_view_is_drafting = False
         if not self._is_pane_visible():
             return
         try:
@@ -4612,6 +6245,82 @@ class CircuitBrowserPanel(forms.WPFPanel):
         if not raised:
             self._set_status("Unable to queue move operation")
 
+    def _get_inject_menu_state(self):
+        if not self._active_view_is_drafting:
+            return False, "Available only when the active view is a drafting view."
+        checked = [x for x in self._all_items if x.is_checked]
+        if not checked:
+            return False, "Check the circuit to inject first."
+        if len(checked) > 1:
+            return False, "Check exactly one circuit ({} are checked).".format(len(checked))
+        if self._inject_gateway is not None and self._inject_gateway.is_busy():
+            return False, "Another inject operation is still running."
+        return True, ""
+
+    def action_inject_into_detail_item_clicked(self, sender, args):
+        checked = [x for x in self._all_items if x.is_checked]
+        if len(checked) != 1:
+            self._set_status("Check exactly one circuit to inject")
+            return
+        if self._inject_gateway.is_busy() or self._operation_gateway.is_busy():
+            forms.alert("An operation is already running. Please wait.", title=TITLE)
+            return
+        item = checked[0]
+        self._set_status(
+            "Injecting {} / {} into detail item...".format(item.panel, item.circuit_number)
+        )
+        raised = self._inject_gateway.raise_inject(
+            circuit_id=int(getattr(item, "circuit_id", 0) or 0),
+            callback=self._on_inject_detail_item_complete,
+        )
+        if not raised:
+            self._set_status("Unable to queue inject operation")
+
+    def _on_inject_detail_item_complete(self, status, payload, error):
+        payload = dict(payload or {})
+        if status == "error":
+            self._set_status("Inject failed")
+            forms.alert("Failed to inject circuit data:\n\n{}".format(error), title=TITLE)
+            return
+        if status == "not_drafting":
+            self._set_status("Inject cancelled (active view is not a drafting view)")
+            return
+        if status == "too_many":
+            self._set_status("Inject cancelled")
+            forms.alert(
+                "More than one detail item is selected in Revit.\n\n"
+                "Select exactly one detail item and try again.",
+                title=TITLE,
+            )
+            return
+        if status == "grouped":
+            self._set_status("Inject cancelled")
+            forms.alert(
+                "The selected detail item is inside a group.\n\n"
+                "Params on grouped items cannot be updated safely from here - "
+                "use an ungrouped detail item.",
+                title=TITLE,
+            )
+            return
+        if status == "cancelled":
+            self._set_status("Inject cancelled")
+            return
+        if status == "declined":
+            self._set_status("Inject cancelled (mismatch not confirmed)")
+            return
+        written = int(payload.get("written", 0) or 0)
+        panel_written = int(payload.get("panel_written", 0) or 0)
+        panel_label = payload.get("panel_label") or ""
+        label = payload.get("detail_label") or "detail item"
+        source = payload.get("source_label") or "circuit"
+        missing = list(payload.get("missing") or [])
+        if panel_written > 0 and panel_label:
+            source = "{} + panel {}".format(source, panel_label)
+        summary = "Injected {} values from {} into {}".format(written, source, label)
+        if missing:
+            summary += " ({} params not on family)".format(len(missing))
+        self._set_status(summary)
+
     def _is_locked_circuit(self, circuit, doc=None):
         if doc is None:
             doc = self._get_active_doc()
@@ -5964,6 +7673,24 @@ class CircuitBrowserPanel(forms.WPFPanel):
         move_item.IsEnabled = bool(selected_rows)
         move_item.Click += self.action_move_selected_rows_clicked
         menu.Items.Add(move_item)
+
+        sep_inject = Separator()
+        _set_if_resource(self, sep_inject, "Style", "CED.Separator.Menu")
+        menu.Items.Add(sep_inject)
+
+        inject_item = MenuItem()
+        _set_if_resource(self, inject_item, "Style", "CED.MenuItem.Base")
+        inject_item.Header = "Inject Into Detail Item"
+        inject_enabled, inject_reason = self._get_inject_menu_state()
+        inject_item.IsEnabled = inject_enabled
+        if not inject_enabled and inject_reason:
+            inject_item.ToolTip = inject_reason
+            try:
+                ToolTipService.SetShowOnDisabled(inject_item, True)
+            except Exception:
+                pass
+        inject_item.Click += self.action_inject_into_detail_item_clicked
+        menu.Items.Add(inject_item)
         menu.PlacementTarget = self._list
         menu.IsOpen = True
         args.Handled = True
@@ -6127,6 +7854,45 @@ class CircuitBrowserPanel(forms.WPFPanel):
         except Exception:
             pass
         self.selection_changed(None, None)
+
+    def show_one_line_clicked(self, sender, args):
+        if self._one_line_window is not None:
+            try:
+                if self._one_line_window.IsLoaded:
+                    self._one_line_window.Activate()
+                    return
+            except Exception:
+                pass
+            self._one_line_window = None
+
+        doc = self._get_active_doc()
+        if doc is None:
+            forms.alert("Open a model document first.", title=TITLE)
+            return
+
+        self._set_status("Building one line diagram...")
+        try:
+            model = _build_one_line_model(doc)
+        except Exception as ex:
+            self._logger.exception("One line build failed: %s", ex)
+            self._set_status("One line build failed")
+            forms.alert("Failed to build the one line diagram:\n\n{}".format(ex), title=TITLE)
+            return
+
+        window = OneLineDiagramWindow(
+            self,
+            model,
+            theme_mode=self._theme_mode,
+            accent_mode=self._accent_mode,
+        )
+        self._one_line_window = window
+        window.Show()
+        self._set_status(
+            "One line: {} equipment, {} large loads".format(
+                len(model.get("nodes") or {}),
+                int(model.get("load_count", 0) or 0),
+            )
+        )
 
     def calculate_selected_clicked(self, sender, args):
         if not self._has_active_doc():
