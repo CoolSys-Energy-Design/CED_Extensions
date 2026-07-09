@@ -1,5 +1,7 @@
 ﻿# -*- coding: utf-8 -*-
 
+import json
+
 import Autodesk.Revit.DB.Electrical as DBE
 from System import Guid
 from pyrevit import DB, script, revit
@@ -7,6 +9,7 @@ from pyrevit import DB, script, revit
 from CEDElectrical.Model.alerts import Alerts, NoticeCollector
 from CEDElectrical.Model.circuit_settings import (
     CircuitSettings,
+    CircuitVDMethod,
     FeederVDMethod,
     MultiPoleBranchNeutralBehavior,
     NeutralBehavior,
@@ -34,6 +37,8 @@ console = script.get_output()
 logger = script.get_logger()
 DEV_LOGGING = False
 get_elementid = revit_helpers.get_elementid_value
+CIRCUIT_DATA_PARAM_NAME = "Circuit Data_CED"
+CIRCUIT_DATA_VD_METHOD_KEY = "circuit_vd_method"
 
 ALLOWED_WIRE_SIZES = [
     "12", "10", "8", "6", "4", "3", "2", "1",
@@ -242,6 +247,7 @@ class CircuitBranch(object):
     def __init__(self, circuit, settings=None, preview_values=None):
         self.circuit = circuit
         self.settings = settings if settings else CircuitSettings()
+        self._preview_values_raw = dict(preview_values or {})
         self._preview_values_by_guid = self._build_preview_value_map(preview_values)
 
         self.circuit_id = get_elementid(circuit.Id)
@@ -253,6 +259,7 @@ class CircuitBranch(object):
         self._is_transformer_secondary = self._detect_transformer_secondary()
         self._is_transformer_primary = False
         self._is_feeder = self._detect_feeder()
+        self._circuit_vd_method = self._load_circuit_vd_method()
 
         # wire length (Revit length + makeup)
         self._wire_length = None
@@ -292,6 +299,7 @@ class CircuitBranch(object):
 
         # warnings/errors for summary output
         self.notices = NoticeCollector(self.name)
+        self._overload_alert_checked = False
 
         # overall failure flag (if true, all output strings should blank)
         self.calc_failed = False
@@ -350,6 +358,44 @@ class CircuitBranch(object):
         if key not in data:
             return False, None
         return True, data.get(key)
+
+    def _try_get_preview_named_value(self, name):
+        try:
+            key = str(name or "").strip()
+        except Exception:
+            key = ""
+        if not key:
+            return False, None
+        data = self._preview_values_raw
+        if not isinstance(data, dict) or key not in data:
+            return False, None
+        return True, data.get(key)
+
+    def _read_circuit_data_payload(self):
+        try:
+            param = self.circuit.LookupParameter(CIRCUIT_DATA_PARAM_NAME)
+        except Exception:
+            param = None
+        if not param:
+            return {}
+        try:
+            text = param.AsString()
+        except Exception:
+            text = ""
+        if not text:
+            return {}
+        try:
+            payload = json.loads(text)
+        except Exception:
+            payload = {}
+        return payload if isinstance(payload, dict) else {}
+
+    def _load_circuit_vd_method(self):
+        has_preview, preview_value = self._try_get_preview_named_value(CIRCUIT_DATA_VD_METHOD_KEY)
+        if has_preview:
+            return CircuitVDMethod.normalize(preview_value, CircuitVDMethod.GLOBAL)
+        payload = self._read_circuit_data_payload()
+        return CircuitVDMethod.normalize(payload.get(CIRCUIT_DATA_VD_METHOD_KEY), CircuitVDMethod.GLOBAL)
 
     # -----------------------------------------------------------------
     # Logging helpers
@@ -447,13 +493,25 @@ class CircuitBranch(object):
             logger.debug("{}: {}".format(self.name, msg), *args)
 
     def _warn_if_overloaded(self):
+        if self._overload_alert_checked:
+            return
+        self._overload_alert_checked = True
         try:
             load = self.circuit_load_current
             rating = self.rating
             if load is not None and rating is not None and load > rating:
                 self.log_warning(Alerts.UndersizedOCP(load, rating))
+            elif load is not None and rating is not None and rating > 0:
+                load_ratio = float(load) / float(rating)
+                if load_ratio >= 0.9 and load_ratio <= 1.0:
+                    self.log_warning(Alerts.NearOCPRating(load, rating, load_ratio))
         except Exception:
             pass
+
+    def collect_qc_notices(self):
+        """Return persistent circuit notices relevant to model-wide QC checks."""
+        self._warn_if_overloaded()
+        return list(getattr(self.notices, "items", []) or [])
 
     def _check_panel_load_alerts(self):
         if not self.is_power_circuit or self.is_spare or self.is_space:
@@ -542,6 +600,23 @@ class CircuitBranch(object):
         return self._is_feeder
 
     @property
+    def uses_feeder_vd_method(self):
+        return bool(self._is_feeder or self._is_transformer_primary or self._is_transformer_secondary)
+
+    @property
+    def circuit_vd_method(self):
+        if not self.uses_feeder_vd_method:
+            return CircuitVDMethod.GLOBAL
+        return CircuitVDMethod.normalize(self._circuit_vd_method, CircuitVDMethod.GLOBAL)
+
+    @property
+    def effective_feeder_vd_method(self):
+        return CircuitVDMethod.to_feeder_method(
+            self.circuit_vd_method,
+            getattr(self.settings, "feeder_vd_method", FeederVDMethod.DEMAND),
+        )
+
+    @property
     def is_spare(self):
         return self.circuit.CircuitType == DBE.CircuitType.Spare
 
@@ -551,7 +626,7 @@ class CircuitBranch(object):
 
     @property
     def max_voltage_drop(self):
-        if self._is_feeder:
+        if self.uses_feeder_vd_method:
             return self.settings.max_feeder_voltage_drop
         return self.settings.max_branch_voltage_drop
 
@@ -922,7 +997,10 @@ class CircuitBranch(object):
             if parsed_sets is None or parsed_sets <= 0:
                 if self._wire_sets_override not in (None, ""):
                     self.log_warning(
-                        "Wire sets override '{}' is invalid. Ignoring.".format(self._wire_sets_override),
+                        Alerts.InvalidWireSets(
+                            self._wire_sets_override,
+                            self._wire_info.get("number_of_parallel_sets", 1) or 1,
+                        ),
                         category="Overrides",
                     )
                 self._wire_sets_override = None
@@ -1241,16 +1319,16 @@ class CircuitBranch(object):
     def circuit_load_current(self):
         if self.circuit.CircuitType != DBE.CircuitType.Circuit:
             return None
-        if self._is_feeder:
+        if self.uses_feeder_vd_method:
             return self.get_downstream_demand_current()
         return self.apparent_current
 
     def _get_voltage_drop_current(self):
         """Resolve feeder voltage-drop current based on settings."""
-        if not self._is_feeder:
+        if not self.uses_feeder_vd_method:
             return self.apparent_current
 
-        method = getattr(self.settings, "feeder_vd_method", FeederVDMethod.DEMAND)
+        method = self.effective_feeder_vd_method
         demand_current = self.get_downstream_demand_current()
         connected_current = self.apparent_current
         base_demand = demand_current if demand_current is not None else connected_current

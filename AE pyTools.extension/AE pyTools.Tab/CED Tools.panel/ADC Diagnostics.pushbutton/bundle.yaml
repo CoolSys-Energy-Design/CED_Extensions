@@ -1,0 +1,6 @@
+title: ACC Path Resolver
+tooltip: |
+  Click: manually resolve CED telemetry ACC path when candidate paths are missing or ambiguous.
+  Shift+Click: read-only diagnostics for CED telemetry routing scores and state.
+context: zero-doc
+author: CED Tools Team

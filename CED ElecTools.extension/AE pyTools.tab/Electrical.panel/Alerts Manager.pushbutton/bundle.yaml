@@ -10,3 +10,6 @@ tooltip: >-
 
 author: >-
   AEvelina
+
+engine:
+  persistent: true

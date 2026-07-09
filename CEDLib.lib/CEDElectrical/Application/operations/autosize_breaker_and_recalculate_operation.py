@@ -18,8 +18,20 @@ def _elid_from_value(value):
     return revit_helpers.elementid_from_value(value)
 
 
+def _calc_options_from_request(request):
+    options = {
+        'show_output': bool(request.options.get('show_output', False)),
+    }
+    if request.options.get('calc_preview_enabled') is not None:
+        options['calc_preview_enabled'] = bool(request.options.get('calc_preview_enabled', False))
+    preview_decision = str(request.options.get('calc_preview_decision') or '').strip().lower()
+    if preview_decision:
+        options['calc_preview_decision'] = preview_decision
+    return options
+
+
 class AutosizeBreakerAndRecalculateOperation(object):
-    """Writes selected breaker/frame values then recalculates circuits."""
+    """Stages selected breaker/frame values and recalculates circuits."""
 
     key = 'autosize_breaker_and_recalculate'
 
@@ -53,47 +65,46 @@ class AutosizeBreakerAndRecalculateOperation(object):
             return {'status': 'cancelled', 'reason': 'no_circuits'}
 
         changed_ids = []
+        staged_builtin_values_by_id = {}
+        staged_preview_values_by_id = {}
         locked_rows = []
-        tg = DB.TransactionGroup(doc, 'Auto Size Breaker/Frame + Calculate Circuits')
-        tg.Start()
-        tx = DB.Transaction(doc, 'Auto Size Breaker/Frame')
-        tx.Start()
-        try:
-            for circuit in circuits:
-                branch_type = self._branch_type(circuit)
-                if branch_type not in self._ALLOWED_TYPES:
-                    continue
-                if self._is_locked(doc, circuit.Id):
-                    locked_rows.append(self._locked_row(circuit, doc))
-                    continue
 
-                spec = by_id.get(_elid_value(circuit.Id)) or {}
-                set_rating = bool(spec.get('set_rating', True))
-                set_frame = bool(spec.get('set_frame', True))
-                if not (set_rating or set_frame):
-                    continue
+        for circuit in circuits:
+            branch_type = self._branch_type(circuit)
+            if branch_type not in self._ALLOWED_TYPES:
+                continue
+            if self._is_locked(doc, circuit.Id):
+                locked_rows.append(self._locked_row(circuit, doc))
+                continue
 
-                did_change = False
-                if set_rating:
-                    did_change = self._set_numeric(circuit, 'Rating', 'RBS_ELEC_CIRCUIT_RATING_PARAM', spec.get('rating')) or did_change
-                if set_frame:
-                    did_change = self._set_numeric(circuit, 'Frame', 'RBS_ELEC_CIRCUIT_FRAME_PARAM', spec.get('frame')) or did_change
-                if did_change:
-                    changed_ids.append(_elid_value(circuit.Id))
-            tx.Commit()
-        except Exception:
-            tx.RollBack()
-            try:
-                tg.RollBack()
-            except Exception:
-                pass
-            raise
+            spec = by_id.get(_elid_value(circuit.Id)) or {}
+            set_rating = bool(spec.get('set_rating', True))
+            set_frame = bool(spec.get('set_frame', True))
+            if not (set_rating or set_frame):
+                continue
+
+            cid = _elid_value(circuit.Id)
+            builtin_values = {}
+            preview_values = {}
+            did_change = False
+            if set_rating:
+                rating = self._numeric_or_none(spec.get('rating'))
+                if rating is not None:
+                    builtin_values['Rating'] = rating
+                    preview_values['CKT_Rating_CED'] = rating
+                    did_change = self._numeric_changed(circuit, 'Rating', rating) or did_change
+            if set_frame:
+                frame = self._numeric_or_none(spec.get('frame'))
+                if frame is not None:
+                    builtin_values['Frame'] = frame
+                    preview_values['CKT_Frame_CED'] = frame
+                    did_change = self._numeric_changed(circuit, 'Frame', frame) or did_change
+            if did_change:
+                changed_ids.append(cid)
+                staged_builtin_values_by_id[cid] = builtin_values
+                staged_preview_values_by_id[cid] = preview_values
 
         if not changed_ids:
-            try:
-                tg.RollBack()
-            except Exception:
-                pass
             return {
                 'status': 'cancelled',
                 'reason': 'no_changes',
@@ -102,12 +113,13 @@ class AutosizeBreakerAndRecalculateOperation(object):
             }
 
         allow_15a = bool(request.options.get('allow_15a', False))
-        calc_options = {
-            'show_output': bool(request.options.get('show_output', False)),
-            'use_existing_transaction_group': True,
-        }
+        calc_options = _calc_options_from_request(request)
         if allow_15a:
             calc_options['min_breaker_size_override'] = 15
+        calc_options['staged_builtin_values_by_id'] = staged_builtin_values_by_id
+        calc_options['staged_preview_values_by_id'] = staged_preview_values_by_id
+        calc_options['transaction_name'] = 'Auto Size Breaker/Frame + Calculate Circuits'
+        calc_options['write_transaction_name'] = 'Auto Size Breaker/Frame + Write Circuit Parameters'
 
         calc_request = OperationRequest(
             operation_key='calculate_circuits',
@@ -115,15 +127,7 @@ class AutosizeBreakerAndRecalculateOperation(object):
             source=request.source,
             options=calc_options,
         )
-        try:
-            calc_result = self._calculate_operation.execute(calc_request, doc) or {}
-            tg.Assimilate()
-        except Exception:
-            try:
-                tg.RollBack()
-            except Exception:
-                pass
-            raise
+        calc_result = self._calculate_operation.execute(calc_request, doc) or {}
         if locked_rows:
             existing = list(calc_result.get('locked_rows') or [])
             calc_result['locked_rows'] = existing + locked_rows
@@ -145,46 +149,18 @@ class AutosizeBreakerAndRecalculateOperation(object):
         except Exception:
             return False
 
-    def _set_numeric(self, circuit, prop_name, bip_name, value):
+    def _numeric_or_none(self, value):
         try:
-            numeric = float(value)
+            return float(value)
         except Exception:
-            return False
+            return None
 
-        changed = False
+    def _numeric_changed(self, circuit, prop_name, value):
         try:
             current = getattr(circuit, prop_name)
-            if current is None or abs(float(current) - numeric) > 0.0001:
-                setattr(circuit, prop_name, numeric)
-                changed = True
+            return current is None or abs(float(current) - float(value)) > 0.0001
         except Exception:
-            pass
-
-        try:
-            bip = getattr(DB.BuiltInParameter, bip_name)
-        except Exception:
-            bip = None
-        if bip is not None:
-            try:
-                param = circuit.get_Parameter(bip)
-            except Exception:
-                param = None
-            if param:
-                try:
-                    if param.StorageType == DB.StorageType.Double:
-                        cur = param.AsDouble()
-                        if cur is None or abs(float(cur) - numeric) > 0.0001:
-                            param.Set(numeric)
-                            changed = True
-                    elif param.StorageType == DB.StorageType.Integer:
-                        iv = int(round(numeric))
-                        cur = param.AsInteger()
-                        if cur != iv:
-                            param.Set(iv)
-                            changed = True
-                except Exception:
-                    pass
-        return changed
+            return False
 
     def _locked_row(self, circuit, doc):
         panel = ''

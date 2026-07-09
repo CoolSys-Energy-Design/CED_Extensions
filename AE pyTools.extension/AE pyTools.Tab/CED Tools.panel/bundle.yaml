@@ -1,10 +1,11 @@
+is_beta: false
 layout:
   - About
   - Revisions
   - ">>>>>"
-  - Update Toolbar
   - Docs
   - DesignerHub
   - Custom Dic Update
+  - ADC Diagnostics
 
 

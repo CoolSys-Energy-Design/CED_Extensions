@@ -17,6 +17,10 @@ clr.AddReference("PresentationCore")
 clr.AddReference("WindowsBase")
 
 from pyrevit import forms, script, telemetry
+try:
+    import telemetry_route
+except Exception:
+    telemetry_route = None
 
 try:
     from Autodesk.Revit.UI.Events import DocumentSynchronizedWithCentralEventArgs as UiSyncArgs
@@ -41,11 +45,15 @@ _IS_RUNNING = False
 _DOCKABLE_REGISTERED = False
 
 def _telemetry_source_folder():
+    if telemetry_route is not None:
+        return telemetry_route.telemetry_source_folder()
     appdata = os.environ.get("APPDATA", os.path.join(os.path.expanduser("~"), "AppData", "Roaming"))
     return os.path.join(appdata, "pyRevit", "Extensions", "CED_pyTelemetry")
 
 
 def _ensure_telemetry_source_folder():
+    if telemetry_route is not None:
+        return telemetry_route.ensure_telemetry_source_folder()
     source_folder = _telemetry_source_folder()
     if os.path.exists(source_folder):
         return source_folder, True, None
@@ -59,6 +67,33 @@ def _normalize_path(value):
     if value in (None, ""):
         return ""
     return os.path.normcase(os.path.normpath(value))
+
+
+def _fallback_acc_root_is_viable(candidate_root):
+    if not candidate_root or not os.path.isdir(candidate_root):
+        return False
+
+    project_files_path = os.path.join(candidate_root, "Project Files")
+    usage_base_path = os.path.join(project_files_path, "03 Automations", "Usage")
+    if not os.path.isdir(project_files_path) or not os.path.isdir(usage_base_path):
+        return False
+
+    try:
+        project_folders = [
+            name for name in os.listdir(project_files_path)
+            if os.path.isdir(os.path.join(project_files_path, name))
+        ]
+    except Exception:
+        return False
+
+    has_automations = any(
+        _normalize_path(name).lower() == _normalize_path("03 Automations").lower()
+        for name in project_folders
+    )
+    if len(project_folders) == 1 and has_automations:
+        return False
+
+    return True
 
 
 def _event_flags_to_int(value):
@@ -144,12 +179,21 @@ def _configure_pyrevit_telemetry():
         logger.warning("Failed to configure pyRevit telemetry: %s", exc)
 
 def _find_acc_root():
+    if telemetry_route is not None:
+        try:
+            resolution = telemetry_route.resolve_usage_route(persist=True)
+            root = resolution.get("resolved_root")
+            if root:
+                return root
+            return None
+        except Exception:
+            return None
     candidates = [
         r"C:\ACC\ACCDocs\CoolSys\CED Content Collection",
         os.path.join(os.path.expanduser("~"), "DC", "ACCDocs", "CoolSys", "CED Content Collection"),
     ]
     for path in candidates:
-        if os.path.exists(path):
+        if _fallback_acc_root_is_viable(path):
             return path
     return None
 
@@ -389,52 +433,164 @@ def _register_place_single_profile_panel():
         logger = script.get_logger()
         logger.warning("Failed to register Place Single Profile panel: %s", exc)
 
+
+def _nonclobber_path(dst_path):
+    if not os.path.exists(dst_path):
+        return dst_path
+    base, ext = os.path.splitext(dst_path)
+    tick = int(time.time())
+    candidate = "{}_{}{}".format(base, tick, ext)
+    if not os.path.exists(candidate):
+        return candidate
+    index = 1
+    while True:
+        candidate = "{}_{}_{}{}".format(base, tick, index, ext)
+        if not os.path.exists(candidate):
+            return candidate
+        index += 1
+
+
 def _on_app_closing(sender, args):
 
     log_data = {
         "username": None,
         "files_found": 0,
-        "files_moved": 0,
+        "files_copied": 0,
         "files_failed": 0,
         "status": "unknown",
-        "error": None
+        "error": None,
+        "route_status": None,
+        "route_reason": None,
+        "route_root": None,
+        "recovery_status": None,
+        "recovery_error": None,
     }
 
     try:
         # Username
         try:
             username = getpass.getuser()
-        except:
+        except Exception:
             username = os.environ.get("USERNAME", "UnknownUser")
 
         log_data["username"] = username
 
-        # Destination — only proceed if ACC is actually synced
-        acc_root = _find_acc_root()
-        if acc_root is None:
-            log_data["status"] = "acc_not_synced"
+        source_folder = _telemetry_source_folder()
+        if not os.path.exists(source_folder):
+            log_data["status"] = "no_source_folder"
             return
+
+        acc_root = None
+        if telemetry_route is not None:
+            try:
+                route_result = telemetry_route.resolve_usage_route(username=username, persist=True)
+                log_data["route_status"] = route_result.get("status")
+                log_data["route_reason"] = route_result.get("reason")
+                acc_root = route_result.get("resolved_root")
+            except Exception as ex:
+                log_data["route_status"] = "error"
+                log_data["route_reason"] = str(ex)
+
+        if not acc_root:
+            acc_root = _find_acc_root()
+
+        log_data["route_root"] = acc_root
+        if acc_root is None:
+            log_data["status"] = "route_unresolved"
+            if telemetry_route is not None:
+                telemetry_route.record_transfer_state(
+                    status="route_unresolved",
+                    username=username,
+                    resolved_root="",
+                    files_found=0,
+                    files_copied=0,
+                    files_failed=0,
+                    source_folder=source_folder,
+                    note=log_data.get("route_reason") or "No ACC root resolved.",
+                )
+            return
+
         base_path = os.path.join(acc_root, "Project Files", "03 Automations", "Usage")
-        user_folder = os.path.join(base_path, username)
+        if not os.path.isdir(base_path):
+            log_data["status"] = "usage_base_missing"
+            if telemetry_route is not None:
+                telemetry_route.record_transfer_state(
+                    status="usage_base_missing",
+                    username=username,
+                    resolved_root=acc_root,
+                    files_found=0,
+                    files_copied=0,
+                    files_failed=0,
+                    source_folder=source_folder,
+                    note="Usage base folder not found. Transfer canceled.",
+                )
+            return
 
         try:
-            if not os.path.exists(user_folder):
-                os.makedirs(user_folder)
+            if telemetry_route is not None and hasattr(telemetry_route, "ensure_user_folder"):
+                folder_result = telemetry_route.ensure_user_folder(acc_root, username=username)
+                user_folder = folder_result.get("path") or os.path.join(base_path, username)
+                if not folder_result.get("ok"):
+                    raise Exception(folder_result.get("reason", "user_folder_unavailable"))
+            else:
+                user_folder = os.path.join(base_path, username)
+                if not os.path.exists(user_folder):
+                    # Intentionally create only the username folder under an existing Usage base.
+                    os.mkdir(user_folder)
         except Exception as e:
             log_data["status"] = "failed_create_user_folder"
             log_data["error"] = str(e)
+            if telemetry_route is not None:
+                telemetry_route.record_transfer_state(
+                    status="failed_create_user_folder",
+                    username=username,
+                    resolved_root=acc_root,
+                    files_found=0,
+                    files_copied=0,
+                    files_failed=0,
+                    source_folder=source_folder,
+                    note=str(e),
+                )
             # from Snippets import hooks_logger
             # hooks_logger.log_hook(__file__, log_data)
             return
 
-        # Source
-        source_folder = _telemetry_source_folder()
-
-        if not os.path.exists(source_folder):
-            log_data["status"] = "no_source_folder"
-            # from Snippets import hooks_logger
-            # hooks_logger.log_hook(__file__, log_data)
-            return
+        recovery_result = None
+        if telemetry_route is not None and hasattr(telemetry_route, "recover_stale_usage_jsons"):
+            try:
+                recovery_result = telemetry_route.recover_stale_usage_jsons(
+                    acc_root,
+                    username=username,
+                    source_folder=source_folder,
+                )
+                log_data["recovery_status"] = recovery_result.get("status")
+                if hasattr(telemetry_route, "record_recovery_state"):
+                    telemetry_route.record_recovery_state(
+                        recovery_result,
+                        source_folder=source_folder,
+                    )
+            except Exception as e:
+                recovery_result = {
+                    "status": "error",
+                    "username": username,
+                    "resolved_root": acc_root,
+                    "destination_folder": user_folder,
+                    "stale_folders_checked": [],
+                    "files_found": 0,
+                    "files_moved": 0,
+                    "files_failed": 0,
+                    "error": str(e),
+                }
+                log_data["recovery_status"] = "error"
+                log_data["recovery_error"] = str(e)
+                if hasattr(telemetry_route, "record_recovery_state"):
+                    try:
+                        telemetry_route.record_recovery_state(
+                            recovery_result,
+                            source_folder=source_folder,
+                        )
+                    except Exception:
+                        pass
 
         files = os.listdir(source_folder)
         log_data["files_found"] = len(files)
@@ -446,12 +602,16 @@ def _on_app_closing(sender, args):
                 if not os.path.isfile(src):
                     continue
 
-                dst = os.path.join(user_folder, fname)
+                if telemetry_route is not None and fname == telemetry_route.STATE_FILE_NAME:
+                    # Keep route status local; never transfer it to ACC.
+                    continue
 
-                shutil.move(src, dst)
-                log_data["files_moved"] += 1
+                dst = _nonclobber_path(os.path.join(user_folder, fname))
+                # Copy instead of move so local telemetry remains available.
+                shutil.copy2(src, dst)
+                log_data["files_copied"] += 1
 
-            except:
+            except Exception:
                 log_data["files_failed"] += 1
 
         if log_data["files_failed"] > 0:
@@ -459,9 +619,35 @@ def _on_app_closing(sender, args):
         else:
             log_data["status"] = "success"
 
+        if telemetry_route is not None:
+            telemetry_route.record_transfer_state(
+                status=log_data["status"],
+                username=username,
+                resolved_root=acc_root,
+                files_found=log_data["files_found"],
+                files_copied=log_data["files_copied"],
+                files_failed=log_data["files_failed"],
+                source_folder=source_folder,
+                note="Copied telemetry files to ACC; local files retained.",
+            )
+
     except Exception as e:
         log_data["status"] = "fatal_error"
         log_data["error"] = str(e)
+        if telemetry_route is not None:
+            try:
+                telemetry_route.record_transfer_state(
+                    status="fatal_error",
+                    username=log_data.get("username"),
+                    resolved_root=log_data.get("route_root") or "",
+                    files_found=log_data.get("files_found", 0),
+                    files_copied=log_data.get("files_copied", 0),
+                    files_failed=log_data.get("files_failed", 0),
+                    source_folder=_telemetry_source_folder(),
+                    note=str(e),
+                )
+            except Exception:
+                pass
 
     # Always log
     # try:
@@ -489,7 +675,17 @@ def _register_shutdown_hook():
         logger.warning("Failed to register ApplicationClosing hook: %s", exc)
 
 def _check_acc_sync():
-    if _find_acc_root() is not None:
+    if telemetry_route is not None:
+        try:
+            route_result = telemetry_route.resolve_usage_route(persist=True)
+            if route_result.get("status") == "resolved":
+                return
+            if int(route_result.get("candidate_count", 0) or 0) > 0:
+                # Candidates exist; user can resolve manually from ACC Path Resolver.
+                return
+        except Exception:
+            pass
+    elif _find_acc_root() is not None:
         return
     from System.Windows import Window, SizeToContent, WindowStartupLocation, Thickness, TextWrapping, HorizontalAlignment
     from System.Windows.Controls import StackPanel, Image, TextBlock, Button, ScrollViewer

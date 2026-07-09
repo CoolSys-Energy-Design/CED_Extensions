@@ -21,7 +21,7 @@ from UIClasses import pathing as ui_pathing
 
 TITLE = "Alerts Manager"
 ALERT_DATA_PARAM = "Circuit Data_CED"
-_WINDOW_MARKER = "_ae_alerts_browser_window"
+_WINDOW_MARKER = "_ae_alerts_browser_window_persistent_v1"
 
 def _idval(item):
     return revit_helpers.get_elementid_value(item)
@@ -664,8 +664,6 @@ def _find_existing_window():
         try:
             tag = str(getattr(win, "Tag", "") or "")
             if tag == _WINDOW_MARKER:
-                return win
-            if str(getattr(win, "Title", "") or "") == TITLE:
                 return win
         except Exception:
             continue

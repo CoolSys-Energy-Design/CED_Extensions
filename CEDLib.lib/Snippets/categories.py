@@ -22,6 +22,17 @@ _OPTIONAL_FIXTURE_BIC_BY_MIN_VERSION = (
 
 _CIRCUIT_BIC_NAMES = ("OST_ElectricalCircuit",)
 _EQUIPMENT_BIC_NAMES = ("OST_ElectricalEquipment",)
+_QC_DEVICE_BIC_NAMES = (
+    "OST_ElectricalFixtures",
+    "OST_LightingFixtures",
+    "OST_LightingDevices",
+    "OST_DataDevices",
+    "OST_FireAlarmDevices",
+    "OST_SecurityDevices",
+)
+_QC_DEVICE_OPTIONAL_BIC_BY_MIN_VERSION = (
+    ("OST_MechanicalControlDevices", 2024),
+)
 
 _SCOPE_CIRCUITS_TOKENS = set(
     [
@@ -160,6 +171,28 @@ def get_circuit_category_ids(doc=None):
 
 def get_equipment_category_ids(doc=None):
     return _category_ids_for_bic_names(doc, _EQUIPMENT_BIC_NAMES)
+
+
+def get_electrical_qc_device_bic_names(version=None):
+    revit_version = int(version or _host_revit_version() or 0)
+    names = list(_QC_DEVICE_BIC_NAMES)
+    for bic_name, min_version in list(_QC_DEVICE_OPTIONAL_BIC_BY_MIN_VERSION or []):
+        if int(revit_version) >= int(min_version):
+            names.append(bic_name)
+    return names
+
+
+def get_electrical_qc_device_categories(version=None):
+    categories = []
+    for bic_name in get_electrical_qc_device_bic_names(version=version):
+        bic = _bic_from_name(bic_name)
+        if bic is not None:
+            categories.append(bic)
+    return tuple(categories)
+
+
+def get_electrical_qc_device_category_ids(doc=None, version=None):
+    return _category_ids_for_bic_names(doc, get_electrical_qc_device_bic_names(version=version))
 
 
 def get_fixture_category_ids(doc=None, version=None):
