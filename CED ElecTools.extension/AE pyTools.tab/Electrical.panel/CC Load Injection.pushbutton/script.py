@@ -22,6 +22,12 @@ Distribution (keyed on the DEFROST voltage config):
                     lights+antisweat VA on Ph1, fans+other VA on Ph2.
   * no defrost    : the whole load VA goes on Ph1 (Ph2 / Ph3 = 0).
 
+Optional BALANCING (offered when suffixed two-pole controllers are found):
+sibling 208/1 controllers (RCFF01A / B / C ...) that get ganged onto one
+3-pole circuit can have their phase PAIR rotated by suffix letter so the
+three phases load evenly: A -> Ph1&2, B -> Ph2&3, C -> Ph1&3, D -> Ph1&2,
+... (letter mod 3, so a missing sibling doesn't shift the others).
+
 A VOLTAGE mismatch between sheet row and family skips the element (nothing
 is written). A POLE-COUNT difference only gets noted in the preview -
 controllers are routinely ganged across phases (e.g. three 2-pole
@@ -433,6 +439,26 @@ def parse_rows(grid, max_row, cols):
 # ---------------------------------------------------------------------------
 # Load math
 # ---------------------------------------------------------------------------
+_BALANCE_PAIRS = [(1, 2), (2, 3), (3, 1)]
+_SUFFIX_RE = re.compile(r"^.*\d([A-Z])$")
+
+
+def balance_pair_for(rec):
+    """Phase pair for a two-pole sibling controller when balancing, or None.
+
+    Qualifies only rows with a single-phase 208 V defrost AND a trailing
+    sibling letter (RCFF01A -> A). The pair is keyed on the letter itself
+    (A=Ph1&2, B=Ph2&3, C=Ph1&3, then repeating), so a gap in the lettering
+    doesn't shift the siblings after it."""
+    d = rec["loads"].get("DEFROST")
+    if not d or d[2] != 1 or d[1] < 200:
+        return None
+    m = _SUFFIX_RE.match(rec["id"])
+    if not m:
+        return None
+    return _BALANCE_PAIRS[(ord(m.group(1)) - ord("A")) % 3]
+
+
 def _va_volts(volts):
     """Conversion voltage for the VA math: 115 V columns convert at 120 V
     for a safety margin; everything else at face value."""
@@ -441,9 +467,10 @@ def _va_volts(volts):
     return volts
 
 
-def compute_loads(rec):
+def compute_loads(rec, pair=None):
     """Returns (total_amps, ph_va{1,2,3}, expected_voltage, expected_poles,
-    sheet_basis_va).
+    sheet_basis_va). ``pair`` (from balance_pair_for) redirects a two-pole
+    row's loads onto that phase pair instead of the default Ph1/Ph2.
 
     Every component's VA uses its own volt column (115 uprated to 120).
     Distribution is keyed on the defrost voltage config; without defrost the
@@ -474,8 +501,9 @@ def compute_loads(rec):
         ph[3] = per_phase
     elif defrost is not None:
         half = va_of("DEFROST") / 2.0
-        ph[1] = half + lights_anti
-        ph[2] = half + fans_other
+        p1, p2 = pair if pair else (1, 2)
+        ph[p1] = half + lights_anti
+        ph[p2] = half + fans_other
     else:
         ph[1] = lights_anti + fans_other
 
@@ -557,6 +585,20 @@ def main():
                     "sheet '{}'.".format(sheet_name), title=TITLE)
         return
 
+    # Offer phase-pair balancing when suffixed two-pole controllers exist.
+    balance = False
+    balance_count = sum(1 for rec in records if balance_pair_for(rec))
+    if balance_count:
+        balance = forms.alert(
+            "{} two-pole sibling controller(s) (ID ending A/B/C...) found.\n\n"
+            "Balance them across phase pairs for 3-pole ganged circuits?\n"
+            "    A -> Ph1 & Ph2\n"
+            "    B -> Ph2 & Ph3\n"
+            "    C -> Ph1 & Ph3\n"
+            "    (repeats: D -> Ph1 & Ph2, ...)\n\n"
+            "Choosing No keeps every controller on Ph1 & Ph2.".format(balance_count),
+            title=TITLE, yes=True, no=True)
+
     by_mark = collect_case_controllers()
     if not by_mark:
         forms.alert(
@@ -573,7 +615,8 @@ def main():
     va_deltas = []        # (id, computed_sum, sheet_sum)
 
     for rec in records:
-        total_amps, ph, exp_v, exp_p, sheet_basis_va = compute_loads(rec)
+        pair = balance_pair_for(rec) if balance else None
+        total_amps, ph, exp_v, exp_p, sheet_basis_va = compute_loads(rec, pair)
 
         # Cross-check parsing against the sheet's own summary columns (the
         # sum of VA PH1+PH2 is independent of how loads are split across
@@ -592,6 +635,8 @@ def main():
 
         ok_elems = []
         notes = []
+        if pair and pair != (1, 2):
+            notes.append("balanced -> Ph{} & Ph{}".format(pair[0], pair[1]))
         for elem in elems:
             fam_v = read_family_voltage(elem)
             fam_p = read_family_poles(elem)
