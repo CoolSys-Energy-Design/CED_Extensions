@@ -2981,6 +2981,973 @@ class _InjectDetailItemHandler(IExternalEventHandler):
         return "CED Inject Detail Item External Event"
 
 
+class BuildBranchExternalEventGateway(object):
+    """Places SLD_ detail groups for one line selections from the modeless window."""
+
+    def __init__(self, logger=None):
+        self.logger = logger
+        self._pending = None
+        self._handler = _BuildBranchHandler(self)
+        self._event = ExternalEvent.Create(self._handler)
+
+    def is_busy(self):
+        if self._pending is not None:
+            return True
+        try:
+            return bool(self._event.IsPending)
+        except Exception:
+            return False
+
+    def raise_build(self, items, callback=None):
+        if self._pending is not None:
+            return False
+        try:
+            if bool(self._event.IsPending):
+                return False
+        except Exception:
+            pass
+        self._pending = {
+            "items": list(items or []),
+            "callback": callback,
+        }
+        try:
+            self._event.Raise()
+            return True
+        except Exception as ex:
+            self._pending = None
+            if self.logger:
+                self.logger.warning("Failed to raise Build Branch ExternalEvent: %s", ex)
+            return False
+
+    def _consume_pending(self):
+        pending = self._pending
+        self._pending = None
+        return pending
+
+
+class _BuildBranchHandler(IExternalEventHandler):
+    GAP_FACTOR = 0.25
+    SIBLING_DX = 6.0  # ft between sibling branches when the parent has no breaker anchors
+    ROW_GAP = 1.5     # ft between independent branches laid out in a row
+
+    # Keywords are matched against SLD_ group NAMES only. Equipment is
+    # classified by family part type, EXCEPT anything that reads as an ATS /
+    # transfer switch - those always use a detail family, never a group
+    # (their Revit families are often built as Switchboard part type).
+    KIND_KEYWORDS = {
+        "transformer": ["XFMR", "TRANSFORMER", "TRANS"],
+        "switchboard": ["SWITCHBOARD", "SWBD", "SWB", "MDP", "DISTRIBUTION", "GEAR"],
+        "panel": ["PANELBOARD", "PANEL", "PNL", "BRANCH"],
+        "load": ["EQUIP", "MOTOR", "LOAD", "MECH", "DISCONNECT"],
+    }
+
+    def __init__(self, gateway):
+        self._gateway = gateway
+
+    def Execute(self, application):
+        pending = self._gateway._consume_pending()
+        if not pending:
+            return
+        callback = pending.get("callback")
+        status = "ok"
+        error = None
+        payload = {}
+        try:
+            status, payload = self._execute_build(application, pending)
+        except Exception as ex:
+            status = "error"
+            error = ex
+            if self._gateway.logger:
+                self._gateway.logger.exception("Build Branch ExternalEvent failed: %s", ex)
+        if callback:
+            try:
+                callback(status, payload, error)
+            except Exception as cb_ex:
+                if self._gateway.logger:
+                    self._gateway.logger.exception("Build Branch callback failed: %s", cb_ex)
+
+    def _execute_build(self, application, pending):
+        uidoc = application.ActiveUIDocument
+        doc = uidoc.Document if uidoc else None
+        if doc is None:
+            raise Exception("No active Revit document available.")
+        view = doc.ActiveView
+        if view is None or view.ViewType != DB.ViewType.DraftingView:
+            return "not_drafting", {}
+
+        items = list(pending.get("items") or [])
+        if not items:
+            return "cancelled", {}
+
+        group_types = self._collect_sld_group_types(doc)
+        resolved = []
+        skipped = []
+        for item in items:
+            template = self._resolve_template(doc, item, group_types)
+            if template is None:
+                skipped.append(str(item.get("name") or "?"))
+                continue
+            resolved.append((item, template))
+        if not resolved:
+            return "no_templates", {"skipped": skipped}
+
+        try:
+            point = uidoc.Selection.PickPoint(
+                "Click to place the one line branch ({} element(s), stacked downward)".format(len(resolved))
+            )
+        except Exception:
+            return "cancelled", {"skipped": skipped}
+        if point is None:
+            return "cancelled", {"skipped": skipped}
+
+        placed = 0
+        detail_count = 0
+        bus_breakers = 0
+        transaction = DB.Transaction(doc, "Build One Line Branch")
+        transaction.Start()
+        try:
+            x_main = float(point.X)
+            y_base = float(point.Y)
+            gap = max(0.2, self.GAP_FACTOR)
+            wire_tag_type_id = self._find_feeder_wire_tag_id(doc)
+            placed_equip = {}  # element_id -> {x, bottom, anchors, anchor_used, children}
+            for item, template in resolved:
+                # Children hang off their placed parent: switchboard children on
+                # its breaker positions, everything else directly below its parent.
+                parent_rec = placed_equip.get(int(item.get("parent_id") or 0))
+                anchor = None
+                if parent_rec is not None:
+                    anchors = parent_rec.get("anchors") or []
+                    used = int(parent_rec.get("anchor_used", 0))
+                    if used < len(anchors):
+                        anchor = anchors[used]
+                        parent_rec["anchor_used"] = used + 1
+                        x = float(anchor["x"])
+                    else:
+                        x = float(parent_rec["x"]) + parent_rec["children"] * self.SIBLING_DX
+                    y = float(parent_rec["bottom"]) - gap
+                    parent_rec["children"] += 1
+                    advance_main = False
+                else:
+                    # Independent roots (no selected feeder, or different ones)
+                    # go side by side in a row, not stacked in a column.
+                    x = x_main
+                    y = y_base
+                    advance_main = True
+
+                members = []
+                bbox_instances = []
+                if template.get("group_type") is not None:
+                    group = doc.Create.PlaceGroup(DB.XYZ(x, y, 0.0), template["group_type"])
+                    doc.Regenerate()
+                    bbox_instances = [group]
+                    try:
+                        members = [doc.GetElement(mid) for mid in list(group.UngroupMembers() or [])]
+                        bbox_instances = [m for m in members if m is not None] or [group]
+                    except Exception:
+                        members = []
+                    doc.Regenerate()
+                else:
+                    for symbol, dy in list(template.get("symbols") or []):
+                        try:
+                            if not symbol.IsActive:
+                                symbol.Activate()
+                                doc.Regenerate()
+                        except Exception:
+                            pass
+                        members.append(
+                            doc.Create.NewFamilyInstance(DB.XYZ(x, y + float(dy), 0.0), symbol, view)
+                        )
+                    doc.Regenerate()
+                    bbox_instances = list(members)
+
+                bus_anchors = []
+                if template.get("bus_family") and members:
+                    bus_anchors = self._populate_bus_breakers(
+                        doc, view, members[0], item, template.get("breaker_count", 0)
+                    )
+                    if bus_anchors:
+                        bus_breakers += len(bus_anchors)
+                        bbox_instances = list(members) + [a["element"] for a in bus_anchors]
+
+                if anchor is not None and members:
+                    # Connected look: the switchboard's breaker IS this branch's
+                    # breaker. Drop the branch's own breaker, butt the remainder
+                    # up against the parent, and stamp the real feeder data onto
+                    # the switchboard's default breaker. (A fed switchboard keeps
+                    # its breakers - those are its distribution positions.)
+                    if self._classify(item) != "switchboard":
+                        members = self._delete_breaker_members(doc, members)
+                        doc.Regenerate()
+                        bbox_instances = [m for m in members if m is not None] or bbox_instances
+                    self._align_members(doc, members, view, x, float(parent_rec["bottom"]))
+                    doc.Regenerate()
+                    self._inject_breaker_data(doc, anchor.get("element"), item)
+
+                if wire_tag_type_id is not None and self._classify(item) != "switchboard":
+                    self._tag_feeder_wire(doc, view, members, wire_tag_type_id)
+
+                detail_count += self._inject_members(doc, members, item)
+                placed += 1
+                bottom = self._instances_bottom(bbox_instances, view, fallback=y - 0.3)
+
+                if str(item.get("kind") or "") == "equip":
+                    record = {
+                        "x": x,
+                        "bottom": bottom,
+                        "anchors": [],
+                        "anchor_used": 0,
+                        "children": 0,
+                    }
+                    if bus_anchors:
+                        record["anchors"] = bus_anchors
+                    elif self._classify(item) == "switchboard":
+                        record["anchors"] = self._breaker_anchors(members)
+                    placed_equip[int(item.get("element_id") or 0)] = record
+
+                if advance_main:
+                    right = self._instances_right(bbox_instances, view, fallback=x + 3.0)
+                    x_main = right + self.ROW_GAP
+            transaction.Commit()
+        except Exception:
+            try:
+                transaction.RollBack()
+            except Exception:
+                pass
+            raise
+
+        return "ok", {
+            "placed": placed,
+            "skipped": skipped,
+            "detail_count": detail_count,
+            "bus_breakers": bus_breakers,
+        }
+
+    @staticmethod
+    def _member_family_name(member):
+        if member is None or not isinstance(member, DB.FamilyInstance):
+            return ""
+        try:
+            symbol = member.Symbol
+            family_param = symbol.get_Parameter(DB.BuiltInParameter.SYMBOL_FAMILY_NAME_PARAM)
+            return ((family_param.AsString() if family_param else "") or "").upper()
+        except Exception:
+            return ""
+
+    @classmethod
+    def _breaker_anchors(cls, members):
+        """Breaker symbols inside a placed switchboard group, left to right -
+        the anchors fed branches hang from (and inherit their circuit data)."""
+        anchors = []
+        seen_x = set()
+        for member in list(members or []):
+            if "BREAKER" not in cls._member_family_name(member):
+                continue
+            try:
+                location = getattr(member, "Location", None)
+                pt = getattr(location, "Point", None)
+            except Exception:
+                pt = None
+            if pt is None:
+                continue
+            # Same-transaction Location.Point can read (0,0,0) - drop those.
+            if abs(pt.X) < 1e-9 and abs(pt.Y) < 1e-9:
+                continue
+            key = round(float(pt.X), 3)
+            if key in seen_x:
+                continue
+            seen_x.add(key)
+            anchors.append({"x": key, "element": member})
+        anchors.sort(key=lambda a: a["x"])
+        return anchors
+
+    BREAKER_SPACING = 1.266  # ft, matched to the SLD_Switchboard group's slots
+
+    @staticmethod
+    def _find_bus_line(instance, view):
+        """Longest horizontal line in the placed symbol's geometry = the bus.
+        Returns (x_start, x_end, y) or None."""
+        best = None
+        try:
+            options = DB.Options()
+            options.View = view
+            geometry = instance.get_Geometry(options)
+            if geometry is None:
+                return None
+            queue = list(geometry)
+            while queue:
+                obj = queue.pop(0)
+                if isinstance(obj, DB.GeometryInstance):
+                    try:
+                        queue.extend(list(obj.GetInstanceGeometry()))
+                    except Exception:
+                        pass
+                    continue
+                if not isinstance(obj, DB.Line):
+                    continue
+                p0 = obj.GetEndPoint(0)
+                p1 = obj.GetEndPoint(1)
+                if abs(p0.Y - p1.Y) > 1e-6:
+                    continue
+                length = abs(p1.X - p0.X)
+                if best is None or length > best[1] - best[0]:
+                    best = (min(p0.X, p1.X), max(p0.X, p1.X), p0.Y)
+        except Exception:
+            return None
+        return best
+
+    def _populate_bus_breakers(self, doc, view, instance, item, count):
+        """Stretch the bus to fit `count` slots and place empty breaker symbols
+        along it (count was captured at the symbol-picker stage). Returns them
+        as anchors ({"x", "element"}) so selected children connect to (and
+        stamp) the new slots."""
+        count = int(count or 0)
+        if count <= 0:
+            return []
+        count = min(count, 84)
+
+        breaker_symbol = self._find_detail_symbol(doc, ["SLD-FDR-CIRCUIT BREAKER"])
+        if breaker_symbol is None:
+            forms.alert("No SLD-FDR-Circuit Breaker family is loaded.", title="Build One Line Branch")
+            return []
+        try:
+            if not breaker_symbol.IsActive:
+                breaker_symbol.Activate()
+                doc.Regenerate()
+        except Exception:
+            pass
+
+        # Stretch the bus to fit the requested slots.
+        needed = count * self.BREAKER_SPACING + 0.4
+        try:
+            width_param = instance.LookupParameter("DME_Width")
+            if width_param is not None and not width_param.IsReadOnly:
+                if float(width_param.AsDouble() or 0.0) < needed:
+                    width_param.Set(needed)
+                    doc.Regenerate()
+        except Exception:
+            pass
+
+        bus = self._find_bus_line(instance, view)
+        if bus is None:
+            forms.alert(
+                "Could not locate the bus line on '{}' - place breakers manually.".format(item.get("name") or "?"),
+                title="Build One Line Branch",
+            )
+            return []
+        x_start, x_end, bus_y = bus
+        available = max(0.1, x_end - x_start)
+        step = self.BREAKER_SPACING if self.BREAKER_SPACING * count <= available else available / float(count)
+
+        anchors = []
+        for idx in range(count):
+            bx = x_start + step * (idx + 0.5)
+            try:
+                breaker = doc.Create.NewFamilyInstance(DB.XYZ(bx, bus_y, 0.0), breaker_symbol, view)
+            except Exception:
+                continue
+            anchors.append({"x": round(float(bx), 3), "element": breaker})
+        doc.Regenerate()
+        return anchors
+
+    @classmethod
+    def _delete_breaker_members(cls, doc, members):
+        """Remove the branch's own breaker symbols (tags on them cascade)."""
+        kept = []
+        for member in list(members or []):
+            if "BREAKER" in cls._member_family_name(member):
+                try:
+                    doc.Delete(member.Id)
+                    continue
+                except Exception:
+                    pass
+            kept.append(member)
+        return kept
+
+    @classmethod
+    def _align_members(cls, doc, members, view, target_x, target_top):
+        """Shift the placed members so their feeder axis sits at target_x and
+        their top touches target_top (the parent's bounding-box bottom)."""
+        valid = []
+        for member in list(members or []):
+            try:
+                if member is not None and member.IsValidObject:
+                    valid.append(member)
+            except Exception:
+                continue
+        if not valid:
+            return
+        axis_x = None
+        fallback_x = None
+        top = None
+        for member in valid:
+            try:
+                bbox = member.get_BoundingBox(view)
+                if bbox is not None:
+                    top_value = float(bbox.Max.Y)
+                    top = top_value if top is None else max(top, top_value)
+            except Exception:
+                pass
+            family_name = cls._member_family_name(member)
+            if not family_name:
+                continue
+            try:
+                pt = getattr(getattr(member, "Location", None), "Point", None)
+            except Exception:
+                pt = None
+            if pt is None or (abs(pt.X) < 1e-9 and abs(pt.Y) < 1e-9):
+                continue
+            if axis_x is None and "SLD-FDR" in family_name:
+                axis_x = float(pt.X)
+            if fallback_x is None:
+                fallback_x = float(pt.X)
+        if axis_x is None:
+            axis_x = fallback_x
+        dx = (float(target_x) - axis_x) if axis_x is not None else 0.0
+        dy = (float(target_top) - top) if top is not None else 0.0
+        if abs(dx) < 1e-6 and abs(dy) < 1e-6:
+            return
+        ids = List[DB.ElementId]()
+        for member in valid:
+            ids.Add(member.Id)
+        try:
+            DB.ElementTransformUtils.MoveElements(doc, ids, DB.XYZ(dx, dy, 0.0))
+        except Exception:
+            pass
+
+    @staticmethod
+    def _find_feeder_wire_tag_id(doc):
+        """Wire & Conduit Size feeder tag type (prefer right-of-line reading)."""
+        candidates = []
+        try:
+            collector = (
+                DB.FilteredElementCollector(doc)
+                .OfCategory(DB.BuiltInCategory.OST_DetailComponentTags)
+                .WhereElementIsElementType()
+            )
+            for tag_type in collector:
+                try:
+                    family_param = tag_type.get_Parameter(DB.BuiltInParameter.SYMBOL_FAMILY_NAME_PARAM)
+                    family_name = ((family_param.AsString() if family_param else "") or "").upper()
+                    type_param = tag_type.get_Parameter(DB.BuiltInParameter.ALL_MODEL_TYPE_NAME)
+                    type_name = ((type_param.AsString() if type_param else "") or "").upper()
+                except Exception:
+                    continue
+                if "FEEDER" not in family_name or "WIRE" not in type_name:
+                    continue
+                candidates.append((type_name, tag_type.Id))
+        except Exception:
+            return None
+        if not candidates:
+            return None
+        for prefix in ("FEEDER R", "FEEDER C", "FEEDER L"):
+            for type_name, tag_id in candidates:
+                if type_name.startswith(prefix):
+                    return tag_id
+        return candidates[0][1]
+
+    @classmethod
+    def _tag_feeder_wire(cls, doc, view, members, tag_type_id):
+        """Tag the branch's feeder line with the Wire & Conduit Size tag."""
+        target = None
+        for member in list(members or []):
+            try:
+                if member is None or not member.IsValidObject:
+                    continue
+            except Exception:
+                continue
+            if cls._member_family_name(member) == "SLD-FDR_CED":
+                target = member
+                break
+        if target is None:
+            return
+        try:
+            bbox = target.get_BoundingBox(view)
+            if bbox is not None:
+                head = DB.XYZ(
+                    (float(bbox.Min.X) + float(bbox.Max.X)) / 2.0,
+                    (float(bbox.Min.Y) + float(bbox.Max.Y)) / 2.0,
+                    0.0,
+                )
+            else:
+                head = getattr(getattr(target, "Location", None), "Point", None)
+        except Exception:
+            head = None
+        if head is None:
+            return
+        reference = DB.Reference(target)
+        try:
+            DB.IndependentTag.Create(
+                doc, tag_type_id, view.Id, reference, False, DB.TagOrientation.Horizontal, head
+            )
+        except Exception:
+            try:
+                tag = DB.IndependentTag.Create(
+                    doc, view.Id, reference, False,
+                    DB.TagMode.TM_ADDBY_CATEGORY, DB.TagOrientation.Horizontal, head,
+                )
+                tag.ChangeTypeId(tag_type_id)
+            except Exception:
+                pass
+
+    def _inject_breaker_data(self, doc, breaker, item):
+        """Stamp the actual feeder circuit's data onto the switchboard's
+        default breaker so the branch reads as truly connected."""
+        if breaker is None:
+            return
+        try:
+            if not breaker.IsValidObject:
+                return
+        except Exception:
+            return
+        if str(item.get("kind") or "") == "equip":
+            circuit_id = int(item.get("feeder_circuit_id") or 0)
+        else:
+            circuit_id = int(item.get("circuit_id") or 0)
+        if circuit_id <= 0:
+            return
+        try:
+            circuit = doc.GetElement(revit_helpers.elementid_from_value(circuit_id))
+        except Exception:
+            circuit = None
+        if not isinstance(circuit, DBE.ElectricalSystem):
+            return
+        result = inject_circuit_values(circuit, breaker)
+        inject_matching_values(circuit, breaker, skip_names=set(result.get("written") or []))
+
+    @staticmethod
+    def _instances_bottom(instances, view, fallback):
+        """Lowest Y across the placed elements' view bounding boxes."""
+        bottom = None
+        for instance in list(instances or []):
+            try:
+                bbox = instance.get_BoundingBox(view)
+                if bbox is None:
+                    continue
+                value = float(bbox.Min.Y)
+                if bottom is None or value < bottom:
+                    bottom = value
+            except Exception:
+                continue
+        return bottom if bottom is not None else float(fallback)
+
+    @staticmethod
+    def _instances_right(instances, view, fallback):
+        """Rightmost X across the placed elements' view bounding boxes."""
+        right = None
+        for instance in list(instances or []):
+            try:
+                bbox = instance.get_BoundingBox(view)
+                if bbox is None:
+                    continue
+                value = float(bbox.Max.X)
+                if right is None or value > right:
+                    right = value
+            except Exception:
+                continue
+        return right if right is not None else float(fallback)
+
+    @staticmethod
+    def _element_name(element):
+        # Element.Name is a hidden property on many types (GroupType included);
+        # direct .Name access raises - go through the descriptor first.
+        try:
+            return DB.Element.Name.__get__(element) or ""
+        except Exception:
+            pass
+        try:
+            return element.Name or ""
+        except Exception:
+            return ""
+
+    @classmethod
+    def _collect_sld_group_types(cls, doc):
+        result = []
+        try:
+            for group_type in DB.FilteredElementCollector(doc).OfClass(DB.GroupType):
+                name = cls._element_name(group_type)
+                if name.upper().startswith("SLD_"):
+                    result.append((name.upper(), group_type))
+        except Exception:
+            pass
+        result.sort(key=lambda pair: pair[0])
+        return result
+
+    def _classify(self, item):
+        """Family part type drives classification - with one override: the ATS
+        detail family is used ONLY for equipment whose name reads 'ATS' (whole
+        word) or the full phrase 'transfer switch', regardless of part type.
+        Plain equipment switches get the disconnect detail family."""
+        if str(item.get("kind") or "") == "load":
+            return "load"
+        text = "{} {}".format(item.get("name") or "", item.get("equip_type") or "").upper()
+        words = set("".join(ch if ch.isalnum() else " " for ch in text).split())
+        if "ATS" in words or "TRANSFER SWITCH" in text:
+            return "ats"
+        if "GENERATOR" in text or "GEN" in words:
+            return "generator"
+        equip_type = str(item.get("equip_type") or "")
+        if equip_type == "Transformer":
+            return "transformer"
+        if equip_type == "Switchboard":
+            return "switchboard"
+        if equip_type == "Equipment Switch":
+            return "switch"
+        # Panelboard, Other Panel, Unknown
+        return "panel"
+
+    def _resolve_template(self, doc, item, group_types):
+        kind = self._classify(item)
+        if kind in ("panel", "switchboard"):
+            # Every panel/switchboard: user picks from ALL loaded panel and
+            # switchboard detail families, or falls back to the SLD_ group.
+            template = self._prompt_panel_switchboard_template(doc, item, kind)
+            if template is not None:
+                return template
+            # user chose the SLD_ group (or cancelled) - fall through
+        if kind == "ats":
+            # ATS never uses an SLD_ group - always the transfer switch family,
+            # with the user choosing which facing direction to place.
+            symbol = self._prompt_ats_symbol(doc, item)
+            if symbol is None:
+                symbol = self._find_ats_symbol(doc)
+            if symbol is not None:
+                return {"group_type": None, "symbols": [(symbol, 0.0)]}
+            return None
+        if kind == "switch":
+            # Equipment switches (disconnects) use the disconnect detail family.
+            symbol = self._find_disconnect_symbol(doc, item)
+            if symbol is not None:
+                return {"group_type": None, "symbols": [(symbol, 0.0)]}
+            return None
+        if kind == "transformer":
+            # Let the user pick from the loaded transformer detail families
+            # (Box/No Box x Ground/No Ground x facing, Utility) or the group.
+            template = self._prompt_transformer_template(doc, item)
+            if template is not None:
+                return template
+            # fall through to SLD_ group resolution
+        if kind == "generator":
+            # Generators are drawn as an equipment box (per the CED one-line
+            # standard), never a switchboard group.
+            symbol = self._find_detail_symbol(doc, ["SLD-EQU-BOX"], prefer_type=["EQUIPMENT BOX"])
+            if symbol is None:
+                symbol = self._find_detail_symbol(doc, ["GENERATOR"])
+            if symbol is not None:
+                return {"group_type": None, "symbols": [(symbol, 0.0)]}
+            return None
+        for keyword in self.KIND_KEYWORDS.get(kind, []):
+            for name, group_type in group_types:
+                if keyword in name:
+                    return {"group_type": group_type, "symbols": None}
+        return None
+
+    def _prompt_panel_switchboard_template(self, doc, item, kind):
+        """List every loaded SLD-EQU panel and switchboard detail family (with
+        bus, facings, tab top, ...) plus the SLD_ group option. Returns a
+        template dict, or None to use normal group resolution."""
+        symbols_by_family = {}
+        try:
+            collector = (
+                DB.FilteredElementCollector(doc)
+                .OfCategory(DB.BuiltInCategory.OST_DetailComponents)
+                .WhereElementIsElementType()
+            )
+            for symbol in collector:
+                if not isinstance(symbol, DB.FamilySymbol):
+                    continue
+                try:
+                    family_param = symbol.get_Parameter(DB.BuiltInParameter.SYMBOL_FAMILY_NAME_PARAM)
+                    family_name = (family_param.AsString() if family_param else "") or ""
+                except Exception:
+                    continue
+                upper = family_name.upper()
+                if not upper.startswith("SLD-EQU-"):
+                    continue
+                if "PANEL" not in upper and "SWITCHBOARD" not in upper:
+                    continue
+                if family_name not in symbols_by_family:
+                    symbols_by_family[family_name] = symbol
+        except Exception:
+            return None
+        if not symbols_by_family:
+            return None
+
+        group_label = "Use SLD_ Group"
+        labels = sorted(symbols_by_family.keys()) + [group_label]
+        try:
+            choice = forms.SelectFromList.show(
+                labels,
+                title="{} symbol for '{}'  [v2]".format(
+                    "Switchboard" if kind == "switchboard" else "Panel",
+                    item.get("name") or "?",
+                ),
+                button_name="Select",
+                multiselect=False,
+            )
+        except Exception as ex:
+            if self._gateway.logger:
+                self._gateway.logger.warning("Panel symbol picker failed: %s", ex)
+            forms.alert(
+                "The symbol picker failed ({}).\n\nUsing the SLD_ group for '{}'.".format(
+                    ex, item.get("name") or "?"
+                ),
+                title="Build One Line Branch",
+            )
+            return None
+        if not choice or choice == group_label:
+            return None
+        symbol = symbols_by_family.get(choice)
+        if symbol is None:
+            return None
+        upper_choice = choice.upper()
+        template = {
+            "group_type": None,
+            "symbols": [(symbol, 0.0)],
+            "bus_family": "PANEL WITH BUS" in upper_choice or "SWITCHBOARD" in upper_choice,
+            "breaker_count": 0,
+        }
+        if template["bus_family"]:
+            # Order of operations: Build Branch > symbol > slot count > placement.
+            template["breaker_count"] = self._prompt_breaker_count(item)
+        return template
+
+    def _prompt_breaker_count(self, item):
+        raw = None
+        try:
+            raw = forms.ask_for_string(
+                default="6",
+                prompt="How many breaker slots on '{}'?\n\n(Slots place empty - connected equipment in this "
+                       "build fills them; assign the rest later with Inject Into Detail Item. "
+                       "0 places just the bus.)".format(item.get("name") or "?"),
+                title="Build One Line Branch",
+            )
+        except Exception as ex:
+            if self._gateway.logger:
+                self._gateway.logger.warning("Breaker slot prompt failed: %s", ex)
+            forms.alert(
+                "Could not show the breaker slot prompt ({}).\n\n"
+                "'{}' places without bus breakers.".format(ex, item.get("name") or "?"),
+                title="Build One Line Branch",
+            )
+            return 0
+        try:
+            count = int(str(raw).strip())
+        except Exception:
+            count = 0
+        return max(0, min(count, 84))
+
+    def _prompt_transformer_template(self, doc, item):
+        """List the loaded SLD-EQU-Transformer* detail families for the user to
+        choose from, plus the SLD_ group option. Returns a template dict, or
+        None to use normal group resolution."""
+        symbols_by_family = {}
+        try:
+            collector = (
+                DB.FilteredElementCollector(doc)
+                .OfCategory(DB.BuiltInCategory.OST_DetailComponents)
+                .WhereElementIsElementType()
+            )
+            for symbol in collector:
+                if not isinstance(symbol, DB.FamilySymbol):
+                    continue
+                try:
+                    family_param = symbol.get_Parameter(DB.BuiltInParameter.SYMBOL_FAMILY_NAME_PARAM)
+                    family_name = (family_param.AsString() if family_param else "") or ""
+                except Exception:
+                    continue
+                upper = family_name.upper()
+                if "TRANSFORMER" not in upper or not upper.startswith("SLD-EQU-"):
+                    continue
+                if family_name not in symbols_by_family:
+                    symbols_by_family[family_name] = symbol
+        except Exception:
+            return None
+        if not symbols_by_family:
+            return None
+
+        group_label = "Use SLD_ Group"
+        labels = sorted(symbols_by_family.keys()) + [group_label]
+        try:
+            choice = forms.SelectFromList.show(
+                labels,
+                title="Transformer symbol for '{}'".format(item.get("name") or "?"),
+                button_name="Select",
+                multiselect=False,
+            )
+        except Exception as ex:
+            if self._gateway.logger:
+                self._gateway.logger.warning("Transformer symbol picker failed: %s", ex)
+            forms.alert(
+                "The symbol picker failed ({}).\n\nUsing the SLD_ group for '{}'.".format(
+                    ex, item.get("name") or "?"
+                ),
+                title="Build One Line Branch",
+            )
+            return None
+        if not choice or choice == group_label:
+            return None
+        symbol = symbols_by_family.get(choice)
+        if symbol is None:
+            return None
+        return {"group_type": None, "symbols": [(symbol, 0.0)]}
+
+    def _prompt_ats_symbol(self, doc, item):
+        """Ask which facing direction the transfer switch symbol should use.
+        Returns the chosen FamilySymbol, or None to fall back to the default."""
+        variants = [
+            ("Transfer Switch - Top", ["TRANSFER SWITCH", "TOP"]),
+            ("Transfer Switch - Bottom", ["TRANSFER SWITCH", "BOTTOM"]),
+            ("Transfer Switch - Left", ["TRANSFER SWITCH", "LEFT"]),
+            ("Transfer Switch - Right", ["TRANSFER SWITCH", "RIGHT"]),
+        ]
+        choice = forms.alert(
+            "'{}' is a transfer switch.\n\nWhich facing direction should the symbol use?".format(
+                item.get("name") or "?"
+            ),
+            title="Build One Line Branch",
+            options=[label for label, _tokens in variants],
+        )
+        if not choice:
+            return None
+        for label, tokens in variants:
+            if label != choice:
+                continue
+            symbol = self._find_detail_symbol(doc, tokens)
+            if symbol is None:
+                forms.alert(
+                    "No loaded detail family matched '{}'. Using the default orientation instead.".format(label),
+                    title="Build One Line Branch",
+                )
+            return symbol
+        return None
+
+    def _find_disconnect_symbol(self, doc, item):
+        """Disconnect family for an equipment switch; fused when the equipment
+        carries a non-empty fuse rating, non-fused otherwise."""
+        fused = False
+        try:
+            elem = doc.GetElement(revit_helpers.elementid_from_value(int(item.get("element_id") or 0)))
+            for param_name in ("Fuse Rating_CED", "Fuse Rating_CEDT", "Fuse Rating"):
+                param = elem.LookupParameter(param_name) if elem is not None else None
+                if param is None or not param.HasValue:
+                    continue
+                if param.StorageType == DB.StorageType.String:
+                    fused = bool((param.AsString() or "").strip())
+                elif param.StorageType == DB.StorageType.Double:
+                    fused = param.AsDouble() > 1e-9
+                elif param.StorageType == DB.StorageType.Integer:
+                    fused = param.AsInteger() > 0
+                if fused:
+                    break
+        except Exception:
+            fused = False
+        prefer = ["DISCONNECT FUSED"] if fused else ["NON-FUSED"]
+        return self._find_detail_symbol(doc, ["DISCONNECT"], prefer_contain=prefer)
+
+    def _find_detail_symbol(self, doc, must_contain, prefer_contain=None, prefer_type=None):
+        """First detail FamilySymbol whose family name contains every token in
+        must_contain; symbols matching prefer_contain (family name) or
+        prefer_type (type name) tokens win."""
+        best = None
+        try:
+            collector = (
+                DB.FilteredElementCollector(doc)
+                .OfCategory(DB.BuiltInCategory.OST_DetailComponents)
+                .WhereElementIsElementType()
+            )
+            for symbol in collector:
+                if not isinstance(symbol, DB.FamilySymbol):
+                    continue
+                try:
+                    family_param = symbol.get_Parameter(DB.BuiltInParameter.SYMBOL_FAMILY_NAME_PARAM)
+                    family_name = ((family_param.AsString() if family_param else "") or "").upper()
+                except Exception:
+                    continue
+                if not all(token in family_name for token in must_contain):
+                    continue
+                if prefer_contain and all(token in family_name for token in prefer_contain):
+                    return symbol
+                if prefer_type:
+                    try:
+                        type_param = symbol.get_Parameter(DB.BuiltInParameter.ALL_MODEL_TYPE_NAME)
+                        type_name = ((type_param.AsString() if type_param else "") or "").upper()
+                    except Exception:
+                        type_name = ""
+                    if type_name and all(token in type_name for token in prefer_type):
+                        return symbol
+                if best is None:
+                    best = symbol
+        except Exception:
+            pass
+        return best
+
+    def _find_ats_symbol(self, doc):
+        """Use one of the SLD-EQU-Transfer Switch-{Top,Bottom,Left,Right}_CED
+        detail families for an ATS (prefer the Top-fed orientation)."""
+        for tokens in (
+            ["TRANSFER SWITCH", "TOP"],
+            ["TRANSFER SWITCH", "BOTTOM"],
+            ["TRANSFER SWITCH", "LEFT"],
+            ["TRANSFER SWITCH", "RIGHT"],
+            ["TRANSFER SWITCH"],
+            ["ATS"],
+        ):
+            symbol = self._find_detail_symbol(doc, tokens)
+            if symbol is not None:
+                return symbol
+        return None
+
+    def _inject_members(self, doc, members, item):
+        equip_elem = None
+        circuit = None
+        if str(item.get("kind") or "") == "equip":
+            try:
+                equip_elem = doc.GetElement(revit_helpers.elementid_from_value(int(item.get("element_id") or 0)))
+            except Exception:
+                equip_elem = None
+            feeder_id = int(item.get("feeder_circuit_id") or 0)
+            if feeder_id:
+                try:
+                    circuit = doc.GetElement(revit_helpers.elementid_from_value(feeder_id))
+                except Exception:
+                    circuit = None
+        else:
+            try:
+                circuit = doc.GetElement(revit_helpers.elementid_from_value(int(item.get("circuit_id") or 0)))
+            except Exception:
+                circuit = None
+        if circuit is not None and not isinstance(circuit, DBE.ElectricalSystem):
+            circuit = None
+
+        count = 0
+        for member in members:
+            if member is None:
+                continue
+            try:
+                category = member.Category
+                if category is None or _elid_value(category.Id) != int(DB.BuiltInCategory.OST_DetailComponents):
+                    continue
+            except Exception:
+                continue
+            written = set()
+            if circuit is not None:
+                result = inject_circuit_values(circuit, member)
+                written.update(result.get("written") or [])
+            if equip_elem is not None:
+                result = inject_panel_values(equip_elem, member)
+                written.update(result.get("written") or [])
+                result = inject_matching_values(equip_elem, member, skip_names=written)
+                written.update(result.get("written") or [])
+            if circuit is not None:
+                inject_matching_values(circuit, member, skip_names=written)
+            count += 1
+        return count
+
+    def GetName(self):
+        return "CED Build One Line Branch External Event"
+
+
 # ---------------------------------------------------------------------------
 # One Line Diagram
 # ---------------------------------------------------------------------------
@@ -3148,9 +4115,20 @@ def _build_one_line_model(doc):
             _one_line_value_string(tnode.element, "Mains Rating_CED")
             or _one_line_value_string(tnode.element, getattr(DB.BuiltInParameter, "RBS_ELEC_PANEL_MAINS_PARAM", None))
         )
-        equip.demand_load_text = _one_line_value_string(
-            tnode.element, getattr(DB.BuiltInParameter, "RBS_ELEC_PANEL_TOTALESTLOAD_PARAM", None)
-        )
+        # Demand = Total Estimated Demand (never Total Connected), converted
+        # from internal units and shown as kVA alongside the demand current.
+        demand_kva = None
+        try:
+            demand_param = tnode.element.get_Parameter(
+                getattr(DB.BuiltInParameter, "RBS_ELEC_PANEL_TOTALESTLOAD_PARAM", None)
+            )
+            if demand_param is not None and demand_param.HasValue:
+                demand_va = _va_from_internal(demand_param.AsDouble())
+                if demand_va > 0:
+                    demand_kva = demand_va / 1000.0
+        except Exception:
+            demand_kva = None
+        equip.demand_load_text = "{} kVA".format(round(demand_kva, 1)) if demand_kva else ""
         equip.demand_current_text = _one_line_value_string(
             tnode.element, getattr(DB.BuiltInParameter, "RBS_ELEC_PANEL_TOTAL_DEMAND_CURRENT_PARAM", None)
         )
@@ -3323,6 +4301,14 @@ class OneLineDiagramWindow(forms.WPFWindow):
         self._pan_origin = None
         self._pan_start_h = 0.0
         self._pan_start_v = 0.0
+        self._pan_moved = False
+        self._pan_button = None
+        self._build_button = self.FindName("BuildBranchButton")
+        self._selected_keys = set()
+        self._cards_by_key = {}
+        self._card_default_bg = {}
+        self._load_index = {}
+        self._load_click_key = None
         self._render()
 
     # ---- infrastructure -------------------------------------------------
@@ -3447,8 +4433,12 @@ class OneLineDiagramWindow(forms.WPFWindow):
             return
         canvas.Children.Clear()
         self._cards_by_id = {}
+        self._cards_by_key = {}
+        self._card_default_bg = {}
+        self._load_index = {}
         self._line_brush = self._brush("CED.Brush.ListBorder", "#7A8698")
         self._accent_brush = self._brush("CED.Brush.InfoPanelBorder", "#2F81F7")
+        self._selection_brush = self._brush("CED.Brush.RowSelectedBackground", "#BFD8F5")
 
         nodes = (self._model or {}).get("nodes") or {}
         roots = (self._model or {}).get("roots") or []
@@ -3590,14 +4580,23 @@ class OneLineDiagramWindow(forms.WPFWindow):
             Canvas.SetTop(card, ey)
             canvas.Children.Add(card)
             self._cards_by_id[equip.element_id] = card
+            equip_key = "E{}".format(equip.element_id)
+            self._cards_by_key[equip_key] = card
+            self._card_default_bg[equip_key] = card.Background
 
             for idx, load in enumerate(self._visible_loads(equip)):
                 load_top = ey + card_h + 14.0 + idx * (self.LOAD_H + 8.0)
-                load_card = self._make_load_card(load)
+                load_key = "L{}".format(load.circuit_id)
+                load_card = self._make_load_card(load, load_key)
                 Canvas.SetLeft(load_card, ex - self.LOAD_W / 2.0)
                 Canvas.SetTop(load_card, load_top)
                 canvas.Children.Add(load_card)
+                self._cards_by_key[load_key] = load_card
+                self._card_default_bg[load_key] = load_card.Background
+                self._load_index[load_key] = (equip.element_id, load)
 
+        self._selected_keys = set([key for key in self._selected_keys if key in self._cards_by_key])
+        self._apply_selection_visuals()
         self._apply_zoom()
         if not self._move_in_flight:
             self._set_status(self._summary_text())
@@ -3670,12 +4669,13 @@ class OneLineDiagramWindow(forms.WPFWindow):
         border.ToolTip = "\n".join(tooltip_lines)
 
         border.PreviewMouseLeftButtonDown += self._card_mouse_down
+        border.PreviewMouseLeftButtonUp += self._card_mouse_up
         border.PreviewMouseMove += self._card_mouse_move
         border.DragOver += self._card_drag_over
         border.Drop += self._card_drop
         return border
 
-    def _make_load_card(self, load):
+    def _make_load_card(self, load, load_key):
         border = Border()
         border.Width = self.LOAD_W
         border.Height = self.LOAD_H
@@ -3683,6 +4683,7 @@ class OneLineDiagramWindow(forms.WPFWindow):
         border.Background = self._brush("CED.Brush.ListBackground", "#FFFFFF")
         border.BorderBrush = self._brush("CED.Brush.ListBorder", "#7A8698")
         border.BorderThickness = Thickness(3.0, 1.0, 1.0, 1.0)
+        border.Tag = str(load_key)
 
         stack = StackPanel()
         stack.Margin = Thickness(6.0, 2.0, 6.0, 2.0)
@@ -3690,7 +4691,88 @@ class OneLineDiagramWindow(forms.WPFWindow):
         stack.Children.Add(self._text(load.metrics_text(), "CED.Text.Secondary", size=10))
         border.Child = stack
         border.ToolTip = "{}\n{}".format(load.name, load.metrics_text())
+        border.PreviewMouseLeftButtonDown += self._load_mouse_down
+        border.PreviewMouseLeftButtonUp += self._load_mouse_up
         return border
+
+    # ---- selection ---------------------------------------------------------
+
+    @staticmethod
+    def _selection_key_from_tag(tag):
+        text = str(tag or "")
+        if not text:
+            return None
+        if text.startswith("L"):
+            return text
+        try:
+            return "E{}".format(int(text))
+        except Exception:
+            return None
+
+    def _handle_card_click(self, key):
+        if not key:
+            return
+        ctrl = bool(Keyboard.Modifiers & ModifierKeys.Control)
+        if ctrl:
+            if key in self._selected_keys:
+                self._selected_keys.discard(key)
+            else:
+                self._selected_keys.add(key)
+        else:
+            self._selected_keys = set([key])
+        self._apply_selection_visuals()
+
+    def _clear_selection(self):
+        if not self._selected_keys:
+            return
+        self._selected_keys = set()
+        self._apply_selection_visuals()
+
+    def _apply_selection_visuals(self):
+        for key, card in self._cards_by_key.items():
+            try:
+                if key in self._selected_keys:
+                    card.Background = self._selection_brush
+                else:
+                    card.Background = self._card_default_bg.get(key)
+            except Exception:
+                pass
+        self._update_build_button()
+        if not self._move_in_flight:
+            if self._selected_keys:
+                self._set_status("{} card(s) selected".format(len(self._selected_keys)))
+            else:
+                self._set_status(self._summary_text())
+
+    def _update_build_button(self):
+        if self._build_button is not None:
+            try:
+                self._build_button.IsEnabled = bool(self._selected_keys)
+            except Exception:
+                pass
+
+    def _card_mouse_up(self, sender, args):
+        if self._drag_candidate is None:
+            return
+        candidate_eid = self._drag_candidate[0]
+        self._drag_candidate = None
+        try:
+            if int(sender.Tag) != int(candidate_eid):
+                return
+        except Exception:
+            return
+        self._handle_card_click(self._selection_key_from_tag(sender.Tag))
+
+    def _load_mouse_down(self, sender, args):
+        if getattr(args, "ClickCount", 1) != 1:
+            return
+        self._load_click_key = str(sender.Tag or "")
+
+    def _load_mouse_up(self, sender, args):
+        key = str(sender.Tag or "")
+        if key and self._load_click_key == key:
+            self._handle_card_click(key)
+        self._load_click_key = None
 
     # ---- drag & drop re-feed ---------------------------------------------
 
@@ -4009,6 +5091,106 @@ class OneLineDiagramWindow(forms.WPFWindow):
             return
         self._render()
 
+    def _collect_build_items(self):
+        nodes = (self._model or {}).get("nodes") or {}
+        entries = []
+        for key in self._selected_keys:
+            if key.startswith("E"):
+                try:
+                    eid = int(key[1:])
+                except Exception:
+                    continue
+                node = nodes.get(eid)
+                if node is None:
+                    continue
+                entries.append((
+                    (node.tier, 0, str(node.name).upper()),
+                    {
+                        "kind": "equip",
+                        "element_id": int(eid),
+                        "parent_id": int(node.parent_id or 0),
+                        "feeder_circuit_id": int(node.feeder_circuit_id or 0),
+                        "name": node.name,
+                        "equip_type": node.equip_type,
+                    },
+                ))
+            elif key.startswith("L"):
+                owner_id, load = self._load_index.get(key, (None, None))
+                if load is None:
+                    continue
+                owner = nodes.get(owner_id)
+                tier = owner.tier if owner is not None else 9999
+                entries.append((
+                    (tier, 1, str(load.name).upper()),
+                    {
+                        "kind": "load",
+                        "circuit_id": int(load.circuit_id),
+                        "parent_id": int(owner_id or 0),
+                        "name": load.name,
+                    },
+                ))
+        entries.sort(key=lambda pair: pair[0])
+        return [entry[1] for entry in entries]
+
+    def build_branch_clicked(self, sender, args):
+        if not self._selected_keys:
+            return
+        if not getattr(self._pane, "_active_view_is_drafting", False):
+            forms.alert(
+                "The branch is placed into the active drafting view.\n\n"
+                "Open a drafting view first, then click Build Branch again.",
+                title=ONE_LINE_TITLE,
+            )
+            return
+        gateway = getattr(self._pane, "_build_branch_gateway", None)
+        if gateway is None:
+            return
+        if gateway.is_busy():
+            self._set_status("Build Branch is already running - please wait")
+            return
+        items = self._collect_build_items()
+        if not items:
+            return
+        self._set_status("Click in the drafting view to place the branch...")
+        raised = gateway.raise_build(items, callback=self._on_build_branch_complete)
+        if not raised:
+            self._set_status("Unable to queue Build Branch")
+
+    def _on_build_branch_complete(self, status, payload, error):
+        payload = dict(payload or {})
+        if status == "error":
+            self._set_status("Build Branch failed")
+            forms.alert("Failed to build the branch:\n\n{}".format(error), title=ONE_LINE_TITLE)
+            return
+        if status == "not_drafting":
+            self._set_status("Build Branch cancelled (active view is not a drafting view)")
+            return
+        if status == "cancelled":
+            self._set_status("Build Branch cancelled")
+            return
+        if status == "no_templates":
+            self._set_status("Build Branch found no matching SLD_ templates")
+            forms.alert(
+                "No SLD_ detail groups (or ATS detail families) matched the selection:\n\n- {}".format(
+                    "\n- ".join(payload.get("skipped") or ["?"])
+                ),
+                title=ONE_LINE_TITLE,
+            )
+            return
+        placed = int(payload.get("placed", 0) or 0)
+        detail_count = int(payload.get("detail_count", 0) or 0)
+        bus_breakers = int(payload.get("bus_breakers", 0) or 0)
+        skipped = list(payload.get("skipped") or [])
+        summary = "Build Branch: placed {} element(s), filled {} detail item(s)".format(placed, detail_count)
+        if bus_breakers:
+            summary += ", {} bus breaker slot(s)".format(bus_breakers)
+        self._set_status(summary)
+        if skipped:
+            forms.alert(
+                "Branch placed, but no SLD_ template was found for:\n\n- {}".format("\n- ".join(skipped)),
+                title=ONE_LINE_TITLE,
+            )
+
     def refresh_diagram_clicked(self, sender, args):
         self._rebuild()
 
@@ -4093,6 +5275,8 @@ class OneLineDiagramWindow(forms.WPFWindow):
         if self._scroll is None:
             return
         self._pan_active = True
+        self._pan_moved = False
+        self._pan_button = changed
         self._pan_origin = args.GetPosition(self._scroll)
         self._pan_start_h = self._scroll.HorizontalOffset
         self._pan_start_v = self._scroll.VerticalOffset
@@ -4108,8 +5292,12 @@ class OneLineDiagramWindow(forms.WPFWindow):
             return
         try:
             position = args.GetPosition(self._scroll)
-            self._scroll.ScrollToHorizontalOffset(self._pan_start_h - (position.X - self._pan_origin.X))
-            self._scroll.ScrollToVerticalOffset(self._pan_start_v - (position.Y - self._pan_origin.Y))
+            dx = position.X - self._pan_origin.X
+            dy = position.Y - self._pan_origin.Y
+            if abs(dx) > 3.0 or abs(dy) > 3.0:
+                self._pan_moved = True
+            self._scroll.ScrollToHorizontalOffset(self._pan_start_h - dx)
+            self._scroll.ScrollToVerticalOffset(self._pan_start_v - dy)
             args.Handled = True
         except Exception:
             pass
@@ -4123,6 +5311,11 @@ class OneLineDiagramWindow(forms.WPFWindow):
             self._scroll.ReleaseMouseCapture()
         except Exception:
             pass
+        # A left click on empty canvas (no pan movement) clears the selection.
+        if not self._pan_moved and self._pan_button == MouseButton.Left:
+            self._clear_selection()
+        self._pan_moved = False
+        self._pan_button = None
 
     def close_clicked(self, sender, args):
         self.Close()
@@ -4187,6 +5380,7 @@ class CircuitBrowserPanel(forms.WPFPanel):
             alert_parameter_name=ALERT_DATA_PARAM,
         )
         self._inject_gateway = InjectDetailItemExternalEventGateway(logger=self._logger)
+        self._build_branch_gateway = BuildBranchExternalEventGateway(logger=self._logger)
         self._active_view_is_drafting = False
         self._refresh_active_view_state()
         self._one_line_window = None
