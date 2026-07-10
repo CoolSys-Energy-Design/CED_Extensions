@@ -57,6 +57,9 @@ from Autodesk.Revit.DB import (  # noqa: E402
     ViewPlan,
     XYZ,
 )
+from Autodesk.Revit.DB.Electrical import (  # noqa: E402
+    ElectricalLoadClassification,
+)
 from Autodesk.Revit.DB.Structure import StructuralType  # noqa: E402
 
 import directives as _dir
@@ -2199,11 +2202,14 @@ def _apply_static_parameters(elem, params_dict, warnings=None,
             # Setting empty string clears the parameter; do nothing instead.
             skipped += 1
             continue
-        if _set_param_value(param, value):
+        pre_warn = len(warnings) if warnings is not None else 0
+        if _set_param_value(param, value, warnings=warnings):
             written += 1
         else:
             skipped += 1
-            if warnings is not None:
+            # Only add the generic diagnosis when _set_param_value
+            # didn't already explain the failure specifically.
+            if warnings is not None and len(warnings) == pre_warn:
                 warnings.append(
                     "Failed to write parameter '{}' = {} on {}. (Family-side "
                     "association: the instance parameter is driven by a type/"
@@ -2375,11 +2381,12 @@ def _apply_parent_directives(child, parent_elem, params_dict, warnings=None):
         except Exception:
             skipped += 1
             continue
-        if _set_param_value(param, parent_value):
+        pre_warn = len(warnings) if warnings is not None else 0
+        if _set_param_value(param, parent_value, warnings=warnings):
             written += 1
         else:
             skipped += 1
-            if warnings is not None:
+            if warnings is not None and len(warnings) == pre_warn:
                 warnings.append(
                     "Failed to write inherited value {!r} into child "
                     "parameter '{}' (from parent '{}').".format(
@@ -2466,7 +2473,53 @@ def _parse_yes_no(text):
     return None
 
 
-def _set_param_value(param, value):
+def _is_load_classification_param(param):
+    """True when the parameter's data type is Revit's Load
+    Classification spec (shared-param type ``LOADCLASSIFICATION`` —
+    e.g. ``Load Classification_CED`` and the ``Circuit N Load
+    Classification_CED`` family). Detected via the ForgeTypeId string
+    rather than a SpecTypeId constant so the check survives Revit
+    version churn in the spec API surface.
+    """
+    try:
+        dt = param.Definition.GetDataType()
+        type_id = getattr(dt, "TypeId", "") or ""
+    except Exception:
+        return False
+    return "loadclassification" in type_id.lower()
+
+
+def _resolve_load_classification_id(doc, name):
+    """Resolve a load-classification *name* ("REC", "NC", ...) to the
+    project's ``ElectricalLoadClassification`` ElementId, or ``None``
+    when no classification of that name exists in ``doc``. Exact name
+    match wins; case-insensitive match is the fallback.
+    """
+    if doc is None or not name:
+        return None
+    target = str(name).strip()
+    if not target:
+        return None
+    ci_hit = None
+    try:
+        collector = FilteredElementCollector(doc).OfClass(
+            ElectricalLoadClassification
+        )
+        for elc in collector:
+            try:
+                elc_name = elc.Name
+            except Exception:
+                continue
+            if elc_name == target:
+                return elc.Id
+            if ci_hit is None and elc_name and elc_name.lower() == target.lower():
+                ci_hit = elc.Id
+    except Exception:
+        return None
+    return ci_hit
+
+
+def _set_param_value(param, value, warnings=None):
     """Best-effort write that honours the parameter's StorageType **and**
     its display units.
 
@@ -2485,6 +2538,21 @@ def _set_param_value(param, value):
          through SetValueString in Revit 2026.
       3. Yes/No parser (Integer only) — covers boolean parameters
          captured as ``"Yes"`` / ``"No"`` strings.
+
+    ElementId-storage parameters whose data type is Load Classification
+    resolve the captured *name* ("REC", "NC", ...) back to the target
+    project's ``ElectricalLoadClassification`` element and ``Set`` its
+    id — the string form can never be written directly because the
+    parameter stores a pointer, not text. When the project has no
+    classification of that name, one is created
+    (``ElectricalLoadClassification.Create``) so the captured value
+    always lands.
+
+    ``warnings`` (optional) collects a specific diagnostic when this
+    function knows *why* a write failed (e.g. the load classification
+    could not be resolved or created). Callers that add their own
+    generic failure message should skip it when this function already
+    appended one.
 
     Returns ``False`` only when every stage fails.
     """
@@ -2545,7 +2613,48 @@ def _set_param_value(param, value):
                     pass
         return False
 
-    # ElementId or unknown — last-resort string set.
+    if storage == "ElementId" and _is_load_classification_param(param):
+        # The YAML stores the classification NAME (capture renders it
+        # via AsValueString), but the parameter stores an ElementId
+        # pointing to a project-local ElectricalLoadClassification.
+        try:
+            doc = param.Element.Document
+        except Exception:
+            doc = None
+        eid = _resolve_load_classification_id(doc, raw_str)
+        if eid is None and doc is not None:
+            # Not defined in this project — create it so the captured
+            # value always lands (load classifications are project-
+            # local; a fresh model won't have "REC"/"NC" until a
+            # panel/template brings them in).
+            try:
+                new_lc = ElectricalLoadClassification.Create(
+                    doc, str(raw_str).strip()
+                )
+                if new_lc is not None:
+                    eid = new_lc.Id
+            except Exception:
+                eid = None
+        if eid is not None:
+            try:
+                return bool(param.Set(eid))
+            except Exception:
+                return False
+        if warnings is not None:
+            try:
+                pname = param.Definition.Name
+            except Exception:
+                pname = "?"
+            warnings.append(
+                "Load classification '{}' could not be resolved or "
+                "created in this project — parameter '{}' skipped.".format(
+                    raw_str, pname,
+                )
+            )
+        return False
+
+    # ElementId (non-load-classification) or unknown — last-resort
+    # string set.
     try:
         return bool(param.Set(str(value)))
     except Exception:

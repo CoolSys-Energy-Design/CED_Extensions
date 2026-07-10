@@ -679,8 +679,9 @@ def _apply_parameters(elem, params_dict, warnings=None):
                     "value {!r} skipped.".format(name, elem_label, value)
                 )
             continue
-        ok = _placement._set_param_value(p, value)
-        if not ok and warnings is not None:
+        pre_warn = len(warnings) if warnings is not None else 0
+        ok = _placement._set_param_value(p, value, warnings=warnings)
+        if not ok and warnings is not None and len(warnings) == pre_warn:
             warnings.append(
                 "Failed to write parameter {!r} = {!r} on {}.".format(
                     name, value, elem_label,
