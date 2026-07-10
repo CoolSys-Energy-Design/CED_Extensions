@@ -3261,13 +3261,16 @@ class _BuildBranchHandler(IExternalEventHandler):
         anchors.sort(key=lambda a: a["x"])
         return anchors
 
-    BREAKER_SPACING = 1.266  # ft, matched to the SLD_Switchboard group's slots
+    BREAKER_SPACING = 1.266        # ft along horizontal buses (SLD_Switchboard standard)
+    BREAKER_SPACING_COLUMN = 0.45  # ft along vertical buses (legacy riser standard)
+    _HALF_PI = 1.5707963267948966
 
     @staticmethod
     def _find_bus_line(instance, view):
-        """Longest horizontal line in the placed symbol's geometry = the bus.
-        Returns (x_start, x_end, y) or None."""
-        best = None
+        """Longest horizontal OR vertical line in the symbol geometry = the bus.
+        Returns {"orient": "h"|"v", "start": s, "end": e, "pos": p} where pos is
+        Y for horizontal buses and X for vertical ones, or None."""
+        best = None  # (length, orient, start, end, pos)
         try:
             options = DB.Options()
             options.View = view
@@ -3287,14 +3290,20 @@ class _BuildBranchHandler(IExternalEventHandler):
                     continue
                 p0 = obj.GetEndPoint(0)
                 p1 = obj.GetEndPoint(1)
-                if abs(p0.Y - p1.Y) > 1e-6:
-                    continue
-                length = abs(p1.X - p0.X)
-                if best is None or length > best[1] - best[0]:
-                    best = (min(p0.X, p1.X), max(p0.X, p1.X), p0.Y)
+                candidate = None
+                if abs(p0.Y - p1.Y) < 1e-6:
+                    length = abs(p1.X - p0.X)
+                    candidate = (length, "h", min(p0.X, p1.X), max(p0.X, p1.X), p0.Y)
+                elif abs(p0.X - p1.X) < 1e-6:
+                    length = abs(p1.Y - p0.Y)
+                    candidate = (length, "v", min(p0.Y, p1.Y), max(p0.Y, p1.Y), p0.X)
+                if candidate is not None and (best is None or candidate[0] > best[0]):
+                    best = candidate
         except Exception:
             return None
-        return best
+        if best is None:
+            return None
+        return {"orient": best[1], "start": best[2], "end": best[3], "pos": best[4]}
 
     def _populate_bus_breakers(self, doc, view, instance, item, count):
         """Stretch the bus to fit `count` slots and place empty breaker symbols
@@ -3306,25 +3315,16 @@ class _BuildBranchHandler(IExternalEventHandler):
             return []
         count = min(count, 84)
 
-        breaker_symbol = self._find_detail_symbol(doc, ["SLD-FDR-CIRCUIT BREAKER"])
+        # Exact family: plain "SLD-FDR-Circuit Breaker_CED" - the bare token
+        # also matches "...Drawout Double_CED" etc., which we never want here.
+        breaker_symbol = self._find_detail_symbol(doc, ["SLD-FDR-CIRCUIT BREAKER_CED"])
         if breaker_symbol is None:
-            forms.alert("No SLD-FDR-Circuit Breaker family is loaded.", title="Build One Line Branch")
+            forms.alert("No SLD-FDR-Circuit Breaker_CED family is loaded.", title="Build One Line Branch")
             return []
         try:
             if not breaker_symbol.IsActive:
                 breaker_symbol.Activate()
                 doc.Regenerate()
-        except Exception:
-            pass
-
-        # Stretch the bus to fit the requested slots.
-        needed = count * self.BREAKER_SPACING + 0.4
-        try:
-            width_param = instance.LookupParameter("DME_Width")
-            if width_param is not None and not width_param.IsReadOnly:
-                if float(width_param.AsDouble() or 0.0) < needed:
-                    width_param.Set(needed)
-                    doc.Regenerate()
         except Exception:
             pass
 
@@ -3335,18 +3335,60 @@ class _BuildBranchHandler(IExternalEventHandler):
                 title="Build One Line Branch",
             )
             return []
-        x_start, x_end, bus_y = bus
-        available = max(0.1, x_end - x_start)
-        step = self.BREAKER_SPACING if self.BREAKER_SPACING * count <= available else available / float(count)
+
+        # Match the default arrangement: rows on horizontal buses, columns on
+        # vertical ones. Stretch the matching dimension to fit the slot count.
+        if bus["orient"] == "h":
+            stretch_param = "DME_Width"
+            spacing = self.BREAKER_SPACING
+        else:
+            stretch_param = "DME_Height"
+            spacing = self.BREAKER_SPACING_COLUMN
+        needed = count * spacing + 0.4
+        try:
+            size_param = instance.LookupParameter(stretch_param)
+            if size_param is not None and not size_param.IsReadOnly:
+                if float(size_param.AsDouble() or 0.0) < needed:
+                    size_param.Set(needed)
+                    doc.Regenerate()
+                    bus = self._find_bus_line(instance, view) or bus
+        except Exception:
+            pass
+
+        start = float(bus["start"])
+        end = float(bus["end"])
+        pos = float(bus["pos"])
+        available = max(0.1, end - start)
+        step = spacing if spacing * count <= available else available / float(count)
+
+        # Column buses: rotate breakers so they come off the bus sideways,
+        # facing away from the symbol body (like the legacy risers).
+        rotation = 0.0
+        if bus["orient"] == "v":
+            bus_on_left = True
+            try:
+                bbox = instance.get_BoundingBox(view)
+                if bbox is not None:
+                    bus_on_left = pos <= (float(bbox.Min.X) + float(bbox.Max.X)) / 2.0
+            except Exception:
+                pass
+            rotation = self._HALF_PI if bus_on_left else -self._HALF_PI
 
         anchors = []
         for idx in range(count):
-            bx = x_start + step * (idx + 0.5)
+            coord = start + step * (idx + 0.5)
+            if bus["orient"] == "h":
+                point = DB.XYZ(coord, pos, 0.0)
+            else:
+                point = DB.XYZ(pos, coord, 0.0)
             try:
-                breaker = doc.Create.NewFamilyInstance(DB.XYZ(bx, bus_y, 0.0), breaker_symbol, view)
+                breaker = doc.Create.NewFamilyInstance(point, breaker_symbol, view)
+                if rotation:
+                    axis = DB.Line.CreateBound(point, DB.XYZ(point.X, point.Y, 1.0))
+                    DB.ElementTransformUtils.RotateElement(doc, breaker.Id, axis, rotation)
             except Exception:
                 continue
-            anchors.append({"x": round(float(bx), 3), "element": breaker})
+            anchors.append({"x": round(float(point.X), 3), "element": breaker})
         doc.Regenerate()
         return anchors
 
