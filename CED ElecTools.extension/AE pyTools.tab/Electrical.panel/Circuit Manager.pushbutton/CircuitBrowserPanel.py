@@ -3110,22 +3110,69 @@ class _BuildBranchHandler(IExternalEventHandler):
             y_base = float(point.Y)
             gap = max(0.2, self.GAP_FACTOR)
             wire_tag_type_id = self._find_feeder_wire_tag_id(doc)
-            placed_equip = {}  # element_id -> {x, bottom, anchors, anchor_used, children}
+            placed_equip = {}  # element_id -> {x, bottom, anchors, anchor_used, children, child_xs}
+
+            # Tree layout mirroring the one-line window: children without a
+            # breaker anchor spread centered beneath their parent, sized by
+            # subtree width.
+            equip_ids = set()
+            for it in items:
+                if str(it.get("kind") or "") == "equip":
+                    equip_ids.add(int(it.get("element_id") or 0))
+            children_map = {}
+            for it in items:
+                pid = int(it.get("parent_id") or 0)
+                if pid and pid in equip_ids:
+                    children_map.setdefault(pid, []).append(it)
+
+            def _subtree_slots(it, depth=0):
+                if depth > 20 or str(it.get("kind") or "") != "equip":
+                    return 1.0
+                kids = children_map.get(int(it.get("element_id") or 0), [])
+                if not kids:
+                    return 1.0
+                return max(1.0, sum([_subtree_slots(k, depth + 1) for k in kids]))
+
+            def _plan_child_xs(it, parent_x):
+                kids = children_map.get(int(it.get("element_id") or 0), [])
+                if not kids:
+                    return []
+                widths = [_subtree_slots(k) for k in kids]
+                total = sum(widths)
+                cursor = float(parent_x) - (total * self.SIBLING_DX) / 2.0
+                positions = []
+                for width in widths:
+                    positions.append(cursor + (width * self.SIBLING_DX) / 2.0)
+                    cursor += width * self.SIBLING_DX
+                return positions
             for item, template in resolved:
                 # Children hang off their placed parent: switchboard children on
                 # its breaker positions, everything else directly below its parent.
                 parent_rec = placed_equip.get(int(item.get("parent_id") or 0))
                 anchor = None
+                anchor_vertical = False
                 if parent_rec is not None:
                     anchors = parent_rec.get("anchors") or []
                     used = int(parent_rec.get("anchor_used", 0))
                     if used < len(anchors):
                         anchor = anchors[used]
                         parent_rec["anchor_used"] = used + 1
-                        x = float(anchor["x"])
+                        anchor_vertical = str(anchor.get("orient") or "h") == "v"
+                        if anchor_vertical:
+                            # Riser standard: fed symbol sits to the right of
+                            # the bus at its breaker's elevation.
+                            x = float(anchor["x"]) + self.RISER_CHILD_DX
+                            y = float(anchor.get("y") or 0.0) + self.RISER_CHILD_DY
+                        else:
+                            x = float(anchor["x"])
+                            y = float(parent_rec["bottom"]) - gap
                     else:
-                        x = float(parent_rec["x"]) + parent_rec["children"] * self.SIBLING_DX
-                    y = float(parent_rec["bottom"]) - gap
+                        child_xs = parent_rec.get("child_xs") or []
+                        if child_xs:
+                            x = float(child_xs.pop(0))
+                        else:
+                            x = float(parent_rec["x"]) + parent_rec["children"] * self.SIBLING_DX
+                        y = float(parent_rec["bottom"]) - gap
                     parent_rec["children"] += 1
                     advance_main = False
                 else:
@@ -3163,25 +3210,25 @@ class _BuildBranchHandler(IExternalEventHandler):
 
                 bus_anchors = []
                 if template.get("bus_family") and members:
-                    bus_anchors = self._populate_bus_breakers(
-                        doc, view, members[0], item, template.get("breaker_count", 0)
-                    )
+                    bus_anchors = self._populate_bus_breakers(doc, view, members[0], item)
                     if bus_anchors:
                         bus_breakers += len(bus_anchors)
                         bbox_instances = list(members) + [a["element"] for a in bus_anchors]
 
                 if anchor is not None and members:
-                    # Connected look: the switchboard's breaker IS this branch's
-                    # breaker. Drop the branch's own breaker, butt the remainder
-                    # up against the parent, and stamp the real feeder data onto
-                    # the switchboard's default breaker. (A fed switchboard keeps
-                    # its breakers - those are its distribution positions.)
+                    # Connected look: the parent's breaker IS this branch's
+                    # breaker. Drop the branch's own breaker and stamp the real
+                    # feeder data onto the parent's slot. (A fed switchboard
+                    # keeps its breakers - those are distribution positions.)
                     if self._classify(item) != "switchboard":
                         members = self._delete_breaker_members(doc, members)
                         doc.Regenerate()
                         bbox_instances = [m for m in members if m is not None] or bbox_instances
-                    self._align_members(doc, members, view, x, float(parent_rec["bottom"]))
-                    doc.Regenerate()
+                    if not anchor_vertical:
+                        # Row anchors butt the branch up against the parent;
+                        # riser anchors already placed at the slot elevation.
+                        self._align_members(doc, members, view, x, float(parent_rec["bottom"]))
+                        doc.Regenerate()
                     self._inject_breaker_data(doc, anchor.get("element"), item)
 
                 if wire_tag_type_id is not None and self._classify(item) != "switchboard":
@@ -3198,6 +3245,7 @@ class _BuildBranchHandler(IExternalEventHandler):
                         "anchors": [],
                         "anchor_used": 0,
                         "children": 0,
+                        "child_xs": _plan_child_xs(item, x),
                     }
                     if bus_anchors:
                         record["anchors"] = bus_anchors
@@ -3261,16 +3309,23 @@ class _BuildBranchHandler(IExternalEventHandler):
         anchors.sort(key=lambda a: a["x"])
         return anchors
 
-    BREAKER_SPACING = 1.266        # ft along horizontal buses (SLD_Switchboard standard)
-    BREAKER_SPACING_COLUMN = 0.45  # ft along vertical buses (legacy riser standard)
+    BREAKER_SPACING = 1.266        # ft along horizontal buses (SLD_Switchboard group standard)
+    BREAKER_SPACING_COLUMN = 0.43  # ft slot pitch down a riser bus (measured from One-Line Diagram)
+    RISER_FIRST_SLOT = 0.75        # ft below the bus top before the first slot (SPD zone)
+    RISER_CHILD_DX = 4.16          # ft from the bus to a fed panel symbol (measured: LDP4 -> W/BA/FS)
+    RISER_CHILD_DY = 0.19          # ft the fed symbol sits above its breaker line
     _HALF_PI = 1.5707963267948966
+    _PI = 3.141592653589793
 
     @staticmethod
     def _find_bus_line(instance, view):
-        """Longest horizontal OR vertical line in the symbol geometry = the bus.
-        Returns {"orient": "h"|"v", "start": s, "end": e, "pos": p} where pos is
-        Y for horizontal buses and X for vertical ones, or None."""
-        best = None  # (length, orient, start, end, pos)
+        """The bus of a Panel-with-Bus/Switchboard symbol. Prefers the vertical
+        middle line (the riser spine breakers hang off, per the CED standard);
+        falls back to the longest horizontal line. Returns {"orient": "h"|"v",
+        "start": s, "end": e, "pos": p} where pos is Y for horizontal buses and
+        X for vertical ones, or None."""
+        best_v = None  # (length, start, end, pos)
+        best_h = None
         try:
             options = DB.Options()
             options.View = view
@@ -3290,30 +3345,51 @@ class _BuildBranchHandler(IExternalEventHandler):
                     continue
                 p0 = obj.GetEndPoint(0)
                 p1 = obj.GetEndPoint(1)
-                candidate = None
                 if abs(p0.Y - p1.Y) < 1e-6:
                     length = abs(p1.X - p0.X)
-                    candidate = (length, "h", min(p0.X, p1.X), max(p0.X, p1.X), p0.Y)
+                    if best_h is None or length > best_h[0]:
+                        best_h = (length, min(p0.X, p1.X), max(p0.X, p1.X), p0.Y)
                 elif abs(p0.X - p1.X) < 1e-6:
                     length = abs(p1.Y - p0.Y)
-                    candidate = (length, "v", min(p0.Y, p1.Y), max(p0.Y, p1.Y), p0.X)
-                if candidate is not None and (best is None or candidate[0] > best[0]):
-                    best = candidate
+                    if best_v is None or length > best_v[0]:
+                        best_v = (length, min(p0.Y, p1.Y), max(p0.Y, p1.Y), p0.X)
         except Exception:
             return None
-        if best is None:
-            return None
-        return {"orient": best[1], "start": best[2], "end": best[3], "pos": best[4]}
+        # The riser spine wins whenever it is a real line (>= 0.5 ft).
+        if best_v is not None and best_v[0] >= 0.5:
+            return {"orient": "v", "start": best_v[1], "end": best_v[2], "pos": best_v[3]}
+        if best_h is not None:
+            return {"orient": "h", "start": best_h[1], "end": best_h[2], "pos": best_h[3]}
+        return None
 
-    def _populate_bus_breakers(self, doc, view, instance, item, count):
-        """Stretch the bus to fit `count` slots and place empty breaker symbols
-        along it (count was captured at the symbol-picker stage). Returns them
-        as anchors ({"x", "element"}) so selected children connect to (and
-        stamp) the new slots."""
-        count = int(count or 0)
+    @staticmethod
+    def _equipment_circuit_count(doc, item):
+        """Number of real circuits (incl. spares, excl. spaces) on the equipment."""
+        count = 0
+        try:
+            elem = doc.GetElement(revit_helpers.elementid_from_value(int(item.get("element_id") or 0)))
+            mep = getattr(elem, "MEPModel", None)
+            systems = mep.GetAssignedElectricalSystems() if mep is not None else None
+            for system in list(systems or []):
+                try:
+                    if system.CircuitType == DBE.CircuitType.Space:
+                        continue
+                except Exception:
+                    pass
+                count += 1
+        except Exception:
+            count = 0
+        return count
+
+    def _populate_bus_breakers(self, doc, view, instance, item):
+        """Place default breaker slots on the bus per the CED one-line standard
+        (measured from the One-Line Diagram view): breakers connect to the
+        vertical middle line, perpendicular, in a column at 0.43 ft pitch.
+        One slot per real circuit on the equipment (min 6 when it has none).
+        Returns anchors [{"x", "y", "orient", "element"}] fed children land on."""
+        count = min(self._equipment_circuit_count(doc, item), 84)
         if count <= 0:
-            return []
-        count = min(count, 84)
+            count = 6
 
         # Exact family: plain "SLD-FDR-Circuit Breaker_CED" - the bare token
         # also matches "...Drawout Double_CED" etc., which we never want here.
@@ -3328,6 +3404,17 @@ class _BuildBranchHandler(IExternalEventHandler):
         except Exception:
             pass
 
+        # Breaker rotation by feed direction of the chosen symbol. -Top's
+        # breakers are unrotated on the vertical spine (per the live view).
+        family_upper = self._member_family_name(instance)
+        rotation = 0.0
+        if "-BOTTOM" in family_upper:
+            rotation = self._PI
+        elif "-LEFT" in family_upper:
+            rotation = self._HALF_PI
+        elif "-RIGHT" in family_upper:
+            rotation = -self._HALF_PI
+
         bus = self._find_bus_line(instance, view)
         if bus is None:
             forms.alert(
@@ -3336,59 +3423,70 @@ class _BuildBranchHandler(IExternalEventHandler):
             )
             return []
 
-        # Match the default arrangement: rows on horizontal buses, columns on
-        # vertical ones. Stretch the matching dimension to fit the slot count.
-        if bus["orient"] == "h":
-            stretch_param = "DME_Width"
-            spacing = self.BREAKER_SPACING
-        else:
-            stretch_param = "DME_Height"
-            spacing = self.BREAKER_SPACING_COLUMN
-        needed = count * spacing + 0.4
-        try:
-            size_param = instance.LookupParameter(stretch_param)
-            if size_param is not None and not size_param.IsReadOnly:
-                if float(size_param.AsDouble() or 0.0) < needed:
-                    size_param.Set(needed)
+        if bus["orient"] == "v":
+            # Riser column: stretch DME_Height until the spine holds all slots.
+            needed = self.RISER_FIRST_SLOT + count * self.BREAKER_SPACING_COLUMN + 0.25
+            length = float(bus["end"]) - float(bus["start"])
+            if length < needed:
+                try:
+                    size_param = instance.LookupParameter("DME_Height")
+                    if size_param is not None and not size_param.IsReadOnly:
+                        size_param.Set(float(size_param.AsDouble() or 0.0) + (needed - length))
+                        doc.Regenerate()
+                        bus = self._find_bus_line(instance, view) or bus
+                except Exception:
+                    pass
+            bus_x = float(bus["pos"])
+            bus_top = float(bus["end"])
+            anchors = []
+            for idx in range(count):
+                slot_y = bus_top - self.RISER_FIRST_SLOT - idx * self.BREAKER_SPACING_COLUMN
+                point = DB.XYZ(bus_x, slot_y, 0.0)
+                try:
+                    breaker = doc.Create.NewFamilyInstance(point, breaker_symbol, view)
+                    if rotation:
+                        axis = DB.Line.CreateBound(point, DB.XYZ(point.X, point.Y, 1.0))
+                        DB.ElementTransformUtils.RotateElement(doc, breaker.Id, axis, rotation)
+                except Exception:
+                    continue
+                anchors.append({
+                    "x": round(bus_x, 3),
+                    "y": round(slot_y, 3),
+                    "orient": "v",
+                    "element": breaker,
+                })
+            doc.Regenerate()
+            return anchors
+
+        # Horizontal bus (switchboard-style row).
+        needed = count * self.BREAKER_SPACING + 0.4
+        length = float(bus["end"]) - float(bus["start"])
+        if length < needed:
+            try:
+                size_param = instance.LookupParameter("DME_Width")
+                if size_param is not None and not size_param.IsReadOnly:
+                    size_param.Set(float(size_param.AsDouble() or 0.0) + (needed - length))
                     doc.Regenerate()
                     bus = self._find_bus_line(instance, view) or bus
-        except Exception:
-            pass
-
-        start = float(bus["start"])
-        end = float(bus["end"])
-        pos = float(bus["pos"])
-        available = max(0.1, end - start)
-        step = spacing if spacing * count <= available else available / float(count)
-
-        # Column buses: rotate breakers so they come off the bus sideways,
-        # facing away from the symbol body (like the legacy risers).
-        rotation = 0.0
-        if bus["orient"] == "v":
-            bus_on_left = True
-            try:
-                bbox = instance.get_BoundingBox(view)
-                if bbox is not None:
-                    bus_on_left = pos <= (float(bbox.Min.X) + float(bbox.Max.X)) / 2.0
             except Exception:
                 pass
-            rotation = self._HALF_PI if bus_on_left else -self._HALF_PI
-
+        start = float(bus["start"])
+        available = max(0.1, float(bus["end"]) - start)
+        step = self.BREAKER_SPACING if self.BREAKER_SPACING * count <= available else available / float(count)
+        bus_y = float(bus["pos"])
         anchors = []
         for idx in range(count):
-            coord = start + step * (idx + 0.5)
-            if bus["orient"] == "h":
-                point = DB.XYZ(coord, pos, 0.0)
-            else:
-                point = DB.XYZ(pos, coord, 0.0)
+            point = DB.XYZ(start + step * (idx + 0.5), bus_y, 0.0)
             try:
                 breaker = doc.Create.NewFamilyInstance(point, breaker_symbol, view)
-                if rotation:
-                    axis = DB.Line.CreateBound(point, DB.XYZ(point.X, point.Y, 1.0))
-                    DB.ElementTransformUtils.RotateElement(doc, breaker.Id, axis, rotation)
             except Exception:
                 continue
-            anchors.append({"x": round(float(point.X), 3), "element": breaker})
+            anchors.append({
+                "x": round(float(point.X), 3),
+                "y": round(bus_y, 3),
+                "orient": "h",
+                "element": breaker,
+            })
         doc.Regenerate()
         return anchors
 
@@ -3743,41 +3841,13 @@ class _BuildBranchHandler(IExternalEventHandler):
         if symbol is None:
             return None
         upper_choice = choice.upper()
-        template = {
+        return {
             "group_type": None,
             "symbols": [(symbol, 0.0)],
+            # Bus symbols auto-populate breaker slots from the panel's real
+            # circuit count - no quantity prompt.
             "bus_family": "PANEL WITH BUS" in upper_choice or "SWITCHBOARD" in upper_choice,
-            "breaker_count": 0,
         }
-        if template["bus_family"]:
-            # Order of operations: Build Branch > symbol > slot count > placement.
-            template["breaker_count"] = self._prompt_breaker_count(item)
-        return template
-
-    def _prompt_breaker_count(self, item):
-        raw = None
-        try:
-            raw = forms.ask_for_string(
-                default="6",
-                prompt="How many breaker slots on '{}'?\n\n(Slots place empty - connected equipment in this "
-                       "build fills them; assign the rest later with Inject Into Detail Item. "
-                       "0 places just the bus.)".format(item.get("name") or "?"),
-                title="Build One Line Branch",
-            )
-        except Exception as ex:
-            if self._gateway.logger:
-                self._gateway.logger.warning("Breaker slot prompt failed: %s", ex)
-            forms.alert(
-                "Could not show the breaker slot prompt ({}).\n\n"
-                "'{}' places without bus breakers.".format(ex, item.get("name") or "?"),
-                title="Build One Line Branch",
-            )
-            return 0
-        try:
-            count = int(str(raw).strip())
-        except Exception:
-            count = 0
-        return max(0, min(count, 84))
 
     def _prompt_transformer_template(self, doc, item):
         """List the loaded SLD-EQU-Transformer* detail families for the user to
