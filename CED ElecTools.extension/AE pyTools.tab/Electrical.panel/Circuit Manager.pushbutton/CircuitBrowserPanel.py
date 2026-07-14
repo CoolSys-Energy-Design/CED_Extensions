@@ -3231,6 +3231,9 @@ class _BuildBranchHandler(IExternalEventHandler):
                         self._align_members(doc, members, view, x, float(parent_rec["bottom"]))
                         doc.Regenerate()
                     self._inject_breaker_data(doc, anchor.get("element"), item)
+                    if anchor_vertical:
+                        # Draw the breaker-to-symbol connection with wire tag.
+                        self._place_riser_feeder_line(doc, view, anchor, item, wire_tag_type_id)
 
                 if wire_tag_type_id is not None and self._classify(item) != "switchboard":
                     self._tag_feeder_wire(doc, view, members, wire_tag_type_id)
@@ -3338,6 +3341,10 @@ class _BuildBranchHandler(IExternalEventHandler):
     RISER_FIRST_SLOT = 0.75        # ft below the bus top before the first slot (SPD zone)
     RISER_CHILD_DX = 4.16          # ft from the bus to a fed panel symbol (measured: LDP4 -> W/BA/FS)
     RISER_CHILD_DY = 0.19          # ft the fed symbol sits above its breaker line
+    RISER_FDR_OFFSET = 0.75        # ft from the bus to the feeder line start (breaker's outward end)
+    RISER_FDR_LENGTH = 3.04        # ft feeder line length (Symbol Length_CED on the LDP4->W reference)
+    WIRE_TAG_DX = 0.83             # feeder wire tag head offset from the line insertion (measured)
+    WIRE_TAG_DY = 0.12
     _HALF_PI = 1.5707963267948966
     _PI = 3.141592653589793
 
@@ -3615,6 +3622,23 @@ class _BuildBranchHandler(IExternalEventHandler):
         cache[key] = found
         return found
 
+    @staticmethod
+    def _create_tag_instance(doc, view, element, tag_type_id, head):
+        reference = DB.Reference(element)
+        try:
+            DB.IndependentTag.Create(
+                doc, tag_type_id, view.Id, reference, False, DB.TagOrientation.Horizontal, head
+            )
+        except Exception:
+            try:
+                tag = DB.IndependentTag.Create(
+                    doc, view.Id, reference, False,
+                    DB.TagMode.TM_ADDBY_CATEGORY, DB.TagOrientation.Horizontal, head,
+                )
+                tag.ChangeTypeId(tag_type_id)
+            except Exception:
+                pass
+
     def _place_tag(self, doc, view, element, spec):
         """Tag an element per a measured (family, type, dx, dy) convention."""
         if element is None or spec is None:
@@ -3630,20 +3654,7 @@ class _BuildBranchHandler(IExternalEventHandler):
         if pt is None:
             return
         head = DB.XYZ(float(pt.X) + float(dx), float(pt.Y) + float(dy), 0.0)
-        reference = DB.Reference(element)
-        try:
-            DB.IndependentTag.Create(
-                doc, tag_type_id, view.Id, reference, False, DB.TagOrientation.Horizontal, head
-            )
-        except Exception:
-            try:
-                tag = DB.IndependentTag.Create(
-                    doc, view.Id, reference, False,
-                    DB.TagMode.TM_ADDBY_CATEGORY, DB.TagOrientation.Horizontal, head,
-                )
-                tag.ChangeTypeId(tag_type_id)
-            except Exception:
-                pass
+        self._create_tag_instance(doc, view, element, tag_type_id, head)
 
     @staticmethod
     def _find_feeder_wire_tag_id(doc):
@@ -3720,6 +3731,21 @@ class _BuildBranchHandler(IExternalEventHandler):
             except Exception:
                 pass
 
+    @staticmethod
+    def _item_circuit(doc, item):
+        """The feeder/load circuit backing a build item, or None."""
+        if str(item.get("kind") or "") == "equip":
+            circuit_id = int(item.get("feeder_circuit_id") or 0)
+        else:
+            circuit_id = int(item.get("circuit_id") or 0)
+        if circuit_id <= 0:
+            return None
+        try:
+            circuit = doc.GetElement(revit_helpers.elementid_from_value(circuit_id))
+        except Exception:
+            return None
+        return circuit if isinstance(circuit, DBE.ElectricalSystem) else None
+
     def _inject_breaker_data(self, doc, breaker, item):
         """Stamp the actual feeder circuit's data onto the switchboard's
         default breaker so the branch reads as truly connected."""
@@ -3730,20 +3756,47 @@ class _BuildBranchHandler(IExternalEventHandler):
                 return
         except Exception:
             return
-        if str(item.get("kind") or "") == "equip":
-            circuit_id = int(item.get("feeder_circuit_id") or 0)
-        else:
-            circuit_id = int(item.get("circuit_id") or 0)
-        if circuit_id <= 0:
-            return
-        try:
-            circuit = doc.GetElement(revit_helpers.elementid_from_value(circuit_id))
-        except Exception:
-            circuit = None
-        if not isinstance(circuit, DBE.ElectricalSystem):
+        circuit = self._item_circuit(doc, item)
+        if circuit is None:
             return
         result = inject_circuit_values(circuit, breaker)
         inject_matching_values(circuit, breaker, skip_names=set(result.get("written") or []))
+
+    def _place_riser_feeder_line(self, doc, view, anchor, item, wire_tag_type_id):
+        """Draw the connection from a riser breaker to its fed symbol: the
+        SLD-FDR Medium Solid line at the measured offset/length, filled with
+        the feeder circuit's data and tagged with Wire & Conduit Size."""
+        symbol = self._find_detail_symbol(doc, ["SLD-FDR_CED"], prefer_type=["MEDIUM SOLID"])
+        if symbol is None:
+            return
+        try:
+            if not symbol.IsActive:
+                symbol.Activate()
+                doc.Regenerate()
+        except Exception:
+            pass
+        start = DB.XYZ(
+            float(anchor["x"]) + self.RISER_FDR_OFFSET,
+            float(anchor.get("y") or 0.0),
+            0.0,
+        )
+        try:
+            line = doc.Create.NewFamilyInstance(start, symbol, view)
+        except Exception:
+            return
+        try:
+            length_param = line.LookupParameter("Symbol Length_CED")
+            if length_param is not None and not length_param.IsReadOnly:
+                length_param.Set(self.RISER_FDR_LENGTH)
+        except Exception:
+            pass
+        circuit = self._item_circuit(doc, item)
+        if circuit is not None:
+            result = inject_circuit_values(circuit, line)
+            inject_matching_values(circuit, line, skip_names=set(result.get("written") or []))
+        if wire_tag_type_id is not None:
+            head = DB.XYZ(start.X + self.WIRE_TAG_DX, start.Y + self.WIRE_TAG_DY, 0.0)
+            self._create_tag_instance(doc, view, line, wire_tag_type_id, head)
 
     @staticmethod
     def _instances_bottom(instances, view, fallback):
