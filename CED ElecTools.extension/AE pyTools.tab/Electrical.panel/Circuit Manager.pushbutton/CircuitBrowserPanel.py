@@ -3103,6 +3103,7 @@ class _BuildBranchHandler(IExternalEventHandler):
         placed = 0
         detail_count = 0
         bus_breakers = 0
+        self._tag_type_cache = {}
         transaction = DB.Transaction(doc, "Build One Line Branch")
         transaction.Start()
         try:
@@ -3234,6 +3235,15 @@ class _BuildBranchHandler(IExternalEventHandler):
                 if wire_tag_type_id is not None and self._classify(item) != "switchboard":
                     self._tag_feeder_wire(doc, view, members, wire_tag_type_id)
 
+                # Family symbols get their identity tag (groups carry their own).
+                if template.get("group_type") is None and members:
+                    kind = self._classify(item)
+                    if kind == "panel" and template.get("bus_family"):
+                        kind = "bus_panel"
+                    elif kind == "switchboard":
+                        kind = "bus_panel"
+                    self._place_tag(doc, view, members[0], self.EQUIP_TAG_SPECS.get(kind))
+
                 detail_count += self._inject_members(doc, members, item)
                 placed += 1
                 bottom = self._instances_bottom(bbox_instances, view, fallback=y - 0.3)
@@ -3308,6 +3318,20 @@ class _BuildBranchHandler(IExternalEventHandler):
             anchors.append({"x": key, "element": member})
         anchors.sort(key=lambda a: a["x"])
         return anchors
+
+    # Tag conventions measured from the One-Line Diagram view:
+    # (tag family, tag type, head dx, head dy) relative to the host's insertion.
+    EQUIP_TAG_SPECS = {
+        "bus_panel": ("DI-TAG_SLD SWITCHBOARD_CED", "SWITCHBOARD R - NAME / DIST SYS / MAINS / SCCR", -1.65, -0.56),
+        "panel": ("DI-TAG_SLD PANELBOARD_CED", "PANELBOARD C - NAME", 0.03, -0.57),
+        "transformer": ("DI-TAG_SLD TRANSFORMER_CED", "TRANSFORMER L - NAME / RATING / VOLTAGES", 0.52, 0.03),
+        "ats": ("DI-TAG_SLD SWITCHBOARD_CED", "SWITCHBOARD R - NAME / DIST SYS / MAINS / SCCR", -1.10, 0.59),
+        "switch": ("DI-TAG_SLD DISCONNECT SWITCH_CED", "DISCONNECT L - SWITCH RATING / FUSE RATING", 0.24, -0.12),
+    }
+    BREAKER_TAG_SPECS = [
+        ("DI-TAG_SLD CIRCUIT BREAKER_CED", "CIRCUIT NUMBER", -0.13, -0.02),
+        ("DI-TAG_SLD CIRCUIT BREAKER_CED", "RATING / POLES (IN-LINE)", -0.13, 0.23),
+    ]
 
     BREAKER_SPACING = 1.266        # ft along horizontal buses (SLD_Switchboard group standard)
     BREAKER_SPACING_COLUMN = 0.43  # ft slot pitch down a riser bus (measured from One-Line Diagram)
@@ -3449,6 +3473,8 @@ class _BuildBranchHandler(IExternalEventHandler):
                         DB.ElementTransformUtils.RotateElement(doc, breaker.Id, axis, rotation)
                 except Exception:
                     continue
+                for spec in self.BREAKER_TAG_SPECS:
+                    self._place_tag(doc, view, breaker, spec)
                 anchors.append({
                     "x": round(bus_x, 3),
                     "y": round(slot_y, 3),
@@ -3481,6 +3507,8 @@ class _BuildBranchHandler(IExternalEventHandler):
                 breaker = doc.Create.NewFamilyInstance(point, breaker_symbol, view)
             except Exception:
                 continue
+            for spec in self.BREAKER_TAG_SPECS:
+                self._place_tag(doc, view, breaker, spec)
             anchors.append({
                 "x": round(float(point.X), 3),
                 "y": round(bus_y, 3),
@@ -3555,6 +3583,68 @@ class _BuildBranchHandler(IExternalEventHandler):
         except Exception:
             pass
 
+    def _find_tag_type_id(self, doc, family_upper, type_upper):
+        """Tag type by exact (family, type) names, cached per build run."""
+        cache = getattr(self, "_tag_type_cache", None)
+        if cache is None:
+            cache = {}
+            self._tag_type_cache = cache
+        key = (family_upper, type_upper)
+        if key in cache:
+            return cache[key]
+        found = None
+        try:
+            collector = (
+                DB.FilteredElementCollector(doc)
+                .OfCategory(DB.BuiltInCategory.OST_DetailComponentTags)
+                .WhereElementIsElementType()
+            )
+            for tag_type in collector:
+                try:
+                    family_param = tag_type.get_Parameter(DB.BuiltInParameter.SYMBOL_FAMILY_NAME_PARAM)
+                    family_name = ((family_param.AsString() if family_param else "") or "").upper()
+                    type_param = tag_type.get_Parameter(DB.BuiltInParameter.ALL_MODEL_TYPE_NAME)
+                    type_name = ((type_param.AsString() if type_param else "") or "").upper()
+                except Exception:
+                    continue
+                if family_name == family_upper and type_name == type_upper:
+                    found = tag_type.Id
+                    break
+        except Exception:
+            found = None
+        cache[key] = found
+        return found
+
+    def _place_tag(self, doc, view, element, spec):
+        """Tag an element per a measured (family, type, dx, dy) convention."""
+        if element is None or spec is None:
+            return
+        family_upper, type_upper, dx, dy = spec
+        tag_type_id = self._find_tag_type_id(doc, family_upper, type_upper)
+        if tag_type_id is None:
+            return
+        try:
+            pt = getattr(getattr(element, "Location", None), "Point", None)
+        except Exception:
+            pt = None
+        if pt is None:
+            return
+        head = DB.XYZ(float(pt.X) + float(dx), float(pt.Y) + float(dy), 0.0)
+        reference = DB.Reference(element)
+        try:
+            DB.IndependentTag.Create(
+                doc, tag_type_id, view.Id, reference, False, DB.TagOrientation.Horizontal, head
+            )
+        except Exception:
+            try:
+                tag = DB.IndependentTag.Create(
+                    doc, view.Id, reference, False,
+                    DB.TagMode.TM_ADDBY_CATEGORY, DB.TagOrientation.Horizontal, head,
+                )
+                tag.ChangeTypeId(tag_type_id)
+            except Exception:
+                pass
+
     @staticmethod
     def _find_feeder_wire_tag_id(doc):
         """Wire & Conduit Size feeder tag type (prefer right-of-line reading)."""
@@ -3580,7 +3670,7 @@ class _BuildBranchHandler(IExternalEventHandler):
             return None
         if not candidates:
             return None
-        for prefix in ("FEEDER R", "FEEDER C", "FEEDER L"):
+        for prefix in ("FEEDER L", "FEEDER C", "FEEDER R"):
             for type_name, tag_id in candidates:
                 if type_name.startswith(prefix):
                     return tag_id
