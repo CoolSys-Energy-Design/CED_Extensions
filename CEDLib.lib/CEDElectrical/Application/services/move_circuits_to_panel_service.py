@@ -273,7 +273,15 @@ def move_circuits_to_panel(circuits, target_panel, doc, output):
         panel_id = _panel_id(panel)
         if panel_id <= 0:
             return None
-        options = list(ps_repo.collect_panel_equipment_options(doc, panels=[panel], include_without_schedule=True) or [])
+        options = list(
+            ps_repo.collect_panel_equipment_options(
+                doc,
+                panels=[panel],
+                include_without_schedule=True,
+                use_equipment_capacity_without_schedule=True,
+            )
+            or []
+        )
         for option in options:
             if int(option.get("panel_id", 0) or 0) != panel_id:
                 continue
