@@ -6,9 +6,9 @@ import re
 
 from pyrevit import DB
 
+from CEDElectrical.Domain import settings_manager
 from CEDElectrical.Infrastructure.Revit.repositories import distribution_equipment_repository
 from CEDElectrical.Infrastructure.Revit.repositories import panel_schedule_repository
-from CEDElectrical.Domain import settings_manager
 from CEDElectrical.Model.CircuitBranch import CircuitBranch
 from CEDElectrical.Model.alerts import get_alert_definition
 from CEDElectrical.part_types import PART_TYPE_TRANSFORMER
@@ -73,32 +73,19 @@ def _feet(value):
     return _as_unit(value, ("Feet",))
 
 
-def _va(value):
-    return _as_unit(value, ("VoltAmperes", "ApparentPower"))
-
-
-def _kva_from_power(value):
-    va = _va(value)
-    if va is None:
-        return None
-    try:
-        return float(va) / 1000.0
-    except Exception:
-        return None
-
-
-def _kva_from_rating(value):
-    if value is None:
-        return None
-    text = _to_text(value, "").strip()
+def _kva(value):
     number = _safe_float(value)
     if number is None:
         return None
-    if "VA" in text.upper() and "KVA" not in text.upper():
-        return number / 1000.0
-    if abs(number) > 1000.0:
-        return number / 1000.0
-    return number
+    try:
+        return float(
+            DB.UnitUtils.ConvertFromInternalUnits(
+                number,
+                DB.UnitTypeId.KilovoltAmperes,
+            )
+        )
+    except Exception:
+        return None
 
 
 def _format_number(value, decimals=1):
@@ -1014,7 +1001,12 @@ class ElectricalQCScanner(object):
                 if not alert_id or not _notice_is_persistent(definition):
                     continue
                 connected_loads = []
-                if alert_id in ("Design.CircuitLoadsNull", "Design.UndersizedOCP"):
+                if alert_id in (
+                    "Design.CircuitLoadsNull",
+                    "Design.CircuitPanelsNull",
+                    "Design.NearOCPRating",
+                    "Design.UndersizedOCP",
+                ):
                     connected_loads = list(_iter_circuit_elements(circuit) or [])
                 self._add(
                     alert_id,
@@ -1042,8 +1034,8 @@ class ElectricalQCScanner(object):
                 supply_base = getattr(supply, "BaseEquipment", None)
             except Exception:
                 supply_base = None
-            rating_kva = _kva_from_rating(getattr(model, "xfmr_rating", None))
-            demand_kva = _kva_from_power(getattr(model, "power_demand_total", None))
+            rating_kva = _kva(getattr(model, "xfmr_rating", None))
+            demand_kva = _kva(getattr(model, "power_demand_total", None))
 
             if rating_kva is None:
                 self._add(
