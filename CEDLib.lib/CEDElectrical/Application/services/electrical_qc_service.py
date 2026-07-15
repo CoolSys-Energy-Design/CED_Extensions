@@ -12,7 +12,7 @@ from CEDElectrical.Domain import settings_manager
 from CEDElectrical.Model.CircuitBranch import CircuitBranch
 from CEDElectrical.Model.alerts import get_alert_definition
 from CEDElectrical.part_types import PART_TYPE_TRANSFORMER
-from Snippets import categories
+from Snippets import categories as category_utils
 from Snippets import revit_helpers
 
 
@@ -78,16 +78,13 @@ def _va(value):
 
 
 def _kva_from_power(value):
-    number = _va(value)
-    if number is None:
+    va = _va(value)
+    if va is None:
         return None
     try:
-        number = float(number)
+        return float(va) / 1000.0
     except Exception:
         return None
-    if abs(number) > 1000.0:
-        return number / 1000.0
-    return number
 
 
 def _kva_from_rating(value):
@@ -127,6 +124,10 @@ def _format_ft(value):
 
 def _format_percent(value):
     return "{}%".format(_format_number(value, 1))
+
+
+def _qc_device_categories(doc=None):
+    return category_utils.get_fixture_device_categories(doc=doc)
 
 
 def _format_id_array(values):
@@ -187,20 +188,88 @@ def _element_id_list(elements):
     return ids
 
 
+def _connected_load_category_name(element):
+    try:
+        category = getattr(element, "Category", None)
+        name = getattr(category, "Name", None)
+        if name:
+            return _to_text(name, "").strip()
+    except Exception:
+        pass
+    return "Other Devices"
+
+
+def _connected_load_type_identity(element):
+    type_element = None
+    try:
+        type_element = revit_helpers.get_type_element(element)
+    except Exception:
+        type_element = None
+
+    type_id = _idval(getattr(type_element, "Id", None))
+    type_name = _element_name(type_element) or _element_name(element) or "Unknown Type"
+    family_name = ""
+    for candidate in (type_element, element):
+        if candidate is None:
+            continue
+        try:
+            family_name = _to_text(getattr(candidate, "FamilyName", None), "").strip()
+        except Exception:
+            family_name = ""
+        if not family_name:
+            try:
+                family = getattr(candidate, "Family", None)
+                family_name = _to_text(getattr(family, "Name", None), "").strip()
+            except Exception:
+                family_name = ""
+        if family_name:
+            break
+
+    label = type_name
+    if family_name and family_name.lower() != type_name.lower():
+        label = "{}: {}".format(family_name, type_name)
+    if type_id > 0:
+        return ("id", type_id), label
+    category_name = _connected_load_category_name(element)
+    return ("label", category_name.lower(), label.lower()), label
+
+
+def _format_counted_groups(groups):
+    values = list(groups.values())
+    values.sort(key=lambda item: (-item["count"], item["label"].lower()))
+    return "; ".join("({}) {}".format(item["count"], item["label"]) for item in values)
+
+
 def _elements_label(elements, fallback="-"):
-    items = [item for item in list(elements or []) if item is not None]
+    items = []
+    seen_ids = set()
+    for item in list(elements or []):
+        if item is None:
+            continue
+        element_id = _idval(getattr(item, "Id", None))
+        if element_id > 0:
+            if element_id in seen_ids:
+                continue
+            seen_ids.add(element_id)
+        items.append(item)
     if not items:
         return fallback
-    if len(items) > 1:
-        return "{} devices".format(len(items))
-    names = []
-    for item in items[:3]:
-        name = _element_name(item)
-        if name:
-            names.append(name)
-    if len(items) > 3:
-        names.append("+{} more".format(len(items) - 3))
-    return "; ".join(names) if names else fallback
+
+    type_groups = {}
+    for item in items:
+        type_key, type_label = _connected_load_type_identity(item)
+        group = type_groups.setdefault(type_key, {"label": type_label, "count": 0})
+        group["count"] += 1
+    if len(type_groups) <= 3:
+        return _format_counted_groups(type_groups) or fallback
+
+    category_groups = {}
+    for item in items:
+        category_label = _connected_load_category_name(item)
+        category_key = category_label.lower()
+        group = category_groups.setdefault(category_key, {"label": category_label, "count": 0})
+        group["count"] += 1
+    return _format_counted_groups(category_groups) or fallback
 
 
 def _display_component_label(kind, label, ids=None):
@@ -214,7 +283,7 @@ def _display_component_label(kind, label, ids=None):
         return "Circuit: {}".format(text)
     if kind == "load":
         if id_count > 1:
-            return "Device: {} devices".format(id_count)
+            return "Devices: {}".format(text)
         return "Equipment/Device: {}".format(text)
     return text
 
@@ -703,7 +772,7 @@ class ElectricalQCScanner(object):
 
     def _collect_devices(self):
         devices = []
-        for category in categories.get_electrical_qc_device_categories():
+        for category in _qc_device_categories(doc=self.doc):
             try:
                 collector = (
                     DB.FilteredElementCollector(self.doc)
@@ -945,7 +1014,7 @@ class ElectricalQCScanner(object):
                 if not alert_id or not _notice_is_persistent(definition):
                     continue
                 connected_loads = []
-                if alert_id == "Design.CircuitLoadsNull":
+                if alert_id in ("Design.CircuitLoadsNull", "Design.UndersizedOCP"):
                     connected_loads = list(_iter_circuit_elements(circuit) or [])
                 self._add(
                     alert_id,
@@ -973,9 +1042,6 @@ class ElectricalQCScanner(object):
                 supply_base = getattr(supply, "BaseEquipment", None)
             except Exception:
                 supply_base = None
-            supply_rating = self._circuit_rating_value(supply)
-            poles = self._circuit_poles_value(supply)
-            voltage = model.distribution_voltage_for_poles(poles, secondary=False)
             rating_kva = _kva_from_rating(getattr(model, "xfmr_rating", None))
             demand_kva = _kva_from_power(getattr(model, "power_demand_total", None))
 
@@ -1000,26 +1066,8 @@ class ElectricalQCScanner(object):
                     highlight_load=True,
                 )
 
-            if supply is not None and supply_rating is not None and voltage is not None:
-                demand_current = _current_from_kva(demand_kva, voltage, poles)
-                if demand_current is not None and supply_rating > 0:
-                    pct = float(demand_current) / float(supply_rating)
-                    if pct >= 0.90:
-                        self._add(
-                            "QC.Transformer.PrimaryDemandNearBreaker",
-                            supply_equipment=supply_base,
-                            circuit=supply,
-                            load_device=equipment,
-                            observed="{} demand / {} breaker = {}".format(
-                                _format_amp(demand_current),
-                                _format_amp(supply_rating),
-                                _format_percent(pct * 100.0),
-                            ),
-                            limit_target="< 90%",
-                            recommended_action="Review upstream breaker/loading. Upsize or confirm acceptable loading.",
-                            highlight_circuit=True,
-                            highlight_load=True,
-                        )
+            # Disabled for now: transformer primary OCP is commonly oversized for inrush,
+            # so demand near breaker is not a useful QC warning.
             for circuit_id in list(getattr(model, "branch_circuits", []) or []):
                 circuit = self.circuit_by_id.get(int(circuit_id or 0))
                 length = self._circuit_length_value(circuit)

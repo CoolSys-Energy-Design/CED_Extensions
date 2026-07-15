@@ -2,7 +2,6 @@
 
 import os
 
-from System.Collections.ObjectModel import ObservableCollection
 from pyrevit import DB, forms, revit, script
 
 from UIClasses import pathing as ui_pathing
@@ -117,7 +116,7 @@ class CalculationPreviewWindow(forms.WPFWindow):
         rows = [CalculationPreviewRow(x) for x in list(preview_rows or [])]
         preview_list = self.FindName("PreviewList")
         if preview_list is not None:
-            preview_list.ItemsSource = ObservableCollection[CalculationPreviewRow](rows)
+            preview_list.ItemsSource = rows
 
     def keep_new_clicked(self, sender, args):
         self.decision = "keep_new"

@@ -6,6 +6,13 @@ import os
 
 import Autodesk.Revit.DB.Electrical as DBE
 import clr
+
+for _wpf_asm in ("System", "PresentationFramework", "PresentationCore", "WindowsBase"):
+    try:
+        clr.AddReference(_wpf_asm)
+    except Exception:
+        pass
+
 from Autodesk.Revit.DB.Events import (
     DocumentOpenedEventArgs,
     DocumentClosedEventArgs,
@@ -15,12 +22,6 @@ from Autodesk.Revit.UI.Events import ViewActivatedEventArgs
 from System import EventHandler, Action
 from System.Collections.Generic import List
 from System.Collections.ObjectModel import ObservableCollection
-
-for _wpf_asm in ("PresentationFramework", "PresentationCore", "WindowsBase"):
-    try:
-        clr.AddReference(_wpf_asm)
-    except Exception:
-        pass
 
 from System.Windows import GridLength, GridUnitType, Visibility
 from System.Windows.Controls import (
@@ -60,9 +61,11 @@ from Snippets.circuit_ui_actions import (
     set_revit_selection,
 )
 from Snippets._elecutils import (
+    MOVE_MISSING_PANEL_SCHEDULE_WARNING,
     get_all_panels,
     get_compatible_panels,
     get_panel_dist_system,
+    move_target_requires_schedule_confirmation,
     panel_has_schedule_view,
 )
 from UIClasses import Resources as UIResources
@@ -2339,7 +2342,7 @@ class MarkExistingActionWindow(forms.WPFWindow):
 
 
 class CalculateSettingsExternalEventGateway(object):
-    """Opens Calculate Circuits settings inside valid Revit API context."""
+    """Runs circuit-settings actions inside valid Revit API context."""
 
     def __init__(self, logger=None):
         self.logger = logger
@@ -2356,6 +2359,12 @@ class CalculateSettingsExternalEventGateway(object):
             return False
 
     def raise_open(self, callback=None):
+        return self._raise_action("open", callback=callback)
+
+    def raise_initialize(self, callback=None):
+        return self._raise_action("initialize", callback=callback)
+
+    def _raise_action(self, action, callback=None):
         if self._pending is not None:
             return False
         try:
@@ -2363,7 +2372,7 @@ class CalculateSettingsExternalEventGateway(object):
                 return False
         except Exception:
             pass
-        self._pending = {"callback": callback}
+        self._pending = {"action": str(action or "open"), "callback": callback}
         try:
             self._event.Raise()
             return True
@@ -2389,31 +2398,41 @@ class _CalculateSettingsHandler(IExternalEventHandler):
             return
 
         callback = pending.get("callback")
+        action = str(pending.get("action") or "open").strip().lower()
         status = "ok"
         error = None
         try:
-            if not os.path.exists(CALC_SETTINGS_PATH):
-                raise Exception("Calculate Circuits settings file not found:\n\n{}".format(CALC_SETTINGS_PATH))
-            if not os.path.exists(CALC_SETTINGS_XAML_PATH):
-                raise Exception("Calculate Circuits settings XAML not found:\n\n{}".format(CALC_SETTINGS_XAML_PATH))
-            module = imp.load_source("ced_calculate_circuits_config", CALC_SETTINGS_PATH)
-            try:
-                module.XAML_PATH = CALC_SETTINGS_XAML_PATH
-            except Exception:
-                pass
-            window_cls = getattr(module, "CircuitSettingsWindow", None)
-            if window_cls is None:
-                raise Exception("CircuitSettingsWindow was not found in config script.")
-            window = window_cls()
-            try:
-                window.show_dialog()
-            except Exception:
-                window.ShowDialog()
+            if action == "initialize":
+                uidoc = application.ActiveUIDocument
+                doc = uidoc.Document if uidoc else None
+                settings_manager.ensure_circuit_settings(doc)
+            else:
+                if not os.path.exists(CALC_SETTINGS_PATH):
+                    raise Exception("Calculate Circuits settings file not found:\n\n{}".format(CALC_SETTINGS_PATH))
+                if not os.path.exists(CALC_SETTINGS_XAML_PATH):
+                    raise Exception("Calculate Circuits settings XAML not found:\n\n{}".format(CALC_SETTINGS_XAML_PATH))
+                module = imp.load_source("ced_calculate_circuits_config", CALC_SETTINGS_PATH)
+                try:
+                    module.XAML_PATH = CALC_SETTINGS_XAML_PATH
+                except Exception:
+                    pass
+                window_cls = getattr(module, "CircuitSettingsWindow", None)
+                if window_cls is None:
+                    raise Exception("CircuitSettingsWindow was not found in config script.")
+                window = window_cls()
+                try:
+                    window.show_dialog()
+                except Exception:
+                    window.ShowDialog()
         except Exception as ex:
             status = "error"
             error = ex
             if self._gateway.logger:
-                self._gateway.logger.exception("Failed to open Calculate Circuits settings in API context: %s", ex)
+                self._gateway.logger.exception(
+                    "Circuit settings ExternalEvent action '%s' failed: %s",
+                    action,
+                    ex,
+                )
 
         if callback:
             try:
@@ -2443,7 +2462,13 @@ class MoveCircuitsExternalEventGateway(object):
         except Exception:
             return False
 
-    def raise_move(self, circuit_ids, target_panel_id, callback=None):
+    def raise_move(
+        self,
+        circuit_ids,
+        target_panel_id,
+        callback=None,
+        allow_missing_schedule=False,
+    ):
         if self._pending is not None:
             return False
         try:
@@ -2455,6 +2480,7 @@ class MoveCircuitsExternalEventGateway(object):
             "circuit_ids": [int(x) for x in list(circuit_ids or []) if int(x or 0) > 0],
             "target_panel_id": int(target_panel_id or 0),
             "callback": callback,
+            "allow_missing_schedule": bool(allow_missing_schedule),
         }
         try:
             self._event.Raise()
@@ -2500,6 +2526,7 @@ class _MoveCircuitsHandler(IExternalEventHandler):
                     "target_panel_id": int(target_panel_id or 0),
                     "recalculate": True,
                     "show_recalc_output": False,
+                    "allow_missing_schedule": bool(pending.get("allow_missing_schedule", False)),
                 },
             )
             payload = runner.run(request, doc) or {}
@@ -4590,14 +4617,18 @@ class CircuitBrowserPanel(forms.WPFPanel):
         if target_panel is None:
             self._set_status("Move cancelled")
             return
-        if not panel_has_schedule_view(doc, target_panel):
-            forms.alert(
-                "The selected target panel does not have a panel schedule view yet.\n\n"
-                "Create the panel schedule first, then retry Move Selected Circuits.",
-                title=TITLE,
-            )
-            self._set_status("Move cancelled (target panel has no panel schedule)")
-            return
+        allow_missing_schedule = False
+        if move_target_requires_schedule_confirmation(doc, target_panel):
+            allow_missing_schedule = bool(forms.alert(
+                MOVE_MISSING_PANEL_SCHEDULE_WARNING,
+                title="Move Selected Circuits",
+                ok=True,
+                cancel=True,
+                warn_icon=True,
+            ))
+            if not allow_missing_schedule:
+                self._set_status("Move cancelled")
+                return
 
         if self._move_gateway.is_busy() or self._operation_gateway.is_busy():
             forms.alert("An operation is already running. Please wait.", title=TITLE)
@@ -4608,6 +4639,7 @@ class CircuitBrowserPanel(forms.WPFPanel):
             circuit_ids=[_elid_value(circuit.Id) for circuit in deduped_circuits],
             target_panel_id=_elid_value(target_panel.Id),
             callback=self._on_move_selected_circuits_complete,
+            allow_missing_schedule=allow_missing_schedule,
         )
         if not raised:
             self._set_status("Unable to queue move operation")
@@ -5583,6 +5615,29 @@ class CircuitBrowserPanel(forms.WPFPanel):
             forms.alert("Open a model document first.", title=TITLE)
             return
         try:
+            has_settings = settings_manager.has_circuit_settings(doc)
+        except Exception as ex:
+            forms.alert("Unable to check circuit settings:\n\n{}".format(ex), title=TITLE)
+            return
+        if not has_settings:
+            if self._settings_gateway.is_busy():
+                forms.alert("Circuit settings are currently busy. Please try again.", title=TITLE)
+                return
+            self._set_status("Initializing circuit settings...")
+            pending_targets = list(targets)
+            raised = self._settings_gateway.raise_initialize(
+                callback=lambda status, error: self._on_edit_circuit_settings_initialized(
+                    status,
+                    error,
+                    pending_targets,
+                    checked_only,
+                )
+            )
+            if not raised:
+                self._set_status("Unable to initialize circuit settings")
+                forms.alert("Unable to queue circuit settings initialization. Please try again.", title=TITLE)
+            return
+        try:
             settings = settings_manager.load_circuit_settings(doc)
         except Exception as ex:
             forms.alert("Unable to load circuit settings:\n\n{}".format(ex), title=TITLE)
@@ -5638,6 +5693,19 @@ class CircuitBrowserPanel(forms.WPFPanel):
         )
         if not raised:
             self._edit_properties_reselect_ids = []
+
+    def _on_edit_circuit_settings_initialized(self, status, error, targets, checked_only):
+        if status == "error":
+            self._set_status("Unable to initialize circuit settings")
+            forms.alert("Unable to initialize circuit settings:\n\n{}".format(error), title=TITLE)
+            return
+
+        self._set_status("Circuit settings initialized")
+        if not _invoke_later(
+            self,
+            lambda: self._run_edit_circuit_properties(list(targets or []), bool(checked_only)),
+        ):
+            forms.alert("Circuit settings were initialized, but Edit Properties could not be reopened.", title=TITLE)
 
     def action_move_checked_clicked(self, sender, args):
         self._run_move_selected_circuits(self._collect_action_targets(), checked_only=True)

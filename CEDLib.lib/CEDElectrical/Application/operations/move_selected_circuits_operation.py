@@ -6,7 +6,7 @@ import Autodesk.Revit.DB.Electrical as DBE
 from CEDElectrical.Application.dto.operation_request import OperationRequest
 from CEDElectrical.Application.services.move_circuits_to_panel_service import move_circuits_to_panel
 from Snippets import revit_helpers
-from Snippets._elecutils import panel_has_schedule_view
+from Snippets._elecutils import move_target_requires_schedule_confirmation
 
 
 def _elid_value(item):
@@ -67,10 +67,12 @@ class MoveSelectedCircuitsOperation(object):
         target_panel = doc.GetElement(_elid_from_value(target_panel_id))
         if target_panel is None:
             raise Exception("Target panel was not found in the active document.")
-        if not panel_has_schedule_view(doc, target_panel):
+        if (
+            move_target_requires_schedule_confirmation(doc, target_panel)
+            and not bool(options.get("allow_missing_schedule", False))
+        ):
             raise Exception(
-                "Target panel has no panel schedule view.\n"
-                "Create the panel schedule first, then retry the move."
+                "Target panel has no panel schedule view and the move was not confirmed."
             )
 
         circuit_ids = [int(x) for x in list(getattr(request, "circuit_ids", None) or []) if int(x or 0) > 0]

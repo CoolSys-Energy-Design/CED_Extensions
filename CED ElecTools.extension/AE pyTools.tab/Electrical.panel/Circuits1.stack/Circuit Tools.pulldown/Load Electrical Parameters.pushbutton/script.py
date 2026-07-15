@@ -40,7 +40,7 @@ def main():
     output.show()
     output.print_md("## Load Electrical Parameters")
 
-    settings = settings_manager.load_circuit_settings(doc)
+    settings = settings_manager.ensure_circuit_settings(doc)
     result = settings_manager.sync_electrical_parameter_bindings(
         doc,
         logger=logger,

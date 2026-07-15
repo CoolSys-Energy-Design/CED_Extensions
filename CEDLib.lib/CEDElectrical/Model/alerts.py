@@ -199,6 +199,30 @@ class Alerts(object):
         }
 
     @staticmethod
+    def ExcessiveVoltDropCalc(wire_sets, wire_size, vd_percent, target_vd_percent):
+        return {
+            "definition": get_alert_definition("calculation_excessive_volt_drop"),
+            "data": {
+                "wire_sets": wire_sets,
+                "wire_size": wire_size,
+                "vd_percent": vd_percent,
+                "target_vd_percent": target_vd_percent,
+            },
+        }
+
+    @staticmethod
+    def VoltageDropSizingLimit(wire_sets, wire_size, vd_percent, target_vd_percent):
+        return {
+            "definition": get_alert_definition("calculation_voltage_drop_sizing_limit"),
+            "data": {
+                "wire_sets": wire_sets,
+                "wire_size": wire_size,
+                "vd_percent": vd_percent,
+                "target_vd_percent": target_vd_percent,
+            },
+        }
+
+    @staticmethod
     def InsufficientAmpacity(wire_sets, wire_size, circuit_ampacity, circuit_load_current):
         return {
             "definition": get_alert_definition("design_insufficient_ampacity"),

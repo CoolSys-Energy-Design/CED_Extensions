@@ -7,9 +7,16 @@ from CEDElectrical.Application.services.move_circuits_to_panel_service import \
     move_circuits_to_panel as _move_circuits_to_panel_service
 from CEDElectrical.Infrastructure.Revit.repositories import distribution_equipment_repository as de_repo
 from CEDElectrical.Infrastructure.Revit.repositories import panel_schedule_repository as ps_repo
+from CEDElectrical.part_types import PART_TYPE_TRANSFORMER
 from Snippets import revit_helpers
 
 logger = script.get_logger()
+MOVE_MISSING_PANEL_SCHEDULE_WARNING = (
+    "The selected target panel does not have a panel schedule view yet. "
+    "Ensure this is intentional before proceeding"
+)
+
+
 def _elid_value(item):
     return revit_helpers.get_elementid_value(item)
 
@@ -45,6 +52,18 @@ def panel_has_schedule_view(doc, panel):
     return mapped.get(int(panel_id)) is not None
 
 
+def move_target_requires_schedule_confirmation(doc, panel):
+    """Return True when an unscheduled non-transformer target needs confirmation."""
+    if panel is None:
+        return False
+    try:
+        if ps_repo.get_panel_family_part_type(panel) == PART_TYPE_TRANSFORMER:
+            return False
+    except Exception:
+        pass
+    return not bool(panel_has_schedule_view(doc, panel))
+
+
 def get_all_panel_types(doc, el_id=False):
     collector = FilteredElementCollector(doc).OfCategory(
         BuiltInCategory.OST_ElectricalEquipment).WhereElementIsElementType().WherePasses(option_filter)
@@ -56,8 +75,12 @@ def get_all_panel_types(doc, el_id=False):
 
 
 def get_all_circuits(doc, el_id=False):
-    collector = FilteredElementCollector(doc).OfCategory(
-        BuiltInCategory.OST_ElectricalEquipment).WhereElementIsNotElementType().WherePasses(option_filter)
+    collector = (
+        FilteredElementCollector(doc)
+        .OfClass(DBE.ElectricalSystem)
+        .WhereElementIsNotElementType()
+        .WherePasses(option_filter)
+    )
     if el_id:
         collector = collector.ToElementIds()
     else:
@@ -447,7 +470,11 @@ def get_circuits_from_selection(selection):
 
     for item in selection:
         if isinstance(item, DBE.ElectricalSystem):
-            logger.debug("item {} is electrical circuit".format(item.Id.Value))
+            logger.debug(
+                "item {} is electrical circuit".format(
+                    revit_helpers.get_elementid_value(item.Id)
+                )
+            )
             circuits.append(item)
             continue
 
@@ -457,7 +484,7 @@ def get_circuits_from_selection(selection):
             logger.debug("{}".format(e))
             continue
 
-        if item.Category == DB.BuiltInCategory.OST_ElectricalEquipment:
+        if item.Category.BuiltInCategory == DB.BuiltInCategory.OST_ElectricalEquipment:
             all_systems = mep.GetElectricalSystems() or []
             assigned_systems = mep.GetAssignedElectricalSystems() or []
             assigned_ids = set([sys.Id for sys in assigned_systems])

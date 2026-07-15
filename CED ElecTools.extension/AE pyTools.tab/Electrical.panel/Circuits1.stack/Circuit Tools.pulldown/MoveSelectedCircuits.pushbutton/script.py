@@ -10,7 +10,8 @@ from CEDElectrical.Application.services.operation_runner import build_default_ru
 from Snippets import revit_helpers
 # Import reusable utilities
 from Snippets._elecutils import get_panel_dist_system, get_compatible_panels, \
-    get_all_panels, panel_has_schedule_view
+    get_all_panels, move_target_requires_schedule_confirmation, \
+    MOVE_MISSING_PANEL_SCHEDULE_WARNING
 
 # Get the current document
 doc = __revit__.ActiveUIDocument.Document
@@ -60,7 +61,12 @@ def _show_output_window(output_window):
     return False
 
 
-def _run_move_selected_circuits_operation(doc, selected_circuits, target_panel):
+def _run_move_selected_circuits_operation(
+    doc,
+    selected_circuits,
+    target_panel,
+    allow_missing_schedule=False,
+):
     runner = build_default_runner(alert_parameter_name="Circuit Data_CED")
     request = OperationRequest(
         operation_key="move_selected_circuits",
@@ -70,6 +76,7 @@ def _run_move_selected_circuits_operation(doc, selected_circuits, target_panel):
             "target_panel_id": _idval(getattr(target_panel, "Id", None)),
             "recalculate": False,
             "show_recalc_output": False,
+            "allow_missing_schedule": bool(allow_missing_schedule),
         },
     )
     payload = runner.run(request, doc)
@@ -304,19 +311,28 @@ def main():
     if not target_panel:
         forms.alert("Panel not found.", exitscript=True)
 
-    if not panel_has_schedule_view(doc, target_panel):
-        forms.alert(
-            "The selected target panel does not have a panel schedule view yet.\n\n"
-            "Create the panel schedule first, then run Move Selected Circuits again.",
+    allow_missing_schedule = False
+    if move_target_requires_schedule_confirmation(doc, target_panel):
+        allow_missing_schedule = bool(forms.alert(
+            MOVE_MISSING_PANEL_SCHEDULE_WARNING,
             title="Move Selected Circuits",
-            exitscript=True,
-        )
+            ok=True,
+            cancel=True,
+            warn_icon=True,
+        ))
+        if not allow_missing_schedule:
+            script.exit()
 
     output = script.get_output()
     output.close_others()
 
     try:
-        payload = _run_move_selected_circuits_operation(doc, selected_circuits, target_panel)
+        payload = _run_move_selected_circuits_operation(
+            doc,
+            selected_circuits,
+            target_panel,
+            allow_missing_schedule=allow_missing_schedule,
+        )
         move_result = payload.get("move_result")
         buffered_output = payload.get("buffered_output")
     except Exception as e:

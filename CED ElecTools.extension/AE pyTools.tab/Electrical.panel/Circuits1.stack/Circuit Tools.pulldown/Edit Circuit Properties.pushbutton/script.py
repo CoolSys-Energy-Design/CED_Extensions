@@ -127,7 +127,7 @@ def _open_editor(doc, targets):
     if not xaml_path or not os.path.exists(xaml_path):
         forms.alert("Editor XAML not found.\n\n{}".format(xaml_path or "<missing>"), title=TITLE, exitscript=True)
 
-    settings = settings_manager.load_circuit_settings(doc)
+    settings = settings_manager.ensure_circuit_settings(doc)
     theme_mode, accent_mode = _theme_state()
     resources_root = (
         UIResources.get_resources_root()

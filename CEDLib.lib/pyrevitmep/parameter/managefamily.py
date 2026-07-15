@@ -3,6 +3,14 @@ import codecs
 import os
 import re
 
+import clr
+
+for _wpf_asm in ("System", "PresentationFramework", "PresentationCore", "WindowsBase"):
+    try:
+        clr.AddReference(_wpf_asm)
+    except Exception:
+        pass
+
 import rsparam
 from Autodesk.Revit import Exceptions
 from Autodesk.Revit.DB import Document

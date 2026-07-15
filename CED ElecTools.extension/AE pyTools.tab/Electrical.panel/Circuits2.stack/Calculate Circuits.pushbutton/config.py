@@ -12,7 +12,7 @@ from System.Windows import Visibility
 from System.Windows import FontStyles
 from System.Windows.Media import Brushes
 
-from pyrevit import forms, revit, script
+from pyrevit import DB, forms, revit, script
 
 from CEDElectrical.Domain import settings_manager
 from CEDElectrical.Model.circuit_settings import (
@@ -93,7 +93,7 @@ class CircuitSettingsWindow(forms.WPFWindow):
         if self.doc is None:
             raise Exception("No active document is available.")
         self.defaults = CircuitSettings()
-        self.settings = settings_manager.load_circuit_settings(self.doc)
+        self.settings = settings_manager.ensure_circuit_settings(self.doc)
         self._previous_equipment_write = bool(self.settings.write_equipment_results)
         self._previous_fixture_write = bool(self.settings.write_fixture_results)
         self._last_clear_equipment_disabled = bool(getattr(self.settings, 'last_clear_equipment_disabled', False))
@@ -527,6 +527,11 @@ class CircuitSettingsWindow(forms.WPFWindow):
 
         clear_equipment = self._previous_equipment_write and not updated.write_equipment_results
         clear_fixtures = self._previous_fixture_write and not updated.write_fixture_results
+        enable_equipment = (not self._previous_equipment_write) and updated.write_equipment_results
+        enable_fixtures = (not self._previous_fixture_write) and updated.write_fixture_results
+        writeback_changed = clear_equipment or clear_fixtures or enable_equipment or enable_fixtures
+        bindings_reconciled = False
+        clear_message = ""
 
         already_cleared = (
             bool(getattr(self.settings, 'last_clear_success', False))
@@ -548,8 +553,13 @@ class CircuitSettingsWindow(forms.WPFWindow):
             if choice != "Proceed and Clear":
                 return
 
-        if (clear_equipment or clear_fixtures) and not already_cleared:
-            try:
+        writeback_group = None
+        try:
+            if writeback_changed:
+                writeback_group = DB.TransactionGroup(self.doc, "Update Electrical Write-Back")
+                writeback_group.Start()
+
+            if (clear_equipment or clear_fixtures) and not already_cleared:
                 cleared_equip, cleared_fix, locked = settings_manager.clear_downstream_results(
                     self.doc,
                     clear_equipment=clear_equipment,
@@ -560,27 +570,71 @@ class CircuitSettingsWindow(forms.WPFWindow):
                 if locked:
                     updated.set('pending_clear_failed', True)
                     updated.set('last_clear_success', False)
-                    locked_msg = [
+                    clear_message = "\n".join([
                         "Some elements could not be cleared because they are owned by other users.",
-                        "Equipment/fixtures cleared: {} / {}".format(cleared_equip, cleared_fix),
-                    ]
-                    forms.alert("\n".join(locked_msg))
+                        "Equipment cleared: {}; fixtures and devices cleared: {}.".format(
+                            cleared_equip,
+                            cleared_fix,
+                        ),
+                    ])
                 else:
                     updated.set('pending_clear_failed', False)
                     updated.set('last_clear_success', True)
                     updated.set('last_clear_equipment_disabled', not updated.write_equipment_results)
                     updated.set('last_clear_fixtures_disabled', not updated.write_fixture_results)
-                    forms.alert(
-                        "Cleared stored circuit data on {} equipment and {} fixtures.".format(
+                    clear_message = (
+                        "Cleared stored circuit data on {} equipment and {} fixtures and devices.".format(
                             cleared_equip, cleared_fix
                         )
                     )
-            except Exception as ex:
-                updated.set('pending_clear_failed', True)
-                updated.set('last_clear_success', False)
-                logger.error("Failed to clear downstream circuit data: {}".format(ex))
 
-        settings_manager.save_circuit_settings(self.doc, updated)
+            if writeback_changed:
+                result = settings_manager.sync_electrical_parameter_bindings(
+                    self.doc,
+                    logger=logger,
+                    settings=updated,
+                    check_ownership=True,
+                    transaction_name="Update Electrical Write-Back Bindings",
+                )
+                status = str((result or {}).get("status") or "").lower()
+                warnings = list((result or {}).get("warnings") or [])
+                errors = list((result or {}).get("errors") or [])
+                locked_bindings = list((result or {}).get("locked") or [])
+                if status == "failed" or warnings or errors or locked_bindings:
+                    details = []
+                    reason = str((result or {}).get("reason") or "").strip()
+                    if reason:
+                        details.append(reason)
+                    details.extend([str(message) for message in warnings[:5]])
+                    details.extend([str(message) for message in errors[:5]])
+                    if locked_bindings:
+                        details.append(
+                            "{} parameter definition(s) are owned by another user.".format(len(locked_bindings))
+                        )
+                    if writeback_group is not None:
+                        writeback_group.RollBack()
+                        writeback_group = None
+                    forms.alert(
+                        "Write-back settings were not saved because electrical parameter bindings could not be fully updated."
+                        "\n\n{}".format("\n".join(details) or "Unknown binding error.")
+                    )
+                    return
+                bindings_reconciled = True
+
+            settings_manager.save_circuit_settings(self.doc, updated)
+            if writeback_group is not None:
+                writeback_group.Assimilate()
+                writeback_group = None
+        except Exception as ex:
+            if writeback_group is not None:
+                try:
+                    writeback_group.RollBack()
+                except Exception:
+                    pass
+            logger.error("Failed to save write-back settings: {}".format(ex))
+            forms.alert("Could not save settings.\n\n{}".format(ex))
+            return
+
         self.settings = updated
         self._theme_mode = resource_loader.normalize_theme_mode(self._get_combo_tag(self.theme_mode_cb), self._theme_mode)
         self._accent_mode = resource_loader.normalize_accent_mode(self._get_combo_tag(self.accent_mode_cb), self._accent_mode)
@@ -592,7 +646,12 @@ class CircuitSettingsWindow(forms.WPFWindow):
         self._last_clear_success = bool(getattr(self.settings, 'last_clear_success', False))
         self._refresh_clear_alert()
 
-        forms.alert("Calculate Circuits settings saved to project.")
+        if clear_message:
+            forms.alert(clear_message)
+        save_message = "Calculate Circuits settings saved to project."
+        if bindings_reconciled:
+            save_message += "\n\nElectrical parameter bindings were reconciled with the current write-back settings."
+        forms.alert(save_message)
         self.Close()
 
     def _on_cancel(self, sender, args):
@@ -618,8 +677,7 @@ class CircuitSettingsWindow(forms.WPFWindow):
         self.verify_parameters_btn.IsEnabled = False
         self._set_verify_status("Verifying project parameters...", level=None)
         try:
-            preview_settings = self._update_settings_from_ui()
-            result = _verify_project_parameters(self.doc, self.doc.Application, settings=preview_settings)
+            result = _verify_project_parameters(self.doc, self.doc.Application, settings=self.settings)
             status = str(result.get("status") or "").lower()
             warnings = list(result.get("warnings") or [])
             errors = list(result.get("errors") or [])

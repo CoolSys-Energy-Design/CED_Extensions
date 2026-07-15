@@ -4,7 +4,7 @@ import os
 
 import clr
 
-for _wpf_asm in ("PresentationFramework", "PresentationCore", "WindowsBase"):
+for _wpf_asm in ("System", "PresentationFramework", "PresentationCore", "WindowsBase"):
     try:
         clr.AddReference(_wpf_asm)
     except Exception:
@@ -12,7 +12,12 @@ for _wpf_asm in ("PresentationFramework", "PresentationCore", "WindowsBase"):
 
 from Autodesk.Revit.UI import ExternalEvent, IExternalEventHandler
 from System import Action, TimeSpan
-from System.ComponentModel import ListSortDirection
+try:
+    from System.ComponentModel import ListSortDirection
+except Exception:
+    import System
+
+    ListSortDirection = System.ComponentModel.ListSortDirection
 from System.Collections.Generic import List
 from System.IO import File
 from System.Text import Encoding
