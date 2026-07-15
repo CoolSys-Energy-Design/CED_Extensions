@@ -5,6 +5,27 @@ import os
 import sys
 
 
+def _normalized_path(value):
+    try:
+        return os.path.normcase(os.path.realpath(os.path.abspath(str(value or ""))))
+    except Exception:
+        return ""
+
+
+def prioritize_syspath(path):
+    """Place path first on sys.path and remove equivalent duplicate entries."""
+    target = _normalized_path(path)
+    if not target:
+        return False
+    retained = []
+    for entry in list(sys.path):
+        if _normalized_path(entry) == target:
+            continue
+        retained.append(entry)
+    sys.path[:] = [os.path.abspath(path)] + retained
+    return True
+
+
 def _get_runtime_envvar(name):
     key = str(name or "").strip()
     if not key:
@@ -65,7 +86,7 @@ def resolve_lib_root(start_dir, marker_dir="CEDLib.lib"):
 
 
 def ensure_lib_root_on_syspath(start_dir, fallback_rel_parts=None):
-    """Add CEDLib.lib to sys.path if needed and return resolved path."""
+    """Prioritize CEDLib.lib on sys.path and return the resolved path."""
     lib_root = resolve_lib_root(start_dir)
     if lib_root is None:
         rel_parts = fallback_rel_parts
@@ -73,8 +94,8 @@ def ensure_lib_root_on_syspath(start_dir, fallback_rel_parts=None):
             rel_parts = ("..", "..", "..", "..", "..", "CEDLib.lib")
         lib_root = os.path.abspath(os.path.join(os.path.abspath(start_dir), *tuple(rel_parts)))
 
-    if lib_root and os.path.isdir(lib_root) and lib_root not in sys.path:
-        sys.path.append(lib_root)
+    if lib_root and os.path.isdir(lib_root):
+        prioritize_syspath(lib_root)
     return lib_root
 
 
@@ -125,8 +146,8 @@ def resolve_ui_context(start_dir, marker_dir="CEDLib.lib", fallback_rel_parts=No
         if rel_parts is None:
             rel_parts = ("..", "..", "..", "..", "..", "CEDLib.lib")
         lib_root = os.path.abspath(os.path.join(start_abs, *tuple(rel_parts)))
-    if ensure_syspath and lib_root and os.path.isdir(lib_root) and lib_root not in sys.path:
-        sys.path.append(lib_root)
+    if ensure_syspath and lib_root and os.path.isdir(lib_root):
+        prioritize_syspath(lib_root)
     resources_root = resolve_ui_resources_root(lib_root)
     return {
         "start_dir": start_abs,
