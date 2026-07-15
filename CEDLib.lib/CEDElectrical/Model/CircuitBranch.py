@@ -872,17 +872,21 @@ class CircuitBranch(object):
         # --- conduit type ---
         if self._conduit_type_override:
             raw = self._conduit_type_override
-            valid = any(raw in types for _, types in CONDUIT_AREA_TABLE.items())
-            if not valid:
-                self.log_warning(
-                    Alerts.InvalidCircuitProperty(
-                        "Conduit type",
-                        raw,
-                        self._wire_info.get("conduit_type"),
-                    ),
-                    category="Overrides",
-                )
+            if self._is_clear_token(raw):
+                self._user_clear_conduit = True
                 self._conduit_type_override = None
+            else:
+                valid = any(raw in types for _, types in CONDUIT_AREA_TABLE.items())
+                if not valid:
+                    self.log_warning(
+                        Alerts.InvalidCircuitProperty(
+                            "Conduit type",
+                            raw,
+                            self._wire_info.get("conduit_type"),
+                        ),
+                        category="Overrides",
+                    )
+                    self._conduit_type_override = None
 
         # --- conduit size ---
         if self._conduit_size_override:
@@ -1016,15 +1020,6 @@ class CircuitBranch(object):
                     )
                 )
 
-            rating = self.rating or 0
-            poles = self.poles or 0
-            if ((rating and rating < 100) or poles < 2) and self._wire_sets_override != 1:
-                self.log_warning(
-                    Alerts.BreakerLugQuantityLimitOverride(
-                        self._wire_sets_override, rating, 1
-                    )
-                )
-
         if self._conduit_size_override and isinstance(self._conduit_size_override, str):
             if self._is_clear_token(self._conduit_size_override):
                 self._user_clear_conduit = True
@@ -1154,8 +1149,8 @@ class CircuitBranch(object):
                 return True
         return False
 
-    def _apply_set_constraints(self, sets_value, source="override", enforce_design=False):
-        """Clamp number of sets to breaker/pole/lug limits when requested."""
+    def _apply_set_constraints(self, sets_value, source="override"):
+        """Clamp number of sets to the configured breaker lug limit."""
         if sets_value is None:
             return None
 
@@ -1175,18 +1170,7 @@ class CircuitBranch(object):
             )
             sets = 1
 
-        rating = self.rating or 0
-        poles = self.poles or 0
         max_sets = self._wire_info.get("max_lug_qty", 1) or 1
-
-        if enforce_design:
-            if (rating and rating < 100) or poles < 2:
-                if sets != 1:
-                    self.log_warning(
-                        "Parallel sets not allowed for {}P breaker {}A. Resetting to 1 set.".format(poles or 0, rating),
-                        category="Design",
-                    )
-                    sets = 1
 
         if sets > max_sets:
             self.log_warning(
@@ -1988,6 +1972,7 @@ class CircuitBranch(object):
         base_wire = self.cable.hot_size
         base_sets = self.cable.sets
         sets = base_sets
+        max_vd_candidate = None
 
         while sets <= absolute_max_sets and not solution_found:
 
@@ -2016,7 +2001,11 @@ class CircuitBranch(object):
                     continue
 
                 vd = self._safe_voltage_drop_calc(wire, sets)
-                if vd is None or vd > self.max_voltage_drop:
+                if vd is None:
+                    continue
+
+                max_vd_candidate = (wire, ampacity, sets, vd)
+                if vd > self.max_voltage_drop:
                     continue
 
                 # ---- FINAL SOLUTION ----
@@ -2031,7 +2020,38 @@ class CircuitBranch(object):
 
             if not solution_found:
                 sets += 1
-        #TODO: Double check that this doesnt fail without warning
+
+        if not solution_found:
+            if max_vd_candidate is None:
+                self._fail_cable_sizing(
+                    "Voltage drop could not be calculated for any ampacity-valid wire combination."
+                )
+                return
+
+            wire, ampacity, sets, vd = max_vd_candidate
+            self.cable.hot_size = wire
+            self.cable.sets = sets
+            self.cable.base_ampacity = ampacity
+            self.cable.total_ampacity = ampacity * sets
+            self.cable.voltage_drop = vd
+            vd_percent = round(100 * vd, 2)
+            target_vd_percent = round(100 * self.max_voltage_drop, 2)
+            self.log_warning(
+                Alerts.ExcessiveVoltDropCalc(
+                    sets,
+                    "#{}".format(wire),
+                    vd_percent,
+                    target_vd_percent,
+                )
+            )
+            self.log_warning(
+                Alerts.VoltageDropSizingLimit(
+                    sets,
+                    "#{}".format(wire),
+                    vd_percent,
+                    target_vd_percent,
+                )
+            )
 
         # -------------------------------------------------
         # WARNINGS ONLY (NO FAILURES)
@@ -2044,7 +2064,7 @@ class CircuitBranch(object):
 
         if self.cable.sets > max_sets:
             self.log_warning(
-                Alerts.BreakerLugQuantityLimitCalc(max_sets, rating)
+                Alerts.BreakerLugQuantityLimitCalc(self.cable.sets, rating)
             )
 
     def _safe_voltage_drop_calc(self, wire_size, sets):

@@ -88,6 +88,21 @@ ALERT_DEFINITIONS = {
         severity="MEDIUM",
         category="Circuits",
     ),
+    "calculation_excessive_volt_drop": AlertDefinition(
+        "Calculations.ExcessiveVoltDrop",
+        "Calculated wire ({wire_sets} set(s) x {wire_size}) exceeds the voltage-drop target ({vd_percent}% > {target_vd_percent}%).",
+        group="Calculation",
+        severity="MEDIUM",
+        category="Circuits",
+    ),
+    "calculation_voltage_drop_sizing_limit": AlertDefinition(
+        "Calculations.VoltageDropSizingLimit",
+        "Automatic wire sizing reached its maximum combination ({wire_sets} set(s) x {wire_size}) without meeting the voltage-drop target ({vd_percent}% > {target_vd_percent}%). The maximum combination was retained because it satisfies ampacity.",
+        group="Calculation",
+        severity="MEDIUM",
+        persistent=False,
+        category="Circuits",
+    ),
     "design_excessive_conduit_fill": AlertDefinition(
         "Design.ExcessiveConduitFill",
         "User-specified conduit size {conduit_size} exceeds max fill target ({conduit_fill_percentage}% > {max_fill_percentage}%).",
