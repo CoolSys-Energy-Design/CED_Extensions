@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """Edit Circuit Properties window + view-model used by Circuit Browser actions."""
 
-import os
 import json
+import os
 import re
 
 import Autodesk.Revit.DB.Electrical as DBE
@@ -1758,8 +1758,15 @@ class CircuitPropertyEditorViewModel(object):
             return False
         return self._has_preview_conduit_wire_change(circuit_id)
 
+    def _has_staged_param_inputs(self, circuit_id):
+        return bool(
+            self.value_overrides.get(circuit_id)
+            or self.toggle_overrides.get(circuit_id)
+        )
+
     def _has_staged_property_edits(self, circuit_id):
-        return bool(self._build_diff(circuit_id) or self._build_circuit_data_diff(circuit_id))
+        param_diff = self._build_diff(circuit_id) if self._has_staged_param_inputs(circuit_id) else {}
+        return bool(param_diff or self._build_circuit_data_diff(circuit_id))
 
     def _has_preview_conduit_wire_change(self, circuit_id):
         state = self.preview_rows.get(circuit_id)
@@ -1798,7 +1805,7 @@ class CircuitPropertyEditorViewModel(object):
             if circuit_id in self.locked_circuits:
                 row.set_pending(False)
                 continue
-            has_staged_params = bool(self.value_overrides.get(circuit_id) or self.toggle_overrides.get(circuit_id))
+            has_staged_params = self._has_staged_param_inputs(circuit_id)
             diff = self._build_diff(circuit_id) if has_staged_params else {}
             circuit_data_diff = self._build_circuit_data_diff(circuit_id)
             preview_changed = self.has_auto_recalc_pending(circuit_id)
