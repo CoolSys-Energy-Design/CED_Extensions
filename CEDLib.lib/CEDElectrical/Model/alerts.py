@@ -75,6 +75,16 @@ class Alerts(object):
         }
 
     @staticmethod
+    def InvalidWireSets(override_value, default_value):
+        return {
+            "definition": get_alert_definition("overrides_invalid_wire_sets"),
+            "data": {
+                "override_value": override_value,
+                "default_value": default_value,
+            },
+        }
+
+    @staticmethod
     def InvalidEquipmentGround(override_value):
         return {
             "definition": get_alert_definition("overrides_invalid_equipment_ground"),
@@ -189,6 +199,30 @@ class Alerts(object):
         }
 
     @staticmethod
+    def ExcessiveVoltDropCalc(wire_sets, wire_size, vd_percent, target_vd_percent):
+        return {
+            "definition": get_alert_definition("calculation_excessive_volt_drop"),
+            "data": {
+                "wire_sets": wire_sets,
+                "wire_size": wire_size,
+                "vd_percent": vd_percent,
+                "target_vd_percent": target_vd_percent,
+            },
+        }
+
+    @staticmethod
+    def VoltageDropSizingLimit(wire_sets, wire_size, vd_percent, target_vd_percent):
+        return {
+            "definition": get_alert_definition("calculation_voltage_drop_sizing_limit"),
+            "data": {
+                "wire_sets": wire_sets,
+                "wire_size": wire_size,
+                "vd_percent": vd_percent,
+                "target_vd_percent": target_vd_percent,
+            },
+        }
+
+    @staticmethod
     def InsufficientAmpacity(wire_sets, wire_size, circuit_ampacity, circuit_load_current):
         return {
             "definition": get_alert_definition("design_insufficient_ampacity"),
@@ -219,6 +253,17 @@ class Alerts(object):
             "data": {
                 "circuit_load_current": round(circuit_load_current,1),
                 "breaker_rating": int(round(breaker_rating)),
+            },
+        }
+
+    @staticmethod
+    def NearOCPRating(circuit_load_current, breaker_rating, load_ratio):
+        return {
+            "definition": get_alert_definition("design_near_ocp_rating"),
+            "data": {
+                "circuit_load_current": round(circuit_load_current, 1),
+                "breaker_rating": int(round(breaker_rating)),
+                "load_ratio_percent": round(load_ratio * 100.0, 1),
             },
         }
 

@@ -1057,22 +1057,25 @@ def _panel_device_slot_capacity(option):
         if value:
             return value
 
-    if panel is not None and schedule_type == PSTYPE_SWITCHBOARD:
-        try:
-            param = panel.get_Parameter(DB.BuiltInParameter.RBS_ELEC_NUMBER_OF_CIRCUITS)
-        except Exception:
-            param = None
-        value = _param_int_or_zero(param)
-        if value:
-            return value
     if panel is not None:
-        try:
-            param = panel.get_Parameter(DB.BuiltInParameter.RBS_ELEC_MAX_POLE_BREAKERS)
-        except Exception:
-            param = None
-        value = _param_int_or_zero(param)
-        if value:
-            return value
+        if schedule_type == PSTYPE_SWITCHBOARD:
+            capacity_parameters = (
+                DB.BuiltInParameter.RBS_ELEC_NUMBER_OF_CIRCUITS,
+                DB.BuiltInParameter.RBS_ELEC_MAX_POLE_BREAKERS,
+            )
+        else:
+            capacity_parameters = (
+                DB.BuiltInParameter.RBS_ELEC_MAX_POLE_BREAKERS,
+                DB.BuiltInParameter.RBS_ELEC_NUMBER_OF_CIRCUITS,
+            )
+        for built_in_parameter in capacity_parameters:
+            try:
+                param = panel.get_Parameter(built_in_parameter)
+            except Exception:
+                param = None
+            value = _param_int_or_zero(param)
+            if value:
+                return value
     return 0
 
 
@@ -1417,7 +1420,12 @@ def is_removable_space(schedule_view, row, col, circuit):
     return True
 
 
-def _panel_option_from_panel_and_view(doc, panel, schedule_view=None):
+def _panel_option_from_panel_and_view(
+    doc,
+    panel,
+    schedule_view=None,
+    use_equipment_capacity_without_schedule=False,
+):
     """Build a normalized panel option from equipment and optional schedule view."""
     panel_id = _idval(getattr(panel, "Id", None))
     equipment_model = _distribution_equipment_repo().build_distribution_equipment(
@@ -1503,6 +1511,15 @@ def _panel_option_from_panel_and_view(doc, panel, schedule_view=None):
         "show_slots_from_device": bool(show_slots_from_device),
     }
     device_slot_capacity = int(_panel_device_slot_capacity(limits_probe) or 0)
+    if (
+        not isinstance(schedule_view, DBE.PanelScheduleView)
+        and bool(use_equipment_capacity_without_schedule)
+        and int(schedule_slots) <= 0
+        and int(device_slot_capacity) > 0
+    ):
+        schedule_slots = int(device_slot_capacity)
+        layout["max_slot"] = int(schedule_slots)
+        limits_probe["max_slot"] = int(schedule_slots)
     limits_probe["device_slot_capacity"] = int(device_slot_capacity)
     slot_limits = _compute_option_slot_limits(limits_probe)
 
@@ -1546,8 +1563,13 @@ def _panel_option_from_panel_and_view(doc, panel, schedule_view=None):
     return option
 
 
-def collect_panel_equipment_options(doc, panels=None, include_without_schedule=True):
-    """Return options for all panel/switchboard equipment, with schedule metadata when present."""
+def collect_panel_equipment_options(
+    doc,
+    panels=None,
+    include_without_schedule=True,
+    use_equipment_capacity_without_schedule=False,
+):
+    """Return equipment options, optionally using device capacity when no schedule exists."""
     panel_list = list(panels or get_all_panels(doc, require_mep_model=True, exclude_design_options=True))
     panel_list = [p for p in panel_list if p is not None]
     panel_list.sort(key=lambda x: _to_text(getattr(x, "Name", ""), ""))
@@ -1561,7 +1583,14 @@ def collect_panel_equipment_options(doc, panels=None, include_without_schedule=T
         view = mapped_views.get(panel_id)
         if view is None and not bool(include_without_schedule):
             continue
-        options.append(_panel_option_from_panel_and_view(doc, panel, schedule_view=view))
+        options.append(
+            _panel_option_from_panel_and_view(
+                doc,
+                panel,
+                schedule_view=view,
+                use_equipment_capacity_without_schedule=bool(use_equipment_capacity_without_schedule),
+            )
+        )
     return options
 
 
@@ -1858,17 +1887,30 @@ def build_empty_row(option, slot, metadata=None):
     slot_value = int(slot or 0)
     meta = dict(metadata or {})
     is_valid_slot = bool(is_slot_valid_for_option(option, slot_value))
+    kind = _to_text(meta.get("kind", ""), "").strip().lower()
+    if kind not in ("spare", "space"):
+        if bool(meta.get("is_spare", False)):
+            kind = "spare"
+        elif bool(meta.get("is_space", False)):
+            kind = "space"
+        else:
+            kind = "empty"
+    circuit = meta.get("circuit") if kind in ("spare", "space") else None
+    try:
+        circuit_id = int(meta.get("circuit_id", 0) or 0)
+    except Exception:
+        circuit_id = 0
     return {
-        "row_key": "panel:{0}|slot:{1}|empty".format(option.get("panel_id", 0), slot_value),
+        "row_key": "panel:{0}|slot:{1}|{2}".format(option.get("panel_id", 0), slot_value, kind),
         "panel_id": option.get("panel_id", 0),
         "panel_name": option.get("panel_name", ""),
         "slot": slot_value,
         "span": 1,
         "covered_slots": [slot_value],
-        "kind": "empty",
+        "kind": kind,
         "is_regular_circuit": False,
-        "circuit": None,
-        "circuit_id": 0,
+        "circuit": circuit,
+        "circuit_id": circuit_id,
         "circuit_number": "",
         "load_name": "",
         "schedule_notes_text": "",
@@ -1880,10 +1922,12 @@ def build_empty_row(option, slot, metadata=None):
         "is_slot_grouped": bool(meta.get("is_grouped", False)),
         "slot_group_number": int(meta.get("group_number", 0) or 0),
         "slot_cells": list(meta.get("cells", []) or []),
-        "is_spare_removable": False,
-        "is_space_removable": False,
+        "is_spare": bool(kind == "spare"),
+        "is_space": bool(kind == "space"),
+        "is_spare_removable": bool(meta.get("is_spare_removable", False)),
+        "is_space_removable": bool(meta.get("is_space_removable", False)),
         "is_slot_locked": bool(meta.get("is_slot_locked", False)),
-        "edited_by": "",
+        "edited_by": _to_text(meta.get("edited_by", ""), ""),
         "is_editable": bool(is_valid_slot),
         "is_valid_slot": bool(is_valid_slot),
         "is_excess_slot": bool(not is_valid_slot),

@@ -18,6 +18,19 @@ def _elid_from_value(value):
     return revit_helpers.elementid_from_value(value)
 
 
+def _calc_options_from_request(request):
+    options = {
+        'show_output': bool(request.options.get('show_output', False)),
+        'use_existing_transaction_group': True,
+    }
+    if request.options.get('calc_preview_enabled') is not None:
+        options['calc_preview_enabled'] = bool(request.options.get('calc_preview_enabled', False))
+    preview_decision = str(request.options.get('calc_preview_decision') or '').strip().lower()
+    if preview_decision:
+        options['calc_preview_decision'] = preview_decision
+    return options
+
+
 class SetIncludeAndRecalculateOperation(object):
     """Applies include-neutral/include-IG flags and recalculates affected circuits."""
 
@@ -122,13 +135,31 @@ class SetIncludeAndRecalculateOperation(object):
             operation_key='calculate_circuits',
             circuit_ids=target_ids,
             source=request.source,
-            options={
-                'show_output': bool(request.options.get('show_output', False)),
-                'use_existing_transaction_group': True,
-            },
+            options=_calc_options_from_request(request),
         )
         try:
             calc_result = self._calculate_operation.execute(calc_request, doc) or {}
+            if (
+                str(calc_result.get('status') or '').strip().lower() == 'cancelled'
+                and str(calc_result.get('reason') or '').strip().lower() == 'calc_preview_skipped'
+            ):
+                try:
+                    tg.RollBack()
+                except Exception:
+                    pass
+                if locked_rows:
+                    existing = list(calc_result.get('locked_rows') or [])
+                    calc_result['locked_rows'] = existing + locked_rows
+                return calc_result
+            if str(calc_result.get('status') or '').strip().lower() == 'preview_required':
+                try:
+                    tg.RollBack()
+                except Exception:
+                    pass
+                if locked_rows:
+                    existing = list(calc_result.get('locked_rows') or [])
+                    calc_result['locked_rows'] = existing + locked_rows
+                return calc_result
             tg.Assimilate()
         except Exception:
             try:

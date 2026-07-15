@@ -77,7 +77,10 @@ PANEL_VALUE_MAP = {
     "Distribution System_CEDR": DB.BuiltInParameter.RBS_FAMILY_CONTENT_DISTRIBUTION_SYSTEM,
     "Secondary Distribution System_CEDR": DB.BuiltInParameter.RBS_FAMILY_CONTENT_SECONDARY_DISTRIBSYS,
     "Total Connected Load_CEDR": DB.BuiltInParameter.RBS_ELEC_PANEL_TOTALLOAD_PARAM,
-    "Total Demand Load_CEDR": DB.BuiltInParameter.RBS_ELEC_PANEL_TOTAL_DEMAND_CURRENT_PARAM,
+    # Demand LOAD = Total Estimated Demand (apparent power). This previously
+    # pointed at the demand-current param, writing amps into a VA-typed detail
+    # param that displayed as garbage (e.g. 3195 A -> "297 VA").
+    "Total Demand Load_CEDR": DB.BuiltInParameter.RBS_ELEC_PANEL_TOTALESTLOAD_PARAM,
     "Total Connected Current_CEDR": DB.BuiltInParameter.RBS_ELEC_PANEL_TOTAL_CONNECTED_CURRENT_PARAM,
     "Total Demand Current_CEDR": DB.BuiltInParameter.RBS_ELEC_PANEL_TOTAL_DEMAND_CURRENT_PARAM,
     "Max Number of Single Pole Breakers_CED": DB.BuiltInParameter.RBS_ELEC_MAX_POLE_BREAKERS,

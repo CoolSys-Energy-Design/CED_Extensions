@@ -14,5 +14,5 @@ tooltip:
 
 author: Anthony Evelina - CoolSys (2025)
 engine:
-  persistent: false
+  persistent: true
   full_frame: false

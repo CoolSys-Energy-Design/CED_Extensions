@@ -1,6 +1,14 @@
 # coding: utf8
 import os
 
+import clr
+
+for _wpf_asm in ("System", "PresentationFramework", "PresentationCore", "WindowsBase"):
+    try:
+        clr.AddReference(_wpf_asm)
+    except Exception:
+        pass
+
 from Autodesk.Revit.DB import BuiltInCategory, Category
 from System.Collections.ObjectModel import ObservableCollection
 from pyrevit import revit

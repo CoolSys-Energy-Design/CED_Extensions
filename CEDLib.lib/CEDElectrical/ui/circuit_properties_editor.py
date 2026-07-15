@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Edit Circuit Properties window + view-model used by Circuit Browser actions."""
 
+import json
 import os
 import re
 
@@ -22,7 +23,7 @@ from pyrevit import DB, forms
 
 from CEDElectrical.Infrastructure.Revit.repositories.revit_circuit_repository import RevitCircuitRepository
 from CEDElectrical.Model.CircuitBranch import CircuitBranch
-from CEDElectrical.Model.circuit_settings import FeederVDMethod, IsolatedGroundBehavior, NeutralBehavior
+from CEDElectrical.Model.circuit_settings import CircuitVDMethod, FeederVDMethod, IsolatedGroundBehavior, NeutralBehavior
 from CEDElectrical.refdata.ampacity_table import WIRE_AMPACITY_TABLE
 from CEDElectrical.refdata.conductor_area_table import CONDUCTOR_AREA_TABLE
 from CEDElectrical.refdata.conduit_area_table import CONDUIT_AREA_TABLE, CONDUIT_SIZE_INDEX
@@ -32,6 +33,9 @@ from UIClasses import resource_loader, ui_bases
 
 CIRCUIT_NOTES_KEY = "__bip_circuit_notes__"
 CIRCUIT_NAME_KEY = "__bip_circuit_name__"
+ORIGINAL_CONDUIT_WIRE_KEY = "__original_conduit_wire_summary__"
+CIRCUIT_DATA_PARAM_NAME = "Circuit Data_CED"
+CIRCUIT_DATA_VD_METHOD_KEY = "circuit_vd_method"
 UI_WIRE_SIZE_ORDER = [
     "12",
     "10",
@@ -289,6 +293,23 @@ def _build_insulation_options():
     return sorted(list(values))
 
 
+def _feeder_vd_method_label(method):
+    method_text = str(method or "").strip().lower()
+    if method_text == FeederVDMethod.CONNECTED:
+        return "Connected Load"
+    if method_text == FeederVDMethod.EIGHTY_PERCENT:
+        return "80% of Breaker"
+    if method_text == FeederVDMethod.HUNDRED_PERCENT:
+        return "100% of Breaker"
+    return "Demand Load"
+
+
+class VDMethodOption(object):
+    def __init__(self, value, label):
+        self.value = CircuitVDMethod.normalize(value, CircuitVDMethod.GLOBAL)
+        self.label = str(label or "")
+
+
 APPLY_PARAM_TYPES = {
     "CKT_User Override_CED": "int",
     "CKT_Rating_CED": "double",
@@ -357,6 +378,7 @@ class CircuitPropertyEditorViewModel(object):
         self.base_values = {}
         self.value_overrides = {}
         self.toggle_overrides = {}
+        self.circuit_data_overrides = {}
         self.preview_rows = {}
         self.lock_rows_by_id = {}
 
@@ -367,6 +389,14 @@ class CircuitPropertyEditorViewModel(object):
         self.temperature_options = _build_temperature_options()
         self.insulation_options = _build_insulation_options()
         self.material_options = ["CU", "AL"]
+        global_label = _feeder_vd_method_label(getattr(self.settings, "feeder_vd_method", FeederVDMethod.DEMAND))
+        self.vd_method_options = [
+            VDMethodOption(CircuitVDMethod.GLOBAL, "Global ({})".format(global_label)),
+            VDMethodOption(CircuitVDMethod.DEMAND, "Demand Load"),
+            VDMethodOption(CircuitVDMethod.CONNECTED, "Connected Load"),
+            VDMethodOption(CircuitVDMethod.EIGHTY_PERCENT, "80% of Breaker"),
+            VDMethodOption(CircuitVDMethod.HUNDRED_PERCENT, "100% of Breaker"),
+        ]
 
         self._seed_lock_rows(targets)
 
@@ -383,9 +413,8 @@ class CircuitPropertyEditorViewModel(object):
                 self.locked_circuits[row.circuit_id] = str(owner or "")
             row.set_locked(is_locked, owner)
             self.base_values[row.circuit_id] = self._collect_base_values(circuit)
-            self._seed_existing_override_inputs(row.circuit_id)
             self.preview_rows[row.circuit_id] = self._build_preview_row(row.circuit_id)
-            row.set_pending(False)
+            row.set_pending(self.has_pending_changes(row.circuit_id))
 
     def _seed_lock_rows(self, targets):
         circuits = []
@@ -489,8 +518,33 @@ class CircuitPropertyEditorViewModel(object):
             "Wire Insulation_CEDT": _lookup_param_text(circuit, "Wire Insulation_CEDT", ""),
             CIRCUIT_NAME_KEY: _lookup_builtin_text(circuit, DB.BuiltInParameter.RBS_ELEC_CIRCUIT_NAME, ""),
             CIRCUIT_NOTES_KEY: _lookup_builtin_text(circuit, DB.BuiltInParameter.RBS_ELEC_CIRCUIT_NOTES_PARAM, ""),
+            ORIGINAL_CONDUIT_WIRE_KEY: _lookup_param_text(circuit, "Conduit and Wire Size_CEDT", "-"),
+            CIRCUIT_DATA_VD_METHOD_KEY: self._read_circuit_vd_method(circuit),
             "__branch_type__": _derive_branch_type(circuit),
         }
+
+    def _read_circuit_data_payload(self, circuit):
+        try:
+            param = circuit.LookupParameter(CIRCUIT_DATA_PARAM_NAME)
+        except Exception:
+            param = None
+        if not param:
+            return {}
+        try:
+            text = param.AsString()
+        except Exception:
+            text = ""
+        if not text:
+            return {}
+        try:
+            payload = json.loads(text)
+        except Exception:
+            payload = {}
+        return payload if isinstance(payload, dict) else {}
+
+    def _read_circuit_vd_method(self, circuit):
+        payload = self._read_circuit_data_payload(circuit)
+        return CircuitVDMethod.normalize(payload.get(CIRCUIT_DATA_VD_METHOD_KEY), CircuitVDMethod.GLOBAL)
 
     def _seed_existing_override_inputs(self, circuit_id):
         base = dict(self.base_values.get(circuit_id, {}))
@@ -514,15 +568,19 @@ class CircuitPropertyEditorViewModel(object):
 
     def _default_toggle_state(self, circuit_id):
         base = dict(self.base_values.get(circuit_id, {}))
+        user_override = bool(_as_int(base.get("CKT_User Override_CED", 0), 0) == 1)
         hot_size = str(base.get("CKT_Wire Hot Size_CEDT", "") or "").strip()
         ground_size = str(base.get("CKT_Wire Ground Size_CEDT", "") or "").strip()
         conduit_size = str(base.get("Conduit Size_CEDT", "") or "").strip()
-        allow_hot = hot_size != "-"
-        allow_ground = allow_hot and ground_size != "-"
-        allow_conduit = conduit_size != "-"
+        allow_hot = True
+        allow_ground = True
+        allow_conduit = True
+        if user_override:
+            allow_hot = not self._is_cleared_size_text(hot_size)
+            allow_ground = allow_hot and not self._is_cleared_size_text(ground_size)
+            allow_conduit = not self._is_cleared_size_text(conduit_size)
         include_neutral = bool(_as_int(base.get("CKT_Include Neutral_CED", 0), 0) == 1 or _as_int(base.get("CKT_Wire Neutral Quantity_CED", 0), 0) > 0)
         include_ig = bool(_as_int(base.get("CKT_Include Isolated Ground_CED", 0), 0) == 1 or _as_int(base.get("CKT_Wire Isolated Ground Quantity_CED", 0), 0) > 0)
-        user_override = bool(_as_int(base.get("CKT_User Override_CED", 0), 0) == 1)
         return {
             "user_override": user_override,
             "allow_hot": allow_hot,
@@ -542,6 +600,10 @@ class CircuitPropertyEditorViewModel(object):
         state["allow_conduit"] = bool(state.get("allow_conduit", True))
         state["include_neutral"] = bool(state.get("include_neutral", True))
         state["include_ig"] = bool(state.get("include_ig", True))
+        if not state["user_override"]:
+            state["allow_hot"] = True
+            state["allow_ground"] = True
+            state["allow_conduit"] = True
         branch_type = str(base.get("__branch_type__", "") or "").upper()
         if branch_type in ("FEEDER", "XFMR PRI", "XFMR SEC"):
             base_neutral = bool(
@@ -551,7 +613,6 @@ class CircuitPropertyEditorViewModel(object):
             state["include_neutral"] = base_neutral
         if not state["allow_hot"]:
             state["allow_ground"] = False
-            state["include_neutral"] = False
             state["include_ig"] = False
         if not state["allow_ground"]:
             state["include_ig"] = False
@@ -566,16 +627,13 @@ class CircuitPropertyEditorViewModel(object):
         values["CKT_Include Neutral_CED"] = 1 if toggles.get("include_neutral", False) else 0
         values["CKT_Include Isolated Ground_CED"] = 1 if toggles.get("include_ig", False) else 0
         if not toggles.get("user_override", False):
-            # Keep manual override values staged, but display calculated/base sets while override is off.
-            values["CKT_Number of Sets_CED"] = base_values.get(
-                "CKT_Number of Sets_CED",
-                values.get("CKT_Number of Sets_CED", 0),
-            )
+            # Keep manual sizing values staged, but display/diff calculated values while override is off.
+            for param_name in self._manual_sizing_param_names():
+                values[param_name] = base_values.get(param_name, values.get(param_name))
         if toggles.get("user_override", False):
             if not toggles.get("allow_hot", True):
                 values["CKT_Wire Hot Size_CEDT"] = "-"
                 values["CKT_Wire Hot Quantity_CED"] = 0
-                values["CKT_Number of Sets_CED"] = 0
                 values["CKT_Wire Neutral Size_CEDT"] = "-"
                 values["CKT_Wire Neutral Quantity_CED"] = 0
                 values["CKT_Wire Ground Size_CEDT"] = "-"
@@ -590,61 +648,135 @@ class CircuitPropertyEditorViewModel(object):
                 values["CKT_Wire Isolated Ground Size_CEDT"] = "-"
                 values["CKT_Wire Isolated Ground Quantity_CED"] = 0
                 values["CKT_Include Isolated Ground_CED"] = 0
+            if not toggles.get("include_neutral", False):
+                values["CKT_Wire Neutral Size_CEDT"] = "-"
+                values["CKT_Wire Neutral Quantity_CED"] = 0
+            if not toggles.get("include_ig", False):
+                values["CKT_Wire Isolated Ground Size_CEDT"] = "-"
+                values["CKT_Wire Isolated Ground Quantity_CED"] = 0
             if not toggles.get("allow_conduit", True):
                 values["Conduit Size_CEDT"] = "-"
+                values["Conduit Type_CEDT"] = "-"
         return values
+
+    def _is_feeder_vd_editable(self, circuit_id):
+        state = self.preview_rows.get(circuit_id)
+        if isinstance(state, dict):
+            preview = dict(state.get("preview") or {})
+            circuit_type = str(preview.get("circuit_type", "") or "").strip().upper()
+            if bool(preview.get("is_feeder", False)) or circuit_type in ("FEEDER", "XFMR PRI", "XFMR SEC"):
+                return True
+            if circuit_type:
+                return False
+        row = self.rows_by_id.get(circuit_id)
+        branch_type = str(getattr(row, "branch_type", "") or "").strip().upper()
+        return branch_type in ("FEEDER", "XFMR PRI", "XFMR SEC")
+
+    def _effective_circuit_vd_method(self, circuit_id):
+        overrides = dict(self.circuit_data_overrides.get(circuit_id, {}) or {})
+        if CIRCUIT_DATA_VD_METHOD_KEY in overrides:
+            return CircuitVDMethod.normalize(overrides.get(CIRCUIT_DATA_VD_METHOD_KEY), CircuitVDMethod.GLOBAL)
+        base = dict(self.base_values.get(circuit_id, {}) or {})
+        return CircuitVDMethod.normalize(base.get(CIRCUIT_DATA_VD_METHOD_KEY), CircuitVDMethod.GLOBAL)
 
     def _build_preview_inputs(self, circuit_id, toggles):
         preview_inputs = dict(self.value_overrides.get(circuit_id, {}))
+        if self.settings.neutral_behavior != NeutralBehavior.MANUAL:
+            preview_inputs.pop("CKT_Wire Neutral Size_CEDT", None)
+        if self.settings.isolated_ground_behavior != IsolatedGroundBehavior.MANUAL:
+            preview_inputs.pop("CKT_Wire Isolated Ground Size_CEDT", None)
+        preview_inputs[CIRCUIT_DATA_VD_METHOD_KEY] = self._effective_circuit_vd_method(circuit_id)
         preview_inputs["CKT_User Override_CED"] = 1 if toggles.get("user_override", False) else 0
         preview_inputs["CKT_Include Neutral_CED"] = 1 if toggles.get("include_neutral", False) else 0
         preview_inputs["CKT_Include Isolated Ground_CED"] = 1 if toggles.get("include_ig", False) else 0
         if not toggles.get("user_override", False):
-            # Do not feed manual-set count into preview calculations while override is off.
-            preview_inputs.pop("CKT_Number of Sets_CED", None)
+            # Do not feed manual sizing overrides into preview calculations while override is off.
+            for param_name in self._manual_sizing_param_names():
+                preview_inputs.pop(param_name, None)
 
         if toggles.get("user_override", False):
             if not toggles.get("allow_hot", True):
                 preview_inputs["CKT_Wire Hot Size_CEDT"] = "-"
-                preview_inputs["CKT_Number of Sets_CED"] = 0
+                preview_inputs["CKT_Wire Hot Quantity_CED"] = 0
                 preview_inputs["CKT_Wire Neutral Size_CEDT"] = "-"
+                preview_inputs["CKT_Wire Neutral Quantity_CED"] = 0
                 preview_inputs["CKT_Wire Ground Size_CEDT"] = "-"
+                preview_inputs["CKT_Wire Ground Quantity_CED"] = 0
                 preview_inputs["CKT_Wire Isolated Ground Size_CEDT"] = "-"
+                preview_inputs["CKT_Wire Isolated Ground Quantity_CED"] = 0
                 preview_inputs["CKT_Include Neutral_CED"] = 0
                 preview_inputs["CKT_Include Isolated Ground_CED"] = 0
             elif not toggles.get("allow_ground", True):
                 preview_inputs["CKT_Wire Ground Size_CEDT"] = "-"
+                preview_inputs["CKT_Wire Ground Quantity_CED"] = 0
                 preview_inputs["CKT_Wire Isolated Ground Size_CEDT"] = "-"
+                preview_inputs["CKT_Wire Isolated Ground Quantity_CED"] = 0
                 preview_inputs["CKT_Include Isolated Ground_CED"] = 0
+            if not toggles.get("include_neutral", False):
+                preview_inputs["CKT_Wire Neutral Size_CEDT"] = "-"
+                preview_inputs["CKT_Wire Neutral Quantity_CED"] = 0
+            if not toggles.get("include_ig", False):
+                preview_inputs["CKT_Wire Isolated Ground Size_CEDT"] = "-"
+                preview_inputs["CKT_Wire Isolated Ground Quantity_CED"] = 0
             if not toggles.get("allow_conduit", True):
                 preview_inputs["Conduit Size_CEDT"] = "-"
-
-            explicit = set((self.value_overrides.get(circuit_id) or {}).keys())
-            auto_recalc_params = (
-                "CKT_Number of Sets_CED",
-                "CKT_Wire Hot Size_CEDT",
-                "CKT_Wire Neutral Size_CEDT",
-                "CKT_Wire Ground Size_CEDT",
-                "CKT_Wire Isolated Ground Size_CEDT",
-                "Conduit Size_CEDT",
-            )
-            for param_name in auto_recalc_params:
-                if param_name in explicit:
-                    continue
-                if param_name in preview_inputs and preview_inputs.get(param_name) not in (None, ""):
-                    continue
-                preview_inputs[param_name] = None
+                preview_inputs["Conduit Type_CEDT"] = "-"
 
         return preview_inputs
 
+    @staticmethod
+    def _manual_sizing_param_names():
+        return (
+            "CKT_Number of Sets_CED",
+            "CKT_Wire Hot Size_CEDT",
+            "CKT_Wire Neutral Size_CEDT",
+            "CKT_Wire Ground Size_CEDT",
+            "CKT_Wire Isolated Ground Size_CEDT",
+            "Conduit Size_CEDT",
+        )
+
+    @staticmethod
+    def _manual_override_param_names():
+        return (
+            "CKT_Number of Sets_CED",
+            "CKT_Wire Hot Size_CEDT",
+            "CKT_Wire Neutral Size_CEDT",
+            "CKT_Wire Ground Size_CEDT",
+            "CKT_Wire Isolated Ground Size_CEDT",
+            "Conduit Size_CEDT",
+            "Conduit Type_CEDT",
+            "Wire Material_CEDT",
+            "Wire Temparature Rating_CEDT",
+            "Wire Insulation_CEDT",
+        )
+
     def _collect_notices(self, branch):
         notices = []
+        seen = set()
         collector = getattr(branch, "notices", None)
         if collector is None or not collector.has_items():
             return notices
-        for _, severity, group, message in list(collector.items or []):
+        for definition, severity, group, message in list(collector.items or []):
             label = "{} / {}".format(str(group or "Other"), str(severity or "NONE"))
-            notices.append("{}: {}".format(label, str(message or "")))
+            line = "{}: {}".format(label, str(message or ""))
+            message_key = " ".join(str(message or "").lower().split())
+            alert_id = ""
+            if definition is not None:
+                try:
+                    alert_id = str(definition.GetId() or "").strip()
+                except Exception:
+                    alert_id = ""
+            if alert_id in (
+                "Design.BreakerLugQuantityLimitOverride",
+                "Calculations.BreakerLugQuantityLimit",
+            ) or ("wire sets" in message_key and "exceeds recommended maximum" in message_key):
+                key = "breaker_lug_quantity_limit"
+            else:
+                key = message_key or " ".join(line.lower().split())
+            if key in seen:
+                continue
+            seen.add(key)
+            notices.append(line)
         return notices
 
     def _warning_flags_from_notices(self, notice_items, preview_values=None):
@@ -722,7 +854,251 @@ class CircuitPropertyEditorViewModel(object):
             "lug_size_limit_value": lug_size_limit_value,
             "undersized_wire_egc": _has_id("Design.UndersizedWireEGC") or _has_text("undersized wire egc"),
             "undersized_wire_service_ground": _has_id("Design.UndersizedWireServiceGround") or _has_text("undersized wire service ground"),
-            "rating": _has_id("Design.NonStandardOCPRating", "Design.UndersizedOCP") or _has_text("non-standard ampere rating", "undersized ocp"),
+            "rating": _has_id("Design.NonStandardOCPRating", "Design.UndersizedOCP", "Design.NearOCPRating") or _has_text("non-standard ampere rating", "undersized ocp"),
+        }
+
+    def _original_conduit_wire_summary(self, circuit_id):
+        base = dict(self.base_values.get(circuit_id, {}) or {})
+        value = str(base.get(ORIGINAL_CONDUIT_WIRE_KEY, "") or "").strip()
+        return value or "-"
+
+    @staticmethod
+    def _sizing_param_names():
+        return (
+            "CKT_Number of Sets_CED",
+            "CKT_Wire Hot Quantity_CED",
+            "CKT_Wire Hot Size_CEDT",
+            "CKT_Wire Neutral Quantity_CED",
+            "CKT_Wire Neutral Size_CEDT",
+            "CKT_Wire Ground Quantity_CED",
+            "CKT_Wire Ground Size_CEDT",
+            "CKT_Wire Isolated Ground Quantity_CED",
+            "CKT_Wire Isolated Ground Size_CEDT",
+            "Conduit Size_CEDT",
+            "Conduit Type_CEDT",
+            "CKT_Include Neutral_CED",
+            "CKT_Include Isolated Ground_CED",
+            ORIGINAL_CONDUIT_WIRE_KEY,
+        )
+
+    def _current_sizing_values(self, circuit_id):
+        base = dict(self.base_values.get(circuit_id, {}) or {})
+        return {key: base.get(key) for key in self._sizing_param_names()}
+
+    def _calculated_sizing_values(self, branch):
+        summary = "-"
+        try:
+            summary = str(branch.get_conduit_and_wire_size() or "-")
+        except Exception:
+            summary = "-"
+        return {
+            "CKT_Number of Sets_CED": getattr(branch, "number_of_sets", None),
+            "CKT_Wire Hot Quantity_CED": _as_int(getattr(branch, "hot_wire_quantity", 0), 0),
+            "CKT_Wire Hot Size_CEDT": getattr(branch, "hot_wire_size", ""),
+            "CKT_Wire Neutral Quantity_CED": _as_int(getattr(branch, "neutral_wire_quantity", 0), 0),
+            "CKT_Wire Neutral Size_CEDT": getattr(branch, "neutral_wire_size", ""),
+            "CKT_Wire Ground Quantity_CED": _as_int(getattr(branch, "ground_wire_quantity", 0), 0),
+            "CKT_Wire Ground Size_CEDT": getattr(branch, "ground_wire_size", ""),
+            "CKT_Wire Isolated Ground Quantity_CED": _as_int(getattr(branch, "isolated_ground_wire_quantity", 0), 0),
+            "CKT_Wire Isolated Ground Size_CEDT": getattr(branch, "isolated_ground_wire_size", ""),
+            "Conduit Size_CEDT": getattr(branch, "conduit_size", ""),
+            "Conduit Type_CEDT": getattr(branch, "conduit_type", ""),
+            "CKT_Include Neutral_CED": 1 if _as_int(getattr(branch, "neutral_wire_quantity", 0), 0) > 0 else 0,
+            "CKT_Include Isolated Ground_CED": 1 if _as_int(getattr(branch, "isolated_ground_wire_quantity", 0), 0) > 0 else 0,
+            ORIGINAL_CONDUIT_WIRE_KEY: summary,
+        }
+
+    def _calculated_display_values(self, branch, calculated_sizing_values):
+        calculated = dict(calculated_sizing_values or {})
+        calculated.update(
+            {
+                "CKT_Wire Hot Quantity_CED": _as_int(calculated.get("CKT_Wire Hot Quantity_CED", getattr(branch, "hot_wire_quantity", 0)), 0),
+                "CKT_Wire Neutral Quantity_CED": _as_int(calculated.get("CKT_Wire Neutral Quantity_CED", getattr(branch, "neutral_wire_quantity", 0)), 0),
+                "CKT_Wire Ground Quantity_CED": _as_int(calculated.get("CKT_Wire Ground Quantity_CED", getattr(branch, "ground_wire_quantity", 0)), 0),
+                "CKT_Wire Isolated Ground Quantity_CED": _as_int(calculated.get("CKT_Wire Isolated Ground Quantity_CED", getattr(branch, "isolated_ground_wire_quantity", 0)), 0),
+                "Wire Material_CEDT": str(getattr(branch, "wire_material", "") or ""),
+                "Wire Temparature Rating_CEDT": str(getattr(branch, "wire_temp_rating", "") or ""),
+                "Wire Insulation_CEDT": str(getattr(branch, "wire_insulation", "") or ""),
+            }
+        )
+        return calculated
+
+    def _display_values_for_mode(self, circuit_id, values, calculated_display_values, toggles):
+        display = dict(values or {})
+        calculated = dict(calculated_display_values or {})
+        user_override = bool((toggles or {}).get("user_override", False))
+        if not user_override:
+            for key, value in list(calculated.items()):
+                display[key] = value
+            return display
+
+        neutral_active = bool(
+            toggles.get("include_neutral", False)
+            or _as_int(calculated.get("CKT_Wire Neutral Quantity_CED", 0), 0) > 0
+        )
+        if neutral_active and self.settings.neutral_behavior != NeutralBehavior.MANUAL:
+            display["CKT_Wire Neutral Size_CEDT"] = calculated.get(
+                "CKT_Wire Neutral Size_CEDT",
+                display.get("CKT_Wire Neutral Size_CEDT", ""),
+            )
+            display["CKT_Wire Neutral Quantity_CED"] = calculated.get(
+                "CKT_Wire Neutral Quantity_CED",
+                display.get("CKT_Wire Neutral Quantity_CED", 0),
+            )
+        if (
+            bool(toggles.get("include_ig", False))
+            and self.settings.isolated_ground_behavior != IsolatedGroundBehavior.MANUAL
+        ):
+            display["CKT_Wire Isolated Ground Size_CEDT"] = calculated.get(
+                "CKT_Wire Isolated Ground Size_CEDT",
+                display.get("CKT_Wire Isolated Ground Size_CEDT", ""),
+            )
+            display["CKT_Wire Isolated Ground Quantity_CED"] = calculated.get(
+                "CKT_Wire Isolated Ground Quantity_CED",
+                display.get("CKT_Wire Isolated Ground Quantity_CED", 0),
+            )
+        return display
+
+    def _changed_flags_for_display(self, circuit_id, display_values):
+        base = dict(self.base_values.get(circuit_id, {}) or {})
+        display = dict(display_values or {})
+        flags = {}
+        compare_types = dict(APPLY_PARAM_TYPES)
+        compare_types.update(
+            {
+                "CKT_Wire Hot Quantity_CED": "int",
+                "CKT_Wire Neutral Quantity_CED": "int",
+                "CKT_Wire Ground Quantity_CED": "int",
+                "CKT_Wire Isolated Ground Quantity_CED": "int",
+            }
+        )
+        compare_types[CIRCUIT_DATA_VD_METHOD_KEY] = "int"
+        for key, value_type in list(compare_types.items()):
+            if key not in display and key not in base:
+                continue
+            left = display.get(key)
+            right = base.get(key)
+            if key in self._sizing_param_names() or key in self._manual_sizing_cleared_param_names():
+                flags[key] = bool(
+                    self._normalize_sizing_compare_value(key, left)
+                    != self._normalize_sizing_compare_value(key, right)
+                )
+            else:
+                flags[key] = bool(not self._values_equal_for_param(key, left, right, value_type))
+        flags["user_override"] = bool(
+            bool(display.get("CKT_User Override_CED", False))
+            != bool(_as_int(base.get("CKT_User Override_CED", 0), 0) == 1)
+        )
+        flags["allow_hot"] = bool(
+            self._is_cleared_size_text(display.get("CKT_Wire Hot Size_CEDT"))
+            != self._is_cleared_size_text(base.get("CKT_Wire Hot Size_CEDT"))
+        )
+        flags["allow_ground"] = bool(
+            self._is_cleared_size_text(display.get("CKT_Wire Ground Size_CEDT"))
+            != self._is_cleared_size_text(base.get("CKT_Wire Ground Size_CEDT"))
+        )
+        flags["allow_conduit"] = bool(
+            self._is_cleared_size_text(display.get("Conduit Size_CEDT"))
+            != self._is_cleared_size_text(base.get("Conduit Size_CEDT"))
+        )
+        flags["include_neutral"] = bool(
+            _as_int(display.get("CKT_Include Neutral_CED", 0), 0)
+            != _as_int(base.get("CKT_Include Neutral_CED", 0), 0)
+        )
+        flags["include_ig"] = bool(
+            _as_int(display.get("CKT_Include Isolated Ground_CED", 0), 0)
+            != _as_int(base.get("CKT_Include Isolated Ground_CED", 0), 0)
+        )
+        flags["summary"] = bool(
+            self._normalize_sizing_compare_value(
+                ORIGINAL_CONDUIT_WIRE_KEY,
+                display.get(ORIGINAL_CONDUIT_WIRE_KEY),
+            )
+            != self._normalize_sizing_compare_value(
+                ORIGINAL_CONDUIT_WIRE_KEY,
+                base.get(ORIGINAL_CONDUIT_WIRE_KEY),
+            )
+        )
+        return flags
+
+    @staticmethod
+    def _normalize_summary_text(value):
+        text = str(value or "").strip().lower()
+        if text in ("n/a", "na", "none"):
+            return "-"
+        return " ".join(text.split()) or "-"
+
+    def _normalize_sizing_compare_value(self, key, value):
+        if key in ("CKT_Number of Sets_CED", "CKT_Include Neutral_CED", "CKT_Include Isolated Ground_CED"):
+            return _as_int(value, 0)
+        if key in self._manual_sizing_cleared_param_names():
+            if self._is_cleared_size_text(value):
+                return "-"
+        text = str(value or "").strip().lower()
+        if text in ("n/a", "na", "none"):
+            return "-"
+        normalized = text.upper()
+        wire_prefix = str(getattr(self.settings, "wire_size_prefix", "") or "").strip().upper()
+        conduit_suffix = str(getattr(self.settings, "conduit_size_suffix", "") or "").strip().upper()
+        if key in (
+            "CKT_Wire Hot Size_CEDT",
+            "CKT_Wire Neutral Size_CEDT",
+            "CKT_Wire Ground Size_CEDT",
+            "CKT_Wire Isolated Ground Size_CEDT",
+        ):
+            if wire_prefix and normalized.startswith(wire_prefix):
+                normalized = normalized[len(wire_prefix):].strip()
+            if normalized.startswith("#"):
+                normalized = normalized[1:].strip()
+            return " ".join(normalized.lower().split()) or "-"
+        if key == "Conduit Size_CEDT":
+            if conduit_suffix and normalized.endswith(conduit_suffix):
+                normalized = normalized[:-len(conduit_suffix)].strip()
+            return " ".join(normalized.lower().split()) or "-"
+        return " ".join(text.split()) or "-"
+
+    def _sizing_values_changed(self, current_values, calculated_values):
+        current = dict(current_values or {})
+        calculated = dict(calculated_values or {})
+
+        for key in self._sizing_param_names():
+            left = self._normalize_sizing_compare_value(key, current.get(key))
+            right = self._normalize_sizing_compare_value(key, calculated.get(key))
+            if left != right:
+                return True
+        return False
+
+    def _should_report_sizing_change(self, circuit_id, sizing_params_changed):
+        if not bool(sizing_params_changed):
+            return False
+        base = dict(self.base_values.get(circuit_id, {}) or {})
+        base_user_override = bool(_as_int(base.get("CKT_User Override_CED", 0), 0) == 1)
+        current_user_override = bool(self._effective_toggles(circuit_id).get("user_override", False))
+        if not base_user_override:
+            if current_user_override and not self._has_conduit_wire_input_diff(circuit_id):
+                return False
+            return True
+        return bool(self._has_conduit_wire_input_diff(circuit_id))
+
+    def _conduit_wire_preview_values(self, circuit_id, new_summary=None, calculated_sizing_values=None):
+        current_summary = self._original_conduit_wire_summary(circuit_id)
+        if new_summary is None:
+            new_summary = current_summary
+        new_summary = str(new_summary or "").strip() or "-"
+        current_sizing_values = self._current_sizing_values(circuit_id)
+        calculated_sizing_values = dict(calculated_sizing_values or current_sizing_values)
+        sizing_params_changed = self._sizing_values_changed(
+            current_sizing_values,
+            calculated_sizing_values,
+        )
+        report_sizing_change = self._should_report_sizing_change(circuit_id, sizing_params_changed)
+        return {
+            "current_conduit_summary": current_summary,
+            "new_conduit_summary": new_summary,
+            "current_sizing_values": current_sizing_values,
+            "new_sizing_values": calculated_sizing_values,
+            "sizing_params_changed": sizing_params_changed,
+            "conduit_summary_changed": report_sizing_change,
         }
 
     def _build_preview_row(self, circuit_id):
@@ -737,6 +1113,8 @@ class CircuitPropertyEditorViewModel(object):
                 "locked": True,
                 "disabled_reason": str(row.locked_owner or "Blocked - Locked by another user"),
                 "values": dict(values),
+                "display_values": dict(values),
+                "changed_flags": {},
                 "toggles": dict(self._effective_toggles(circuit_id)),
                 "editability": {
                     "user_override": False,
@@ -750,7 +1128,7 @@ class CircuitPropertyEditorViewModel(object):
                     "isolated_ground_size_manual_enabled": False,
                     "wire_specs_enabled": False,
                 },
-                "preview": {},
+                "preview": self._conduit_wire_preview_values(circuit_id),
                 "notices": [],
                 "warning_flags": {},
             }
@@ -772,6 +1150,8 @@ class CircuitPropertyEditorViewModel(object):
                 "locked": False,
                 "disabled_reason": "Unsupported circuit type.",
                 "values": dict(values),
+                "display_values": dict(values),
+                "changed_flags": {},
                 "toggles": dict(toggles),
                 "editability": {
                     "user_override": False,
@@ -785,7 +1165,7 @@ class CircuitPropertyEditorViewModel(object):
                     "isolated_ground_size_manual_enabled": False,
                     "wire_specs_enabled": False,
                 },
-                "preview": {},
+                "preview": self._conduit_wire_preview_values(circuit_id),
                 "notices": ["Unsupported circuit type."],
                 "warning_flags": {
                     "length": False,
@@ -813,16 +1193,15 @@ class CircuitPropertyEditorViewModel(object):
             branch.calculate_ground_wire_size()
             branch.calculate_isolated_ground_wire_size()
             branch.calculate_conduit_size()
+        calculated_sizing_values = self._calculated_sizing_values(branch)
 
-        user_override = bool(getattr(branch, "_auto_calculate_override", False))
-        hot_cleared = bool(getattr(branch, "_user_clear_hot", False))
-        ground_cleared = bool(getattr(branch, "_user_clear_ground", False))
-        conduit_cleared = bool(getattr(branch, "_user_clear_conduit", False))
-        wire_manual_enabled = bool(user_override and not hot_cleared)
-        ground_manual_enabled = bool(wire_manual_enabled and not ground_cleared)
-        conduit_manual_enabled = bool(user_override and not conduit_cleared)
+        user_override = bool(toggles.get("user_override", False))
         hot_enabled = bool(toggles.get("allow_hot", False))
         ground_enabled = bool(hot_enabled and toggles.get("allow_ground", False))
+        conduit_enabled = bool(toggles.get("allow_conduit", False))
+        wire_manual_enabled = bool(user_override and hot_enabled)
+        ground_manual_enabled = bool(user_override and hot_enabled and ground_enabled)
+        conduit_manual_enabled = bool(user_override and conduit_enabled)
         branch_type = str(getattr(branch, "branch_type", "") or "").upper()
         poles = _as_int(getattr(branch, "poles", 0), 0)
         neutral_locked_by_type = bool(
@@ -885,6 +1264,29 @@ class CircuitPropertyEditorViewModel(object):
             ground_size_raw = "-"
         if _as_int(getattr(branch, "isolated_ground_wire_quantity", 0), 0) <= 0:
             ig_size_raw = "-"
+        hot_qty_value = _as_int(getattr(branch, "hot_wire_quantity", 0), 0) if hot_enabled else 0
+        neutral_qty_value = _as_int(getattr(branch, "neutral_wire_quantity", 0), 0) if hot_enabled and neutral_included else 0
+        ground_qty_value = _as_int(getattr(branch, "ground_wire_quantity", 0), 0) if hot_enabled and ground_enabled else 0
+        ig_qty_value = _as_int(getattr(branch, "isolated_ground_wire_quantity", 0), 0) if hot_enabled and ground_enabled and ig_included else 0
+        conduit_type_raw = str(getattr(branch, "conduit_type", "") or "")
+        if not conduit_enabled:
+            conduit_type_raw = ""
+        calculated_sizing_values.update(
+            {
+                "CKT_Wire Hot Quantity_CED": hot_qty_value,
+                "CKT_Wire Hot Size_CEDT": hot_size_raw,
+                "CKT_Wire Neutral Quantity_CED": neutral_qty_value,
+                "CKT_Wire Neutral Size_CEDT": neutral_size_raw,
+                "CKT_Wire Ground Quantity_CED": ground_qty_value,
+                "CKT_Wire Ground Size_CEDT": ground_size_raw,
+                "CKT_Wire Isolated Ground Quantity_CED": ig_qty_value,
+                "CKT_Wire Isolated Ground Size_CEDT": ig_size_raw,
+                "Conduit Size_CEDT": conduit_size_raw,
+                "Conduit Type_CEDT": conduit_type_raw,
+                "CKT_Include Neutral_CED": 1 if neutral_qty_value > 0 else 0,
+                "CKT_Include Isolated Ground_CED": 1 if ig_qty_value > 0 else 0,
+            }
+        )
 
         voltage_drop_value = getattr(branch, "voltage_drop_percentage", None)
         if voltage_drop_value is None:
@@ -901,8 +1303,20 @@ class CircuitPropertyEditorViewModel(object):
         else:
             volts_poles_text = "-"
 
-        is_feeder = bool(getattr(branch, "is_feeder", False))
-        feeder_vd_method = str(getattr(self.settings, "feeder_vd_method", "") or "").strip().lower()
+        is_feeder = bool(getattr(branch, "uses_feeder_vd_method", getattr(branch, "is_feeder", False)))
+        feeder_vd_method = str(
+            getattr(branch, "effective_feeder_vd_method", None)
+            or getattr(self.settings, "feeder_vd_method", "")
+            or ""
+        ).strip().lower()
+        circuit_vd_method = CircuitVDMethod.normalize(
+            getattr(branch, "circuit_vd_method", CircuitVDMethod.GLOBAL),
+            CircuitVDMethod.GLOBAL,
+        )
+        base_circuit_vd_method = CircuitVDMethod.normalize(
+            (self.base_values.get(circuit_id, {}) or {}).get(CIRCUIT_DATA_VD_METHOD_KEY),
+            CircuitVDMethod.GLOBAL,
+        )
         vd_method_label = "Downstream Demand Load"
         vd_effective_basis = "connected"
         vd_compares_breaker_demand = False
@@ -954,10 +1368,13 @@ class CircuitPropertyEditorViewModel(object):
         if neutral_locked_by_type and branch_neutral_qty > 0:
             toggles_view["include_neutral"] = True
 
+        conduit_summary = str(branch.get_conduit_and_wire_size() or "-")
         preview_values = {
             "circuit_type": str(getattr(branch, "branch_type", "") or "-"),
             "is_feeder": is_feeder,
             "feeder_vd_method": feeder_vd_method,
+            "circuit_vd_method": circuit_vd_method,
+            "circuit_vd_method_changed": bool(circuit_vd_method != base_circuit_vd_method),
             "vd_effective_basis": vd_effective_basis,
             "vd_method_label": vd_method_label,
             "vd_compares_breaker_demand": bool(vd_compares_breaker_demand),
@@ -966,10 +1383,10 @@ class CircuitPropertyEditorViewModel(object):
             "load_current": _fmt_amp(getattr(branch, "circuit_load_current", None), 2),
             "ampacity": _fmt_amp(getattr(branch, "circuit_base_ampacity", None), 2),
             "total_length": length_text,
-            "hot_qty": str(_as_int(getattr(branch, "hot_wire_quantity", 0), 0)),
-            "neutral_qty": str(_as_int(getattr(branch, "neutral_wire_quantity", 0), 0)),
-            "ground_qty": str(_as_int(getattr(branch, "ground_wire_quantity", 0), 0)),
-            "ig_qty": str(_as_int(getattr(branch, "isolated_ground_wire_quantity", 0), 0)),
+            "hot_qty": str(hot_qty_value),
+            "neutral_qty": str(neutral_qty_value),
+            "ground_qty": str(ground_qty_value),
+            "ig_qty": str(ig_qty_value),
             "hot_size_raw": hot_size_raw,
             "neutral_size_raw": neutral_size_raw,
             "ground_size_raw": ground_size_raw,
@@ -978,21 +1395,49 @@ class CircuitPropertyEditorViewModel(object):
             "wire_temp": str(getattr(branch, "wire_temp_rating", "") or ""),
             "wire_insulation": str(getattr(branch, "wire_insulation", "") or ""),
             "conduit_size_raw": conduit_size_raw,
-            "conduit_type": str(getattr(branch, "conduit_type", "") or ""),
+            "conduit_type": conduit_type_raw,
             "conduit_fill": "{} %".format(_fmt_number(_as_float(getattr(branch, "conduit_fill_percentage", 0.0), 0.0) * 100.0, 1)),
             "max_lug_size": str(((getattr(branch, "_wire_info", {}) or {}).get("max_lug_size") or "")).strip(),
             "wire_summary": str(branch.get_wire_size_callout() or "-"),
-            "conduit_summary": str(branch.get_conduit_and_wire_size() or "-"),
+            "conduit_summary": conduit_summary,
         }
+        preview_values.update(
+            self._conduit_wire_preview_values(
+                circuit_id,
+                conduit_summary,
+                calculated_sizing_values=calculated_sizing_values,
+            )
+        )
+        calculated_display_values = self._calculated_display_values(branch, calculated_sizing_values)
+        display_values = self._display_values_for_mode(
+            circuit_id,
+            values,
+            calculated_display_values,
+            toggles,
+        )
+        display_values[ORIGINAL_CONDUIT_WIRE_KEY] = preview_values.get(
+            "new_conduit_summary",
+            preview_values.get("conduit_summary", "-"),
+        )
+        display_values[CIRCUIT_DATA_VD_METHOD_KEY] = circuit_vd_method
+        changed_flags = self._changed_flags_for_display(circuit_id, display_values)
 
         notice_items = list(getattr(getattr(branch, "notices", None), "items", []) or [])
         notices = self._collect_notices(branch)
         warnings = self._warning_flags_from_notices(notice_items, preview_values=preview_values)
+        if bool(toggles_view.get("user_override", False)) and not bool(toggles_view.get("allow_conduit", True)):
+            notices = [
+                notice for notice in notices
+                if "invalid conduit" not in str(notice or "").lower()
+            ]
+            warnings["conduit_size_issue"] = False
         return {
             "supported": True,
             "locked": False,
             "disabled_reason": "",
             "values": dict(values),
+            "display_values": dict(display_values),
+            "changed_flags": dict(changed_flags),
             "toggles": dict(toggles_view),
             "editability": {
                 "user_override": user_override,
@@ -1025,9 +1470,9 @@ class CircuitPropertyEditorViewModel(object):
     def set_toggle(self, circuit_id, toggle_name, value):
         if circuit_id in self.locked_circuits:
             return
-        state = dict(self.toggle_overrides.get(circuit_id, {}))
+        state = dict(self._effective_toggles(circuit_id))
         state[str(toggle_name or "")] = bool(value)
-        self.toggle_overrides[circuit_id] = state
+        self._store_toggle_overrides(circuit_id, state)
         self.refresh_preview(circuit_id)
 
     def set_value(self, circuit_id, param_name, value):
@@ -1057,7 +1502,7 @@ class CircuitPropertyEditorViewModel(object):
         base = dict(self.base_values.get(circuit_id, {}))
         branch_type = str(base.get("__branch_type__", "") or "").upper()
         neutral_locked_by_type = bool(branch_type in ("FEEDER", "XFMR PRI", "XFMR SEC"))
-        state = dict(self.toggle_overrides.get(circuit_id, {}))
+        state = dict(self._effective_toggles(circuit_id))
         state.update(dict(toggle_updates or {}))
         if neutral_locked_by_type:
             base_neutral = bool(
@@ -1065,7 +1510,7 @@ class CircuitPropertyEditorViewModel(object):
                 or _as_int(base.get("CKT_Wire Neutral Quantity_CED", 0), 0) > 0
             )
             state["include_neutral"] = base_neutral
-        self.toggle_overrides[circuit_id] = state
+        self._store_toggle_overrides(circuit_id, state)
 
         overrides = dict(self.value_overrides.get(circuit_id, {}))
         for key, value in list(dict(value_updates or {}).items()):
@@ -1080,11 +1525,40 @@ class CircuitPropertyEditorViewModel(object):
                 overrides[key] = normalized
         if neutral_locked_by_type:
             overrides.pop("CKT_Include Neutral_CED", None)
+        if self.settings.neutral_behavior != NeutralBehavior.MANUAL:
+            overrides.pop("CKT_Wire Neutral Size_CEDT", None)
+        if self.settings.isolated_ground_behavior != IsolatedGroundBehavior.MANUAL:
+            overrides.pop("CKT_Wire Isolated Ground Size_CEDT", None)
         if overrides:
             self.value_overrides[circuit_id] = overrides
         else:
             self.value_overrides.pop(circuit_id, None)
         self.refresh_preview(circuit_id)
+
+    def set_circuit_data_value(self, circuit_id, key, value):
+        if circuit_id in self.locked_circuits:
+            return
+        cid = int(circuit_id or 0)
+        if cid <= 0 or cid not in self.base_values:
+            return
+        key_text = str(key or "")
+        if key_text != CIRCUIT_DATA_VD_METHOD_KEY:
+            return
+        normalized = CircuitVDMethod.normalize(value, CircuitVDMethod.GLOBAL)
+        base = CircuitVDMethod.normalize(
+            (self.base_values.get(cid, {}) or {}).get(key_text),
+            CircuitVDMethod.GLOBAL,
+        )
+        overrides = dict(self.circuit_data_overrides.get(cid, {}) or {})
+        if normalized == base:
+            overrides.pop(key_text, None)
+        else:
+            overrides[key_text] = normalized
+        if overrides:
+            self.circuit_data_overrides[cid] = overrides
+        else:
+            self.circuit_data_overrides.pop(cid, None)
+        self.refresh_preview(cid)
 
     def _normalize_value(self, value, value_type):
         if value_type == "int":
@@ -1100,25 +1574,229 @@ class CircuitPropertyEditorViewModel(object):
             return abs(_as_float(left, 0.0) - _as_float(right, 0.0)) < 0.000001
         return str(left or "") == str(right or "")
 
+    @staticmethod
+    def _manual_sizing_cleared_param_names():
+        return (
+            "CKT_Wire Hot Size_CEDT",
+            "CKT_Wire Neutral Size_CEDT",
+            "CKT_Wire Ground Size_CEDT",
+            "CKT_Wire Isolated Ground Size_CEDT",
+            "Conduit Size_CEDT",
+            "Conduit Type_CEDT",
+        )
+
+    @staticmethod
+    def _is_cleared_size_text(value):
+        text = str(value or "").strip().lower()
+        return text in ("", "-", "n/a", "na", "none")
+
+    def _store_toggle_overrides(self, circuit_id, state):
+        default_state = dict(self._default_toggle_state(circuit_id))
+        stored = {}
+        for key, value in list(dict(state or {}).items()):
+            key_text = str(key or "")
+            if key_text not in default_state:
+                stored[key_text] = bool(value)
+                continue
+            if bool(value) != bool(default_state.get(key_text, False)):
+                stored[key_text] = bool(value)
+        if stored:
+            self.toggle_overrides[circuit_id] = stored
+        else:
+            self.toggle_overrides.pop(circuit_id, None)
+
+    def _derived_clear_diff_keys(self, circuit_id):
+        base = dict(self.base_values.get(circuit_id, {}) or {})
+        if _as_int(base.get("CKT_User Override_CED", 0), 0) != 1:
+            return set()
+        toggles = self._effective_toggles(circuit_id)
+        if not bool(toggles.get("user_override", False)):
+            return set()
+
+        defaults = self._default_toggle_state(circuit_id)
+        toggle_edits = set((self.toggle_overrides.get(circuit_id) or {}).keys())
+        value_edits = set((self.value_overrides.get(circuit_id) or {}).keys())
+        ignored = set()
+
+        hot_dependent = set(
+            (
+                "CKT_Include Neutral_CED",
+                "CKT_Include Isolated Ground_CED",
+                "CKT_Wire Hot Size_CEDT",
+                "CKT_Wire Neutral Size_CEDT",
+                "CKT_Wire Ground Size_CEDT",
+                "CKT_Wire Isolated Ground Size_CEDT",
+                "Wire Material_CEDT",
+                "Wire Temparature Rating_CEDT",
+                "Wire Insulation_CEDT",
+            )
+        )
+        ground_dependent = set(
+            (
+                "CKT_Include Isolated Ground_CED",
+                "CKT_Wire Ground Size_CEDT",
+                "CKT_Wire Isolated Ground Size_CEDT",
+            )
+        )
+
+        if (
+            not bool(defaults.get("allow_hot", True))
+            and "allow_hot" not in toggle_edits
+            and not bool(hot_dependent.intersection(value_edits))
+        ):
+            ignored.update(hot_dependent)
+        if (
+            not bool(defaults.get("allow_ground", True))
+            and "allow_ground" not in toggle_edits
+            and not bool(ground_dependent.intersection(value_edits))
+        ):
+            ignored.update(ground_dependent)
+        if (
+            not bool(defaults.get("allow_conduit", True))
+            and "allow_conduit" not in toggle_edits
+            and not bool(set(("Conduit Size_CEDT", "Conduit Type_CEDT")).intersection(value_edits))
+        ):
+            ignored.add("Conduit Size_CEDT")
+            ignored.add("Conduit Type_CEDT")
+        return ignored
+
+    def _values_equal_for_param(self, key, left, right, value_type):
+        if key in self._manual_sizing_cleared_param_names():
+            if self._is_cleared_size_text(left) and self._is_cleared_size_text(right):
+                return True
+        return self._values_equal(left, right, value_type)
+
     def _build_diff(self, circuit_id):
         if circuit_id in self.locked_circuits:
             return {}
         base = dict(self.base_values.get(circuit_id, {}))
         effective = dict(self._effective_values(circuit_id))
+        state = dict(self.preview_rows.get(circuit_id) or {})
+        display_values = dict(state.get("display_values") or {})
+        toggles = self._effective_toggles(circuit_id)
+        if (
+            bool(toggles.get("user_override", False))
+            and bool(
+                toggles.get("include_neutral", False)
+                or _as_int(display_values.get("CKT_Wire Neutral Quantity_CED", 0), 0) > 0
+            )
+            and self.settings.neutral_behavior != NeutralBehavior.MANUAL
+            and "CKT_Wire Neutral Size_CEDT" in display_values
+        ):
+            effective["CKT_Wire Neutral Size_CEDT"] = display_values.get("CKT_Wire Neutral Size_CEDT")
+        if (
+            bool(toggles.get("user_override", False))
+            and bool(
+                toggles.get("include_ig", False)
+                or _as_int(display_values.get("CKT_Wire Isolated Ground Quantity_CED", 0), 0) > 0
+            )
+            and self.settings.isolated_ground_behavior != IsolatedGroundBehavior.MANUAL
+            and "CKT_Wire Isolated Ground Size_CEDT" in display_values
+        ):
+            effective["CKT_Wire Isolated Ground Size_CEDT"] = display_values.get("CKT_Wire Isolated Ground Size_CEDT")
         diff = {}
+        ignored_clear_keys = self._derived_clear_diff_keys(circuit_id)
         for key, value_type in list(APPLY_PARAM_TYPES.items()):
+            if key in ignored_clear_keys:
+                continue
             left = effective.get(key)
             right = base.get(key)
-            if self._values_equal(left, right, value_type):
+            if self._values_equal_for_param(key, left, right, value_type):
                 continue
             diff[key] = self._normalize_value(left, value_type)
         return diff
 
+    def _has_conduit_wire_input_diff(self, circuit_id):
+        watched = set(self._manual_sizing_param_names())
+        watched.add("Conduit Type_CEDT")
+        watched.add("CKT_Include Neutral_CED")
+        watched.add("CKT_Include Isolated Ground_CED")
+        toggle_watched = set(
+            (
+                "allow_hot",
+                "allow_ground",
+                "allow_conduit",
+                "include_neutral",
+                "include_ig",
+            )
+        )
+        value_keys = set((self.value_overrides.get(circuit_id) or {}).keys())
+        toggle_keys = set((self.toggle_overrides.get(circuit_id) or {}).keys())
+        if watched.intersection(value_keys) or toggle_watched.intersection(toggle_keys):
+            return True
+        if "user_override" in toggle_keys:
+            base = dict(self.base_values.get(circuit_id, {}) or {})
+            base_user_override = bool(_as_int(base.get("CKT_User Override_CED", 0), 0) == 1)
+            current_user_override = bool(self._effective_toggles(circuit_id).get("user_override", False))
+            if base_user_override and not current_user_override:
+                return True
+        return False
+
+    def _build_circuit_data_diff(self, circuit_id):
+        if circuit_id in self.locked_circuits:
+            return {}
+        if not self._is_feeder_vd_editable(circuit_id):
+            return {}
+        base = CircuitVDMethod.normalize(
+            (self.base_values.get(circuit_id, {}) or {}).get(CIRCUIT_DATA_VD_METHOD_KEY),
+            CircuitVDMethod.GLOBAL,
+        )
+        effective = self._effective_circuit_vd_method(circuit_id)
+        if effective == base:
+            return {}
+        return {CIRCUIT_DATA_VD_METHOD_KEY: effective}
+
     def has_pending_changes(self, circuit_id):
-        return bool(self._build_diff(circuit_id))
+        return bool(self.has_user_edit_pending(circuit_id) or self.has_auto_recalc_pending(circuit_id))
+
+    def has_user_edit_pending(self, circuit_id):
+        return self._has_staged_property_edits(circuit_id)
+
+    def has_auto_recalc_pending(self, circuit_id):
+        base = dict(self.base_values.get(circuit_id, {}) or {})
+        if _as_int(base.get("CKT_User Override_CED", 0), 0) == 1:
+            return False
+        return self._has_preview_conduit_wire_change(circuit_id)
+
+    def _has_staged_param_inputs(self, circuit_id):
+        return bool(
+            self.value_overrides.get(circuit_id)
+            or self.toggle_overrides.get(circuit_id)
+        )
+
+    def _has_staged_property_edits(self, circuit_id):
+        param_diff = self._build_diff(circuit_id) if self._has_staged_param_inputs(circuit_id) else {}
+        return bool(param_diff or self._build_circuit_data_diff(circuit_id))
+
+    def _has_preview_conduit_wire_change(self, circuit_id):
+        state = self.preview_rows.get(circuit_id)
+        if state is None:
+            state = self._build_preview_row(circuit_id)
+        preview = dict(state.get("preview") or {})
+        return bool(preview.get("conduit_summary_changed", False))
 
     def pending_count(self):
         return len([x for x in list(self.rows or []) if self.has_pending_changes(x.circuit_id)])
+
+    def discard_circuit(self, circuit_id):
+        cid = int(circuit_id or 0)
+        if cid <= 0:
+            return None
+        row = self.rows_by_id.pop(cid, None)
+        self.circuits_by_id.pop(cid, None)
+        self.locked_circuits.pop(cid, None)
+        self.base_values.pop(cid, None)
+        self.value_overrides.pop(cid, None)
+        self.toggle_overrides.pop(cid, None)
+        self.circuit_data_overrides.pop(cid, None)
+        self.preview_rows.pop(cid, None)
+        self.lock_rows_by_id.pop(cid, None)
+        if row is not None:
+            try:
+                self.rows.remove(row)
+            except ValueError:
+                pass
+        return row
 
     def build_apply_updates(self):
         updates = []
@@ -1127,25 +1805,31 @@ class CircuitPropertyEditorViewModel(object):
             if circuit_id in self.locked_circuits:
                 row.set_pending(False)
                 continue
-            diff = self._build_diff(circuit_id)
-            if not diff:
+            has_staged_params = self._has_staged_param_inputs(circuit_id)
+            diff = self._build_diff(circuit_id) if has_staged_params else {}
+            circuit_data_diff = self._build_circuit_data_diff(circuit_id)
+            preview_changed = self.has_auto_recalc_pending(circuit_id)
+            if not diff and not circuit_data_diff and not preview_changed:
                 row.set_pending(False)
                 continue
             row.set_pending(True)
-            updates.append(
-                {
-                    "circuit_id": int(circuit_id),
-                    "param_values": diff,
-                }
-            )
+            item = {"circuit_id": int(circuit_id)}
+            if diff:
+                item["param_values"] = diff
+            if circuit_data_diff:
+                item["circuit_data_values"] = circuit_data_diff
+            if preview_changed and not diff and not circuit_data_diff:
+                item["force_recalculate"] = True
+            updates.append(item)
         return updates
 
     def reset_all(self):
         self.value_overrides = {}
         self.toggle_overrides = {}
+        self.circuit_data_overrides = {}
         for row in list(self.rows or []):
             self.refresh_preview(row.circuit_id)
-            row.set_pending(False)
+            row.set_pending(self.has_pending_changes(row.circuit_id))
 
     def reset_circuit(self, circuit_id):
         cid = int(circuit_id or 0)
@@ -1153,6 +1837,7 @@ class CircuitPropertyEditorViewModel(object):
             return
         self.value_overrides.pop(cid, None)
         self.toggle_overrides.pop(cid, None)
+        self.circuit_data_overrides.pop(cid, None)
         self.refresh_preview(cid)
 
 
@@ -1180,6 +1865,11 @@ class CircuitPropertiesEditorWindow(forms.WPFWindow):
         self._vd_tooltip_detail_text = ""
         self._vd_tooltip_timer = None
         self._vd_tooltip_objects = []
+        self._border_layout_baselines = {}
+        self._notice_layout_timer = None
+        self._notice_layout_old_offset = 0.0
+        self._notice_layout_old_spacer_height = 0.0
+        self._notice_layout_has_notices = False
 
         forms.WPFWindow.__init__(self, os.path.abspath(xaml_path))
         self._apply_theme()
@@ -1227,16 +1917,20 @@ class CircuitPropertiesEditorWindow(forms.WPFWindow):
 
         self._vd_text = self.FindName("PreviewVoltageDropText")
         self._vd_box = self.FindName("PreviewVoltageDropBox")
+        self._vd_method_cb = self.FindName("VdMethodCombo")
         self._load_text = self.FindName("PreviewLoadCurrentText")
         self._load_box = self.FindName("PreviewLoadCurrentBox")
         self._ampacity_box = self.FindName("PreviewAmpacityBox")
         self._ampacity_text = self.FindName("PreviewAmpacityText")
-        self._wire_summary_text = self.FindName("PreviewWireSummaryText")
-        self._conduit_summary_text = self.FindName("PreviewConduitSummaryText")
+        self._current_conduit_summary_text = self.FindName("PreviewCurrentConduitSummaryText")
+        self._new_conduit_summary_text = self.FindName("PreviewNewConduitSummaryText")
+        self._new_conduit_summary_box = self.FindName("PreviewNewConduitSummaryBox")
         self._conduit_fill_text = self.FindName("ConduitFillText")
         self._conduit_fill_box = self.FindName("ConduitFillBox")
         self._notice_text = self.FindName("PreviewNoticeText")
         self._notice_box = self.FindName("PreviewNoticeBox")
+        self._editor_scroll = self.FindName("EditorScrollViewer")
+        self._notice_spacer = self.FindName("EditorWarningSpacer")
         self._neutral_behavior_text = self.FindName("NeutralBehaviorText")
         self._ig_behavior_text = self.FindName("IgBehaviorText")
         self._hot_include_state_text = self.FindName("HotIncludeStateText")
@@ -1258,6 +1952,8 @@ class CircuitPropertiesEditorWindow(forms.WPFWindow):
             self._wire_temp_cb.ItemsSource = list(self._vm.temperature_options or [])
         if self._wire_insulation_cb is not None:
             self._wire_insulation_cb.ItemsSource = list(self._vm.insulation_options or [])
+        if self._vd_method_cb is not None:
+            self._vd_method_cb.ItemsSource = list(self._vm.vd_method_options or [])
         self._bind_size_combo_wheel()
         self._initialize_metric_tooltips()
 
@@ -1364,6 +2060,62 @@ class CircuitPropertiesEditorWindow(forms.WPFWindow):
         except Exception:
             pass
 
+    def _set_vd_method_value(self, value):
+        combo = self._vd_method_cb
+        if combo is None:
+            return
+        target = CircuitVDMethod.normalize(value, CircuitVDMethod.GLOBAL)
+        for item in list(combo.ItemsSource or []):
+            if CircuitVDMethod.normalize(getattr(item, "value", None), CircuitVDMethod.GLOBAL) == target:
+                combo.SelectedItem = item
+                return
+        combo.SelectedIndex = 0 if len(list(combo.ItemsSource or [])) else -1
+
+    def _set_vd_method_items(self, items):
+        combo = self._vd_method_cb
+        if combo is None:
+            return
+        try:
+            current = list(combo.ItemsSource or [])
+        except Exception:
+            current = []
+        desired = list(items or [])
+        if current == desired:
+            return
+        try:
+            combo.ItemsSource = desired
+        except Exception:
+            pass
+
+    def _set_readonly_vd_method_label(self, label, value=CircuitVDMethod.GLOBAL):
+        combo = self._vd_method_cb
+        if combo is None:
+            return
+        option = VDMethodOption(value, label)
+        self._set_vd_method_items([option])
+        try:
+            combo.SelectedIndex = 0
+        except Exception:
+            pass
+
+    def _readonly_vd_method_label(self, preview, row):
+        preview_data = dict(preview or {})
+        ctype = str(preview_data.get("circuit_type", "") or "").strip().upper()
+        if not ctype and row is not None:
+            ctype = str(getattr(row, "branch_type", "") or "").strip().upper()
+        if ctype in ("CONDUIT ONLY", "N/A", "SPACE", "SPARE"):
+            return "N/A", CircuitVDMethod.GLOBAL
+        return "Connected Load", CircuitVDMethod.CONNECTED
+
+    def _selected_vd_method_value(self, fallback=CircuitVDMethod.GLOBAL):
+        combo = self._vd_method_cb
+        if combo is None:
+            return CircuitVDMethod.normalize(fallback, CircuitVDMethod.GLOBAL)
+        selected = getattr(combo, "SelectedItem", None)
+        if selected is None:
+            return CircuitVDMethod.normalize(fallback, CircuitVDMethod.GLOBAL)
+        return CircuitVDMethod.normalize(getattr(selected, "value", fallback), CircuitVDMethod.GLOBAL)
+
     def _conduit_size_options_for_type(self, conduit_type):
         text = str(conduit_type or "").strip()
         if text:
@@ -1388,10 +2140,7 @@ class CircuitPropertiesEditorWindow(forms.WPFWindow):
         if target and target in options:
             self._conduit_size_cb.SelectedItem = target
             return
-        if options:
-            self._conduit_size_cb.SelectedItem = options[0]
-            return
-        self._conduit_size_cb.SelectedIndex = -1
+        self._set_combo_value(self._conduit_size_cb, target)
 
     def _bind_size_combo_wheel(self):
         size_combos = (
@@ -1529,9 +2278,10 @@ class CircuitPropertiesEditorWindow(forms.WPFWindow):
         except Exception:
             pass
 
-    def _apply_override_input_styles(self, circuit_id, toggles):
+    def _apply_override_input_styles(self, circuit_id, toggles, changed_flags=None):
         manual_keys = set((self._vm.value_overrides.get(circuit_id) or {}).keys())
         user_override_on = bool((toggles or {}).get("user_override", False))
+        changed_flags = dict(changed_flags or {})
 
         def _style_for(param_name, control, is_combo):
             enabled = bool(control is not None and bool(getattr(control, "IsEnabled", False)))
@@ -1554,27 +2304,35 @@ class CircuitPropertiesEditorWindow(forms.WPFWindow):
             _style_for("CKT_Number of Sets_CED", self._num_sets_tb, False),
         )
 
-        always_numeric = (
-            self._rating_tb,
-            self._frame_tb,
-            self._length_tb,
+        numeric_targets = (
+            (self._rating_tb, "CKT_Rating_CED"),
+            (self._frame_tb, "CKT_Frame_CED"),
+            (self._length_tb, "CKT_Length Makeup_CED"),
         )
-        for control in always_numeric:
+        for control, param_name in numeric_targets:
             enabled = bool(control is not None and bool(getattr(control, "IsEnabled", False)))
+            if param_name in manual_keys and enabled:
+                style_key = "EditorState.Text.Manual"
+            else:
+                style_key = "EditorState.Text.Auto" if enabled else "EditorState.Text.Readonly"
             self._set_control_style(
                 control,
-                "EditorState.Text.Auto" if enabled else "EditorState.Text.Readonly",
+                style_key,
             )
 
-        always_text = (
-            self._load_name_tb,
-            self._sched_notes_tb,
+        text_targets = (
+            (self._load_name_tb, CIRCUIT_NAME_KEY),
+            (self._sched_notes_tb, CIRCUIT_NOTES_KEY),
         )
-        for control in always_text:
+        for control, param_name in text_targets:
             enabled = bool(control is not None and bool(getattr(control, "IsEnabled", False)))
+            if param_name in manual_keys and enabled:
+                style_key = "EditorState.Input.Manual"
+            else:
+                style_key = "EditorState.Input.Auto" if enabled else "EditorState.Input.Readonly"
             self._set_control_style(
                 control,
-                "EditorState.Input.Auto" if enabled else "EditorState.Input.Readonly",
+                style_key,
             )
 
         combo_targets = (
@@ -1598,6 +2356,51 @@ class CircuitPropertiesEditorWindow(forms.WPFWindow):
         for control, param_name in always_combo_targets:
             self._set_control_style(control, _style_for_always_editable(param_name, control, True))
 
+        changed_targets = (
+            (self._num_sets_tb, "CKT_Number of Sets_CED"),
+            (self._rating_tb, "CKT_Rating_CED"),
+            (self._frame_tb, "CKT_Frame_CED"),
+            (self._length_tb, "CKT_Length Makeup_CED"),
+            (self._load_name_tb, CIRCUIT_NAME_KEY),
+            (self._sched_notes_tb, CIRCUIT_NOTES_KEY),
+            (self._hot_size_cb, "CKT_Wire Hot Size_CEDT"),
+            (self._neutral_size_cb, "CKT_Wire Neutral Size_CEDT"),
+            (self._ground_size_cb, "CKT_Wire Ground Size_CEDT"),
+            (self._ig_size_cb, "CKT_Wire Isolated Ground Size_CEDT"),
+            (self._conduit_size_cb, "Conduit Size_CEDT"),
+            (self._conduit_type_cb, "Conduit Type_CEDT"),
+            (self._wire_temp_cb, "Wire Temparature Rating_CEDT"),
+            (self._wire_insulation_cb, "Wire Insulation_CEDT"),
+        )
+        for control, param_name in changed_targets:
+            self._set_changed_border(control, bool(changed_flags.get(param_name, False)))
+
+    def _set_border_layout_thickness(self, element, thickness_value=None):
+        try:
+            key = id(element)
+            baseline = self._border_layout_baselines.get(key)
+            if baseline is None:
+                padding = element.Padding
+                border = element.BorderThickness
+                baseline = (
+                    Thickness(padding.Left, padding.Top, padding.Right, padding.Bottom),
+                    Thickness(border.Left, border.Top, border.Right, border.Bottom),
+                )
+                self._border_layout_baselines[key] = baseline
+            base_padding, base_border = baseline
+            if thickness_value is None:
+                target = base_border
+            else:
+                target = Thickness(float(thickness_value))
+            element.Padding = Thickness(
+                max(0.0, base_padding.Left - max(0.0, target.Left - base_border.Left)),
+                max(0.0, base_padding.Top - max(0.0, target.Top - base_border.Top)),
+                max(0.0, base_padding.Right - max(0.0, target.Right - base_border.Right)),
+                max(0.0, base_padding.Bottom - max(0.0, target.Bottom - base_border.Bottom)),
+            )
+        except Exception:
+            pass
+
     def _set_warning_border(self, element, is_warning):
         if element is None:
             return
@@ -1612,6 +2415,8 @@ class CircuitPropertiesEditorWindow(forms.WPFWindow):
             brush_prop = Control.BorderBrushProperty
             thick_prop = Control.BorderThicknessProperty
         if bool(is_warning):
+            if is_border:
+                self._set_border_layout_thickness(element, 2)
             try:
                 red_brush = self.FindResource("CED.Brush.AccentRed")
             except Exception:
@@ -1626,6 +2431,8 @@ class CircuitPropertiesEditorWindow(forms.WPFWindow):
             except Exception:
                 pass
             return
+        if is_border:
+            self._set_border_layout_thickness(element)
         try:
             element.ClearValue(brush_prop)
         except Exception:
@@ -1634,6 +2441,66 @@ class CircuitPropertiesEditorWindow(forms.WPFWindow):
             element.ClearValue(thick_prop)
         except Exception:
             pass
+
+    def _set_changed_border(self, element, is_changed):
+        if element is None:
+            return
+        try:
+            is_border = isinstance(element, Border)
+        except Exception:
+            is_border = False
+        if is_border:
+            brush_prop = Border.BorderBrushProperty
+            thick_prop = Border.BorderThicknessProperty
+        else:
+            brush_prop = Control.BorderBrushProperty
+            thick_prop = Control.BorderThicknessProperty
+        if bool(is_changed):
+            if is_border:
+                self._set_border_layout_thickness(element, 2)
+            try:
+                blue_brush = self.FindResource("CED.Brush.AccentBlue")
+            except Exception:
+                blue_brush = None
+            if blue_brush is not None:
+                try:
+                    element.SetValue(brush_prop, blue_brush)
+                except Exception:
+                    pass
+            try:
+                element.SetValue(thick_prop, Thickness(2))
+            except Exception:
+                pass
+            return
+        if is_border:
+            self._set_border_layout_thickness(element)
+        try:
+            element.ClearValue(brush_prop)
+        except Exception:
+            pass
+        try:
+            element.ClearValue(thick_prop)
+        except Exception:
+            pass
+
+    def _set_parent_border_changed(self, element, is_changed):
+        current = element
+        for _ in range(0, 8):
+            if current is None:
+                return
+            try:
+                parent = VisualTreeHelper.GetParent(current)
+            except Exception:
+                parent = None
+            if parent is None:
+                return
+            try:
+                if isinstance(parent, Border):
+                    self._set_changed_border(parent, is_changed)
+                    return
+            except Exception:
+                pass
+            current = parent
 
     def _initialize_metric_tooltips(self):
         self._vd_tooltip_objects = []
@@ -1876,8 +2743,15 @@ class CircuitPropertiesEditorWindow(forms.WPFWindow):
         self._stop_vd_tooltip_timer()
         self._set_vd_tooltip_text(include_detail=False)
 
-    def _apply_warning_styles(self, warning_flags):
+    def _apply_warning_styles(self, warning_flags, changed_flags=None):
         flags = dict(warning_flags or {})
+        changed = dict(changed_flags or {})
+
+        def _set_warning_preserve_change(element, is_warning, changed_key=None):
+            self._set_warning_border(element, is_warning)
+            if (not bool(is_warning)) and changed_key:
+                self._set_changed_border(element, bool(changed.get(changed_key, False)))
+
         length_warn = bool(flags.get("length", False))
         insufficient_ampacity_warn = bool(flags.get("insufficient_ampacity", False))
         insufficient_ampacity_breaker_warn = bool(flags.get("insufficient_ampacity_breaker", False))
@@ -1892,14 +2766,14 @@ class CircuitPropertiesEditorWindow(forms.WPFWindow):
         undersized_ground_warn = bool(flags.get("undersized_wire_egc", False) or flags.get("undersized_wire_service_ground", False))
         rating_warn = bool(flags.get("rating", False))
 
-        self._set_warning_border(self._length_tb, length_warn)
-        self._set_warning_border(self._conduit_size_cb, conduit_size_warn or conduit_fill_warn)
+        _set_warning_preserve_change(self._length_tb, length_warn, "CKT_Length Makeup_CED")
+        _set_warning_preserve_change(self._conduit_size_cb, conduit_size_warn or conduit_fill_warn, "Conduit Size_CEDT")
         self._set_warning_border(self._conduit_fill_box, conduit_fill_warn)
         self._set_warning_border(self._vd_box, vd_warn)
-        self._set_warning_border(self._rating_tb, rating_warn or insufficient_ampacity_breaker_warn)
-        self._set_warning_border(self._frame_tb, False)
+        _set_warning_preserve_change(self._rating_tb, rating_warn or insufficient_ampacity_breaker_warn, "CKT_Rating_CED")
+        _set_warning_preserve_change(self._frame_tb, False, "CKT_Frame_CED")
         self._set_warning_border(self._ampacity_box, False)
-        self._set_warning_border(self._num_sets_tb, lug_qty_warn)
+        _set_warning_preserve_change(self._num_sets_tb, lug_qty_warn, "CKT_Number of Sets_CED")
         self._set_warning_border(self._load_box, insufficient_ampacity_warn or circuit_loads_null_warn or circuit_panels_null_warn)
 
         hot_warn = bool(insufficient_ampacity_warn or insufficient_ampacity_breaker_warn)
@@ -1918,10 +2792,10 @@ class CircuitPropertiesEditorWindow(forms.WPFWindow):
             if not lug_size_limit:
                 hot_warn = True
 
-        self._set_warning_border(self._hot_size_cb, hot_warn)
-        self._set_warning_border(self._neutral_size_cb, neutral_warn)
-        self._set_warning_border(self._ground_size_cb, ground_warn)
-        self._set_warning_border(self._ig_size_cb, ig_warn)
+        _set_warning_preserve_change(self._hot_size_cb, hot_warn, "CKT_Wire Hot Size_CEDT")
+        _set_warning_preserve_change(self._neutral_size_cb, neutral_warn, "CKT_Wire Neutral Size_CEDT")
+        _set_warning_preserve_change(self._ground_size_cb, ground_warn, "CKT_Wire Ground Size_CEDT")
+        _set_warning_preserve_change(self._ig_size_cb, ig_warn, "CKT_Wire Isolated Ground Size_CEDT")
 
     def _load_selected_row(self):
         row = self._selected_row()
@@ -1935,9 +2809,18 @@ class CircuitPropertiesEditorWindow(forms.WPFWindow):
             if self._blocked_info_tb is not None:
                 self._blocked_info_tb.Visibility = Visibility.Collapsed
                 self._blocked_info_tb.Text = ""
+            if self._vd_method_cb is not None:
+                self._set_readonly_vd_method_label("N/A", CircuitVDMethod.GLOBAL)
+                self._vd_method_cb.IsEnabled = False
+                self._set_control_style(self._vd_method_cb, "EditorState.Combo.Center.Readonly")
             if self._notice_text is not None:
-                self._notice_text.Text = "No warnings."
+                self._notice_text.Text = ""
             self._set_notice_warning_state(False)
+            if self._current_conduit_summary_text is not None:
+                self._current_conduit_summary_text.Text = "-"
+            if self._new_conduit_summary_text is not None:
+                self._new_conduit_summary_text.Text = "-"
+            self._set_changed_border(self._new_conduit_summary_box, False)
             self._apply_preview_metric_tooltips({}, None)
             self._sync_reset_button_state(None)
             return
@@ -1946,6 +2829,8 @@ class CircuitPropertiesEditorWindow(forms.WPFWindow):
         try:
             state = self._vm.get_state(row.circuit_id) or {}
             values = dict(state.get("values") or {})
+            display_values = dict(state.get("display_values") or values)
+            changed_flags = dict(state.get("changed_flags") or {})
             toggles = dict(state.get("toggles") or {})
             editability = dict(state.get("editability") or {})
             preview = dict(state.get("preview") or {})
@@ -1993,37 +2878,53 @@ class CircuitPropertiesEditorWindow(forms.WPFWindow):
             if self._ground_include_state_text is not None:
                 self._ground_include_state_text.Text = "Yes" if bool(self._ground_custom is not None and self._ground_custom.IsChecked) else "No"
 
-            self._rating_tb.Text = str(_as_int(values.get("CKT_Rating_CED", 0), 0))
-            self._frame_tb.Text = str(_as_int(values.get("CKT_Frame_CED", 0), 0))
-            self._length_tb.Text = _fmt_number(values.get("CKT_Length Makeup_CED", 0.0), 2)
+            self._rating_tb.Text = str(_as_int(display_values.get("CKT_Rating_CED", 0), 0))
+            self._frame_tb.Text = str(_as_int(display_values.get("CKT_Frame_CED", 0), 0))
+            self._length_tb.Text = _fmt_number(display_values.get("CKT_Length Makeup_CED", 0.0), 2)
             if self._load_name_tb is not None:
-                self._load_name_tb.Text = str(values.get(CIRCUIT_NAME_KEY, row.load_name or "") or "")
+                self._load_name_tb.Text = str(display_values.get(CIRCUIT_NAME_KEY, row.load_name or "") or "")
             if self._sched_notes_tb is not None:
-                self._sched_notes_tb.Text = str(values.get(CIRCUIT_NOTES_KEY, "") or "")
-            self._num_sets_tb.Text = str(_as_int(values.get("CKT_Number of Sets_CED", 0), 0))
+                self._sched_notes_tb.Text = str(display_values.get(CIRCUIT_NOTES_KEY, "") or "")
+            self._num_sets_tb.Text = str(_as_int(display_values.get("CKT_Number of Sets_CED", 0), 0))
             if self._total_length_text is not None:
                 self._total_length_text.Text = str(preview.get("total_length", "-"))
             if self._circuit_type_text is not None:
                 self._circuit_type_text.Text = str(preview.get("circuit_type", row.branch_type or "-") or "-")
             if self._volts_text is not None:
                 self._volts_text.Text = str(preview.get("volts_poles", "-") or "-")
+            feeder_vd_editable = bool(supported and not locked and self._vm._is_feeder_vd_editable(row.circuit_id))
+            vd_method_value = preview.get("circuit_vd_method", CircuitVDMethod.GLOBAL)
+            if self._vd_method_cb is not None:
+                if feeder_vd_editable:
+                    self._set_vd_method_items(self._vm.vd_method_options)
+                    self._set_vd_method_value(vd_method_value)
+                    self._vd_method_cb.IsEnabled = True
+                else:
+                    readonly_label, readonly_value = self._readonly_vd_method_label(preview, row)
+                    self._set_readonly_vd_method_label(readonly_label, readonly_value)
+                    self._vd_method_cb.IsEnabled = False
+                    self._set_control_style(self._vd_method_cb, "EditorState.Combo.Center.Readonly")
+                if feeder_vd_editable and bool(preview.get("circuit_vd_method_changed", False)):
+                    self._set_control_style(self._vd_method_cb, "EditorState.Combo.Center.Manual")
+                elif feeder_vd_editable:
+                    self._set_control_style(self._vd_method_cb, "EditorState.Combo.Center.Auto")
 
-            self._set_combo_value(self._hot_size_cb, preview.get("hot_size_raw", values.get("CKT_Wire Hot Size_CEDT", "")))
-            self._set_combo_value(self._neutral_size_cb, preview.get("neutral_size_raw", values.get("CKT_Wire Neutral Size_CEDT", "")))
-            self._set_combo_value(self._ground_size_cb, preview.get("ground_size_raw", values.get("CKT_Wire Ground Size_CEDT", "")))
-            self._set_combo_value(self._ig_size_cb, preview.get("ig_size_raw", values.get("CKT_Wire Isolated Ground Size_CEDT", "")))
-            conduit_type_value = preview.get("conduit_type", values.get("Conduit Type_CEDT", ""))
-            conduit_size_value = preview.get("conduit_size_raw", values.get("Conduit Size_CEDT", ""))
+            self._set_combo_value(self._hot_size_cb, display_values.get("CKT_Wire Hot Size_CEDT", ""))
+            self._set_combo_value(self._neutral_size_cb, display_values.get("CKT_Wire Neutral Size_CEDT", ""))
+            self._set_combo_value(self._ground_size_cb, display_values.get("CKT_Wire Ground Size_CEDT", ""))
+            self._set_combo_value(self._ig_size_cb, display_values.get("CKT_Wire Isolated Ground Size_CEDT", ""))
+            conduit_type_value = display_values.get("Conduit Type_CEDT", "")
+            conduit_size_value = display_values.get("Conduit Size_CEDT", "")
+            if not bool(toggles.get("allow_conduit", True)):
+                conduit_type_value = ""
             self._set_combo_value(self._conduit_type_cb, conduit_type_value)
             self._refresh_conduit_size_items(conduit_type_value, conduit_size_value)
-            self._set_combo_value(self._wire_temp_cb, preview.get("wire_temp", values.get("Wire Temparature Rating_CEDT", "")))
-            self._set_combo_value(self._wire_insulation_cb, preview.get("wire_insulation", values.get("Wire Insulation_CEDT", "")))
+            self._set_combo_value(self._wire_temp_cb, display_values.get("Wire Temparature Rating_CEDT", ""))
+            self._set_combo_value(self._wire_insulation_cb, display_values.get("Wire Insulation_CEDT", ""))
 
-            wire_material_value = str(preview.get("wire_material", values.get("Wire Material_CEDT", "")) or "").strip().upper()
+            wire_material_value = str(display_values.get("Wire Material_CEDT", "") or "").strip().upper()
             if wire_material_value not in ("CU", "AL"):
-                wire_material_value = str(values.get("Wire Material_CEDT", "CU") or "CU").strip().upper()
-            if wire_material_value not in ("CU", "AL"):
-                wire_material_value = "CU"
+                wire_material_value = ""
             if self._wire_material_cu is not None:
                 self._wire_material_cu.IsChecked = bool(wire_material_value == "CU")
             if self._wire_material_al is not None:
@@ -2031,7 +2932,6 @@ class CircuitPropertiesEditorWindow(forms.WPFWindow):
 
             wire_manual = bool(editability.get("wire_manual_enabled", False))
             ground_manual = bool(editability.get("ground_manual_enabled", False))
-            conduit_manual = bool(editability.get("conduit_manual_enabled", False))
             include_neutral_enabled = bool(editability.get("include_neutral_enabled", False))
             include_ig_enabled = bool(editability.get("include_ig_enabled", False))
             neutral_locked_by_type = bool(editability.get("neutral_include_locked_by_type", False))
@@ -2073,8 +2973,11 @@ class CircuitPropertiesEditorWindow(forms.WPFWindow):
             if self._sched_notes_tb is not None:
                 self._sched_notes_tb.IsEnabled = bool(supported and not locked)
 
-            self._num_sets_tb.IsEnabled = bool(supported and not locked and hot_checked)
-            self._num_sets_tb.IsReadOnly = not bool(supported and not locked and wire_manual and hot_checked)
+            conduit_checked = bool(self._conduit_custom.IsChecked)
+            user_override_checked = bool(self._user_override is not None and self._user_override.IsChecked)
+            sets_enabled = bool(supported and not locked and user_override_checked and (hot_checked or conduit_checked))
+            self._num_sets_tb.IsEnabled = sets_enabled
+            self._num_sets_tb.IsReadOnly = not sets_enabled
             self._hot_size_cb.IsEnabled = bool(supported and not locked and wire_manual and hot_checked)
             neutral_checked = bool(self._include_neutral is not None and self._include_neutral.IsChecked)
             ig_checked = bool(self._include_ig is not None and self._include_ig.IsChecked)
@@ -2088,8 +2991,8 @@ class CircuitPropertiesEditorWindow(forms.WPFWindow):
             self._ground_size_cb.IsEnabled = bool(supported and not locked and ground_manual and hot_checked and ground_checked)
             self._ig_size_cb.IsEnabled = bool(supported and not locked and ig_manual and hot_checked and ground_checked and ig_checked)
 
-            self._conduit_size_cb.IsEnabled = bool(supported and not locked and conduit_manual and self._conduit_custom.IsChecked)
-            self._conduit_type_cb.IsEnabled = bool(supported and not locked and self._conduit_custom.IsChecked)
+            self._conduit_size_cb.IsEnabled = bool(supported and not locked and self._user_override.IsChecked and conduit_checked)
+            self._conduit_type_cb.IsEnabled = bool(supported and not locked and conduit_checked)
             if self._wire_material_cu is not None:
                 self._wire_material_cu.IsEnabled = bool(supported and not locked and wire_specs_enabled)
             if self._wire_material_al is not None:
@@ -2099,36 +3002,148 @@ class CircuitPropertiesEditorWindow(forms.WPFWindow):
             if self._wire_insulation_cb is not None:
                 self._wire_insulation_cb.IsEnabled = bool(supported and not locked and wire_specs_enabled)
 
-            self._apply_override_input_styles(row.circuit_id, toggles)
+            self._apply_override_input_styles(row.circuit_id, toggles, changed_flags)
+            self._set_changed_border(self._user_override, bool(changed_flags.get("user_override", False)))
+            self._set_changed_border(self._hot_custom, bool(changed_flags.get("allow_hot", False)))
+            self._set_changed_border(self._ground_custom, bool(changed_flags.get("allow_ground", False)))
+            self._set_changed_border(self._conduit_custom, bool(changed_flags.get("allow_conduit", False)))
+            self._set_changed_border(self._include_neutral, bool(changed_flags.get("include_neutral", False)))
+            self._set_changed_border(self._include_ig, bool(changed_flags.get("include_ig", False)))
 
             if self._hot_qty_text is not None:
-                self._hot_qty_text.Text = str(preview.get("hot_qty", "0"))
+                self._hot_qty_text.Text = str(_as_int(display_values.get("CKT_Wire Hot Quantity_CED", 0), 0))
+                self._set_parent_border_changed(self._hot_qty_text, bool(changed_flags.get("CKT_Wire Hot Quantity_CED", False)))
             if self._neutral_qty_text is not None:
-                self._neutral_qty_text.Text = str(preview.get("neutral_qty", "0"))
+                self._neutral_qty_text.Text = str(_as_int(display_values.get("CKT_Wire Neutral Quantity_CED", 0), 0))
+                self._set_parent_border_changed(self._neutral_qty_text, bool(changed_flags.get("CKT_Wire Neutral Quantity_CED", False)))
             if self._ground_qty_text is not None:
-                self._ground_qty_text.Text = str(preview.get("ground_qty", "0"))
+                self._ground_qty_text.Text = str(_as_int(display_values.get("CKT_Wire Ground Quantity_CED", 0), 0))
+                self._set_parent_border_changed(self._ground_qty_text, bool(changed_flags.get("CKT_Wire Ground Quantity_CED", False)))
             if self._ig_qty_text is not None:
-                self._ig_qty_text.Text = str(preview.get("ig_qty", "0"))
+                self._ig_qty_text.Text = str(_as_int(display_values.get("CKT_Wire Isolated Ground Quantity_CED", 0), 0))
+                self._set_parent_border_changed(self._ig_qty_text, bool(changed_flags.get("CKT_Wire Isolated Ground Quantity_CED", False)))
             if self._conduit_fill_text is not None:
                 self._conduit_fill_text.Text = str(preview.get("conduit_fill", "-"))
             self._vd_text.Text = str(preview.get("voltage_drop", "-"))
             self._load_text.Text = str(preview.get("load_current", "-"))
             self._apply_preview_metric_tooltips(preview, row)
             self._ampacity_text.Text = str(preview.get("ampacity", "-"))
-            self._wire_summary_text.Text = str(preview.get("wire_summary", "-"))
-            self._conduit_summary_text.Text = str(preview.get("conduit_summary", "-"))
-            self._notice_text.Text = "\n".join(notices) if notices else "No warnings."
+            if self._current_conduit_summary_text is not None:
+                self._current_conduit_summary_text.Text = str(preview.get("current_conduit_summary", "-"))
+            if self._new_conduit_summary_text is not None:
+                if bool(preview.get("conduit_summary_changed", False)):
+                    self._new_conduit_summary_text.Text = str(preview.get("new_conduit_summary", preview.get("conduit_summary", "-")))
+                else:
+                    self._new_conduit_summary_text.Text = "[No Change]"
+            self._set_changed_border(self._new_conduit_summary_box, bool(preview.get("conduit_summary_changed", False)))
+            self._notice_text.Text = "\n".join(notices) if notices else ""
             self._set_notice_warning_state(bool(notices))
-            self._apply_warning_styles(warning_flags)
+            self._apply_warning_styles(warning_flags, changed_flags)
         finally:
             self._is_loading = False
         self._refresh_pending_count()
         self._sync_reset_button_state(row)
 
+    def _schedule_notice_layout_update(self, has_notices, old_offset, old_spacer_height):
+        if self._editor_scroll is None or self._notice_spacer is None:
+            return
+        self._notice_layout_has_notices = bool(has_notices)
+        self._notice_layout_old_offset = float(old_offset or 0.0)
+        self._notice_layout_old_spacer_height = float(old_spacer_height or 0.0)
+
+        timer = self._notice_layout_timer
+        if timer is None:
+            try:
+                timer = DispatcherTimer()
+                timer.Interval = TimeSpan.FromMilliseconds(1.0)
+                timer.Tick += self._on_notice_layout_timer_tick
+                self._notice_layout_timer = timer
+            except Exception:
+                timer = None
+        if timer is None:
+            self._apply_notice_layout_update()
+            return
+        try:
+            timer.Stop()
+            timer.Start()
+        except Exception:
+            self._apply_notice_layout_update()
+
+    def _on_notice_layout_timer_tick(self, sender, args):
+        timer = self._notice_layout_timer
+        if timer is not None:
+            try:
+                timer.Stop()
+            except Exception:
+                pass
+        self._apply_notice_layout_update()
+
+    def _apply_notice_layout_update(self):
+        viewer = self._editor_scroll
+        spacer = self._notice_spacer
+        if viewer is None or spacer is None:
+            return
+
+        target_height = 0.0
+        if bool(self._notice_layout_has_notices) and self._notice_box is not None:
+            try:
+                self._notice_box.UpdateLayout()
+            except Exception:
+                pass
+            try:
+                target_height = max(0.0, float(self._notice_box.ActualHeight) + 8.0)
+            except Exception:
+                target_height = 0.0
+
+        old_height = float(self._notice_layout_old_spacer_height or 0.0)
+        old_offset = float(self._notice_layout_old_offset or 0.0)
+        delta = target_height - old_height
+
+        try:
+            spacer.Height = target_height
+        except Exception:
+            return
+        try:
+            viewer.UpdateLayout()
+        except Exception:
+            pass
+
+        if old_offset <= 0.5:
+            target_offset = 0.0
+        else:
+            target_offset = max(0.0, old_offset + delta)
+        try:
+            viewer.ScrollToVerticalOffset(target_offset)
+        except Exception:
+            pass
+
     def _set_notice_warning_state(self, has_notices):
         if self._notice_box is None:
             return
+
+        old_offset = 0.0
+        old_spacer_height = 0.0
+        if self._editor_scroll is not None:
+            try:
+                old_offset = float(self._editor_scroll.VerticalOffset)
+            except Exception:
+                old_offset = 0.0
+        if self._notice_spacer is not None:
+            try:
+                old_spacer_height = float(self._notice_spacer.ActualHeight)
+            except Exception:
+                old_spacer_height = 0.0
+            if old_spacer_height <= 0.0:
+                try:
+                    old_spacer_height = float(self._notice_spacer.Height)
+                except Exception:
+                    old_spacer_height = 0.0
+
         if bool(has_notices):
+            try:
+                self._notice_box.Visibility = Visibility.Visible
+            except Exception:
+                pass
             try:
                 warning_brush = self.FindResource("CED.Brush.DataGridWarningBackground")
             except Exception:
@@ -2138,11 +3153,21 @@ class CircuitPropertiesEditorWindow(forms.WPFWindow):
                     self._notice_box.Background = warning_brush
                 except Exception:
                     pass
-            return
-        try:
-            self._notice_box.ClearValue(Border.BackgroundProperty)
-        except Exception:
-            pass
+        else:
+            try:
+                self._notice_box.Visibility = Visibility.Collapsed
+            except Exception:
+                pass
+            try:
+                self._notice_box.ClearValue(Border.BackgroundProperty)
+            except Exception:
+                pass
+
+        self._schedule_notice_layout_update(
+            bool(has_notices),
+            old_offset,
+            old_spacer_height,
+        )
 
     def _persist_selected_values(self, event_sender=None):
         if self._is_loading:
@@ -2176,6 +3201,33 @@ class CircuitPropertiesEditorWindow(forms.WPFWindow):
             "include_neutral": bool(self._include_neutral.IsChecked) if self._include_neutral is not None else bool(current_values.get("CKT_Include Neutral_CED", 0)),
             "include_ig": bool(self._include_ig.IsChecked) if self._include_ig is not None else bool(current_values.get("CKT_Include Isolated Ground_CED", 0)),
         }
+        preserved_toggles = dict(self._vm._default_toggle_state(cid))
+        preserved_toggles.update(dict(self._vm.toggle_overrides.get(cid, {}) or {}))
+        if not bool(toggle_updates.get("allow_hot", True)):
+            toggle_updates["allow_ground"] = bool(
+                preserved_toggles.get("allow_ground", toggle_updates.get("allow_ground", True))
+            )
+            toggle_updates["include_ig"] = bool(
+                preserved_toggles.get("include_ig", toggle_updates.get("include_ig", False))
+            )
+        elif not bool(toggle_updates.get("allow_ground", True)):
+            toggle_updates["include_ig"] = bool(
+                preserved_toggles.get("include_ig", toggle_updates.get("include_ig", False))
+            )
+        if event_sender is self._hot_custom and bool(self._hot_custom.IsChecked):
+            toggle_updates["allow_ground"] = True
+            if self._include_neutral is not None:
+                toggle_updates["include_neutral"] = bool(
+                    preserved_toggles.get("include_neutral", toggle_updates.get("include_neutral", False))
+                )
+            if self._include_ig is not None:
+                toggle_updates["include_ig"] = bool(
+                    preserved_toggles.get("include_ig", toggle_updates.get("include_ig", False))
+                )
+        if event_sender is self._ground_custom and bool(self._ground_custom.IsChecked) and self._include_ig is not None:
+            toggle_updates["include_ig"] = bool(
+                preserved_toggles.get("include_ig", toggle_updates.get("include_ig", False))
+            )
 
         value_updates = {}
         if bool(self._rating_tb.IsEnabled):
@@ -2216,6 +3268,21 @@ class CircuitPropertiesEditorWindow(forms.WPFWindow):
             )
 
         self._vm.apply_inputs(cid, toggle_updates, value_updates)
+        existing_data_keys = set((self._vm.circuit_data_overrides.get(cid) or {}).keys())
+        if (
+            self._vd_method_cb is not None
+            and bool(getattr(self._vd_method_cb, "IsEnabled", False))
+            and (
+                event_sender is None
+                or event_sender is self._vd_method_cb
+                or CIRCUIT_DATA_VD_METHOD_KEY in existing_data_keys
+            )
+        ):
+            self._vm.set_circuit_data_value(
+                cid,
+                CIRCUIT_DATA_VD_METHOD_KEY,
+                self._selected_vd_method_value(current_values.get(CIRCUIT_DATA_VD_METHOD_KEY, CircuitVDMethod.GLOBAL)),
+            )
 
         try:
             if self._list is not None:
@@ -2226,7 +3293,10 @@ class CircuitPropertiesEditorWindow(forms.WPFWindow):
 
     def _refresh_pending_count(self):
         if self._pending_count is not None:
-            self._pending_count.Text = "{} circuits pending".format(self._vm.pending_count())
+            self._pending_count.Text = "{} circuits pending / {} targeted".format(
+                self._vm.pending_count(),
+                len(list(self._vm.rows or [])),
+            )
         if self._status_text is not None:
             self._status_text.Text = "Ready"
 
@@ -2244,19 +3314,19 @@ class CircuitPropertiesEditorWindow(forms.WPFWindow):
                     sender.SelectedItem = added_items[0]
                 except Exception:
                     pass
-        if sender is self._conduit_type_cb and self._conduit_type_cb is not None:
-            conduit_type = self._combo_text(self._conduit_type_cb, "")
-            current_size = self._combo_text(self._conduit_size_cb, "")
-            self._refresh_conduit_size_items(conduit_type, current_size)
+        if sender is self._conduit_type_cb:
+            # Persist the type before reloading its dependent size list.
+            self._persist_selected_values(event_sender=sender)
+            return
+        self._persist_selected_values(event_sender=sender)
+
+    def vd_method_changed(self, sender, args):
         self._persist_selected_values(event_sender=sender)
 
     def user_override_changed(self, sender, args):
         self._persist_selected_values(event_sender=sender)
 
     def hot_custom_changed(self, sender, args):
-        if self._hot_custom is not None and bool(self._hot_custom.IsChecked):
-            if self._ground_custom is not None and not bool(self._ground_custom.IsChecked):
-                self._ground_custom.IsChecked = True
         self._persist_selected_values(event_sender=sender)
 
     def ground_custom_changed(self, sender, args):
@@ -2303,6 +3373,46 @@ class CircuitPropertiesEditorWindow(forms.WPFWindow):
         self.apply_requested = True
         self.apply_payload = {"updates": updates}
         self.Close()
+
+    def discard_circuit_clicked(self, sender, args):
+        row = None
+        try:
+            row = getattr(sender, "DataContext", None)
+        except Exception:
+            row = None
+        if row is None:
+            row = self._selected_row()
+        if row is None:
+            return
+        try:
+            cid = int(getattr(row, "circuit_id", 0) or 0)
+        except Exception:
+            cid = 0
+        if cid <= 0:
+            return
+
+        try:
+            current_rows = list(self._vm.rows or [])
+            current_index = current_rows.index(row)
+        except Exception:
+            current_index = 0
+
+        self._vm.discard_circuit(cid)
+        remaining = list(self._vm.rows or [])
+        try:
+            if self._list is not None:
+                self._list.ItemsSource = remaining
+                if remaining:
+                    next_index = min(max(current_index, 0), len(remaining) - 1)
+                    self._list.SelectedItem = remaining[next_index]
+                else:
+                    self._list.SelectedItem = None
+        except Exception:
+            pass
+        self._refresh_pending_count()
+        self._load_selected_row()
+        if self._status_text is not None:
+            self._status_text.Text = "Circuit discarded from edit list."
 
     def reset_clicked(self, sender, args):
         selected = self._selected_row()

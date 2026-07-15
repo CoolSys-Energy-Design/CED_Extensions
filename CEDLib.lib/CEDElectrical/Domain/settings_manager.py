@@ -96,8 +96,13 @@ def _get_or_create_global_param(doc):
 # ---------------------------
 
 def load_circuit_settings(doc):
-    """Return a CircuitSettings instance using stored GP JSON (or defaults)."""
-    gp = _get_or_create_global_param(doc)
+    """Read stored settings without modifying the document; return defaults when absent."""
+    if doc is None:
+        return CircuitSettings()
+
+    gp = _get_global_param(doc)
+    if gp is None:
+        return CircuitSettings()
 
     value_obj = gp.GetValue()
     if value_obj and isinstance(value_obj, DB.StringParameterValue):
@@ -106,6 +111,24 @@ def load_circuit_settings(doc):
         json_text = None
 
     return CircuitSettings.from_json(json_text)
+
+
+def has_circuit_settings(doc):
+    """Return True when the model contains the persisted circuit-settings parameter."""
+    if doc is None:
+        return False
+    return _get_global_param(doc) is not None
+
+
+def ensure_circuit_settings(doc):
+    """Create missing persisted circuit settings in the caller's valid Revit API context."""
+    if doc is None:
+        raise ValueError("A Revit document is required to initialize circuit settings.")
+    gp = _get_or_create_global_param(doc)
+    value_obj = gp.GetValue()
+    if value_obj and isinstance(value_obj, DB.StringParameterValue):
+        return CircuitSettings.from_json(value_obj.Value)
+    return CircuitSettings()
 
 
 def save_circuit_settings(doc, settings):
@@ -221,9 +244,8 @@ def _binding_needs_update(existing_binding, target_category_set, is_instance):
     current_is_instance = isinstance(existing_binding, DB.InstanceBinding)
     current_categories = category_utils.category_id_values_from_categories(getattr(existing_binding, "Categories", []))
     target_categories = category_utils.category_id_values_from_categories(target_category_set)
-    # Conservative mode: never unbind existing categories automatically.
-    removed = set()
-    needs_update = not (current_is_instance == is_instance and target_categories.issubset(current_categories))
+    removed = current_categories.difference(target_categories)
+    needs_update = not (current_is_instance == is_instance and current_categories == target_categories)
     return bool(needs_update), removed
 
 
@@ -264,18 +286,6 @@ def _sync_parameter_bindings(doc, app, rows, shared_param_file, settings, logger
         group_id = LOAD_PARAMS_GROUP_MAP.get(group_label, DB.GroupTypeId.ElectricalCircuiting)
 
         existing_binding = _get_existing_binding(doc, definition.Name)
-        if existing_binding is not None:
-            merged_set, merged_inserted, merged_missing_ids = category_utils.merge_category_sets(
-                doc,
-                category_set,
-                getattr(existing_binding, "Categories", []),
-            )
-            if merged_missing_ids:
-                warnings.append("{}: category id(s) not found in project: {}".format(name, ", ".join(list(merged_missing_ids))))
-            if merged_inserted > 0:
-                category_set = merged_set
-                inserted = int(merged_inserted)
-
         needs_update, removed_categories = _binding_needs_update(existing_binding, category_set, is_instance)
         if not needs_update:
             unchanged += 1
@@ -418,10 +428,27 @@ def sync_electrical_parameter_bindings(
 
 def ensure_electrical_parameters_for_calculate(doc, logger=None):
     """
-    Ensure required electrical shared parameters are available before calculate.
-    This silently reconciles category bindings against current writeback settings.
+    Ensure persisted settings and required shared parameters are available before calculate.
+    Existing parameter bindings are left alone; explicit load/config actions reconcile them.
     """
-    settings = load_circuit_settings(doc)
+    settings = ensure_circuit_settings(doc)
+    try:
+        if has_project_parameter_binding(doc, AUTO_PARAM_PROBE_NAME):
+            return {
+                "status": "present",
+                "reason": "",
+                "updated": 0,
+                "unchanged": 1,
+                "skipped": 0,
+                "warnings": [],
+                "errors": [],
+                "locked": [],
+                "unbound": 0,
+                "total": 1,
+            }
+    except Exception:
+        pass
+
     return sync_electrical_parameter_bindings(
         doc,
         logger=logger,
@@ -432,10 +459,7 @@ def ensure_electrical_parameters_for_calculate(doc, logger=None):
 
 
 def unbind_disabled_writeback_categories(doc, logger=None, settings=None, check_ownership=True):
-    """
-    Compatibility wrapper for callers expecting category reconciliation.
-    Current conservative mode does not unbind categories automatically.
-    """
+    """Reconcile project-parameter categories with the active writeback settings."""
     active_settings = settings or load_circuit_settings(doc)
     return sync_electrical_parameter_bindings(
         doc,
@@ -580,7 +604,7 @@ def clear_downstream_results(doc, clear_equipment=False, clear_fixtures=False, l
         except Exception:
             return None
 
-    # Filter to only electrical fixtures/equipment that have an MEP model to avoid
+    # Filter to only electrical fixture/device categories and equipment that have an MEP model to avoid
     # grouped annotation and other non-relevant family instances.
     category_ids = []
     fixture_category_ids = list(category_utils.get_fixture_category_ids(doc) or [])
@@ -663,7 +687,7 @@ def clear_downstream_results(doc, clear_equipment=False, clear_fixtures=False, l
 
     if cleared_equipment or cleared_fixtures:
         logger.info(
-            "Cleared stored circuit data on {} equipment and {} fixtures after write toggles were disabled.".format(
+            "Cleared stored circuit data on {} equipment and {} fixtures and devices after write toggles were disabled.".format(
                 cleared_equipment, cleared_fixtures
             )
         )

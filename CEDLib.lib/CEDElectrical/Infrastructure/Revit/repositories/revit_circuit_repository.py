@@ -4,6 +4,7 @@
 import Autodesk.Revit.DB.Electrical as DBE
 from pyrevit import DB
 
+from Snippets import categories as category_utils
 from Snippets import revit_helpers
 
 
@@ -82,6 +83,12 @@ class RevitCircuitRepository(object):
 
         write_fixtures = getattr(settings, 'write_fixture_results', False)
         write_equipment = getattr(settings, 'write_equipment_results', False)
+        fixture_category_values = category_utils.category_id_values(
+            category_utils.get_fixture_category_ids(doc)
+        )
+        equipment_category_values = category_utils.category_id_values(
+            category_utils.get_equipment_category_ids(doc)
+        )
 
         for circuit in circuits:
             locked_for_writeback = False
@@ -99,10 +106,12 @@ class RevitCircuitRepository(object):
                     cat = el.Category
                     if not cat:
                         continue
-                    cat_id = cat.Id
-                    is_fixture = cat_id == DB.ElementId(DB.BuiltInCategory.OST_ElectricalFixtures)
-                    is_equipment = cat_id == DB.ElementId(DB.BuiltInCategory.OST_ElectricalEquipment)
+                    cat_id_value = category_utils.category_id_value(cat.Id)
+                    is_fixture = cat_id_value in fixture_category_values
+                    is_equipment = cat_id_value in equipment_category_values
 
+                    if not (is_fixture or is_equipment):
+                        continue
                     if is_fixture and not write_fixtures:
                         continue
                     if is_equipment and not write_equipment:
@@ -142,6 +151,12 @@ class RevitCircuitRepository(object):
     def summarize_locked(self, doc, locked_ids):
         """Return lock summary counts by element type."""
         summary = {'circuits': 0, 'fixtures': 0, 'equipment': 0, 'other': 0}
+        fixture_category_values = category_utils.category_id_values(
+            category_utils.get_fixture_category_ids(doc)
+        )
+        equipment_category_values = category_utils.category_id_values(
+            category_utils.get_equipment_category_ids(doc)
+        )
         for eid in locked_ids:
             el = doc.GetElement(eid)
             if isinstance(el, DBE.ElectricalSystem):
@@ -150,11 +165,11 @@ class RevitCircuitRepository(object):
             if isinstance(el, DB.FamilyInstance):
                 cat = el.Category
                 if cat:
-                    cid = cat.Id
-                    if cid == DB.ElementId(DB.BuiltInCategory.OST_ElectricalFixtures):
+                    category_value = category_utils.category_id_value(cat.Id)
+                    if category_value in fixture_category_values:
                         summary['fixtures'] += 1
                         continue
-                    if cid == DB.ElementId(DB.BuiltInCategory.OST_ElectricalEquipment):
+                    if category_value in equipment_category_values:
                         summary['equipment'] += 1
                         continue
             summary['other'] += 1

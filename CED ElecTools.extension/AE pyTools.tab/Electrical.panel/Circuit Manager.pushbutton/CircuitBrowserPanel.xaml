@@ -59,6 +59,46 @@
         <Setter Property="BorderBrush" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
       </Style>
+      <Style x:Key="CircuitBrowser.ToggleSwitch" TargetType="{x:Type CheckBox}">
+        <Setter Property="Width" Value="38"/>
+        <Setter Property="Height" Value="20"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type CheckBox}">
+              <Grid Width="{TemplateBinding Width}" Height="{TemplateBinding Height}">
+                <Border x:Name="Track"
+                        CornerRadius="10"
+                        Background="{DynamicResource CED.Brush.InfoPanelBorder}"
+                        BorderBrush="{DynamicResource CED.Brush.Border}"
+                        BorderThickness="1"/>
+                <Border x:Name="Thumb"
+                        Width="16"
+                        Height="16"
+                        Margin="2,2,20,2"
+                        CornerRadius="8"
+                        Background="{DynamicResource CED.Brush.WindowBackground}"
+                        BorderBrush="{DynamicResource CED.Brush.DataGridDividerStrong}"
+                        BorderThickness="1"/>
+              </Grid>
+              <ControlTemplate.Triggers>
+                <Trigger Property="IsChecked" Value="True">
+                  <Setter TargetName="Track" Property="Background" Value="#2DA44E"/>
+                  <Setter TargetName="Track" Property="BorderBrush" Value="#2DA44E"/>
+                  <Setter TargetName="Thumb" Property="Margin" Value="20,2,2,2"/>
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                  <Setter TargetName="Thumb" Property="BorderBrush" Value="{DynamicResource CED.Brush.Accent}"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                  <Setter TargetName="Track" Property="Opacity" Value="0.45"/>
+                  <Setter TargetName="Thumb" Property="Opacity" Value="0.55"/>
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
       <ControlTemplate x:Key="CircuitBrowser.ScrollBar.Menu.Template.Vertical" TargetType="{x:Type ScrollBar}">
         <Grid Background="Transparent">
           <Grid.RowDefinitions>
@@ -585,6 +625,7 @@
         <Grid.RowDefinitions>
           <RowDefinition Height="Auto"/>
           <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <Grid Grid.Row="0">
@@ -604,6 +645,42 @@
         </Grid>
 
         <Grid Grid.Row="1" Margin="0,6,0,0">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" SharedSizeGroup="ActionLabelCol"/>
+            <ColumnDefinition Width="Auto"/>
+          </Grid.ColumnDefinitions>
+          <TextBlock Grid.Column="0" Text="Calc Preview:" Style="{DynamicResource CED.Text.CaptionStrong}" FontSize="12" VerticalAlignment="Center"/>
+<StackPanel Grid.Column="1"
+            Orientation="Horizontal"
+            Margin="6,0,0,0"
+            VerticalAlignment="Center">
+
+  <CheckBox Name="CalcPreviewToggle"
+            Style="{StaticResource CircuitBrowser.ToggleSwitch}"
+            Checked="calc_preview_toggled"
+            Unchecked="calc_preview_toggled">
+
+    <CheckBox.ToolTip>
+      <ToolTip>
+        <TextBlock TextWrapping="Wrap"
+                   MaxWidth="320"
+                   Text="When enabled, calculations pause before writing if conduit or wire sizes will change, so you can keep new sizes, keep existing sizes as overrides, or skip the run."/>
+      </ToolTip>
+    </CheckBox.ToolTip>
+
+  </CheckBox>
+
+  <TextBlock Name="CalcPreviewStateText"
+             Text="Off"
+             Style="{DynamicResource CED.Text.Secondary}"
+             FontSize="12"
+             VerticalAlignment="Center"
+             Margin="6,0,0,0"/>
+
+</StackPanel>
+        </Grid>
+
+        <Grid Grid.Row="2" Margin="0,6,0,0">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" SharedSizeGroup="ActionLabelCol"/>
             <ColumnDefinition Width="Auto"/>

@@ -3,6 +3,8 @@
 
 from pyrevit import DB
 
+from Snippets import categories as category_utils
+
 
 class RevitCircuitWriter(object):
     """Writes calculated circuit and downstream parameter values."""
@@ -38,7 +40,7 @@ class RevitCircuitWriter(object):
                 continue
 
     def write_connected_elements(self, branch, param_values, settings, locked_ids=None):
-        """Write calculated values to connected fixtures/equipment."""
+        """Write calculated values to connected fixtures/devices and equipment."""
         circuit = branch.circuit
         fixture_count = 0
         equipment_count = 0
@@ -48,6 +50,14 @@ class RevitCircuitWriter(object):
         write_equipment = getattr(settings, 'write_equipment_results', False)
         if not (write_fixtures or write_equipment):
             return fixture_count, equipment_count
+
+        doc = getattr(circuit, 'Document', None)
+        fixture_category_values = set(
+            [int(bic) for bic in category_utils.get_fixture_device_categories(doc=doc)]
+        )
+        equipment_category_values = category_utils.category_id_values(
+            category_utils.get_equipment_category_ids()
+        )
 
         for el in circuit.Elements:
             if not isinstance(el, DB.FamilyInstance):
@@ -59,9 +69,9 @@ class RevitCircuitWriter(object):
             if not cat:
                 continue
 
-            cat_id = cat.Id
-            is_fixture = cat_id == DB.ElementId(DB.BuiltInCategory.OST_ElectricalFixtures)
-            is_equipment = cat_id == DB.ElementId(DB.BuiltInCategory.OST_ElectricalEquipment)
+            cat_id_value = category_utils.category_id_value(cat.Id)
+            is_fixture = cat_id_value in fixture_category_values
+            is_equipment = cat_id_value in equipment_category_values
 
             if not (is_fixture or is_equipment):
                 continue

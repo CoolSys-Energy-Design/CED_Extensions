@@ -81,7 +81,7 @@
   <SolidColorBrush x:Key="CED.Brush.DataGridEditableBackground" Color="{DynamicResource CED.Color.DataGridEditableBackground}"/>
   <SolidColorBrush x:Key="CED.Brush.DataGridCellBorder" Color="{DynamicResource CED.Color.DataGridCellBorder}"/>
   <SolidColorBrush x:Key="CED.Brush.DataGridDividerStrong" Color="{DynamicResource CED.Color.DataGridDividerStrong}"/>
-  <SolidColorBrush x:Key="CED.Brush.DataGridSelectionBackground" Color="{DynamicResource CED.Color.CircuitItemSelectedBackground}"/>
+  <SolidColorBrush x:Key="CED.Brush.DataGridSelectionBackground" Color="{DynamicResource CED.Color.DataGridSelectionBackground}"/>
   <SolidColorBrush x:Key="CED.Brush.DataGridSelectionForeground" Color="{DynamicResource CED.Color.PrimaryText}"/>
   <SolidColorBrush x:Key="CED.Brush.DataGridDisabledForeground" Color="{DynamicResource CED.Color.DataGridDisabledForeground}"/>
   <SolidColorBrush x:Key="CED.Brush.DataGridDisabledBackground" Color="{DynamicResource CED.Color.DataGridDisabledBackground}"/>

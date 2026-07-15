@@ -357,7 +357,7 @@
     <Style x:Key="EditorState.Text.Manual" TargetType="TextBox" BasedOn="{StaticResource EditorNumericText}">
       <Setter Property="Background" Value="{DynamicResource CED.Brush.InfoAccentBackground}"/>
       <Setter Property="BorderBrush" Value="{DynamicResource CED.Brush.AccentBlue}"/>
-      <Setter Property="BorderThickness" Value="2"/>
+      <Setter Property="BorderThickness" Value="1"/>
     </Style>
 
     <Style x:Key="EditorState.Input.Readonly" TargetType="TextBox" BasedOn="{StaticResource EditorInputText}">
@@ -383,7 +383,7 @@
     <Style x:Key="EditorState.Input.Manual" TargetType="TextBox" BasedOn="{StaticResource EditorInputText}">
       <Setter Property="Background" Value="{DynamicResource CED.Brush.InfoAccentBackground}"/>
       <Setter Property="BorderBrush" Value="{DynamicResource CED.Brush.AccentBlue}"/>
-      <Setter Property="BorderThickness" Value="2"/>
+      <Setter Property="BorderThickness" Value="1"/>
     </Style>
 
     <Style x:Key="EditorState.Combo.Readonly" TargetType="ComboBox" BasedOn="{StaticResource EditorCombo}">
@@ -399,7 +399,7 @@
     <Style x:Key="EditorState.Combo.Manual" TargetType="ComboBox" BasedOn="{StaticResource EditorCombo}">
       <Setter Property="Background" Value="{DynamicResource CED.Brush.InfoAccentBackground}"/>
       <Setter Property="BorderBrush" Value="{DynamicResource CED.Brush.AccentBlue}"/>
-      <Setter Property="BorderThickness" Value="2"/>
+      <Setter Property="BorderThickness" Value="1"/>
     </Style>
     <Style x:Key="EditorState.Combo.Center.Readonly" TargetType="ComboBox" BasedOn="{StaticResource EditorState.Combo.Readonly}">
       <Setter Property="HorizontalContentAlignment" Value="Center"/>
@@ -426,6 +426,21 @@
       <Setter Property="Padding" Value="6,4"/>
       <Setter Property="Margin" Value="0,0,0,4"/>
       <Setter Property="TextElement.Foreground" Value="{DynamicResource CED.Brush.PrimaryText}"/>
+    </Style>
+    <Style x:Key="EditorReadOnlyCell" TargetType="Border">
+      <Setter Property="Height" Value="24"/>
+      <Setter Property="Padding" Value="6,0"/>
+      <Setter Property="Margin" Value="0"/>
+      <Setter Property="Background" Value="{DynamicResource CED.Brush.InfoPanelBackground}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource CED.Brush.InfoPanelBorder}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="3"/>
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource CED.Brush.PrimaryText}"/>
+    </Style>
+    <Style x:Key="PreviewCompactValueBox" TargetType="Border" BasedOn="{StaticResource EditorReadOnlyCell}"/>
+    <Style x:Key="PreviewQuantityValueBox" TargetType="Border" BasedOn="{StaticResource PreviewCompactValueBox}">
+      <Setter Property="Opacity" Value="0.55"/>
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource CED.Brush.DataGridReadOnlyForeground}"/>
     </Style>
   </Window.Resources>
 
@@ -475,10 +490,28 @@
                       Background="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem}, Path=Background}"
                       Padding="8,6">
                 <StackPanel>
-                  <TextBlock Text="{Binding panel_ckt_text}"
-                             FontWeight="Bold"
-                             TextTrimming="CharacterEllipsis"
-                             Foreground="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem}, Path=Foreground}"/>
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*"/>
+                      <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0"
+                               Text="{Binding panel_ckt_text}"
+                               FontWeight="Bold"
+                               TextTrimming="CharacterEllipsis"
+                               Foreground="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem}, Path=Foreground}"/>
+                    <Button Grid.Column="1"
+                            Margin="6,-1,0,0"
+                            ToolTip="Discard from list"
+                            Style="{DynamicResource CED.SearchBox.ClearButton}"
+                            Click="discard_circuit_clicked">
+                      <Path Data="{DynamicResource CED.Icon.Close}"
+                            Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                            Width="10"
+                            Height="10"
+                            Stretch="Uniform"/>
+                    </Button>
+                  </Grid>
                   <TextBlock Text="{Binding load_name}"
                              FontSize="11"
                              Opacity="0.92"
@@ -546,41 +579,56 @@
                    Foreground="{DynamicResource CED.Brush.DataGridReadOnlyForeground}"/>
         </StackPanel>
 
-        <Border Grid.Row="1"
-                BorderBrush="{DynamicResource CED.Brush.ListBorder}"
+        <Grid Grid.Row="1">
+          <Border BorderBrush="{DynamicResource CED.Brush.ListBorder}"
                 BorderThickness="1"
                 Background="{DynamicResource CED.Brush.ListBackground}"
                 CornerRadius="4">
-          <ScrollViewer VerticalScrollBarVisibility="Auto"
-                        HorizontalScrollBarVisibility="Disabled"
-                        Padding="10">
+            <ScrollViewer Name="EditorScrollViewer"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled"
+                          Padding="10">
             <StackPanel>
+              <Border Name="EditorWarningSpacer" Height="0"/>
               <Border Style="{StaticResource EditorCard}">
                 <StackPanel>
                   <TextBlock Text="Calculation Preview" Style="{DynamicResource CED.Text.SectionHeader}" Margin="0,0,0,6"/>
                   <Grid>
                     <Grid.ColumnDefinitions>
-                      <ColumnDefinition Width="Auto"/>
-                      <ColumnDefinition Width="74"/>
-                      <ColumnDefinition Width="14"/>
-                      <ColumnDefinition Width="Auto"/>
-                      <ColumnDefinition Width="90"/>
-                      <ColumnDefinition Width="14"/>
-                      <ColumnDefinition Width="Auto"/>
-                      <ColumnDefinition Width="74"/>
+                      <ColumnDefinition Width="1*"/>
+                      <ColumnDefinition Width="8"/>
+                      <ColumnDefinition Width="1*"/>
+                      <ColumnDefinition Width="8"/>
+                      <ColumnDefinition Width="1*"/>
+                      <ColumnDefinition Width="8"/>
+                      <ColumnDefinition Width="1.35*"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Text="Load Current" Style="{StaticResource EditorLabel}"/>
-                    <Border Grid.Column="1" Name="PreviewLoadCurrentBox" Style="{StaticResource PreviewValueBox}">
-                      <TextBlock Name="PreviewLoadCurrentText" Text="-" Style="{DynamicResource CED.Text.Primary}"/>
-                    </Border>
-                    <TextBlock Grid.Column="3" Text="Ampacity" Style="{StaticResource EditorLabel}"/>
-                    <Border Grid.Column="4" Name="PreviewAmpacityBox" Style="{StaticResource PreviewValueBox}">
-                      <TextBlock Name="PreviewAmpacityText" Text="-" Style="{DynamicResource CED.Text.Primary}"/>
-                    </Border>
-                    <TextBlock Grid.Column="6" Text="VD" Style="{StaticResource EditorLabel}"/>
-                    <Border Grid.Column="7" Name="PreviewVoltageDropBox" Style="{StaticResource PreviewValueBox}">
-                      <TextBlock Name="PreviewVoltageDropText" Text="-" Style="{DynamicResource CED.Text.Primary}"/>
-                    </Border>
+                    <StackPanel Grid.Column="0">
+                      <TextBlock Text="Load Current" Style="{StaticResource EditorLabel}" Margin="0,0,0,2"/>
+                      <Border Name="PreviewLoadCurrentBox" Style="{StaticResource PreviewCompactValueBox}">
+                        <TextBlock Name="PreviewLoadCurrentText" Text="-" Style="{DynamicResource CED.Text.Primary}" VerticalAlignment="Center" Margin="0"/>
+                      </Border>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2">
+                      <TextBlock Text="Ampacity" Style="{StaticResource EditorLabel}" Margin="0,0,0,2"/>
+                      <Border Name="PreviewAmpacityBox" Style="{StaticResource PreviewCompactValueBox}">
+                        <TextBlock Name="PreviewAmpacityText" Text="-" Style="{DynamicResource CED.Text.Primary}" VerticalAlignment="Center" Margin="0"/>
+                      </Border>
+                    </StackPanel>
+                    <StackPanel Grid.Column="4">
+                      <TextBlock Text="VD" Style="{StaticResource EditorLabel}" Margin="0,0,0,2"/>
+                      <Border Name="PreviewVoltageDropBox" Style="{StaticResource PreviewCompactValueBox}">
+                        <TextBlock Name="PreviewVoltageDropText" Text="-" Style="{DynamicResource CED.Text.Primary}" VerticalAlignment="Center" Margin="0"/>
+                      </Border>
+                    </StackPanel>
+                    <StackPanel Grid.Column="6">
+                      <TextBlock Text="VD Method" Style="{StaticResource EditorLabel}" Margin="0,0,0,2"/>
+                      <ComboBox Name="VdMethodCombo"
+                                Style="{StaticResource EditorState.Combo.Center.Auto}"
+                                Height="24"
+                                DisplayMemberPath="label"
+                                SelectionChanged="vd_method_changed"/>
+                    </StackPanel>
                   </Grid>
                   <Grid Margin="0,4,0,0">
                     <Grid.ColumnDefinitions>
@@ -588,25 +636,19 @@
                       <ColumnDefinition Width="8"/>
                       <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <Border Grid.Column="0" Style="{StaticResource PreviewValueBox}">
+                    <Border Grid.Column="0" Name="PreviewCurrentConduitSummaryBox" Style="{StaticResource PreviewValueBox}">
                       <StackPanel>
-                        <TextBlock Text="Conduit &amp; Wire String" Style="{DynamicResource CED.Text.CaptionStrong}"/>
-                        <TextBlock Name="PreviewConduitSummaryText" Text="-" Style="{DynamicResource CED.Text.Primary}" TextWrapping="Wrap"/>
+                        <TextBlock Text="Current Conduit &amp; Wire Size" Style="{DynamicResource CED.Text.CaptionStrong}" TextWrapping="Wrap"/>
+                        <TextBlock Name="PreviewCurrentConduitSummaryText" Text="-" Style="{DynamicResource CED.Text.Primary}" TextWrapping="Wrap"/>
                       </StackPanel>
                     </Border>
-                    <Border Grid.Column="2" Style="{StaticResource PreviewValueBox}">
+                    <Border Grid.Column="2" Name="PreviewNewConduitSummaryBox" Style="{StaticResource PreviewValueBox}">
                       <StackPanel>
-                        <TextBlock Text="Wire String" Style="{DynamicResource CED.Text.CaptionStrong}"/>
-                        <TextBlock Name="PreviewWireSummaryText" Text="-" Style="{DynamicResource CED.Text.Primary}" TextWrapping="Wrap"/>
+                        <TextBlock Text="New Conduit &amp; Wire Size" Style="{DynamicResource CED.Text.CaptionStrong}" TextWrapping="Wrap"/>
+                        <TextBlock Name="PreviewNewConduitSummaryText" Text="-" Style="{DynamicResource CED.Text.Primary}" TextWrapping="Wrap"/>
                       </StackPanel>
                     </Border>
                   </Grid>
-                  <Border Name="PreviewNoticeBox" Style="{StaticResource PreviewValueBox}">
-                    <StackPanel>
-                      <TextBlock Text="Warnings" Style="{DynamicResource CED.Text.CaptionStrong}"/>
-                      <TextBlock Name="PreviewNoticeText" Text="No warnings." Style="{DynamicResource CED.Text.Primary}" TextWrapping="Wrap"/>
-                    </StackPanel>
-                  </Border>
                 </StackPanel>
               </Border>
 
@@ -663,8 +705,8 @@
                         <ColumnDefinition Width="*"/>
                       </Grid.ColumnDefinitions>
                       <TextBlock Grid.Column="0" Text="Type" Style="{StaticResource EditorLabel}"/>
-                      <Border Grid.Column="2" Style="{StaticResource PreviewValueBox}" Margin="0">
-                        <TextBlock Name="CircuitTypeText" Text="-" HorizontalAlignment="Left" Margin="4,0,0,0"/>
+                      <Border Grid.Column="2" Style="{StaticResource PreviewCompactValueBox}" Margin="0">
+                        <TextBlock Name="CircuitTypeText" Text="-" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0"/>
                       </Border>
                     </Grid>
                     <Grid Grid.Row="1" Grid.Column="2" Margin="0,6,0,0">
@@ -704,8 +746,8 @@
                         <ColumnDefinition Width="*"/>
                       </Grid.ColumnDefinitions>
                       <TextBlock Grid.Column="0" Text="Volts" Style="{StaticResource EditorLabel}"/>
-                      <Border Grid.Column="2" Style="{StaticResource PreviewValueBox}" Margin="0">
-                        <TextBlock Name="VoltsText" Text="-" HorizontalAlignment="Left" Margin="4,0,0,0"/>
+                      <Border Grid.Column="2" Style="{StaticResource PreviewCompactValueBox}" Margin="0">
+                        <TextBlock Name="VoltsText" Text="-" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0"/>
                       </Border>
                     </Grid>
                     <Grid Grid.Row="2" Grid.Column="2" Margin="0,6,0,0">
@@ -729,8 +771,8 @@
                         <ColumnDefinition Width="Auto" SharedSizeGroup="CircuitPropRightValueCol"/>
                       </Grid.ColumnDefinitions>
                       <TextBlock Grid.Column="0" Text="Total Length" Style="{DynamicResource CED.Text.Secondary}"/>
-                      <Border Grid.Column="2" Style="{StaticResource PreviewValueBox}" Margin="0" Width="78" HorizontalAlignment="Left">
-                        <TextBlock Name="TotalLengthText" Text="-" HorizontalAlignment="Left" Margin="4,0,0,0"/>
+                      <Border Grid.Column="2" Style="{StaticResource PreviewCompactValueBox}" Margin="0" Width="78" HorizontalAlignment="Left">
+                        <TextBlock Name="TotalLengthText" Text="-" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0"/>
                       </Border>
                     </Grid>
                   </Grid>
@@ -781,24 +823,32 @@
                     <CheckBox Name="UserOverrideCheck"
                               Content="User Override"
                               Style="{DynamicResource CED.Input.CheckBox}"
+                              Width="120"
+                              Height="24"
                               Margin="0,0,16,0"
                               Checked="user_override_changed"
                               Unchecked="user_override_changed"/>
                     <CheckBox Name="CustomHotCheck"
                               Content="Include Hot"
                               Style="{DynamicResource CED.Input.CheckBox}"
+                              Width="104"
+                              Height="24"
                               Margin="0,0,16,0"
                               Checked="hot_custom_changed"
                               Unchecked="hot_custom_changed"/>
                     <CheckBox Name="CustomGroundCheck"
                               Content="Include Ground"
                               Style="{DynamicResource CED.Input.CheckBox}"
+                              Width="128"
+                              Height="24"
                               Margin="0,0,16,0"
                               Checked="ground_custom_changed"
                               Unchecked="ground_custom_changed"/>
                     <CheckBox Name="CustomConduitCheck"
                               Content="Include Conduit"
                               Style="{DynamicResource CED.Input.CheckBox}"
+                              Width="132"
+                              Height="24"
                               Checked="conduit_custom_changed"
                               Unchecked="conduit_custom_changed"/>
                   </WrapPanel>
@@ -849,6 +899,7 @@
                               Content="Include"
                               HorizontalAlignment="Center"
                               Margin="0,6,0,0"
+                              Height="24"
                               Style="{DynamicResource CED.Input.CheckBox}"
                               Checked="include_neutral_changed"
                               Unchecked="include_neutral_changed"/>
@@ -858,22 +909,23 @@
                               Content="Include"
                               HorizontalAlignment="Center"
                               Margin="0,6,0,0"
+                              Height="24"
                               Style="{DynamicResource CED.Input.CheckBox}"
                               Checked="include_ig_changed"
                               Unchecked="include_ig_changed"/>
 
                     <TextBlock Grid.Row="3" Grid.Column="0" Text="Quantity" Style="{StaticResource EditorLabel}" Margin="0,6,6,0"/>
-                    <Border Grid.Row="3" Grid.Column="1" Style="{StaticResource PreviewValueBox}" Margin="0,6,0,0">
-                      <TextBlock Name="HotQtyValueText" Text="0" HorizontalAlignment="Center"/>
+                    <Border Grid.Row="3" Grid.Column="1" Style="{StaticResource PreviewQuantityValueBox}" Margin="0,6,0,0">
+                      <TextBlock Name="HotQtyValueText" Text="0" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0"/>
                     </Border>
-                    <Border Grid.Row="3" Grid.Column="3" Style="{StaticResource PreviewValueBox}" Margin="0,6,0,0">
-                      <TextBlock Name="NeutralQtyValueText" Text="0" HorizontalAlignment="Center"/>
+                    <Border Grid.Row="3" Grid.Column="3" Style="{StaticResource PreviewQuantityValueBox}" Margin="0,6,0,0">
+                      <TextBlock Name="NeutralQtyValueText" Text="0" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0"/>
                     </Border>
-                    <Border Grid.Row="3" Grid.Column="5" Style="{StaticResource PreviewValueBox}" Margin="0,6,0,0">
-                      <TextBlock Name="GroundQtyValueText" Text="0" HorizontalAlignment="Center"/>
+                    <Border Grid.Row="3" Grid.Column="5" Style="{StaticResource PreviewQuantityValueBox}" Margin="0,6,0,0">
+                      <TextBlock Name="GroundQtyValueText" Text="0" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0"/>
                     </Border>
-                    <Border Grid.Row="3" Grid.Column="7" Style="{StaticResource PreviewValueBox}" Margin="0,6,0,0">
-                      <TextBlock Name="IgQtyValueText" Text="0" HorizontalAlignment="Center"/>
+                    <Border Grid.Row="3" Grid.Column="7" Style="{StaticResource PreviewQuantityValueBox}" Margin="0,6,0,0">
+                      <TextBlock Name="IgQtyValueText" Text="0" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0"/>
                     </Border>
                   </Grid>
                   <Grid Margin="0,8,0,0">
@@ -912,16 +964,37 @@
                     <TextBlock Grid.Column="3" Text="Conduit Type" Style="{StaticResource EditorLabel}"/>
                     <ComboBox Grid.Column="4" Name="ConduitTypeCombo" Style="{StaticResource EditorCombo}" SelectionChanged="editable_value_changed"/>
                     <TextBlock Grid.Column="6" Text="Conduit Fill" Style="{StaticResource EditorLabel}"/>
-                    <Border Grid.Column="7" Name="ConduitFillBox" Style="{StaticResource PreviewValueBox}" Margin="0">
-                      <TextBlock Name="ConduitFillText" Text="-" HorizontalAlignment="Center"/>
+                    <Border Grid.Column="7" Name="ConduitFillBox" Style="{StaticResource PreviewCompactValueBox}" Margin="0">
+                      <TextBlock Name="ConduitFillText" Text="-" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0"/>
                     </Border>
                   </Grid>
                 </StackPanel>
               </Border>
 
+              </StackPanel>
+            </ScrollViewer>
+          </Border>
+
+          <Border Name="PreviewNoticeBox"
+                  Panel.ZIndex="10"
+                  Visibility="Collapsed"
+                  VerticalAlignment="Top"
+                  HorizontalAlignment="Stretch"
+                  Margin="0,0,18,0"
+                  Background="{DynamicResource CED.Brush.DataGridWarningBackground}"
+                  BorderBrush="{DynamicResource CED.Brush.InfoPanelBorder}"
+                  BorderThickness="1"
+                  CornerRadius="4"
+                  Padding="10,8">
+            <StackPanel>
+              <TextBlock Text="Warnings" Style="{DynamicResource CED.Text.CaptionStrong}"/>
+              <TextBlock Name="PreviewNoticeText"
+                         Text=""
+                         Style="{DynamicResource CED.Text.Primary}"
+                         TextWrapping="Wrap"/>
             </StackPanel>
-          </ScrollViewer>
-        </Border>
+          </Border>
+        </Grid>
       </Grid>
     </Grid>
 
