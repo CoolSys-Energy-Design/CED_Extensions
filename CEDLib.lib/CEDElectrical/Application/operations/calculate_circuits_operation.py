@@ -86,7 +86,7 @@ class CalculateCircuitsOperation(object):
         if locked_ids:
             summary = self.repository.summarize_locked(doc, locked_ids)
             self.logger.info(
-                'Locked elements detected; proceeding with editable set only. circuits={} fixtures={} equipment={} other={}'.format(
+                'Locked elements detected; proceeding with editable set only. circuits={} fixture_devices={} equipment={} other={}'.format(
                     int(summary.get('circuits') or 0),
                     int(summary.get('fixtures') or 0),
                     int(summary.get('equipment') or 0),
@@ -645,7 +645,7 @@ class CalculateCircuitsOperation(object):
         output.close_others()
         output.print_md('## Shared Parameters Updated')
         output.print_md('* Circuits updated: **{}**'.format(len(branches)))
-        output.print_md('* Electrical Fixtures updated: **{}**'.format(total_fixtures))
+        output.print_md('* Fixtures and Devices updated: **{}**'.format(total_fixtures))
         output.print_md('* Electrical Equipment updated: **{}**'.format(total_equipment))
 
         if locked_rows:
