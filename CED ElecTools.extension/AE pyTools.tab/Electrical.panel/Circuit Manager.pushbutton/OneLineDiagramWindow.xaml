@@ -21,7 +21,8 @@
       </Grid.ColumnDefinitions>
 
       <StackPanel Grid.Column="0" Orientation="Horizontal">
-        <Button Name="BuildBranchButton" Style="{DynamicResource CED.Button.Primary}" Content="Build Branch" Width="100" Height="24" Margin="0,0,14,0" Click="build_branch_clicked" IsEnabled="False" ToolTip="Place SLD_ detail groups for the selected cards into the active drafting view and fill in their data. Select cards first (click / Ctrl+click)."/>
+        <Button Name="BuildBranchButton" Style="{DynamicResource CED.Button.Primary}" Content="Build Branch" Width="100" Height="24" Margin="0,0,6,0" Click="build_branch_clicked" ToolTip="Build the selected cards into the active drafting view. Select cards first (click / Ctrl+click)."/>
+        <Button Name="BuildAllButton" Style="{DynamicResource CED.Button.Base}" Content="Build All" Width="80" Height="24" Margin="0,0,14,0" Click="build_all_clicked" ToolTip="Build the ENTIRE one line (every card shown) into the active drafting view. Disabled while Loads: All is displayed - switch loads to 50 HP+ or None first."/>
         <TextBlock Text="One Line Diagram" Style="{DynamicResource CED.Text.SectionHeader}" VerticalAlignment="Center" Margin="0,0,14,0"/>
         <Button Name="RefreshDiagramButton" Style="{DynamicResource CED.Button.Base}" Content="Refresh" Width="72" Height="24" Click="refresh_diagram_clicked" ToolTip="Rebuild the diagram from the current model"/>
         <Button Name="CardModeButton" Style="{DynamicResource CED.Button.Base}" Content="Compact Cards" Width="112" Height="24" Margin="6,0,0,0" Click="toggle_card_mode_clicked" ToolTip="Toggle between full and compact equipment cards"/>

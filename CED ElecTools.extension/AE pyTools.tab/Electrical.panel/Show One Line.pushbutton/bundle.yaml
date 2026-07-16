@@ -1,0 +1,12 @@
+title: >-
+  Show One
+
+  Line
+
+tooltip: >-
+  Interactive one line diagram (testing build - temporarily split from Circuit Manager).
+  Pan/zoom the electrical distribution tree, drag equipment cards to re-feed panels,
+  and select cards + Build Branch to place SLD detail groups into a drafting view.
+
+author: >-
+  AEvelina

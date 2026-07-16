@@ -32,14 +32,18 @@ from System.Windows import (
     GridLength,
     GridUnitType,
     HorizontalAlignment,
+    SizeToContent,
     TextTrimming,
     TextWrapping,
     Thickness,
     Visibility,
+    Window,
+    WindowStartupLocation,
 )
 from System.Windows.Controls import (
     Border,
     Canvas,
+    ComboBox,
     ContextMenu,
     MenuItem,
     Orientation,
@@ -3027,19 +3031,34 @@ class BuildBranchExternalEventGateway(object):
 
 class _BuildBranchHandler(IExternalEventHandler):
     GAP_FACTOR = 0.25
-    SIBLING_DX = 6.0  # ft between sibling branches when the parent has no breaker anchors
-    ROW_GAP = 1.5     # ft between independent branches laid out in a row
+    SIBLING_DX = 4.0        # ft column width per subtree slot (unanchored items only)
+    ROW_GAP = 2.0           # ft between independent root branches
+    ROW_VGAP = 3.0          # ft vertical clearance between hierarchy rows
+    PANEL_TOP_HEIGHT = 1.03 # ft Panel-Top symbol height (insertion at its base)
 
-    # Keywords are matched against SLD_ group NAMES only. Equipment is
-    # classified by family part type, EXCEPT anything that reads as an ATS /
-    # transfer switch - those always use a detail family, never a group
-    # (their Revit families are often built as Switchboard part type).
-    KIND_KEYWORDS = {
-        "transformer": ["XFMR", "TRANSFORMER", "TRANS"],
-        "switchboard": ["SWITCHBOARD", "SWBD", "SWB", "MDP", "DISTRIBUTION", "GEAR"],
-        "panel": ["PANELBOARD", "PANEL", "PNL", "BRANCH"],
-        "load": ["EQUIP", "MOTOR", "LOAD", "MECH", "DISCONNECT"],
+    # The branch kit: exact (family, type) detail symbols per role, from Reed's
+    # curated selection (2026-07-14). Build Branch composes ONLY from these -
+    # SLD_ groups are no longer used.
+    KIT = {
+        "switchboard": ("SLD-EQU-SWITCHBOARD-TOP_CED", "SOLID"),
+        "bus_panel": ("SLD-EQU-PANEL WITH BUS-TOP_CED", "PANEL WITH BUS"),
+        "panel": ("SLD-EQU-PANEL-TOP_CED", "PANELBOARD"),
+        "transformer": ("SLD-EQU-TRANSFORMER-BOX-GROUND-TOP_CED", "SOLID"),
+        "ats": ("SLD-EQU-TRANSFER SWITCH-TOP_CED", "TRANSFER SWITCH-TOP"),
+        "load_motor": ("SLD-DEV-MOTOR DISCONNECT COMBO-TOP_CED", "MOTOR W/ DISCONNECT"),
+        "load_equip": ("SLD-DEV-MOTOR DISCONNECT COMBO-TOP_CED", "EQUIPMENT CONNECTION W/ DISCONNECT"),
+        "breaker": ("SLD-FDR-CIRCUIT BREAKER_CED", "CIRCUIT BREAKER"),
+        "line": ("SLD-FDR_CED", "MEDIUM SOLID"),
     }
+    # Load names that read as motors get the motor combo symbol.
+    MOTOR_LOAD_HINTS = ("MOTOR", "PUMP", "FAN", "COMP", "RACK", "BALER", "ELEVATOR")
+
+    # Feed assembly (measured from the kit's composed example): breaker
+    # insertion at its left end (0.75 ft body), feeder line insertion at its
+    # left end (stretch via Symbol Length_CED), running left-to-right into the
+    # equipment symbol's insertion/feed point.
+    FEED_BREAKER_WIDTH = 0.75
+    FEED_LINE_LENGTH = 2.0  # longer runs by default - easier for designers to shorten
 
     def __init__(self, gateway):
         self._gateway = gateway
@@ -3079,11 +3098,14 @@ class _BuildBranchHandler(IExternalEventHandler):
         if not items:
             return "cancelled", {}
 
-        group_types = self._collect_sld_group_types(doc)
+        # ONE mapping dialog for the whole selection (no per-item popups).
+        mapping = self._prompt_symbol_mapping(doc, items)
+        if mapping is None:
+            return "cancelled", {}
         resolved = []
         skipped = []
-        for item in items:
-            template = self._resolve_template(doc, item, group_types)
+        for index, item in enumerate(items):
+            template = self._template_from_choice(doc, item, mapping.get(index))
             if template is None:
                 skipped.append(str(item.get("name") or "?"))
                 continue
@@ -3104,98 +3126,204 @@ class _BuildBranchHandler(IExternalEventHandler):
         detail_count = 0
         bus_breakers = 0
         self._tag_type_cache = {}
+        self._kit_cache = {}
+        self._route_segments = []
         transaction = DB.Transaction(doc, "Build One Line Branch")
         transaction.Start()
         try:
-            x_main = float(point.X)
+            x_base = float(point.X)
             y_base = float(point.Y)
-            gap = max(0.2, self.GAP_FACTOR)
             wire_tag_type_id = self._find_feeder_wire_tag_id(doc)
-            placed_equip = {}  # element_id -> {x, bottom, anchors, anchor_used, children, child_xs}
 
-            # Tree layout mirroring the one-line window: children without a
-            # breaker anchor spread centered beneath their parent, sized by
-            # subtree width.
-            equip_ids = set()
+            # ---- selection tree: keys, children, depth --------------------
+            def _key(it):
+                if str(it.get("kind") or "") == "equip":
+                    return ("E", int(it.get("element_id") or 0))
+                return ("L", int(it.get("circuit_id") or 0))
+
+            equip_items = {}
             for it in items:
                 if str(it.get("kind") or "") == "equip":
-                    equip_ids.add(int(it.get("element_id") or 0))
+                    equip_items[int(it.get("element_id") or 0)] = it
             children_map = {}
             for it in items:
                 pid = int(it.get("parent_id") or 0)
-                if pid and pid in equip_ids:
+                if pid and pid in equip_items:
                     children_map.setdefault(pid, []).append(it)
 
-            def _subtree_slots(it, depth=0):
-                if depth > 20 or str(it.get("kind") or "") != "equip":
-                    return 1.0
-                kids = children_map.get(int(it.get("element_id") or 0), [])
-                if not kids:
-                    return 1.0
-                return max(1.0, sum([_subtree_slots(k, depth + 1) for k in kids]))
+            depth_map = {}
 
-            def _plan_child_xs(it, parent_x):
-                kids = children_map.get(int(it.get("element_id") or 0), [])
-                if not kids:
-                    return []
-                widths = [_subtree_slots(k) for k in kids]
-                total = sum(widths)
-                cursor = float(parent_x) - (total * self.SIBLING_DX) / 2.0
-                positions = []
-                for width in widths:
-                    positions.append(cursor + (width * self.SIBLING_DX) / 2.0)
-                    cursor += width * self.SIBLING_DX
-                return positions
-            for item, template in resolved:
-                # Children hang off their placed parent: switchboard children on
-                # its breaker positions, everything else directly below its parent.
-                parent_rec = placed_equip.get(int(item.get("parent_id") or 0))
-                anchor = None
-                anchor_vertical = False
-                if parent_rec is not None:
-                    anchors = parent_rec.get("anchors") or []
-                    used = int(parent_rec.get("anchor_used", 0))
-                    if used < len(anchors):
-                        anchor = anchors[used]
-                        parent_rec["anchor_used"] = used + 1
-                        anchor_vertical = str(anchor.get("orient") or "h") == "v"
-                        if anchor_vertical:
-                            # Riser standard: fed symbol sits to the right of
-                            # the bus at its breaker's elevation.
-                            x = float(anchor["x"]) + self.RISER_CHILD_DX
-                            y = float(anchor.get("y") or 0.0) + self.RISER_CHILD_DY
-                        else:
-                            x = float(anchor["x"])
-                            y = float(parent_rec["bottom"]) - gap
-                    else:
-                        child_xs = parent_rec.get("child_xs") or []
-                        if child_xs:
-                            x = float(child_xs.pop(0))
-                        else:
-                            x = float(parent_rec["x"]) + parent_rec["children"] * self.SIBLING_DX
-                        y = float(parent_rec["bottom"]) - gap
-                    parent_rec["children"] += 1
-                    advance_main = False
-                else:
-                    # Independent roots (no selected feeder, or different ones)
-                    # go side by side in a row, not stacked in a column.
-                    x = x_main
-                    y = y_base
-                    advance_main = True
+            def _depth(it, guard=0):
+                k = _key(it)
+                if k in depth_map:
+                    return depth_map[k]
+                value = 0
+                parents = []
+                pid = int(it.get("parent_id") or 0)
+                if pid in equip_items:
+                    parents.append(equip_items[pid])
+                # Dual-fed items (ATS/bypass switch) sit below ALL their
+                # sources, so both IN connections route downward.
+                for alt in list(it.get("alt_feeds") or []):
+                    alt_pid = int(alt[0] or 0)
+                    if alt_pid in equip_items:
+                        parents.append(equip_items[alt_pid])
+                if guard < 20 and parents:
+                    value = max([_depth(p, guard + 1) for p in parents]) + 1
+                depth_map[k] = value
+                return value
 
-                members = []
-                bbox_instances = []
-                if template.get("group_type") is not None:
-                    group = doc.Create.PlaceGroup(DB.XYZ(x, y, 0.0), template["group_type"])
-                    doc.Regenerate()
-                    bbox_instances = [group]
+            for it in items:
+                _depth(it)
+            max_depth = max(depth_map.values()) if depth_map else 0
+
+            template_map = {}
+            for res_item, res_template in resolved:
+                template_map[_key(res_item)] = res_template
+
+            def _template_family(it):
+                template = template_map.get(_key(it))
+                try:
+                    symbols = (template or {}).get("symbols") or []
+                    symbol = symbols[0][0]
+                    family_param = symbol.get_Parameter(DB.BuiltInParameter.SYMBOL_FAMILY_NAME_PARAM)
+                    return ((family_param.AsString() if family_param else "") or "").upper()
+                except Exception:
+                    return ""
+
+            # ---- circuit numbers (ordering + slot matching) ---------------
+            circuit_order = {}
+            for order_item, _order_template in resolved:
+                number = 9999
+                try:
+                    circuit = self._item_circuit(doc, order_item)
+                    if circuit is not None:
+                        param = circuit.get_Parameter(DB.BuiltInParameter.RBS_ELEC_CIRCUIT_NUMBER)
+                        raw = (param.AsString() if param is not None and param.HasValue else "") or ""
+                        digits = "".join([ch for ch in raw if ch.isdigit()])
+                        if digits:
+                            number = int(digits)
+                except Exception:
+                    number = 9999
+                circuit_order[_key(order_item)] = number
+
+            # Children's left-to-right plan matches their bus slot order, so
+            # connector elbows never cross: slots run toward the feed, meaning
+            # -Right buses hand out slots right-to-left.
+            for pid in list(children_map.keys()):
+                kids = children_map[pid]
+                kids.sort(key=lambda k: (circuit_order.get(_key(k), 9999), str(k.get("name") or "")))
+                parent_item = equip_items.get(pid)
+                if parent_item is not None and "-RIGHT" in _template_family(parent_item):
+                    kids.reverse()
+
+            def _own_slots(it):
+                """Width an element itself needs, in SIBLING_DX slots - sized
+                by the BOX the bus symbol will actually draw (circuit count x
+                pitch plus stubs); plain panels/equipment take one tight slot."""
+                template = template_map.get(_key(it))
+                if template is not None and template.get("bus_family"):
                     try:
-                        members = [doc.GetElement(mid) for mid in list(group.UngroupMembers() or [])]
-                        bbox_instances = [m for m in members if m is not None] or [group]
+                        circuit_count = len(self._equipment_circuits(doc, it))
                     except Exception:
-                        members = []
-                    doc.Regenerate()
-                else:
+                        circuit_count = 0
+                    box_width = circuit_count * self.BREAKER_SPACING + 0.5
+                    return max(1.0, (box_width + 1.2) / self.SIBLING_DX)
+                return 1.0
+
+            def _subtree_slots(it, guard=0):
+                if guard > 20 or str(it.get("kind") or "") != "equip":
+                    return 1.0
+                own = _own_slots(it)
+                kids = children_map.get(int(it.get("element_id") or 0), [])
+                if not kids:
+                    return own
+                return max(own, sum([_subtree_slots(k, guard + 1) for k in kids]))
+
+            # ---- global X plan: roots left-to-right, subtrees centered ----
+            planned_x = {}
+
+            def _assign_x(it, left, guard=0):
+                width = _subtree_slots(it) * self.SIBLING_DX
+                planned_x[_key(it)] = left + width / 2.0
+                if guard > 20 or str(it.get("kind") or "") != "equip":
+                    return
+                cursor_inner = left
+                for kid in children_map.get(int(it.get("element_id") or 0), []):
+                    kid_width = _subtree_slots(kid) * self.SIBLING_DX
+                    _assign_x(kid, cursor_inner, guard + 1)
+                    cursor_inner += kid_width
+
+            cursor = x_base
+            for it in items:
+                if depth_map.get(_key(it), 0) == 0:
+                    _assign_x(it, cursor)
+                    cursor += _subtree_slots(it) * self.SIBLING_DX + self.ROW_GAP
+
+            ordered_resolved = sorted(
+                resolved,
+                key=lambda pair: (
+                    depth_map.get(_key(pair[0]), 0),
+                    int(pair[0].get("parent_id") or 0),
+                    circuit_order.get(_key(pair[0]), 9999),
+                    str(pair[0].get("name") or ""),
+                ),
+            )
+
+            # ---- place row by row: feeders on top, fed below --------------
+            placed_equip = {}  # element_id -> {x, y, bottom, kind, anchors, anchor_used}
+            pending_alt = []   # deferred IN2 connections: (alt_pid, alt_cid, ats_x, ats_y)
+            row_y = y_base
+            for depth_level in range(max_depth + 1):
+                row_bottom = row_y
+                for item, template in ordered_resolved:
+                    if depth_map.get(_key(item), 0) != depth_level:
+                        continue
+                    x = float(planned_x.get(_key(item), x_base))
+                    y = row_y
+
+                    # Switchboard boxes draw rightward from their top-left
+                    # insertion - shift the insertion so the drawn box centers
+                    # on the planned slot.
+                    if template.get("bus_family") and self._classify(item) == "switchboard":
+                        try:
+                            circuit_count = len(self._equipment_circuits(doc, item))
+                        except Exception:
+                            circuit_count = 0
+                        if circuit_count > 0:
+                            x -= (circuit_count * self.BREAKER_SPACING + 0.5) / 2.0
+
+                    parent_rec = placed_equip.get(int(item.get("parent_id") or 0))
+                    anchor = None
+                    if parent_rec is not None:
+                        anchors = parent_rec.get("anchors") or []
+                        if str(item.get("kind") or "") == "equip":
+                            my_circuit = int(item.get("feeder_circuit_id") or 0)
+                        else:
+                            my_circuit = int(item.get("circuit_id") or 0)
+                        # Connect to the breaker that IS this feeder circuit;
+                        # fall back to the next unclaimed slot.
+                        for candidate in anchors:
+                            if candidate.get("claimed"):
+                                continue
+                            if my_circuit and int(candidate.get("circuit_id") or 0) == my_circuit:
+                                anchor = candidate
+                                break
+                        if anchor is None:
+                            for candidate in anchors:
+                                if not candidate.get("claimed"):
+                                    anchor = candidate
+                                    break
+                        if anchor is not None:
+                            anchor["claimed"] = True
+                            if str(anchor.get("orient") or "h") == "h" and not template.get("bus_family"):
+                                # Plain panels/equipment sit tight, directly
+                                # under their breaker (bus pitch). Bus-style
+                                # children keep their planned row spacing and
+                                # connect back to the breaker with an elbow.
+                                x = float(anchor["x"])
+
+                    members = []
                     for symbol, dy in list(template.get("symbols") or []):
                         try:
                             if not symbol.IsActive:
@@ -3203,72 +3331,164 @@ class _BuildBranchHandler(IExternalEventHandler):
                                 doc.Regenerate()
                         except Exception:
                             pass
-                        members.append(
-                            doc.Create.NewFamilyInstance(DB.XYZ(x, y + float(dy), 0.0), symbol, view)
-                        )
+                        try:
+                            members.append(
+                                doc.Create.NewFamilyInstance(DB.XYZ(x, y + float(dy), 0.0), symbol, view)
+                            )
+                        except Exception:
+                            continue
                     doc.Regenerate()
+                    if not members:
+                        skipped.append(str(item.get("name") or "?"))
+                        continue
                     bbox_instances = list(members)
 
-                bus_anchors = []
-                if template.get("bus_family") and members:
-                    bus_anchors = self._populate_bus_breakers(doc, view, members[0], item)
-                    if bus_anchors:
-                        bus_breakers += len(bus_anchors)
-                        bbox_instances = list(members) + [a["element"] for a in bus_anchors]
+                    bus_anchors = []
+                    if template.get("bus_family"):
+                        bus_anchors = self._populate_bus_breakers(doc, view, members[0], item)
+                        if bus_anchors:
+                            bus_breakers += len(bus_anchors)
+                            bbox_instances = list(members) + [a["element"] for a in bus_anchors]
 
-                if anchor is not None and members:
-                    # Connected look: the parent's breaker IS this branch's
-                    # breaker. Drop the branch's own breaker and stamp the real
-                    # feeder data onto the parent's slot. (A fed switchboard
-                    # keeps its breakers - those are distribution positions.)
-                    if self._classify(item) != "switchboard":
-                        members = self._delete_breaker_members(doc, members)
-                        doc.Regenerate()
-                        bbox_instances = [m for m in members if m is not None] or bbox_instances
-                    if not anchor_vertical:
-                        # Row anchors butt the branch up against the parent;
-                        # riser anchors already placed at the slot elevation.
-                        self._align_members(doc, members, view, x, float(parent_rec["bottom"]))
-                        doc.Regenerate()
-                    self._inject_breaker_data(doc, anchor.get("element"), item)
-                    if anchor_vertical:
-                        # Draw the breaker-to-symbol connection with wire tag.
-                        self._place_riser_feeder_line(doc, view, anchor, item, wire_tag_type_id)
+                    if parent_rec is not None:
+                        # Connect to the parent with detail lines: from its
+                        # breaker slot (or its feed point) down to this
+                        # symbol's IN point (insertion; Panel-Top's is at its
+                        # base, so its IN sits one symbol-height up).
+                        feed_x = x
+                        feed_y = y
+                        first_family = self._member_family_name(members[0])
+                        if "TRANSFER SWITCH" in first_family:
+                            # Primary source lands on IN (top-left terminal).
+                            feed_x = x + self.ATS_IN_DX
+                            feed_y = y + self.ATS_TOP_DY
+                        elif "SWITCHBOARD" in first_family:
+                            # IN TOP connection point: top of the lug section.
+                            feed_x = x + self.SWBD_LUG_DX
+                            feed_y = y
+                        elif "PANEL WITH BUS" in first_family:
+                            # The family's IN connection point is its insertion.
+                            feed_x = x
+                            feed_y = y
+                        if anchor is not None:
+                            if not int(anchor.get("circuit_id") or 0):
+                                # Slot wasn't pre-stamped from the panel's
+                                # circuits - stamp it from this feeder.
+                                self._inject_breaker_data(doc, anchor.get("element"), item)
+                            if str(anchor.get("orient") or "h") == "v":
+                                start = (
+                                    float(anchor["x"]) + self.FEED_BREAKER_WIDTH,
+                                    float(anchor.get("y") or y),
+                                )
+                                style = "h_first"
+                            else:
+                                anchor_y = float(anchor.get("y") or y)
+                                tip_y = anchor.get("tip_y")
+                                # Drop starts from the breaker tip when it hangs
+                                # down, or from the bus when it hangs up.
+                                start_y = min(float(tip_y), anchor_y) if tip_y is not None else anchor_y - self.FEED_BREAKER_WIDTH
+                                start = (float(anchor["x"]), start_y)
+                                style = "v_first"
+                        else:
+                            # Transformers connect from their middle (the
+                            # secondary stub), other symbols from their
+                            # underside.
+                            if str(parent_rec.get("kind") or "") == "transformer":
+                                start = (float(parent_rec["x"]), float(parent_rec.get("y", parent_rec["bottom"])))
+                            else:
+                                start = (float(parent_rec["x"]), float(parent_rec["bottom"]))
+                            style = "v_first"
+                        # Stagger sibling elbow elevations so two connectors
+                        # never run collinear (read as one line feeding two).
+                        elbow_extra = 0.0
+                        if parent_rec is not None:
+                            elbow_extra = float(parent_rec.get("elbow_n", 0)) * 0.3
+                            parent_rec["elbow_n"] = int(parent_rec.get("elbow_n", 0)) + 1
+                        self._route_connection(
+                            doc, view, start, (feed_x, feed_y), style, item,
+                            wire_tag_type_id, elbow_extra=elbow_extra,
+                        )
+                    else:
+                        # Fed roots carry their own breaker + feed line.
+                        feed_members = self._place_feed_assembly(doc, view, x, y, item, wire_tag_type_id)
+                        if feed_members:
+                            members = list(members) + feed_members
+                            bbox_instances = [m for m in members if m is not None]
 
-                if wire_tag_type_id is not None and self._classify(item) != "switchboard":
-                    self._tag_feeder_wire(doc, view, members, wire_tag_type_id)
+                    # Second source for transfer switches: defer IN2 routing
+                    # until everything is placed (the alternate parent may sit
+                    # later in the placement order - the UPS bypass/GA case).
+                    if members and "TRANSFER SWITCH" in self._member_family_name(members[0]):
+                        for alt_pid, alt_cid in list(item.get("alt_feeds") or [])[:1]:
+                            pending_alt.append((int(alt_pid or 0), int(alt_cid or 0), x, y))
 
-                # Family symbols get their identity tag (groups carry their own).
-                if template.get("group_type") is None and members:
                     kind = self._classify(item)
                     if kind == "panel" and template.get("bus_family"):
                         kind = "bus_panel"
-                    elif kind == "switchboard":
-                        kind = "bus_panel"
-                    self._place_tag(doc, view, members[0], self.EQUIP_TAG_SPECS.get(kind))
+                    for spec in self.EQUIP_TAG_SPECS.get(kind, []):
+                        self._place_tag(doc, view, members[0], spec)
 
-                detail_count += self._inject_members(doc, members, item)
-                placed += 1
-                bottom = self._instances_bottom(bbox_instances, view, fallback=y - 0.3)
+                    detail_count += self._inject_members(doc, members, item)
+                    placed += 1
+                    bottom = self._instances_bottom(bbox_instances, view, fallback=y - 0.3)
+                    if bottom < row_bottom:
+                        row_bottom = bottom
 
-                if str(item.get("kind") or "") == "equip":
-                    record = {
-                        "x": x,
-                        "bottom": bottom,
-                        "anchors": [],
-                        "anchor_used": 0,
-                        "children": 0,
-                        "child_xs": _plan_child_xs(item, x),
-                    }
-                    if bus_anchors:
-                        record["anchors"] = bus_anchors
-                    elif self._classify(item) == "switchboard":
-                        record["anchors"] = self._breaker_anchors(members)
-                    placed_equip[int(item.get("element_id") or 0)] = record
+                    if str(item.get("kind") or "") == "equip":
+                        placed_equip[int(item.get("element_id") or 0)] = {
+                            "x": x,
+                            "y": y,
+                            "bottom": bottom,
+                            "kind": self._classify(item),
+                            "anchors": bus_anchors or [],
+                            "anchor_used": 0,
+                        }
+                row_y = row_bottom - self.ROW_VGAP
 
-                if advance_main:
-                    right = self._instances_right(bbox_instances, view, fallback=x + 3.0)
-                    x_main = right + self.ROW_GAP
+            # ---- deferred IN2 connections (all parents placed by now) ------
+            for alt_pid, alt_cid, ats_x, ats_y in pending_alt:
+                alt_rec = placed_equip.get(alt_pid)
+                if alt_rec is None:
+                    continue
+                alt_anchor = None
+                for candidate in alt_rec.get("anchors") or []:
+                    if candidate.get("claimed"):
+                        continue
+                    if alt_cid and int(candidate.get("circuit_id") or 0) == alt_cid:
+                        alt_anchor = candidate
+                        break
+                if alt_anchor is None:
+                    for candidate in alt_rec.get("anchors") or []:
+                        if not candidate.get("claimed"):
+                            alt_anchor = candidate
+                            break
+                if alt_anchor is not None:
+                    alt_anchor["claimed"] = True
+                    if str(alt_anchor.get("orient") or "h") == "v":
+                        alt_start = (
+                            float(alt_anchor["x"]) + self.FEED_BREAKER_WIDTH,
+                            float(alt_anchor.get("y") or ats_y),
+                        )
+                        alt_style = "h_first"
+                    else:
+                        anchor_y = float(alt_anchor.get("y") or ats_y)
+                        tip_y = alt_anchor.get("tip_y")
+                        alt_start_y = min(float(tip_y), anchor_y) if tip_y is not None else anchor_y - self.FEED_BREAKER_WIDTH
+                        alt_start = (float(alt_anchor["x"]), alt_start_y)
+                        alt_style = "v_first"
+                else:
+                    alt_start = (float(alt_rec["x"]), float(alt_rec["bottom"]))
+                    alt_style = "v_first"
+                alt_elbow = float(alt_rec.get("elbow_n", 0)) * 0.3
+                alt_rec["elbow_n"] = int(alt_rec.get("elbow_n", 0)) + 1
+                self._route_connection(
+                    doc, view, alt_start,
+                    (ats_x + self.ATS_IN2_DX, ats_y + self.ATS_TOP_DY),
+                    alt_style,
+                    {"kind": "load", "circuit_id": alt_cid},
+                    wire_tag_type_id,
+                    elbow_extra=alt_elbow,
+                )
             transaction.Commit()
         except Exception:
             try:
@@ -3322,19 +3542,55 @@ class _BuildBranchHandler(IExternalEventHandler):
         anchors.sort(key=lambda a: a["x"])
         return anchors
 
-    # Tag conventions measured from the One-Line Diagram view:
-    # (tag family, tag type, head dx, head dy) relative to the host's insertion.
+    # Tag conventions measured from the full One-Line Diagram view (335 tags):
+    # role -> list of (tag family, tag type, head dx, head dy) relative to the
+    # host's insertion point.
     EQUIP_TAG_SPECS = {
-        "bus_panel": ("DI-TAG_SLD SWITCHBOARD_CED", "SWITCHBOARD R - NAME / DIST SYS / MAINS / SCCR", -1.65, -0.56),
-        "panel": ("DI-TAG_SLD PANELBOARD_CED", "PANELBOARD C - NAME", 0.03, -0.57),
-        "transformer": ("DI-TAG_SLD TRANSFORMER_CED", "TRANSFORMER L - NAME / RATING / VOLTAGES", 0.52, 0.03),
-        "ats": ("DI-TAG_SLD SWITCHBOARD_CED", "SWITCHBOARD R - NAME / DIST SYS / MAINS / SCCR", -1.10, 0.59),
-        "switch": ("DI-TAG_SLD DISCONNECT SWITCH_CED", "DISCONNECT L - SWITCH RATING / FUSE RATING", 0.24, -0.12),
+        "bus_panel": [
+            ("DI-TAG_SLD SWITCHBOARD_CED", "SWITCHBOARD L - NAME / DIST SYS / MAINS / SCCR", 0.21, -0.50),
+        ],
+        "switchboard": [
+            ("DI-TAG_SLD SWITCHBOARD_CED", "SWITCHBOARD L - NAME / DIST SYS / MAINS / SCCR", 0.21, -0.50),
+        ],
+        "panel": [
+            ("DI-TAG_SLD PANELBOARD_CED", "PANELBOARD C - NAME", 0.03, -0.57),
+            ("DI-TAG_SLD FEEDER_CED", "FEEDER L - COMMENTS", 0.29, -0.08),
+        ],
+        "transformer": [
+            ("DI-TAG_SLD TRANSFORMER_CED", "TRANSFORMER L - NAME / RATING / VOLTAGES", 0.52, 0.03),
+        ],
+        "ats": [
+            ("DI-TAG_SLD SWITCHBOARD_CED", "SWITCHBOARD R - NAME / DIST SYS / MAINS / SCCR", -1.10, 0.59),
+        ],
+        "switch": [
+            ("DI-TAG_SLD DISCONNECT SWITCH_CED", "DISCONNECT L - SWITCH RATING / FUSE RATING", 0.24, -0.12),
+        ],
+        "load": [
+            ("DI-TAG_SLD LOAD DEVICE_CED", "DEVICE L - LOAD NAME", 0.70, 0.02),
+        ],
     }
     BREAKER_TAG_SPECS = [
         ("DI-TAG_SLD CIRCUIT BREAKER_CED", "CIRCUIT NUMBER", -0.13, -0.02),
         ("DI-TAG_SLD CIRCUIT BREAKER_CED", "RATING / POLES (IN-LINE)", -0.13, 0.23),
     ]
+    # Rotated (row-bus) breakers hang down; their tags sit directly above the
+    # breaker on the bus and beside its body, so each reads unambiguously.
+    ROW_BREAKER_TAG_SPECS = [
+        ("DI-TAG_SLD CIRCUIT BREAKER_CED", "RATING / POLES (IN-LINE)", -0.46, 0.28),
+        ("DI-TAG_SLD CIRCUIT BREAKER_CED", "CIRCUIT NUMBER", -0.28, -0.45),
+    ]
+    # Connectors into Panel with Bus / Switchboard land INSIDE the main lug
+    # "IN" block (before the main breaker), not on the outer box edge.
+    MAINS_INSET = 0.19
+    # Switchboard IN TOP: the main-breaker/IN assembly sits at a FIXED 1.33 ft
+    # right of the insertion at EVERY size (verified on 3.0/5.6/11.9 ft wide
+    # instances) - it does not scale with Symbol Width.
+    SWBD_LUG_DX = 1.33
+    # Transfer switch terminals (measured from the family, default DME_Size):
+    # two inputs on the top edge, output at bottom center.
+    ATS_IN_DX = -0.15
+    ATS_IN2_DX = 0.15
+    ATS_TOP_DY = 0.25
 
     BREAKER_SPACING = 1.266        # ft along horizontal buses (SLD_Switchboard group standard)
     BREAKER_SPACING_COLUMN = 0.43  # ft slot pitch down a riser bus (measured from One-Line Diagram)
@@ -3349,14 +3605,21 @@ class _BuildBranchHandler(IExternalEventHandler):
     _PI = 3.141592653589793
 
     @staticmethod
-    def _find_bus_line(instance, view):
-        """The bus of a Panel-with-Bus/Switchboard symbol. Prefers the vertical
-        middle line (the riser spine breakers hang off, per the CED standard);
-        falls back to the longest horizontal line. Returns {"orient": "h"|"v",
-        "start": s, "end": e, "pos": p} where pos is Y for horizontal buses and
-        X for vertical ones, or None."""
-        best_v = None  # (length, start, end, pos)
-        best_h = None
+    def _find_bus_line(instance, view, want_orient="v"):
+        """The INTERIOR bus line of a bus symbol - collinear segments merged,
+        the symbol's rectangular outline (lines sitting on the bbox extremes)
+        excluded, nearest to the insertion axis. want_orient: "v" for Top/
+        Bottom symbols (riser spine), "h" for Left/Right (middle bus).
+        Returns {"orient", "start", "end", "pos"} or None."""
+        try:
+            insertion = getattr(getattr(instance, "Location", None), "Point", None)
+            bbox = instance.get_BoundingBox(view)
+        except Exception:
+            return None
+        if insertion is None:
+            return None
+
+        segs = {"v": {}, "h": {}}  # orient -> {rounded pos: [start, end]}
         try:
             options = DB.Options()
             options.View = view
@@ -3376,27 +3639,52 @@ class _BuildBranchHandler(IExternalEventHandler):
                     continue
                 p0 = obj.GetEndPoint(0)
                 p1 = obj.GetEndPoint(1)
-                if abs(p0.Y - p1.Y) < 1e-6:
-                    length = abs(p1.X - p0.X)
-                    if best_h is None or length > best_h[0]:
-                        best_h = (length, min(p0.X, p1.X), max(p0.X, p1.X), p0.Y)
-                elif abs(p0.X - p1.X) < 1e-6:
-                    length = abs(p1.Y - p0.Y)
-                    if best_v is None or length > best_v[0]:
-                        best_v = (length, min(p0.Y, p1.Y), max(p0.Y, p1.Y), p0.X)
+                if abs(p0.X - p1.X) < 1e-6:
+                    key = round(p0.X, 2)
+                    span = segs["v"].setdefault(key, [min(p0.Y, p1.Y), max(p0.Y, p1.Y)])
+                    span[0] = min(span[0], min(p0.Y, p1.Y))
+                    span[1] = max(span[1], max(p0.Y, p1.Y))
+                elif abs(p0.Y - p1.Y) < 1e-6:
+                    key = round(p0.Y, 2)
+                    span = segs["h"].setdefault(key, [min(p0.X, p1.X), max(p0.X, p1.X)])
+                    span[0] = min(span[0], min(p0.X, p1.X))
+                    span[1] = max(span[1], max(p0.X, p1.X))
         except Exception:
             return None
-        # The riser spine wins whenever it is a real line (>= 0.5 ft).
-        if best_v is not None and best_v[0] >= 0.5:
-            return {"orient": "v", "start": best_v[1], "end": best_v[2], "pos": best_v[3]}
-        if best_h is not None:
-            return {"orient": "h", "start": best_h[1], "end": best_h[2], "pos": best_h[3]}
+
+        def _pick(orient, allow_outline):
+            if orient == "v":
+                axis_value = float(insertion.X)
+                lo = float(bbox.Min.X) if bbox is not None else None
+                hi = float(bbox.Max.X) if bbox is not None else None
+            else:
+                axis_value = float(insertion.Y)
+                lo = float(bbox.Min.Y) if bbox is not None else None
+                hi = float(bbox.Max.Y) if bbox is not None else None
+            best = None
+            for pos, span in segs[orient].items():
+                if span[1] - span[0] < 0.2:
+                    continue
+                if not allow_outline and lo is not None:
+                    # skip the symbol's rectangle sides
+                    if abs(pos - lo) < 0.05 or abs(pos - hi) < 0.05:
+                        continue
+                score = abs(pos - axis_value)
+                if best is None or score < best[0]:
+                    best = (score, pos, span[0], span[1])
+            return best
+
+        for orient in (want_orient, "h" if want_orient == "v" else "v"):
+            found = _pick(orient, allow_outline=False) or _pick(orient, allow_outline=True)
+            if found is not None:
+                return {"orient": orient, "start": found[2], "end": found[3], "pos": found[1]}
         return None
 
     @staticmethod
-    def _equipment_circuit_count(doc, item):
-        """Number of real circuits (incl. spares, excl. spaces) on the equipment."""
-        count = 0
+    def _equipment_circuits(doc, item):
+        """The panel's real circuits (incl. spares, excl. spaces) sorted by
+        circuit number. Returns [(number, ElectricalSystem)]."""
+        circuits = []
         try:
             elem = doc.GetElement(revit_helpers.elementid_from_value(int(item.get("element_id") or 0)))
             mep = getattr(elem, "MEPModel", None)
@@ -3407,20 +3695,101 @@ class _BuildBranchHandler(IExternalEventHandler):
                         continue
                 except Exception:
                     pass
-                count += 1
+                number = 9999
+                try:
+                    param = system.get_Parameter(DB.BuiltInParameter.RBS_ELEC_CIRCUIT_NUMBER)
+                    raw = (param.AsString() if param is not None and param.HasValue else "") or ""
+                    digits = "".join([ch for ch in raw if ch.isdigit()])
+                    if digits:
+                        number = int(digits)
+                except Exception:
+                    pass
+                circuits.append((number, system))
         except Exception:
-            count = 0
-        return count
+            circuits = []
+        circuits.sort(key=lambda pair: pair[0])
+        return circuits
+
+    def _stamp_breaker_circuit(self, doc, breaker, system):
+        """Fill a slot breaker with ITS circuit's data (spares included)."""
+        if breaker is None or system is None:
+            return
+        try:
+            result = inject_circuit_values(system, breaker)
+            inject_matching_values(system, breaker, skip_names=set(result.get("written") or []))
+        except Exception:
+            pass
+
+    def _switchboard_bus(self, doc, instance, count):
+        """The switchboard family models its bus explicitly: a horizontal line
+        DME_BusOffset below the insertion, ending at Symbol Width +
+        DME_BusRight. The BOX (Symbol Width/Height_CED) is the sizing element:
+        stretch it so it encompasses both the horizontal bus (width for the
+        slot count) and the vertical bus (height past the bus offset) - the
+        drawn bus grows with the box."""
+        try:
+            insertion = instance.Location.Point
+
+            def _p(name):
+                param = instance.LookupParameter(name)
+                if param is None or not param.HasValue:
+                    return None
+                return float(param.AsDouble())
+
+            def _set(name, value):
+                param = instance.LookupParameter(name)
+                if param is not None and not param.IsReadOnly:
+                    param.Set(float(value))
+                    return True
+                return False
+
+            offset = _p("DME_BusOffset")
+            if offset is None:
+                return None
+            left = _p("DME_BusLeft") or 0.0
+            right = _p("DME_BusRight") or 0.0
+            width = _p("Symbol Width_CED") or 0.0
+            height = _p("Symbol Height_CED") or 0.0
+
+            needed = count * self.BREAKER_SPACING + 0.5
+            changed = False
+            need_width = needed + left - right
+            if width < need_width:
+                changed = _set("Symbol Width_CED", need_width) or changed
+            need_height = offset + 0.45
+            if height < need_height:
+                changed = _set("Symbol Height_CED", need_height) or changed
+            if changed:
+                doc.Regenerate()
+                # Family formulas may reposition the bus - re-read everything.
+                offset = _p("DME_BusOffset") or offset
+                left = _p("DME_BusLeft") or left
+                right = _p("DME_BusRight") or right
+                width = _p("Symbol Width_CED") or width
+
+            start = float(insertion.X) + left
+            end = float(insertion.X) + width + right
+            return {
+                "orient": "h",
+                "pos": float(insertion.Y) - offset,
+                "start": start,
+                "end": end,
+                "sized": True,
+            }
+        except Exception:
+            return None
 
     def _populate_bus_breakers(self, doc, view, instance, item):
-        """Place default breaker slots on the bus per the CED one-line standard
-        (measured from the One-Line Diagram view): breakers connect to the
-        vertical middle line, perpendicular, in a column at 0.43 ft pitch.
-        One slot per real circuit on the equipment (min 6 when it has none).
-        Returns anchors [{"x", "y", "orient", "element"}] fed children land on."""
-        count = min(self._equipment_circuit_count(doc, item), 84)
+        """Place breaker slots on the bus: ONE PER REAL CIRCUIT of the panel,
+        in circuit order (spares included, in their true position), each
+        stamped with its own circuit's data. Circuit 1 sits nearest the feed.
+        Returns anchors [{"x", "y", "orient", "circuit_id", "element"}] that
+        fed children connect to by matching feeder circuit."""
+        circuits = self._equipment_circuits(doc, item)[:84]
+        count = len(circuits)
         if count <= 0:
             count = 6
+            circuits = []
 
         # Exact family: plain "SLD-FDR-Circuit Breaker_CED" - the bare token
         # also matches "...Drawout Double_CED" etc., which we never want here.
@@ -3435,18 +3804,22 @@ class _BuildBranchHandler(IExternalEventHandler):
         except Exception:
             pass
 
-        # Breaker rotation by feed direction of the chosen symbol. -Top's
-        # breakers are unrotated on the vertical spine (per the live view).
+        # Bus orientation: SWITCHBOARDS always carry a horizontal middle bus -
+        # their breakers go perpendicular in a ROW for every feed direction.
+        # Panels: Top/Bottom -> vertical middle spine, breakers in a COLUMN;
+        # Left/Right -> horizontal middle bus, breakers in a ROW.
         family_upper = self._member_family_name(instance)
-        rotation = 0.0
-        if "-BOTTOM" in family_upper:
-            rotation = self._PI
-        elif "-LEFT" in family_upper:
-            rotation = self._HALF_PI
-        elif "-RIGHT" in family_upper:
-            rotation = -self._HALF_PI
+        if "SWITCHBOARD" in family_upper:
+            row_bus = True
+        else:
+            row_bus = ("-LEFT" in family_upper) or ("-RIGHT" in family_upper)
+        want_orient = "h" if row_bus else "v"
 
-        bus = self._find_bus_line(instance, view)
+        bus = None
+        if "SWITCHBOARD" in family_upper:
+            bus = self._switchboard_bus(doc, instance, count)
+        if bus is None:
+            bus = self._find_bus_line(instance, view, want_orient)
         if bus is None:
             forms.alert(
                 "Could not locate the bus line on '{}' - place breakers manually.".format(item.get("name") or "?"),
@@ -3464,7 +3837,7 @@ class _BuildBranchHandler(IExternalEventHandler):
                     if size_param is not None and not size_param.IsReadOnly:
                         size_param.Set(float(size_param.AsDouble() or 0.0) + (needed - length))
                         doc.Regenerate()
-                        bus = self._find_bus_line(instance, view) or bus
+                        bus = self._find_bus_line(instance, view, "v") or bus
                 except Exception:
                     pass
             bus_x = float(bus["pos"])
@@ -3475,51 +3848,74 @@ class _BuildBranchHandler(IExternalEventHandler):
                 point = DB.XYZ(bus_x, slot_y, 0.0)
                 try:
                     breaker = doc.Create.NewFamilyInstance(point, breaker_symbol, view)
-                    if rotation:
-                        axis = DB.Line.CreateBound(point, DB.XYZ(point.X, point.Y, 1.0))
-                        DB.ElementTransformUtils.RotateElement(doc, breaker.Id, axis, rotation)
                 except Exception:
                     continue
+                circuit_id = 0
+                if idx < len(circuits):
+                    system = circuits[idx][1]
+                    self._stamp_breaker_circuit(doc, breaker, system)
+                    circuit_id = _elid_value(system.Id)
                 for spec in self.BREAKER_TAG_SPECS:
                     self._place_tag(doc, view, breaker, spec)
                 anchors.append({
                     "x": round(bus_x, 3),
                     "y": round(slot_y, 3),
                     "orient": "v",
+                    "circuit_id": int(circuit_id),
                     "element": breaker,
                 })
             doc.Regenerate()
             return anchors
 
-        # Horizontal bus (switchboard-style row).
-        needed = count * self.BREAKER_SPACING + 0.4
+        # Horizontal middle bus: breakers in a row ON the bus line, rotated
+        # perpendicular. Row pitch follows the MDP standard (1.266 ft) so each
+        # breaker's rating tag has room to sit directly above it.
+        needed = count * self.BREAKER_SPACING + 0.5
         length = float(bus["end"]) - float(bus["start"])
-        if length < needed:
+        if length < needed and not bus.get("sized"):
             try:
                 size_param = instance.LookupParameter("DME_Width")
                 if size_param is not None and not size_param.IsReadOnly:
                     size_param.Set(float(size_param.AsDouble() or 0.0) + (needed - length))
                     doc.Regenerate()
-                    bus = self._find_bus_line(instance, view) or bus
+                    bus = self._find_bus_line(instance, view, "h") or bus
             except Exception:
                 pass
         start = float(bus["start"])
         available = max(0.1, float(bus["end"]) - start)
         step = self.BREAKER_SPACING if self.BREAKER_SPACING * count <= available else available / float(count)
         bus_y = float(bus["pos"])
+        # Slot order follows the feed: circuit 1 sits nearest the incoming
+        # side, so a -Right bus reads N..1 left-to-right and a -Left 1..N.
+        positions = [start + step * (idx + 0.5) for idx in range(count)]
+        if "-RIGHT" in family_upper:
+            positions.reverse()
+        # Breakers hang off the bus toward the distribution side: down for
+        # top-fed symbols, up for bottom-fed ones.
+        hang_rotation = self._HALF_PI if "-BOTTOM" in family_upper else -self._HALF_PI
         anchors = []
         for idx in range(count):
-            point = DB.XYZ(start + step * (idx + 0.5), bus_y, 0.0)
+            point = DB.XYZ(positions[idx], bus_y, 0.0)
             try:
                 breaker = doc.Create.NewFamilyInstance(point, breaker_symbol, view)
+                # Unrotated the breaker runs +X; rotate perpendicular to the bus.
+                axis = DB.Line.CreateBound(point, DB.XYZ(point.X, point.Y, 1.0))
+                DB.ElementTransformUtils.RotateElement(doc, breaker.Id, axis, hang_rotation)
             except Exception:
                 continue
-            for spec in self.BREAKER_TAG_SPECS:
+            circuit_id = 0
+            if idx < len(circuits):
+                system = circuits[idx][1]
+                self._stamp_breaker_circuit(doc, breaker, system)
+                circuit_id = _elid_value(system.Id)
+            for spec in self.ROW_BREAKER_TAG_SPECS:
                 self._place_tag(doc, view, breaker, spec)
             anchors.append({
                 "x": round(float(point.X), 3),
                 "y": round(bus_y, 3),
+                "tip_y": round(bus_y + (self.FEED_BREAKER_WIDTH if hang_rotation > 0 else -self.FEED_BREAKER_WIDTH), 3),
                 "orient": "h",
+                "circuit_id": int(circuit_id),
                 "element": breaker,
             })
         doc.Regenerate()
@@ -3623,17 +4019,19 @@ class _BuildBranchHandler(IExternalEventHandler):
         return found
 
     @staticmethod
-    def _create_tag_instance(doc, view, element, tag_type_id, head):
+    def _create_tag_instance(doc, view, element, tag_type_id, head, orientation=None):
         reference = DB.Reference(element)
+        if orientation is None:
+            orientation = DB.TagOrientation.Horizontal
         try:
             DB.IndependentTag.Create(
-                doc, tag_type_id, view.Id, reference, False, DB.TagOrientation.Horizontal, head
+                doc, tag_type_id, view.Id, reference, False, orientation, head
             )
         except Exception:
             try:
                 tag = DB.IndependentTag.Create(
                     doc, view.Id, reference, False,
-                    DB.TagMode.TM_ADDBY_CATEGORY, DB.TagOrientation.Horizontal, head,
+                    DB.TagMode.TM_ADDBY_CATEGORY, orientation, head,
                 )
                 tag.ChangeTypeId(tag_type_id)
             except Exception:
@@ -3762,6 +4160,53 @@ class _BuildBranchHandler(IExternalEventHandler):
         result = inject_circuit_values(circuit, breaker)
         inject_matching_values(circuit, breaker, skip_names=set(result.get("written") or []))
 
+    def _place_feed_assembly(self, doc, view, sym_x, sym_y, item, wire_tag_type_id):
+        """Compose the feed into a standalone (non-anchored) fed symbol per the
+        kit example: breaker then feeder line, left-to-right, ending at the
+        symbol's insertion/feed point. Returns the placed feed members
+        (injection happens with the rest of the branch members)."""
+        circuit = self._item_circuit(doc, item)
+        if circuit is None:
+            return []
+        line_symbol = self._kit_symbol(doc, "line")
+        breaker_symbol = self._kit_symbol(doc, "breaker")
+        placed = []
+        line_x = float(sym_x) - self.FEED_LINE_LENGTH
+        if line_symbol is not None:
+            try:
+                if not line_symbol.IsActive:
+                    line_symbol.Activate()
+                    doc.Regenerate()
+                line = doc.Create.NewFamilyInstance(DB.XYZ(line_x, float(sym_y), 0.0), line_symbol, view)
+                try:
+                    length_param = line.LookupParameter("Symbol Length_CED")
+                    if length_param is not None and not length_param.IsReadOnly:
+                        length_param.Set(self.FEED_LINE_LENGTH)
+                except Exception:
+                    pass
+                self._register_segment(line_x, float(sym_y), self.FEED_LINE_LENGTH, False)
+                placed.append(line)
+                if wire_tag_type_id is not None:
+                    head = DB.XYZ(line_x + self.WIRE_TAG_DX, float(sym_y) + self.WIRE_TAG_DY, 0.0)
+                    self._create_tag_instance(doc, view, line, wire_tag_type_id, head)
+            except Exception:
+                pass
+        if breaker_symbol is not None:
+            try:
+                if not breaker_symbol.IsActive:
+                    breaker_symbol.Activate()
+                    doc.Regenerate()
+                breaker_point = DB.XYZ(line_x - self.FEED_BREAKER_WIDTH, float(sym_y), 0.0)
+                breaker = doc.Create.NewFamilyInstance(breaker_point, breaker_symbol, view)
+                placed.append(breaker)
+                for spec in self.BREAKER_TAG_SPECS:
+                    self._place_tag(doc, view, breaker, spec)
+            except Exception:
+                pass
+        if placed:
+            doc.Regenerate()
+        return placed
+
     def _place_riser_feeder_line(self, doc, view, anchor, item, wire_tag_type_id):
         """Draw the connection from a riser breaker to its fed symbol: the
         SLD-FDR Medium Solid line at the measured offset/length, filled with
@@ -3799,20 +4244,215 @@ class _BuildBranchHandler(IExternalEventHandler):
             self._create_tag_instance(doc, view, line, wire_tag_type_id, head)
 
     @staticmethod
-    def _instances_bottom(instances, view, fallback):
-        """Lowest Y across the placed elements' view bounding boxes."""
+    def _element_y_extents(instance, view):
+        """(min_y, max_y) of an element - bounding box, or its geometry lines
+        when the bbox isn't ready yet (fresh instances sometimes return None)."""
+        try:
+            bbox = instance.get_BoundingBox(view)
+            if bbox is not None:
+                return float(bbox.Min.Y), float(bbox.Max.Y)
+        except Exception:
+            pass
+        lo = hi = None
+        try:
+            options = DB.Options()
+            options.View = view
+            geometry = instance.get_Geometry(options)
+            queue = list(geometry) if geometry is not None else []
+            while queue:
+                obj = queue.pop(0)
+                if isinstance(obj, DB.GeometryInstance):
+                    try:
+                        queue.extend(list(obj.GetInstanceGeometry()))
+                    except Exception:
+                        pass
+                    continue
+                if isinstance(obj, DB.Curve):
+                    for pt in (obj.GetEndPoint(0), obj.GetEndPoint(1)):
+                        value = float(pt.Y)
+                        lo = value if lo is None or value < lo else lo
+                        hi = value if hi is None or value > hi else hi
+        except Exception:
+            pass
+        if lo is None:
+            return None
+        return lo, hi
+
+    @classmethod
+    def _instances_bottom(cls, instances, view, fallback):
+        """Lowest Y across the placed elements (bbox or geometry extents)."""
         bottom = None
         for instance in list(instances or []):
-            try:
-                bbox = instance.get_BoundingBox(view)
-                if bbox is None:
-                    continue
-                value = float(bbox.Min.Y)
-                if bottom is None or value < bottom:
-                    bottom = value
-            except Exception:
+            if instance is None:
                 continue
+            extents = cls._element_y_extents(instance, view)
+            if extents is None:
+                continue
+            if bottom is None or extents[0] < bottom:
+                bottom = extents[0]
         return bottom if bottom is not None else float(fallback)
+
+    @classmethod
+    def _instances_top(cls, instances, view, fallback):
+        """Highest Y across the placed elements (bbox or geometry extents)."""
+        top = None
+        for instance in list(instances or []):
+            if instance is None:
+                continue
+            extents = cls._element_y_extents(instance, view)
+            if extents is None:
+                continue
+            if top is None or extents[1] > top:
+                top = extents[1]
+        return top if top is not None else float(fallback)
+
+    HOP = 0.15  # ft radius of the up-over-down jump where wires must cross
+
+    def _register_segment(self, x, y, length, vertical):
+        registry = getattr(self, "_route_segments", None)
+        if registry is None:
+            registry = []
+            self._route_segments = registry
+        registry.append((float(x), float(y), float(length), bool(vertical)))
+
+    def _place_fdr_piece(self, doc, view, x, y, length, vertical):
+        """One FDR Medium Solid piece. Insertion at the start point; extends
+        +X, or straight down when vertical (rotated -90). Registers itself for
+        crossing detection."""
+        length = float(length or 0.0)
+        if length < 0.05:
+            return None
+        symbol = self._kit_symbol(doc, "line")
+        if symbol is None:
+            return None
+        try:
+            if not symbol.IsActive:
+                symbol.Activate()
+                doc.Regenerate()
+            point = DB.XYZ(float(x), float(y), 0.0)
+            line = doc.Create.NewFamilyInstance(point, symbol, view)
+            length_param = line.LookupParameter("Symbol Length_CED")
+            if length_param is not None and not length_param.IsReadOnly:
+                length_param.Set(length)
+            if vertical:
+                axis = DB.Line.CreateBound(point, DB.XYZ(point.X, point.Y, 1.0))
+                DB.ElementTransformUtils.RotateElement(doc, line.Id, axis, -self._HALF_PI)
+            self._register_segment(x, y, length, vertical)
+            return line
+        except Exception:
+            return None
+
+    def _find_crossings(self, x, y, length, vertical):
+        """Interior intersections of a prospective run against already-placed
+        segments (endpoints excluded - lines are ALLOWED to meet)."""
+        hits = []
+        for sx, sy, slen, svert in list(getattr(self, "_route_segments", []) or []):
+            if vertical == svert:
+                continue
+            if vertical:
+                # run: x fixed, from y down to y-length; other: horizontal
+                if (sx + 0.1 < x < sx + slen - 0.1) and (y - length + 0.2 < sy < y - 0.2):
+                    hits.append(sy)
+            else:
+                # run: y fixed, from x to x+length; other: vertical
+                if (sy - slen + 0.2 < y < sy - 0.2) and (x + 0.1 < sx < x + length - 0.1):
+                    hits.append(sx)
+        return sorted(set([round(h, 3) for h in hits]))
+
+    def _place_fdr_segment(self, doc, view, x, y, length, vertical):
+        """A run of FDR pieces. Where the run would cross an existing wire it
+        jumps it with an up-over-down (or side-around, for vertical runs)
+        hop so crossings read unambiguously. Returns the placed pieces."""
+        length = float(length or 0.0)
+        if length < 0.05:
+            return []
+        crossings = self._find_crossings(x, y, length, vertical)
+        if not crossings:
+            piece = self._place_fdr_piece(doc, view, x, y, length, vertical)
+            return [piece] if piece is not None else []
+
+        hop = self.HOP
+        pieces = []
+
+        def _piece(px, py, plen, pvert):
+            element = self._place_fdr_piece(doc, view, px, py, plen, pvert)
+            if element is not None:
+                pieces.append(element)
+
+        if not vertical:
+            cursor = float(x)
+            end_x = float(x) + length
+            for cx in crossings:
+                _piece(cursor, y, (cx - hop) - cursor, False)
+                # up, over, down
+                _piece(cx - hop, y + hop, hop, True)
+                _piece(cx - hop, y + hop, 2.0 * hop, False)
+                _piece(cx + hop, y + hop, hop, True)
+                cursor = cx + hop
+            _piece(cursor, y, end_x - cursor, False)
+        else:
+            cursor = float(y)
+            end_y = float(y) - length
+            for cy in sorted(crossings, reverse=True):
+                _piece(x, cursor, cursor - (cy + hop), True)
+                # side-step around the crossing wire
+                _piece(x, cy + hop, hop, False)
+                _piece(x + hop, cy + hop, 2.0 * hop, True)
+                _piece(x, cy - hop, hop, False)
+                cursor = cy - hop
+            _piece(x, cursor, cursor - end_y, True)
+        return pieces
+
+    def _route_connection(self, doc, view, start, end, style, item, wire_tag_type_id, elbow_extra=0.0):
+        """Connect a parent feed point to a child symbol's top with FDR detail
+        lines: straight drop when aligned, H-then-V off a riser spine breaker
+        ("h_first"), V-H-V off a row breaker or a parent's underside
+        ("v_first"). elbow_extra staggers sibling elbow elevations. Segments
+        carry the feeder circuit data; the longest run gets the wire tag."""
+        sx, sy = float(start[0]), float(start[1])
+        ex, ey = float(end[0]), float(end[1])
+        segments = []  # (element, vertical, length, x, y)
+
+        def _add(x, y, length, vertical):
+            for element in self._place_fdr_segment(doc, view, x, y, length, vertical):
+                segments.append((element, vertical, float(length), float(x), float(y)))
+
+        if abs(ex - sx) < 0.05:
+            _add(sx, sy, sy - ey, True)
+        elif style == "h_first":
+            _add(min(sx, ex), sy, abs(ex - sx), False)
+            _add(ex, sy, sy - ey, True)
+        else:
+            elbow = ey + 1.0 + max(0.0, float(elbow_extra))
+            if elbow > sy - 0.2:
+                elbow = (sy + ey) / 2.0
+            _add(sx, sy, sy - elbow, True)
+            _add(min(sx, ex), elbow, abs(ex - sx), False)
+            _add(ex, elbow, elbow - ey, True)
+
+        if not segments:
+            return
+        circuit = self._item_circuit(doc, item)
+        if circuit is not None:
+            for element, _vert, _length, _x, _y in segments:
+                result = inject_circuit_values(circuit, element)
+                inject_matching_values(circuit, element, skip_names=set(result.get("written") or []))
+        if wire_tag_type_id is not None:
+            horizontal = [seg for seg in segments if not seg[1]]
+            pool = horizontal or segments
+            pool.sort(key=lambda seg: -seg[2])
+            element, vertical, length, x, y = pool[0]
+            if vertical:
+                # Vertical run (Panel with Bus Right/Left drops): rotate the
+                # wire & conduit tag to read along the line.
+                head = DB.XYZ(x - 0.12, y - max(0.5, length / 2.0), 0.0)
+                self._create_tag_instance(
+                    doc, view, element, wire_tag_type_id, head, DB.TagOrientation.Vertical
+                )
+            else:
+                head = DB.XYZ(x + min(self.WIRE_TAG_DX, max(0.1, length / 2.0)), y + self.WIRE_TAG_DY, 0.0)
+                self._create_tag_instance(doc, view, element, wire_tag_type_id, head)
+        doc.Regenerate()
 
     @staticmethod
     def _instances_right(instances, view, fallback):
@@ -3867,6 +4507,13 @@ class _BuildBranchHandler(IExternalEventHandler):
         words = set("".join(ch if ch.isalnum() else " " for ch in text).split())
         if "ATS" in words or "TRANSFER SWITCH" in text:
             return "ats"
+        # "SWITCH" as its own word (never part of "SWITCHBOARD"): transfer
+        # switch treatment for bypass/xfer/fused switches - only DISCONNECT
+        # switches indicate LOADS and get the load choices.
+        if "SWITCH" in words:
+            if "DISCONNECT" in text:
+                return "switch"
+            return "ats"
         if "GENERATOR" in text or "GEN" in words:
             return "generator"
         equip_type = str(item.get("equip_type") or "")
@@ -3879,50 +4526,381 @@ class _BuildBranchHandler(IExternalEventHandler):
         # Panelboard, Other Panel, Unknown
         return "panel"
 
-    def _resolve_template(self, doc, item, group_types):
+    # When a picker choice or kit role resolves a family with several types,
+    # prefer these (in order) over whatever type happens to come first.
+    KIT_TYPE_PREFS = ["PANELBOARD", "PANEL WITH BUS", "SOLID", "TRANSFER SWITCH-TOP", "CIRCUIT BREAKER", "MEDIUM SOLID"]
+
+    def _family_symbols(self, doc, family_upper):
+        """All FamilySymbols of an exact detail family name (uppercase)."""
+        result = []
+        try:
+            collector = (
+                DB.FilteredElementCollector(doc)
+                .OfCategory(DB.BuiltInCategory.OST_DetailComponents)
+                .WhereElementIsElementType()
+            )
+            for symbol in collector:
+                if not isinstance(symbol, DB.FamilySymbol):
+                    continue
+                try:
+                    family_param = symbol.get_Parameter(DB.BuiltInParameter.SYMBOL_FAMILY_NAME_PARAM)
+                    name = ((family_param.AsString() if family_param else "") or "").upper()
+                except Exception:
+                    continue
+                if name == family_upper:
+                    result.append(symbol)
+        except Exception:
+            pass
+        return result
+
+    @staticmethod
+    def _symbol_type_name(symbol):
+        try:
+            type_param = symbol.get_Parameter(DB.BuiltInParameter.ALL_MODEL_TYPE_NAME)
+            return ((type_param.AsString() if type_param else "") or "").upper()
+        except Exception:
+            return ""
+
+    def _preferred_family_symbol(self, doc, family_name, exact_type=None):
+        """Symbol of the family with the right TYPE: exact_type first, then the
+        kit preference list, then the first available."""
+        symbols = self._family_symbols(doc, str(family_name or "").upper())
+        if not symbols:
+            return None
+        if exact_type:
+            for symbol in symbols:
+                if self._symbol_type_name(symbol) == exact_type.upper():
+                    return symbol
+        for preferred in self.KIT_TYPE_PREFS:
+            for symbol in symbols:
+                if self._symbol_type_name(symbol) == preferred:
+                    return symbol
+        return symbols[0]
+
+    def _kit_symbol(self, doc, role):
+        """Exact kit (family, type) symbol for a role."""
+        family_upper, type_upper = self.KIT.get(role, (None, None))
+        if not family_upper:
+            return None
+        return self._preferred_family_symbol(doc, family_upper, exact_type=type_upper)
+
+    def _kit_template(self, doc, role, bus_family=False):
+        symbol = self._kit_symbol(doc, role)
+        if symbol is None:
+            return None
+        return {"group_type": None, "symbols": [(symbol, 0.0)], "bus_family": bool(bus_family)}
+
+    ATS_FACING_OPTIONS = [
+        "Transfer Switch - Top",
+        "Transfer Switch - Bottom",
+        "Transfer Switch - Left",
+        "Transfer Switch - Right",
+    ]
+
+    def _family_labels(self, doc, keywords_any):
+        """Sorted SLD-EQU-* detail family names containing any keyword."""
+        names = set()
+        try:
+            collector = (
+                DB.FilteredElementCollector(doc)
+                .OfCategory(DB.BuiltInCategory.OST_DetailComponents)
+                .WhereElementIsElementType()
+            )
+            for symbol in collector:
+                if not isinstance(symbol, DB.FamilySymbol):
+                    continue
+                try:
+                    family_param = symbol.get_Parameter(DB.BuiltInParameter.SYMBOL_FAMILY_NAME_PARAM)
+                    family_name = (family_param.AsString() if family_param else "") or ""
+                except Exception:
+                    continue
+                upper = family_name.upper()
+                if not upper.startswith("SLD-EQU-"):
+                    continue
+                for keyword in keywords_any:
+                    if keyword in upper:
+                        names.add(family_name)
+                        break
+        except Exception:
+            pass
+        return sorted(names)
+
+    def _symbol_options(self, doc, item):
+        """(labels, default_index) for the mapping dialog dropdown."""
         kind = self._classify(item)
         if kind in ("panel", "switchboard"):
-            # Every panel/switchboard: user picks from ALL loaded panel and
-            # switchboard detail families, or falls back to the SLD_ group.
-            template = self._prompt_panel_switchboard_template(doc, item, kind)
-            if template is not None:
-                return template
-            # user chose the SLD_ group (or cancelled) - fall through
-        if kind == "ats":
-            # ATS never uses an SLD_ group - always the transfer switch family,
-            # with the user choosing which facing direction to place.
-            symbol = self._prompt_ats_symbol(doc, item)
-            if symbol is None:
-                symbol = self._find_ats_symbol(doc)
-            if symbol is not None:
-                return {"group_type": None, "symbols": [(symbol, 0.0)]}
-            return None
-        if kind == "switch":
-            # Equipment switches (disconnects) use the disconnect detail family.
-            symbol = self._find_disconnect_symbol(doc, item)
-            if symbol is not None:
-                return {"group_type": None, "symbols": [(symbol, 0.0)]}
-            return None
+            labels = self._family_labels(doc, ["PANEL", "SWITCHBOARD"])
+            default_family = (self.KIT["switchboard"] if kind == "switchboard" else self.KIT["panel"])[0]
+            index = 0
+            for i, label in enumerate(labels):
+                if label.upper() == default_family:
+                    index = i
+                    break
+            return labels, index
         if kind == "transformer":
-            # Let the user pick from the loaded transformer detail families
-            # (Box/No Box x Ground/No Ground x facing, Utility) or the group.
-            template = self._prompt_transformer_template(doc, item)
-            if template is not None:
-                return template
-            # fall through to SLD_ group resolution
+            labels = self._family_labels(doc, ["TRANSFORMER"])
+            default_family = self.KIT["transformer"][0]
+            index = 0
+            for i, label in enumerate(labels):
+                if label.upper() == default_family:
+                    index = i
+                    break
+            return labels, index
+        if kind == "ats":
+            return list(self.ATS_FACING_OPTIONS), 0
         if kind == "generator":
-            # Generators are drawn as an equipment box (per the CED one-line
-            # standard), never a switchboard group.
-            symbol = self._find_detail_symbol(doc, ["SLD-EQU-BOX"], prefer_type=["EQUIPMENT BOX"])
+            return ["Generator Symbol", "Equipment Box"], 0
+        if kind == "switch":
+            # Load-style choices: disconnect switches indicate loads.
+            return ["Equipment Connection w/ Disconnect", "Motor w/ Disconnect", "Motor Only"], 0
+        if kind == "load":
+            labels = ["Equipment Connection w/ Disconnect", "Motor w/ Disconnect", "Motor Only"]
+            name_upper = str(item.get("name") or "").upper()
+            index = 0
+            for hint in self.MOTOR_LOAD_HINTS:
+                if hint in name_upper:
+                    index = 1
+                    break
+            return labels, index
+        return [], 0
+
+    def _prompt_symbol_mapping(self, doc, items):
+        """ONE dialog mapping every selected item to its detail representation
+        via dropdowns. Returns {index: chosen label} or None if cancelled."""
+        rows = []
+        for index, item in enumerate(items):
+            labels, default_index = self._symbol_options(doc, item)
+            rows.append((index, item, labels, default_index))
+
+        dialog = Window()
+        dialog.Title = "Build Branch - Map Symbols"
+        dialog.SizeToContent = SizeToContent.WidthAndHeight
+        dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen
+
+        outer = StackPanel()
+        outer.Margin = Thickness(14.0)
+
+        header = TextBlock()
+        header.Text = "Choose the detail symbol for each selected item:"
+        header.FontWeight = FontWeights.SemiBold
+        header.Margin = Thickness(0.0, 0.0, 0.0, 10.0)
+        outer.Children.Add(header)
+
+        list_panel = StackPanel()
+        combos = {}
+        for index, item, labels, default_index in rows:
+            row_panel = StackPanel()
+            row_panel.Orientation = Orientation.Horizontal
+            row_panel.Margin = Thickness(0.0, 2.0, 0.0, 2.0)
+            name_block = TextBlock()
+            name_block.Text = "{}  ({})".format(
+                item.get("name") or "?", self._classify(item)
+            )
+            name_block.Width = 220.0
+            name_block.TextTrimming = TextTrimming.CharacterEllipsis
+            row_panel.Children.Add(name_block)
+            combo = ComboBox()
+            combo.Width = 320.0
+            for label in labels:
+                combo.Items.Add(label)
+            if labels:
+                combo.SelectedIndex = min(default_index, len(labels) - 1)
+            row_panel.Children.Add(combo)
+            list_panel.Children.Add(row_panel)
+            combos[index] = combo
+
+        scroll = ScrollViewer()
+        scroll.MaxHeight = 480.0
+        scroll.VerticalScrollBarVisibility = ScrollBarVisibility.Auto
+        scroll.Content = list_panel
+        outer.Children.Add(scroll)
+
+        buttons = StackPanel()
+        buttons.Orientation = Orientation.Horizontal
+        buttons.HorizontalAlignment = HorizontalAlignment.Right
+        buttons.Margin = Thickness(0.0, 12.0, 0.0, 0.0)
+        result = {"ok": False}
+
+        def _ok_clicked(sender, args):
+            result["ok"] = True
+            dialog.Close()
+
+        def _cancel_clicked(sender, args):
+            dialog.Close()
+
+        ok_button = Button()
+        ok_button.Content = "Build"
+        ok_button.Width = 90.0
+        ok_button.Height = 26.0
+        ok_button.Margin = Thickness(0.0, 0.0, 8.0, 0.0)
+        ok_button.Click += _ok_clicked
+        cancel_button = Button()
+        cancel_button.Content = "Cancel"
+        cancel_button.Width = 80.0
+        cancel_button.Height = 26.0
+        cancel_button.Click += _cancel_clicked
+        buttons.Children.Add(ok_button)
+        buttons.Children.Add(cancel_button)
+        outer.Children.Add(buttons)
+
+        dialog.Content = outer
+        try:
+            dialog.ShowDialog()
+        except Exception as ex:
+            if self._gateway.logger:
+                self._gateway.logger.warning("Symbol mapping dialog failed: %s", ex)
+            return None
+        if not result["ok"]:
+            return None
+        mapping = {}
+        for index, combo in combos.items():
+            try:
+                mapping[index] = str(combo.SelectedItem) if combo.SelectedItem is not None else ""
+            except Exception:
+                mapping[index] = ""
+        return mapping
+
+    def _template_from_choice(self, doc, item, choice):
+        """Template for an item given its mapping-dialog choice (no prompts)."""
+        kind = self._classify(item)
+        choice = str(choice or "")
+        upper = choice.upper()
+        if kind in ("panel", "switchboard"):
+            symbol = self._preferred_family_symbol(doc, choice) if choice else None
+            if symbol is None:
+                if kind == "switchboard":
+                    return self._kit_template(doc, "switchboard", bus_family=True)
+                return self._kit_template(doc, "panel")
+            return {
+                "group_type": None,
+                "symbols": [(symbol, 0.0)],
+                "bus_family": "PANEL WITH BUS" in upper or "SWITCHBOARD" in upper,
+            }
+        if kind == "transformer":
+            symbol = self._preferred_family_symbol(doc, choice) if choice else None
+            if symbol is None:
+                return self._kit_template(doc, "transformer")
+            return {"group_type": None, "symbols": [(symbol, 0.0)]}
+        if kind == "ats":
+            symbol = None
+            for facing in ("TOP", "BOTTOM", "LEFT", "RIGHT"):
+                if upper.endswith(facing):
+                    symbol = self._find_detail_symbol(doc, ["TRANSFER SWITCH", facing])
+                    break
+            if symbol is None:
+                symbol = self._kit_symbol(doc, "ats") or self._find_ats_symbol(doc)
+            if symbol is not None:
+                return {"group_type": None, "symbols": [(symbol, 0.0)]}
+            return None
+        if kind == "generator":
+            symbol = None
+            if "GENERATOR" in upper:
+                symbol = self._find_detail_symbol(doc, ["SLD-EQU-GENERATOR_CED"])
+            if symbol is None:
+                symbol = self._find_detail_symbol(doc, ["SLD-EQU-BOX"], prefer_type=["EQUIPMENT BOX"])
             if symbol is None:
                 symbol = self._find_detail_symbol(doc, ["GENERATOR"])
             if symbol is not None:
                 return {"group_type": None, "symbols": [(symbol, 0.0)]}
             return None
-        for keyword in self.KIND_KEYWORDS.get(kind, []):
-            for name, group_type in group_types:
-                if keyword in name:
-                    return {"group_type": group_type, "symbols": None}
+        if kind in ("switch", "load"):
+            if "MOTOR ONLY" in upper:
+                symbol = self._find_detail_symbol(doc, ["SLD-DEV-MOTOR-TOP_CED"])
+                if symbol is not None:
+                    return {"group_type": None, "symbols": [(symbol, 0.0)]}
+            role = "load_motor" if "MOTOR W/" in upper else "load_equip"
+            template = self._kit_template(doc, role)
+            if template is not None:
+                return template
+            symbol = self._find_disconnect_symbol(doc, item)
+            if symbol is not None:
+                return {"group_type": None, "symbols": [(symbol, 0.0)]}
+            return None
+        return None
+
+    def _resolve_template(self, doc, item, group_types):
+        """Branches are composed purely from the KIT detail families; the
+        pickers only override which orientation/variant of symbol to use."""
+        kind = self._classify(item)
+        if kind in ("panel", "switchboard"):
+            template = self._prompt_panel_switchboard_template(doc, item, kind)
+            if template is not None:
+                return template
+            # cancelled -> kit default (bus symbol for boards, plain for panels)
+            if kind == "switchboard":
+                return self._kit_template(doc, "switchboard", bus_family=True)
+            return self._kit_template(doc, "panel")
+        if kind == "ats":
+            symbol = self._prompt_ats_symbol(doc, item)
+            if symbol is None:
+                symbol = self._kit_symbol(doc, "ats") or self._find_ats_symbol(doc)
+            if symbol is not None:
+                return {"group_type": None, "symbols": [(symbol, 0.0)]}
+            return None
+        if kind == "switch":
+            # Generic equipment (Equipment Switch part type etc. - not a
+            # panel, board, ATS, or transformer): user picks the combo type.
+            choice = forms.alert(
+                "'{}' is equipment.\n\nWhich symbol should represent it?".format(
+                    item.get("name") or "?"
+                ),
+                title="Build One Line Branch",
+                options=["Equipment Connection w/ Disconnect", "Motor w/ Disconnect"],
+            )
+            role = "load_motor" if choice == "Motor w/ Disconnect" else "load_equip"
+            template = self._kit_template(doc, role)
+            if template is not None:
+                return template
+            symbol = self._find_disconnect_symbol(doc, item)
+            if symbol is not None:
+                return {"group_type": None, "symbols": [(symbol, 0.0)]}
+            return None
+        if kind == "transformer":
+            template = self._prompt_transformer_template(doc, item)
+            if template is not None:
+                return template
+            return self._kit_template(doc, "transformer")
+        if kind == "generator":
+            # Generators are equipment: offer the dedicated generator symbol
+            # or the classic equipment box.
+            choice = forms.alert(
+                "'{}' is a generator.\n\nWhich symbol should represent it?".format(
+                    item.get("name") or "?"
+                ),
+                title="Build One Line Branch",
+                options=["Generator Symbol", "Equipment Box"],
+            )
+            symbol = None
+            if choice == "Generator Symbol":
+                symbol = self._find_detail_symbol(doc, ["SLD-EQU-GENERATOR_CED"])
+            if symbol is None:
+                symbol = self._find_detail_symbol(doc, ["SLD-EQU-BOX"], prefer_type=["EQUIPMENT BOX"])
+            if symbol is None:
+                symbol = self._find_detail_symbol(doc, ["GENERATOR"])
+            if symbol is not None:
+                return {"group_type": None, "symbols": [(symbol, 0.0)]}
+            return None
+        if kind == "load":
+            name_upper = str(item.get("name") or "").upper()
+            role = "load_equip"
+            for hint in self.MOTOR_LOAD_HINTS:
+                if hint in name_upper:
+                    role = "load_motor"
+                    break
+            if role == "load_motor":
+                # Motor loads: combo (motor + disconnect) or the plain motor.
+                choice = forms.alert(
+                    "'{}' reads as a motor load.\n\nWhich symbol should represent it?".format(
+                        item.get("name") or "?"
+                    ),
+                    title="Build One Line Branch",
+                    options=["Motor w/ Disconnect", "Motor Only"],
+                )
+                if choice == "Motor Only":
+                    symbol = self._find_detail_symbol(doc, ["SLD-DEV-MOTOR-TOP_CED"])
+                    if symbol is not None:
+                        return {"group_type": None, "symbols": [(symbol, 0.0)]}
+            return self._kit_template(doc, role)
         return None
 
     def _prompt_panel_switchboard_template(self, doc, item, kind):
@@ -3956,8 +4934,7 @@ class _BuildBranchHandler(IExternalEventHandler):
         if not symbols_by_family:
             return None
 
-        group_label = "Use SLD_ Group"
-        labels = sorted(symbols_by_family.keys()) + [group_label]
+        labels = sorted(symbols_by_family.keys())
         try:
             choice = forms.SelectFromList.show(
                 labels,
@@ -3972,15 +4949,17 @@ class _BuildBranchHandler(IExternalEventHandler):
             if self._gateway.logger:
                 self._gateway.logger.warning("Panel symbol picker failed: %s", ex)
             forms.alert(
-                "The symbol picker failed ({}).\n\nUsing the SLD_ group for '{}'.".format(
+                "The symbol picker failed ({}).\n\nUsing the kit default for '{}'.".format(
                     ex, item.get("name") or "?"
                 ),
                 title="Build One Line Branch",
             )
             return None
-        if not choice or choice == group_label:
+        if not choice:
             return None
-        symbol = symbols_by_family.get(choice)
+        # Resolve the family to the RIGHT type (Panelboard/Solid/...), not
+        # whatever type the collector happened to return first.
+        symbol = self._preferred_family_symbol(doc, choice) or symbols_by_family.get(choice)
         if symbol is None:
             return None
         upper_choice = choice.upper()
@@ -4021,8 +5000,7 @@ class _BuildBranchHandler(IExternalEventHandler):
         if not symbols_by_family:
             return None
 
-        group_label = "Use SLD_ Group"
-        labels = sorted(symbols_by_family.keys()) + [group_label]
+        labels = sorted(symbols_by_family.keys())
         try:
             choice = forms.SelectFromList.show(
                 labels,
@@ -4034,15 +5012,15 @@ class _BuildBranchHandler(IExternalEventHandler):
             if self._gateway.logger:
                 self._gateway.logger.warning("Transformer symbol picker failed: %s", ex)
             forms.alert(
-                "The symbol picker failed ({}).\n\nUsing the SLD_ group for '{}'.".format(
+                "The symbol picker failed ({}).\n\nUsing the kit default for '{}'.".format(
                     ex, item.get("name") or "?"
                 ),
                 title="Build One Line Branch",
             )
             return None
-        if not choice or choice == group_label:
+        if not choice:
             return None
-        symbol = symbols_by_family.get(choice)
+        symbol = self._preferred_family_symbol(doc, choice) or symbols_by_family.get(choice)
         if symbol is None:
             return None
         return {"group_type": None, "symbols": [(symbol, 0.0)]}
@@ -4355,7 +5333,9 @@ def _build_one_line_model(doc):
     raw_nodes = get_all_equipment_nodes(doc)
 
     equips = {}
-    for tnode in raw_nodes.values():
+    # Deterministic order: Revit collectors/sets have no stable iteration
+    # order between sessions, so the same system could build different trees.
+    for tnode in sorted(raw_nodes.values(), key=lambda n: _elid_value(n.element_id)):
         eid = _elid_value(tnode.element_id)
         equip = OneLineEquip(eid, tnode.panel_name, tnode.equipment_type)
         try:
@@ -4392,12 +5372,24 @@ def _build_one_line_model(doc):
         for branch in tnode.upstream:
             if branch.base_eq is None:
                 continue
+            number = 9999
+            try:
+                digits = "".join([ch for ch in str(branch.circuit_number or "") if ch.isdigit()])
+                if digits:
+                    number = int(digits)
+            except Exception:
+                pass
             feeds.append((
                 _elid_value(branch.base_eq_id),
                 _elid_value(branch.element_id),
                 "{} / {}".format(branch.base_eq_name, branch.circuit_number or "?"),
                 branch.system,
+                (str(branch.base_eq_name or "").upper(), number, _elid_value(branch.element_id)),
             ))
+        # GetElectricalSystems() is an unordered set - without this sort the
+        # PRIMARY feed of multi-fed equipment could flip between sessions,
+        # redrawing the same system differently.
+        feeds.sort(key=lambda f: f[4])
         if feeds:
             equip.parent_id, equip.feeder_circuit_id, equip.feeder_label = feeds[0][:3]
             feeder_system = feeds[0][3]
@@ -4435,10 +5427,10 @@ def _build_one_line_model(doc):
                 kva,
                 is_large=bool(amps >= LARGE_LOAD_MIN_AMPS or kva >= LARGE_LOAD_MIN_KVA),
             ))
-        equip.loads.sort(key=lambda ld: -max(ld.amps, ld.kva))
+        equip.loads.sort(key=lambda ld: (-max(ld.amps, ld.kva), str(ld.name).upper(), ld.circuit_id))
         equips[eid] = equip
 
-    for equip in equips.values():
+    for equip in sorted(equips.values(), key=lambda e: e.element_id):
         if equip.parent_id and equip.parent_id in equips:
             equips[equip.parent_id].children.append(equip.element_id)
         elif equip.parent_id:
@@ -4496,7 +5488,7 @@ def _build_one_line_model(doc):
     _bfs_assign([root.element_id for root in roots])
 
     # Anything unreachable is part of a feed cycle - break it and treat as root.
-    for eid in list(keep.keys()):
+    for eid in sorted(keep.keys()):
         if eid in visited:
             continue
         node = keep[eid]
@@ -4559,6 +5551,7 @@ class OneLineDiagramWindow(forms.WPFWindow):
         self._pan_moved = False
         self._pan_button = None
         self._build_button = self.FindName("BuildBranchButton")
+        self._build_all_button = self.FindName("BuildAllButton")
         self._selected_keys = set()
         self._cards_by_key = {}
         self._card_default_bg = {}
@@ -5000,9 +5993,18 @@ class OneLineDiagramWindow(forms.WPFWindow):
                 self._set_status(self._summary_text())
 
     def _update_build_button(self):
+        # Build Branch stays always-clickable (it explains itself when nothing
+        # is selected); only Build All toggles, and only on the loads mode.
         if self._build_button is not None:
             try:
-                self._build_button.IsEnabled = bool(self._selected_keys)
+                self._build_button.IsEnabled = True
+            except Exception:
+                pass
+        if self._build_all_button is not None:
+            try:
+                # Building EVERYTHING while every connected load is displayed
+                # would place hundreds of items - require 50 HP+ or None.
+                self._build_all_button.IsEnabled = self._loads_mode != "all"
             except Exception:
                 pass
 
@@ -5346,10 +6348,10 @@ class OneLineDiagramWindow(forms.WPFWindow):
             return
         self._render()
 
-    def _collect_build_items(self):
+    def _collect_build_items(self, keys=None):
         nodes = (self._model or {}).get("nodes") or {}
         entries = []
-        for key in self._selected_keys:
+        for key in (keys if keys is not None else self._selected_keys):
             if key.startswith("E"):
                 try:
                     eid = int(key[1:])
@@ -5365,6 +6367,10 @@ class OneLineDiagramWindow(forms.WPFWindow):
                         "element_id": int(eid),
                         "parent_id": int(node.parent_id or 0),
                         "feeder_circuit_id": int(node.feeder_circuit_id or 0),
+                        "alt_feeds": [
+                            [int(feed[0] or 0), int(feed[1] or 0)]
+                            for feed in list(node.alt_feeds or [])
+                        ],
                         "name": node.name,
                         "equip_type": node.equip_type,
                     },
@@ -5387,13 +6393,13 @@ class OneLineDiagramWindow(forms.WPFWindow):
         entries.sort(key=lambda pair: pair[0])
         return [entry[1] for entry in entries]
 
-    def build_branch_clicked(self, sender, args):
-        if not self._selected_keys:
+    def _launch_build(self, items):
+        if not items:
             return
         if not getattr(self._pane, "_active_view_is_drafting", False):
             forms.alert(
                 "The branch is placed into the active drafting view.\n\n"
-                "Open a drafting view first, then click Build Branch again.",
+                "Open a drafting view first, then try again.",
                 title=ONE_LINE_TITLE,
             )
             return
@@ -5403,13 +6409,34 @@ class OneLineDiagramWindow(forms.WPFWindow):
         if gateway.is_busy():
             self._set_status("Build Branch is already running - please wait")
             return
-        items = self._collect_build_items()
-        if not items:
-            return
         self._set_status("Click in the drafting view to place the branch...")
         raised = gateway.raise_build(items, callback=self._on_build_branch_complete)
         if not raised:
             self._set_status("Unable to queue Build Branch")
+
+    def build_branch_clicked(self, sender, args):
+        if not self._selected_keys:
+            self._set_status("Select cards first (click / Ctrl+click), then Build Branch")
+            forms.alert(
+                "No cards are selected.\n\n"
+                "Click a card (Ctrl+click for several) in the diagram, then "
+                "Build Branch - or use Build All for the entire one line.",
+                title=ONE_LINE_TITLE,
+            )
+            return
+        self._launch_build(self._collect_build_items())
+
+    def build_all_clicked(self, sender, args):
+        # Everything currently shown becomes the build set. Disabled while
+        # Loads: All is displayed (that would place every connected circuit).
+        if self._loads_mode == "all":
+            self._set_status("Build All is disabled while Loads: All is shown")
+            return
+        keys = set(self._cards_by_key.keys())
+        if not keys:
+            self._set_status("Nothing to build")
+            return
+        self._launch_build(self._collect_build_items(keys))
 
     def _on_build_branch_complete(self, status, payload, error):
         payload = dict(payload or {})
