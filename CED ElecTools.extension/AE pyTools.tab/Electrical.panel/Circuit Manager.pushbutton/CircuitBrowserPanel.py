@@ -58,7 +58,7 @@ from System.Windows.Controls import (
     TextBlock,
     ToolTipService,
 )
-from System.Windows.Input import Keyboard, ModifierKeys, Key, MouseButton, MouseButtonState
+from System.Windows.Input import Keyboard, ModifierKeys, Key, MouseButton, MouseButtonState, Cursors
 from System.Windows.Media import (
     BrushConverter,
     DoubleCollection,
@@ -3127,7 +3127,6 @@ class _BuildBranchHandler(IExternalEventHandler):
         bus_breakers = 0
         self._tag_type_cache = {}
         self._kit_cache = {}
-        self._route_segments = []
         transaction = DB.Transaction(doc, "Build One Line Branch")
         transaction.Start()
         try:
@@ -4184,7 +4183,6 @@ class _BuildBranchHandler(IExternalEventHandler):
                         length_param.Set(self.FEED_LINE_LENGTH)
                 except Exception:
                     pass
-                self._register_segment(line_x, float(sym_y), self.FEED_LINE_LENGTH, False)
                 placed.append(line)
                 if wire_tag_type_id is not None:
                     head = DB.XYZ(line_x + self.WIRE_TAG_DX, float(sym_y) + self.WIRE_TAG_DY, 0.0)
@@ -4306,19 +4304,9 @@ class _BuildBranchHandler(IExternalEventHandler):
                 top = extents[1]
         return top if top is not None else float(fallback)
 
-    HOP = 0.15  # ft radius of the up-over-down jump where wires must cross
-
-    def _register_segment(self, x, y, length, vertical):
-        registry = getattr(self, "_route_segments", None)
-        if registry is None:
-            registry = []
-            self._route_segments = registry
-        registry.append((float(x), float(y), float(length), bool(vertical)))
-
     def _place_fdr_piece(self, doc, view, x, y, length, vertical):
         """One FDR Medium Solid piece. Insertion at the start point; extends
-        +X, or straight down when vertical (rotated -90). Registers itself for
-        crossing detection."""
+        +X, or straight down when vertical (rotated -90)."""
         length = float(length or 0.0)
         if length < 0.05:
             return None
@@ -4337,71 +4325,16 @@ class _BuildBranchHandler(IExternalEventHandler):
             if vertical:
                 axis = DB.Line.CreateBound(point, DB.XYZ(point.X, point.Y, 1.0))
                 DB.ElementTransformUtils.RotateElement(doc, line.Id, axis, -self._HALF_PI)
-            self._register_segment(x, y, length, vertical)
             return line
         except Exception:
             return None
 
-    def _find_crossings(self, x, y, length, vertical):
-        """Interior intersections of a prospective run against already-placed
-        segments (endpoints excluded - lines are ALLOWED to meet)."""
-        hits = []
-        for sx, sy, slen, svert in list(getattr(self, "_route_segments", []) or []):
-            if vertical == svert:
-                continue
-            if vertical:
-                # run: x fixed, from y down to y-length; other: horizontal
-                if (sx + 0.1 < x < sx + slen - 0.1) and (y - length + 0.2 < sy < y - 0.2):
-                    hits.append(sy)
-            else:
-                # run: y fixed, from x to x+length; other: vertical
-                if (sy - slen + 0.2 < y < sy - 0.2) and (x + 0.1 < sx < x + length - 0.1):
-                    hits.append(sx)
-        return sorted(set([round(h, 3) for h in hits]))
-
     def _place_fdr_segment(self, doc, view, x, y, length, vertical):
-        """A run of FDR pieces. Where the run would cross an existing wire it
-        jumps it with an up-over-down (or side-around, for vertical runs)
-        hop so crossings read unambiguously. Returns the placed pieces."""
-        length = float(length or 0.0)
-        if length < 0.05:
-            return []
-        crossings = self._find_crossings(x, y, length, vertical)
-        if not crossings:
-            piece = self._place_fdr_piece(doc, view, x, y, length, vertical)
-            return [piece] if piece is not None else []
-
-        hop = self.HOP
-        pieces = []
-
-        def _piece(px, py, plen, pvert):
-            element = self._place_fdr_piece(doc, view, px, py, plen, pvert)
-            if element is not None:
-                pieces.append(element)
-
-        if not vertical:
-            cursor = float(x)
-            end_x = float(x) + length
-            for cx in crossings:
-                _piece(cursor, y, (cx - hop) - cursor, False)
-                # up, over, down
-                _piece(cx - hop, y + hop, hop, True)
-                _piece(cx - hop, y + hop, 2.0 * hop, False)
-                _piece(cx + hop, y + hop, hop, True)
-                cursor = cx + hop
-            _piece(cursor, y, end_x - cursor, False)
-        else:
-            cursor = float(y)
-            end_y = float(y) - length
-            for cy in sorted(crossings, reverse=True):
-                _piece(x, cursor, cursor - (cy + hop), True)
-                # side-step around the crossing wire
-                _piece(x, cy + hop, hop, False)
-                _piece(x + hop, cy + hop, 2.0 * hop, True)
-                _piece(x, cy - hop, hop, False)
-                cursor = cy - hop
-            _piece(x, cursor, cursor - end_y, True)
-        return pieces
+        """A straight FDR run (crossing hops removed per Reed 2026-07-16 -
+        crossings draw straight through; the slot-order planning keeps them
+        rare). Returns the placed pieces as a list."""
+        piece = self._place_fdr_piece(doc, view, x, y, length, vertical)
+        return [piece] if piece is not None else []
 
     def _route_connection(self, doc, view, start, end, style, item, wire_tag_type_id, elbow_extra=0.0):
         """Connect a parent feed point to a child symbol's top with FDR detail
@@ -5195,13 +5128,14 @@ ONE_LINE_TITLE = "One Line Diagram"
 
 
 class OneLineLoad(object):
-    def __init__(self, circuit_id, circuit_number, name, amps, kva, is_large=False):
+    def __init__(self, circuit_id, circuit_number, name, amps, kva, is_large=False, rating=0.0):
         self.circuit_id = int(circuit_id or 0)
         self.circuit_number = str(circuit_number or "")
         self.name = str(name or "LOAD")
         self.amps = float(amps or 0.0)
         self.kva = float(kva or 0.0)
         self.is_large = bool(is_large)
+        self.rating = float(rating or 0.0)
 
     def metrics_text(self):
         parts = []
@@ -5229,6 +5163,9 @@ class OneLineEquip(object):
         self.feeder_label = ""
         self.feeder_breaker_text = ""
         self.feeder_wire_text = ""
+        self.feeder_circuit_number = ""
+        self.mains_amps = 0.0
+        self.demand_amps = 0.0
         self.alt_feeds = []   # [(parent_id, circuit_id, label)]
         self.children = []
         self.loads = []
@@ -5367,6 +5304,25 @@ def _build_one_line_model(doc):
         equip.demand_current_text = _one_line_value_string(
             tnode.element, getattr(DB.BuiltInParameter, "RBS_ELEC_PANEL_TOTAL_DEMAND_CURRENT_PARAM", None)
         )
+        # Numeric amps for demand-vs-capacity highlighting (internal = amps).
+        try:
+            param = tnode.element.LookupParameter("Mains Rating_CED")
+            if param is None or not param.HasValue:
+                param = tnode.element.get_Parameter(
+                    getattr(DB.BuiltInParameter, "RBS_ELEC_PANEL_MAINS_PARAM", None)
+                )
+            if param is not None and param.HasValue:
+                equip.mains_amps = float(param.AsDouble())
+        except Exception:
+            equip.mains_amps = 0.0
+        try:
+            param = tnode.element.get_Parameter(
+                getattr(DB.BuiltInParameter, "RBS_ELEC_PANEL_TOTAL_DEMAND_CURRENT_PARAM", None)
+            )
+            if param is not None and param.HasValue:
+                equip.demand_amps = float(param.AsDouble())
+        except Exception:
+            equip.demand_amps = 0.0
 
         feeds = []
         for branch in tnode.upstream:
@@ -5385,6 +5341,7 @@ def _build_one_line_model(doc):
                 "{} / {}".format(branch.base_eq_name, branch.circuit_number or "?"),
                 branch.system,
                 (str(branch.base_eq_name or "").upper(), number, _elid_value(branch.element_id)),
+                str(branch.circuit_number or "").strip(),
             ))
         # GetElectricalSystems() is an unordered set - without this sort the
         # PRIMARY feed of multi-fed equipment could flip between sessions,
@@ -5392,6 +5349,7 @@ def _build_one_line_model(doc):
         feeds.sort(key=lambda f: f[4])
         if feeds:
             equip.parent_id, equip.feeder_circuit_id, equip.feeder_label = feeds[0][:3]
+            equip.feeder_circuit_number = feeds[0][5]
             feeder_system = feeds[0][3]
             rating_text = _one_line_value_string(
                 feeder_system, DB.BuiltInParameter.RBS_ELEC_CIRCUIT_RATING_PARAM
@@ -5419,6 +5377,13 @@ def _build_one_line_model(doc):
             if _one_line_system_feeds_equipment(system):
                 continue
             amps, kva = _one_line_load_metrics(system)
+            rating = 0.0
+            try:
+                rating_param = system.get_Parameter(DB.BuiltInParameter.RBS_ELEC_CIRCUIT_RATING_PARAM)
+                if rating_param is not None and rating_param.HasValue:
+                    rating = float(rating_param.AsDouble())
+            except Exception:
+                rating = 0.0
             equip.loads.append(OneLineLoad(
                 _elid_value(branch.element_id),
                 branch.circuit_number,
@@ -5426,6 +5391,7 @@ def _build_one_line_model(doc):
                 amps,
                 kva,
                 is_large=bool(amps >= LARGE_LOAD_MIN_AMPS or kva >= LARGE_LOAD_MIN_KVA),
+                rating=rating,
             ))
         equip.loads.sort(key=lambda ld: (-max(ld.amps, ld.kva), str(ld.name).upper(), ld.circuit_id))
         equips[eid] = equip
@@ -5446,6 +5412,17 @@ def _build_one_line_model(doc):
         if equip.parent_id or equip.children or equip.loads:
             keep[eid] = equip
     hidden = len(equips) - len(keep)
+    isolated_names = sorted(
+        [
+            "{}{}".format(
+                equip.name,
+                " ({})".format(equip.equip_type) if equip.equip_type and equip.equip_type != "Unknown" else "",
+            )
+            for eid, equip in equips.items()
+            if eid not in keep
+        ],
+        key=lambda s: s.upper(),
+    )
 
     for equip in keep.values():
         equip.children = sorted(
@@ -5504,6 +5481,7 @@ def _build_one_line_model(doc):
         "nodes": keep,
         "roots": sorted(roots, key=lambda r: (r.tier, str(r.name).upper())),
         "hidden_isolated": hidden,
+        "isolated_names": isolated_names,
         "load_count": sum([len(equip.loads) for equip in keep.values()]),
         "large_load_count": sum([len([ld for ld in equip.loads if ld.is_large]) for equip in keep.values()]),
     }
@@ -5521,6 +5499,46 @@ class OneLineDiagramWindow(forms.WPFWindow):
     MARGIN_LEFT = 112.0
     MARGIN_TOP = 42.0
 
+    # Diagram themes. Every color the canvas draws comes from the active
+    # palette, so switching re-renders the whole diagram consistently.
+    THEME_ORDER = ["light", "dark", "emerald", "patriot"]
+    THEMES = {
+        "light": {
+            "label": "Light",
+            "window": "#F2F4F6", "canvas": "#FFFFFF", "frame": "#8A94A2",
+            "card_bg": "#F2F5F8", "card_border": "#7A8698", "load_bg": "#FFFFFF",
+            "line": "#5A6672", "text": "#1E252B", "muted": "#55606C",
+            "accent": "#2F81F7", "selection": "#BFD8F5", "symbol_fill": "#FFFFFF",
+        },
+        "dark": {
+            "label": "Dark",
+            "window": "#20262B", "canvas": "#1B2126", "frame": "#4A555F",
+            "card_bg": "#2A3238", "card_border": "#5A6670", "load_bg": "#232A30",
+            "line": "#9AA7B2", "text": "#E8EDF2", "muted": "#A6B2BD",
+            "accent": "#4EA1FF", "selection": "#31506E", "symbol_fill": "#1B2126",
+        },
+        "emerald": {
+            "label": "Emerald",
+            "window": "#0E1F17", "canvas": "#0C241A", "frame": "#2FBF71",
+            "card_bg": "#123528", "card_border": "#2FBF71", "load_bg": "#0F2E22",
+            "line": "#3ED98D", "text": "#DFF7EA", "muted": "#8CD9B4",
+            "accent": "#58E6A0", "selection": "#1E5C42", "symbol_fill": "#0C241A",
+        },
+        "patriot": {
+            "label": "Patriot",
+            "window": "#FFFFFF", "canvas": "#FDFDFF", "frame": "#B22234",
+            "card_bg": "#F4F6FB", "card_border": "#B22234", "load_bg": "#FFFFFF",
+            "line": "#3C3B6E", "text": "#1F2430", "muted": "#3C3B6E",
+            "accent": "#B22234", "selection": "#C9D6F2", "symbol_fill": "#FFFFFF",
+        },
+    }
+    # Demand-vs-capacity highlight colors (shared across themes). The whole
+    # card fills with these, so each carries its own readable text color.
+    OVERLOAD_HEX = "#D93036"        # at/over 100% of capacity
+    OVERLOAD_TEXT_HEX = "#FFFFFF"
+    NEAR_LIMIT_HEX = "#F0B429"      # at/over 80% of capacity
+    NEAR_LIMIT_TEXT_HEX = "#20242A"
+
     def __init__(self, pane, model, theme_mode="light", accent_mode="blue"):
         xaml = os.path.abspath(os.path.join(_THIS_DIR, "OneLineDiagramWindow.xaml"))
         self._theme_mode = theme_mode or "light"
@@ -5535,15 +5553,18 @@ class OneLineDiagramWindow(forms.WPFWindow):
         self._canvas = self.FindName("DiagramCanvas")
         self._scroll = self.FindName("DiagramScroll")
         self._status_text = self.FindName("OneLineStatusText")
+        self._doc_text = self.FindName("OneLineDocText")
+        self._diagram_frame = self.FindName("DiagramFrame")
         self._card_mode_button = self.FindName("CardModeButton")
         self._loads_mode_button = self.FindName("LoadsModeButton")
+        self._theme_button = self.FindName("ThemeButton")
         self._cards_by_id = {}
         self._drag_candidate = None
         self._drag_source_id = None
         self._valid_targets = set()
         self._highlighted = []
         self._move_in_flight = False
-        self._loads_mode = "large"  # large | all | none
+        self._loads_mode = "none"  # none | all
         self._pan_active = False
         self._pan_origin = None
         self._pan_start_h = 0.0
@@ -5557,6 +5578,17 @@ class OneLineDiagramWindow(forms.WPFWindow):
         self._card_default_bg = {}
         self._load_index = {}
         self._load_click_key = None
+        self._ui_theme = "dark" if "dark" in (self._theme_mode or "") else "light"
+        self._theme_brush_cache = {}
+        if self._status_text is not None:
+            try:
+                self._status_text.Cursor = Cursors.Hand
+                self._status_text.ToolTip = "Click to list the isolated (hidden) equipment"
+                self._status_text.MouseLeftButtonUp += self._status_text_clicked
+            except Exception:
+                pass
+        self._update_doc_text()
+        self._apply_ui_theme()
         self._render()
 
     # ---- infrastructure -------------------------------------------------
@@ -5580,6 +5612,105 @@ class OneLineDiagramWindow(forms.WPFWindow):
         except Exception:
             return None
 
+    # ---- themes ----------------------------------------------------------
+
+    def _theme(self):
+        return self.THEMES.get(self._ui_theme) or self.THEMES["light"]
+
+    def _hex_brush(self, hex_value):
+        brush = self._theme_brush_cache.get(hex_value)
+        if brush is None:
+            try:
+                brush = BrushConverter().ConvertFromString(hex_value)
+                try:
+                    brush.Freeze()
+                except Exception:
+                    pass
+            except Exception:
+                brush = None
+            self._theme_brush_cache[hex_value] = brush
+        return brush
+
+    def _theme_brush(self, key):
+        return self._hex_brush(self._theme().get(key) or "#808080")
+
+    def _apply_ui_theme(self):
+        theme = self._theme()
+        try:
+            self.Background = self._theme_brush("window")
+        except Exception:
+            pass
+        if self._diagram_frame is not None:
+            try:
+                self._diagram_frame.Background = self._theme_brush("canvas")
+                self._diagram_frame.BorderBrush = self._theme_brush("frame")
+            except Exception:
+                pass
+        for block in (self._doc_text, self._status_text):
+            if block is not None:
+                try:
+                    block.Foreground = self._theme_brush("text" if block is self._doc_text else "muted")
+                except Exception:
+                    pass
+        if self._theme_button is not None:
+            try:
+                self._theme_button.Content = "Theme: {}".format(theme.get("label") or "?")
+            except Exception:
+                pass
+
+    def toggle_theme_clicked(self, sender, args):
+        order = self.THEME_ORDER
+        try:
+            idx = order.index(self._ui_theme)
+        except ValueError:
+            idx = 0
+        self._ui_theme = order[(idx + 1) % len(order)]
+        self._apply_ui_theme()
+        self._render()
+
+    def _update_doc_text(self):
+        title = ""
+        try:
+            doc = self._pane._get_active_doc()
+            title = getattr(doc, "Title", "") or ""
+        except Exception:
+            title = ""
+        if self._doc_text is not None:
+            try:
+                self._doc_text.Text = "Document: {}".format(title or "-")
+            except Exception:
+                pass
+
+    @staticmethod
+    def _capacity_ratio(demand, capacity):
+        """demand/capacity as a float; 0.0 when either side is unknown."""
+        try:
+            demand = float(demand or 0.0)
+            capacity = float(capacity or 0.0)
+        except Exception:
+            return 0.0
+        if demand <= 0.0 or capacity <= 0.0:
+            return 0.0
+        return demand / capacity
+
+    def _demand_highlight(self, demand, capacity):
+        """(bg_brush, text_brush, tooltip_note) for the red/yellow demand
+        states, or (None, None, None). The background fills the whole card."""
+        ratio = self._capacity_ratio(demand, capacity)
+        if ratio >= 1.0:
+            return (
+                self._hex_brush(self.OVERLOAD_HEX),
+                self._hex_brush(self.OVERLOAD_TEXT_HEX),
+                "OVER CAPACITY: demand {:.0f}% of {:.0f} A".format(ratio * 100.0, capacity),
+            )
+        if ratio >= 0.8:
+            return (
+                self._hex_brush(self.NEAR_LIMIT_HEX),
+                self._hex_brush(self.NEAR_LIMIT_TEXT_HEX),
+                "Near capacity: demand {:.0f}% of {:.0f} A".format(ratio * 100.0, capacity),
+            )
+        return None, None, None
+
     def _text(self, content, style_key, bold=False, size=None):
         block = TextBlock()
         block.Text = str(content or "")
@@ -5589,6 +5720,10 @@ class OneLineDiagramWindow(forms.WPFWindow):
             block.FontWeight = FontWeights.SemiBold
         if size:
             block.FontSize = float(size)
+        try:
+            block.Foreground = self._theme_brush("muted" if "Secondary" in str(style_key or "") else "text")
+        except Exception:
+            pass
         return block
 
     def _card_size(self):
@@ -5609,17 +5744,34 @@ class OneLineDiagramWindow(forms.WPFWindow):
         return "{} V".format(int(round(volts)))
 
     def _visible_loads(self, equip):
-        if self._loads_mode == "none":
+        if self._loads_mode != "all":
             return []
-        if self._loads_mode == "all":
-            return list(equip.loads or [])
-        return [load for load in (equip.loads or []) if load.is_large]
+        return list(equip.loads or [])
+
+    def _status_text_clicked(self, sender, args):
+        """List the isolated equipment the diagram hides (no feeder, no
+        children, no loads - nothing to draw a wire to)."""
+        names = list((self._model or {}).get("isolated_names") or [])
+        if not names:
+            forms.alert(
+                "No isolated equipment - everything found is part of the "
+                "distribution tree.",
+                title=ONE_LINE_TITLE,
+            )
+            return
+        forms.alert(
+            "{} isolated equipment hidden from the diagram (no feeder, no "
+            "downstream equipment, no loads):\n\n- {}".format(
+                len(names), "\n- ".join(names)
+            ),
+            title=ONE_LINE_TITLE,
+        )
 
     def _summary_text(self):
         nodes = (self._model or {}).get("nodes") or {}
         shown = sum([len(self._visible_loads(equip)) for equip in nodes.values()])
         total = int((self._model or {}).get("load_count", 0) or 0)
-        mode_label = {"large": "50 HP+", "all": "all", "none": "hidden"}.get(self._loads_mode, self._loads_mode)
+        mode_label = {"all": "all", "none": "hidden"}.get(self._loads_mode, self._loads_mode)
         return "{} equipment | loads: {}/{} ({}) | {} isolated hidden".format(
             len(nodes),
             shown,
@@ -5652,18 +5804,23 @@ class OneLineDiagramWindow(forms.WPFWindow):
         square.Height = float(size)
         square.Stroke = self._line_brush
         square.StrokeThickness = 1.4
-        square.Fill = self._brush("CED.Brush.ListBackground", "#FFFFFF")
+        square.Fill = self._theme_brush("symbol_fill")
         Canvas.SetLeft(square, float(center_x) - size / 2.0)
         Canvas.SetTop(square, float(top_y))
         self._canvas.Children.Add(square)
 
     def _add_feeder_labels(self, child, center_x, bus_y, slot_w):
-        """Breaker rating and wire size annotated beside the child's feeder drop."""
+        """Circuit number, breaker rating, and wire size beside the feeder drop."""
         label_x = float(center_x) + 8.0
         max_width = max(60.0, float(slot_w) - 34.0)
-        if child.feeder_breaker_text:
-            breaker_block = self._text(child.feeder_breaker_text, "CED.Text.Secondary", size=10)
+        breaker_line = str(child.feeder_breaker_text or "")
+        if child.feeder_circuit_number:
+            ckt = "Ckt {}".format(child.feeder_circuit_number)
+            breaker_line = "{} | {}".format(ckt, breaker_line) if breaker_line else ckt
+        if breaker_line:
+            breaker_block = self._text(breaker_line, "CED.Text.Secondary", size=10)
             breaker_block.MaxWidth = max_width
+            breaker_block.ToolTip = breaker_line
             Canvas.SetLeft(breaker_block, label_x)
             Canvas.SetTop(breaker_block, float(bus_y) + 6.0)
             self._canvas.Children.Add(breaker_block)
@@ -5684,9 +5841,9 @@ class OneLineDiagramWindow(forms.WPFWindow):
         self._cards_by_key = {}
         self._card_default_bg = {}
         self._load_index = {}
-        self._line_brush = self._brush("CED.Brush.ListBorder", "#7A8698")
-        self._accent_brush = self._brush("CED.Brush.InfoPanelBorder", "#2F81F7")
-        self._selection_brush = self._brush("CED.Brush.RowSelectedBackground", "#BFD8F5")
+        self._line_brush = self._theme_brush("line")
+        self._accent_brush = self._theme_brush("accent")
+        self._selection_brush = self._theme_brush("selection")
 
         nodes = (self._model or {}).get("nodes") or {}
         roots = (self._model or {}).get("roots") or []
@@ -5854,10 +6011,13 @@ class OneLineDiagramWindow(forms.WPFWindow):
         border.Width = card_w
         border.Height = card_h
         border.CornerRadius = CornerRadius(4.0)
-        border.Background = self._brush("CED.Brush.InfoPanelBackground", "#F2F5F8")
-        border.BorderBrush = self._brush("CED.Brush.ListBorder", "#7A8698")
+        border.Background = self._theme_brush("card_bg")
+        border.BorderBrush = self._theme_brush("card_border")
         is_heavy = equip.equip_type in ("Switchboard", "Transformer")
         border.BorderThickness = Thickness(2.0 if is_heavy else 1.2)
+        demand_bg, demand_fg, demand_note = self._demand_highlight(equip.demand_amps, equip.mains_amps)
+        if demand_bg is not None:
+            border.Background = demand_bg
         border.Tag = str(equip.element_id)
         border.AllowDrop = True
 
@@ -5889,6 +6049,12 @@ class OneLineDiagramWindow(forms.WPFWindow):
                 ratings_parts.append("Dmd: {}".format(" / ".join(demand_parts)))
             if ratings_parts:
                 stack.Children.Add(self._text(" | ".join(ratings_parts), "CED.Text.Secondary", size=10.5))
+        if demand_fg is not None:
+            for block in stack.Children:
+                try:
+                    block.Foreground = demand_fg
+                except Exception:
+                    pass
         border.Child = stack
 
         tooltip_lines = [
@@ -5905,13 +6071,15 @@ class OneLineDiagramWindow(forms.WPFWindow):
             tooltip_lines.append("Total Demand Load: {}".format(equip.demand_load_text))
         if equip.demand_current_text:
             tooltip_lines.append("Total Demand Current: {}".format(equip.demand_current_text))
+        if demand_note:
+            tooltip_lines.append(demand_note)
         tooltip_lines.append("Fed from: {}".format(equip.feeder_label or "- (source)"))
         if equip.feeder_breaker_text:
             tooltip_lines.append("Feeder OCP: {}".format(equip.feeder_breaker_text))
         if equip.feeder_wire_text:
             tooltip_lines.append("Feeder Wire: {}".format(equip.feeder_wire_text))
         if equip.loads:
-            tooltip_lines.append("Large loads: {}".format(len(equip.loads)))
+            tooltip_lines.append("Connected loads: {}".format(len(equip.loads)))
         tooltip_lines.append("")
         tooltip_lines.append("Drag onto new supply equipment to re-feed." if equip.feeder_circuit_id else "No feeder circuit - cannot be moved.")
         border.ToolTip = "\n".join(tooltip_lines)
@@ -5928,17 +6096,29 @@ class OneLineDiagramWindow(forms.WPFWindow):
         border.Width = self.LOAD_W
         border.Height = self.LOAD_H
         border.CornerRadius = CornerRadius(3.0)
-        border.Background = self._brush("CED.Brush.ListBackground", "#FFFFFF")
-        border.BorderBrush = self._brush("CED.Brush.ListBorder", "#7A8698")
+        border.Background = self._theme_brush("load_bg")
+        border.BorderBrush = self._theme_brush("card_border")
         border.BorderThickness = Thickness(3.0, 1.0, 1.0, 1.0)
+        demand_bg, demand_fg, demand_note = self._demand_highlight(load.amps, load.rating)
+        if demand_bg is not None:
+            border.Background = demand_bg
         border.Tag = str(load_key)
 
         stack = StackPanel()
         stack.Margin = Thickness(6.0, 2.0, 6.0, 2.0)
         stack.Children.Add(self._text(load.name, "CED.Text.Primary", size=11))
         stack.Children.Add(self._text(load.metrics_text(), "CED.Text.Secondary", size=10))
+        if demand_fg is not None:
+            for block in stack.Children:
+                try:
+                    block.Foreground = demand_fg
+                except Exception:
+                    pass
         border.Child = stack
-        border.ToolTip = "{}\n{}".format(load.name, load.metrics_text())
+        tooltip = "{}\n{}".format(load.name, load.metrics_text())
+        if demand_note:
+            tooltip += "\n{}".format(demand_note)
+        border.ToolTip = tooltip
         border.PreviewMouseLeftButtonDown += self._load_mouse_down
         border.PreviewMouseLeftButtonUp += self._load_mouse_up
         return border
@@ -6003,7 +6183,7 @@ class OneLineDiagramWindow(forms.WPFWindow):
         if self._build_all_button is not None:
             try:
                 # Building EVERYTHING while every connected load is displayed
-                # would place hundreds of items - require 50 HP+ or None.
+                # would place hundreds of items - require Loads: None.
                 self._build_all_button.IsEnabled = self._loads_mode != "all"
             except Exception:
                 pass
@@ -6346,6 +6526,7 @@ class OneLineDiagramWindow(forms.WPFWindow):
             self._logger.exception("One line rebuild failed: %s", ex)
             forms.alert("Failed to rebuild the one line diagram:\n\n{}".format(ex), title=ONE_LINE_TITLE)
             return
+        self._update_doc_text()
         self._render()
 
     def _collect_build_items(self, keys=None):
@@ -6502,10 +6683,9 @@ class OneLineDiagramWindow(forms.WPFWindow):
         self._set_zoom(1.0)
 
     def toggle_loads_mode_clicked(self, sender, args):
-        order = {"large": "all", "all": "none", "none": "large"}
-        self._loads_mode = order.get(self._loads_mode, "large")
+        self._loads_mode = "all" if self._loads_mode != "all" else "none"
         if self._loads_mode_button is not None:
-            labels = {"large": "Loads: 50 HP+", "all": "Loads: All", "none": "Loads: None"}
+            labels = {"all": "Loads: All", "none": "Loads: None"}
             self._loads_mode_button.Content = labels.get(self._loads_mode, "Loads")
         self._render()
 

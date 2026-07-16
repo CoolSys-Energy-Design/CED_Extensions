@@ -19,23 +19,11 @@
         <ColumnDefinition Width="*"/>
         <ColumnDefinition Width="Auto"/>
       </Grid.ColumnDefinitions>
-
-      <StackPanel Grid.Column="0" Orientation="Horizontal">
-        <Button Name="BuildBranchButton" Style="{DynamicResource CED.Button.Primary}" Content="Build Branch" Width="100" Height="24" Margin="0,0,6,0" Click="build_branch_clicked" ToolTip="Build the selected cards into the active drafting view. Select cards first (click / Ctrl+click)."/>
-        <Button Name="BuildAllButton" Style="{DynamicResource CED.Button.Base}" Content="Build All" Width="80" Height="24" Margin="0,0,14,0" Click="build_all_clicked" ToolTip="Build the ENTIRE one line (every card shown) into the active drafting view. Disabled while Loads: All is displayed - switch loads to 50 HP+ or None first."/>
-        <TextBlock Text="One Line Diagram" Style="{DynamicResource CED.Text.SectionHeader}" VerticalAlignment="Center" Margin="0,0,14,0"/>
-        <Button Name="RefreshDiagramButton" Style="{DynamicResource CED.Button.Base}" Content="Refresh" Width="72" Height="24" Click="refresh_diagram_clicked" ToolTip="Rebuild the diagram from the current model"/>
-        <Button Name="CardModeButton" Style="{DynamicResource CED.Button.Base}" Content="Compact Cards" Width="112" Height="24" Margin="6,0,0,0" Click="toggle_card_mode_clicked" ToolTip="Toggle between full and compact equipment cards"/>
-        <Button Name="LoadsModeButton" Style="{DynamicResource CED.Button.Base}" Content="Loads: 50 HP+" Width="104" Height="24" Margin="6,0,0,0" Click="toggle_loads_mode_clicked" ToolTip="Cycle which loads are shown: 50 HP+ only, all loads (including 120V), or none"/>
-        <Button Name="ZoomOutButton" Style="{DynamicResource CED.Button.Base}" Content="-" Width="28" Height="24" Margin="12,0,0,0" Click="zoom_out_clicked" ToolTip="Zoom out (Ctrl+Wheel)"/>
-        <Button Name="ZoomResetButton" Style="{DynamicResource CED.Button.Base}" Content="100%" Width="52" Height="24" Margin="4,0,0,0" Click="zoom_reset_clicked" ToolTip="Reset zoom"/>
-        <Button Name="ZoomInButton" Style="{DynamicResource CED.Button.Base}" Content="+" Width="28" Height="24" Margin="4,0,0,0" Click="zoom_in_clicked" ToolTip="Zoom in (Ctrl+Wheel)"/>
-      </StackPanel>
-
+      <TextBlock Grid.Column="0" Name="OneLineDocText" Text="Document: -" Style="{DynamicResource CED.Text.SectionHeader}" VerticalAlignment="Center"/>
       <TextBlock Grid.Column="2" Name="OneLineStatusText" Text="" Style="{DynamicResource CED.Text.Secondary}" VerticalAlignment="Center" Margin="12,0,0,0"/>
     </Grid>
 
-    <Border Grid.Row="1" BorderBrush="{DynamicResource CED.Brush.ListBorder}" BorderThickness="1" Background="{DynamicResource CED.Brush.ListBackground}">
+    <Border Grid.Row="1" Name="DiagramFrame" BorderBrush="{DynamicResource CED.Brush.ListBorder}" BorderThickness="1" Background="{DynamicResource CED.Brush.ListBackground}">
       <ScrollViewer Name="DiagramScroll"
                     HorizontalScrollBarVisibility="Hidden"
                     VerticalScrollBarVisibility="Hidden"
@@ -54,12 +42,17 @@
         <ColumnDefinition Width="*"/>
         <ColumnDefinition Width="Auto"/>
       </Grid.ColumnDefinitions>
-      <TextBlock Grid.Column="0"
-                 Name="OneLineHintText"
-                 Text="Wheel: zoom | Drag empty space: pan | Click / Ctrl+click: select cards | Drag a card onto new supply equipment: re-feed | Build Branch places SLD_ detail groups for the selection into the active drafting view."
-                 Style="{DynamicResource CED.Text.Secondary}"
-                 TextWrapping="Wrap"
-                 VerticalAlignment="Center"/>
+      <StackPanel Grid.Column="0" Orientation="Horizontal">
+        <Button Name="BuildBranchButton" Style="{DynamicResource CED.Button.Primary}" Content="Build Branch" Width="100" Height="24" Margin="0,0,6,0" Click="build_branch_clicked" ToolTip="Build the selected cards into the active drafting view. Select cards first (click / Ctrl+click)."/>
+        <Button Name="BuildAllButton" Style="{DynamicResource CED.Button.Base}" Content="Build All" Width="80" Height="24" Margin="0,0,14,0" Click="build_all_clicked" ToolTip="Build the ENTIRE one line (every card shown) into the active drafting view. Disabled while Loads: All is displayed."/>
+        <Button Name="RefreshDiagramButton" Style="{DynamicResource CED.Button.Base}" Content="Refresh" Width="72" Height="24" Click="refresh_diagram_clicked" ToolTip="Rebuild the diagram from the current model"/>
+        <Button Name="CardModeButton" Style="{DynamicResource CED.Button.Base}" Content="Compact Cards" Width="112" Height="24" Margin="6,0,0,0" Click="toggle_card_mode_clicked" ToolTip="Toggle between full and compact equipment cards"/>
+        <Button Name="LoadsModeButton" Style="{DynamicResource CED.Button.Base}" Content="Loads: None" Width="96" Height="24" Margin="6,0,0,0" Click="toggle_loads_mode_clicked" ToolTip="Toggle showing all connected loads (including 120V) on the diagram"/>
+        <Button Name="ThemeButton" Style="{DynamicResource CED.Button.Base}" Content="Theme: Light" Width="110" Height="24" Margin="6,0,0,0" Click="toggle_theme_clicked" ToolTip="Cycle the diagram theme: Light, Dark, Emerald, Patriot"/>
+        <Button Name="ZoomOutButton" Style="{DynamicResource CED.Button.Base}" Content="-" Width="28" Height="24" Margin="12,0,0,0" Click="zoom_out_clicked" ToolTip="Zoom out (mouse wheel also zooms)"/>
+        <Button Name="ZoomResetButton" Style="{DynamicResource CED.Button.Base}" Content="100%" Width="52" Height="24" Margin="4,0,0,0" Click="zoom_reset_clicked" ToolTip="Reset zoom"/>
+        <Button Name="ZoomInButton" Style="{DynamicResource CED.Button.Base}" Content="+" Width="28" Height="24" Margin="4,0,0,0" Click="zoom_in_clicked" ToolTip="Zoom in (mouse wheel also zooms)"/>
+      </StackPanel>
       <Button Grid.Column="1" Style="{DynamicResource CED.Button.Base}" Content="Close" Width="80" Height="24" Margin="12,0,0,0" Click="close_clicked"/>
     </Grid>
   </Grid>
