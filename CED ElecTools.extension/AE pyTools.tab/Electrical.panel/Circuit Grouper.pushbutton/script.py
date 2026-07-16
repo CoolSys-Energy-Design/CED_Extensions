@@ -81,11 +81,12 @@ def main():
     logger.debug("Circuit Grouper scope=%s, %d circuitable element(s)",
                  scope_label, len(rows_data))
 
-    panel_names, name_to_id = cg_collect.collect_panels(doc)
+    panel_names, name_to_id, panel_info = cg_collect.collect_panels(doc)
 
     plans, name_to_id = cg_window.show_window(
         rows_data, panel_names, name_to_id, cg_core.RATING_OPTIONS,
         group_param_options, default_group_param,
+        panel_info=panel_info,
     )
 
     if not plans:

@@ -112,6 +112,87 @@ def run():
     check("snap None -> None", cg_core.snap_voltage(None) is None)
     check("snap zero -> None", cg_core.snap_voltage(0) is None)
 
+    # --- multi-panel candidate parsing ---
+    check("parse multi", cg_core.parse_panel_candidates("RA, RB, RC, RD") ==
+          ["RA", "RB", "RC", "RD"])
+    check("parse mixed separators", cg_core.parse_panel_candidates("RA; RB / RC") ==
+          ["RA", "RB", "RC"])
+    check("parse dedupes", cg_core.parse_panel_candidates("RA, ra, RA") == ["RA"])
+    check("parse single", cg_core.parse_panel_candidates("RA") == ["RA"])
+    check("parse empty", cg_core.parse_panel_candidates("") == [])
+    check("parse none", cg_core.parse_panel_candidates(None) == [])
+    check("parse canonicalizes to known", cg_core.parse_panel_candidates(
+        "ra, rb, RX", known_panels=["RA", "RB", "RC"]) == ["RA", "RB"])
+
+    # --- geometry helpers ---
+    check("centroid", cg_core.centroid([(0, 0, 0), (2, 4, 6)]) == (1.0, 2.0, 3.0))
+    check("centroid skips None", cg_core.centroid([None, (2, 2, 2)]) == (2.0, 2.0, 2.0))
+    check("centroid empty", cg_core.centroid([None]) is None)
+    check("distance", cg_core.distance((0, 0, 0), (3, 4, 0)) == 5.0)
+    check("distance None", cg_core.distance(None, (0, 0, 0)) is None)
+
+    # --- multi-panel resolution: closest with room wins ---
+    panel_info = {
+        "RA": {"location": (0, 0, 0), "open_slots": 2},
+        "RB": {"location": (100, 0, 0), "open_slots": 2},
+        "RC": {"location": (200, 0, 0), "open_slots": None},  # unlimited
+    }
+    res = cg_core.resolve_panel_assignments(
+        [{"group_key": "G1", "candidates": ["RA", "RB", "RC"],
+          "centroid": (90, 0, 0), "poles": 1}],
+        panel_info)
+    check("closest with room", res["G1"]["panel"] == "RB" and res["G1"]["note"] == "")
+
+    # reservation overflow: three 1P groups near RA (2 slots) -> third goes RB
+    reqs = [
+        {"group_key": "G%d" % i, "candidates": ["RA", "RB"],
+         "centroid": (i, 0, 0), "poles": 1}
+        for i in (1, 2, 3)
+    ]
+    res = cg_core.resolve_panel_assignments(reqs, panel_info)
+    check("overflow to next closest",
+          res["G1"]["panel"] == "RA" and res["G2"]["panel"] == "RA" and
+          res["G3"]["panel"] == "RB")
+
+    # pole-aware: a 3P circuit skips a panel with only 2 slots
+    res = cg_core.resolve_panel_assignments(
+        [{"group_key": "G1", "candidates": ["RA", "RB"],
+          "centroid": (0, 0, 0), "poles": 3}],
+        {"RA": {"location": (0, 0, 0), "open_slots": 2},
+         "RB": {"location": (50, 0, 0), "open_slots": 3}})
+    check("pole-aware skip", res["G1"]["panel"] == "RB")
+
+    # no room anywhere -> blank + note
+    res = cg_core.resolve_panel_assignments(
+        [{"group_key": "G1", "candidates": ["RA"],
+          "centroid": (0, 0, 0), "poles": 3}],
+        {"RA": {"location": (0, 0, 0), "open_slots": 2}})
+    check("no room -> blank + note",
+          res["G1"]["panel"] is None and
+          res["G1"]["note"] == cg_core.PANEL_NOTE_NO_ROOM)
+
+    # no listed panel exists -> blank + note
+    res = cg_core.resolve_panel_assignments(
+        [{"group_key": "G1", "candidates": [], "centroid": None, "poles": 1}],
+        panel_info)
+    check("unknown panels -> blank + note",
+          res["G1"]["panel"] is None and
+          res["G1"]["note"] == cg_core.PANEL_NOTE_UNKNOWN)
+
+    # unlimited-capacity panel is always eligible and never reserved out
+    reqs = [{"group_key": "G%d" % i, "candidates": ["RC"],
+             "centroid": (200, 0, 0), "poles": 3} for i in (1, 2, 3, 4)]
+    res = cg_core.resolve_panel_assignments(reqs, panel_info)
+    check("unlimited never fills",
+          all(res["G%d" % i]["panel"] == "RC" for i in (1, 2, 3, 4)))
+
+    # missing centroid still resolves (listed order, after measurable groups)
+    res = cg_core.resolve_panel_assignments(
+        [{"group_key": "G1", "candidates": ["RB", "RA"],
+          "centroid": None, "poles": 1}],
+        panel_info)
+    check("no centroid -> listed order", res["G1"]["panel"] == "RB")
+
     print("\nAll tests passed.")
 
 

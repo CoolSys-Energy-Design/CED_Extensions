@@ -103,6 +103,10 @@ class GroupVM(_Notifier):
         self.key = key
         self.load_name = key
         self.panel = ""
+        # set when the multi-panel auto-pick could not choose a panel
+        # (no room / unknown names); shown in the validation pane and
+        # cleared as soon as the user picks a panel manually
+        self.panel_note = ""
         self.rating = cg_core.DEFAULT_RATING
         self.status = "Ready"
         self.status_color = BRUSH_READY
@@ -140,6 +144,7 @@ class RowVM(_Notifier):
         self.poles_text = data.get("poles_text", "") or ""
         self.poles_value = data.get("poles_value", None)
         self.elevation_text = data.get("elevation_text", "") or ""
+        self.location = data.get("location", None)
         self.group_values = data.get("group_values", {}) or {}
         self.already_circuited = bool(data.get("already_circuited", False))
         self.src_panel = (data.get("panel", "") or "").strip()
@@ -178,7 +183,8 @@ class RowVM(_Notifier):
 # ---------------------------------------------------------------------------
 class CircuitGrouperWindow(forms.WPFWindow):
     def __init__(self, rows_data, panel_options, name_to_id, rating_options,
-                 group_param_options=None, default_group_param="", title=""):
+                 group_param_options=None, default_group_param="", title="",
+                 panel_info=None):
         forms.WPFWindow.__init__(self, _XAML)
 
         self.PanelOptions = List[str]()
@@ -192,6 +198,7 @@ class CircuitGrouperWindow(forms.WPFWindow):
             self.GroupParamOptions.Add(gp)
 
         self._name_to_id = name_to_id
+        self._panel_info = panel_info or {}
         self.result_plans = None
         self._drag_start = None
         self._drag_items = []
@@ -272,6 +279,54 @@ class CircuitGrouperWindow(forms.WPFWindow):
             # default state: fully-circuited circuits open collapsed
             members = self._members(g)
             g.is_expanded = not (members and all(r.already_circuited for r in members))
+        self._auto_assign_panels()
+
+    def _auto_assign_panels(self):
+        """Resolve groups whose source panel value lists MULTIPLE panels
+        ('RA, RB, RC, RD') to the closest listed panel that still has room
+        for the circuit. Slots are reserved across this session's groups, so
+        shared candidate lists overflow to the next-closest panel. When no
+        listed panel has room the combo is left blank and the group carries a
+        validation note. Single-name values keep today's behavior."""
+        if not self._panel_info:
+            return
+        requests = []
+        group_by_key = {}
+        for g in self._groups:
+            members = self._members(g)
+            if members and all(r.already_circuited for r in members):
+                continue
+            # multi-panel means the RAW text lists several names, whether or
+            # not they all exist in the model (unknown-only lists still get
+            # blanked + noted rather than riding along as a bogus combo value)
+            if len(cg_core.parse_panel_candidates(g.panel)) < 2:
+                continue
+            candidates = cg_core.parse_panel_candidates(
+                g.panel, self._panel_info.keys())
+            eff = cg_core.effective_rows(members)
+            poles = None
+            for r in (eff or members):
+                if r.poles_value:
+                    poles = r.poles_value
+                    break
+            requests.append({
+                "group_key": g.key,
+                "candidates": candidates,
+                "centroid": cg_core.centroid(
+                    [r.location for r in (eff or members)]),
+                "poles": poles,
+            })
+            group_by_key[g.key] = g
+        if not requests:
+            return
+        results = cg_core.resolve_panel_assignments(requests, self._panel_info)
+        for key, res in results.items():
+            g = group_by_key.get(key)
+            if g is None:
+                continue
+            g.panel = res.get("panel") or ""
+            g.panel_note = res.get("note") or ""
+            g.notify("panel")
 
     def _apply_grouping(self, param_name):
         self._rebuild_groups(param_name)
@@ -401,6 +456,9 @@ class CircuitGrouperWindow(forms.WPFWindow):
                 if not standard:
                     lines.append(u"'{}': non-standard breaker size ({} A)".format(
                         label, cg_core.format_amps_number(amps)))
+            # multi-panel auto-pick could not choose (no room / unknown names)
+            if g.panel_note and not g.panel:
+                lines.append(u"'{}': {}".format(label, g.panel_note))
 
         self.SummaryText.Text = "{} circuit(s) ready | {} not ready".format(ready, not_ready)
         self.ValidationText.Text = "\n".join(lines) if lines else "No validation issues."
@@ -422,6 +480,9 @@ class CircuitGrouperWindow(forms.WPFWindow):
         if not value or value == g.panel:
             return
         g.panel = value
+        if g.panel_note:
+            g.panel_note = ""
+            self._revalidate()
 
     def group_rating_changed(self, sender, args):
         g = sender.DataContext
@@ -606,9 +667,10 @@ class CircuitGrouperWindow(forms.WPFWindow):
 
 
 def show_window(rows_data, panel_options, name_to_id, rating_options,
-                group_param_options=None, default_group_param=""):
+                group_param_options=None, default_group_param="",
+                panel_info=None):
     win = CircuitGrouperWindow(
         rows_data, panel_options, name_to_id, rating_options,
-        group_param_options, default_group_param)
+        group_param_options, default_group_param, panel_info=panel_info)
     win.show_dialog()
     return win.result_plans, win._name_to_id

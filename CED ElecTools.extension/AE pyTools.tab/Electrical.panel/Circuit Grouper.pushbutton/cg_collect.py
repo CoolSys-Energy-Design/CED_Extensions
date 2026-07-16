@@ -322,21 +322,31 @@ def _level_name_and_elevation(doc, elem):
     return name, elev
 
 
-def _element_z(elem):
+def _element_xyz(elem):
+    """(x, y, z) tuple for the element (location point, else bounding-box
+    center), or None. Feeds the closest-panel pick, so plan distance matters
+    more than exact insertion origin."""
     loc = getattr(elem, "Location", None)
     pt = getattr(loc, "Point", None) if loc is not None else None
     if pt is not None:
         try:
-            return pt.Z
+            return (pt.X, pt.Y, pt.Z)
         except Exception:
             pass
     try:
         bb = elem.get_BoundingBox(None)
         if bb is not None:
-            return (bb.Min.Z + bb.Max.Z) * 0.5
+            return ((bb.Min.X + bb.Max.X) * 0.5,
+                    (bb.Min.Y + bb.Max.Y) * 0.5,
+                    (bb.Min.Z + bb.Max.Z) * 0.5)
     except Exception:
         pass
     return None
+
+
+def _element_z(elem):
+    xyz = _element_xyz(elem)
+    return xyz[2] if xyz is not None else None
 
 
 def _format_length(doc, internal_feet):
@@ -557,6 +567,7 @@ def collect_devices(doc, element_ids=None):
             "poles_text": poles_text,
             "poles_value": poles_value,
             "elevation_text": _read_elevation(doc, elem, level_elev),
+            "location": _element_xyz(elem),
             "group_values": group_values,
             "already_circuited": _is_already_circuited(elem),
         })
@@ -564,13 +575,55 @@ def collect_devices(doc, element_ids=None):
     return rows
 
 
+def _panel_open_slots(elem):
+    """Open pole-slots on a panel: 'Max Number of Single Pole Breakers' minus
+    the poles consumed by every power circuit already assigned to it (spares
+    are circuits, so they count). Returns None when the panel declares no max
+    - capacity unknown, treated by the picker as unlimited."""
+    max_slots = None
+    bip = getattr(DB.BuiltInParameter, "RBS_ELEC_MAX_POLE_BREAKERS", None)
+    if bip is not None:
+        try:
+            p = elem.get_Parameter(bip)
+            if p is not None and p.HasValue:
+                max_slots = p.AsInteger()
+        except Exception:
+            max_slots = None
+    if not max_slots or max_slots <= 0:
+        return None
+    used = 0
+    mep = getattr(elem, "MEPModel", None)
+    fn = getattr(mep, "GetAssignedElectricalSystems", None) if mep is not None else None
+    if callable(fn):
+        try:
+            systems = fn() or []
+        except Exception:
+            systems = []
+        for s in systems:
+            try:
+                if s.SystemType != DB.Electrical.ElectricalSystemType.PowerCircuit:
+                    continue
+            except Exception:
+                pass
+            poles = None
+            try:
+                poles = s.PolesNumber
+            except Exception:
+                poles = None
+            used += poles if poles else 1
+    return max(0, max_slots - used)
+
+
 def collect_panels(doc):
-    """Return (display_names, name_to_id) for electrical panels.
+    """Return (display_names, name_to_id, panel_info) for electrical panels.
 
     display_names: sorted list of strings for the combo box.
     name_to_id: dict display -> ElementId.IntegerValue.
+    panel_info: dict display -> {"location": (x,y,z)|None, "open_slots": int|None},
+        consumed by the multi-panel auto-pick (closest listed panel with room).
     """
     name_to_id = {}
+    panel_info = {}
     collector = (
         DB.FilteredElementCollector(doc)
         .OfCategory(DB.BuiltInCategory.OST_ElectricalEquipment)
@@ -593,5 +646,10 @@ def collect_panels(doc):
         if not name:
             continue
         # first instance wins on duplicate display names
-        name_to_id.setdefault(name, element_id_value(elem.Id))
-    return sorted(name_to_id.keys()), name_to_id
+        if name not in name_to_id:
+            name_to_id[name] = element_id_value(elem.Id)
+            panel_info[name] = {
+                "location": _element_xyz(elem),
+                "open_slots": _panel_open_slots(elem),
+            }
+    return sorted(name_to_id.keys()), name_to_id, panel_info

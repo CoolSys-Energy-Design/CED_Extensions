@@ -221,6 +221,145 @@ def default_load_name(identity_marks, fallback=""):
 
 
 # ---------------------------------------------------------------------------
+# Multi-panel candidate resolution ("RA, RB, RC, RD" -> pick one)
+# ---------------------------------------------------------------------------
+# Some fixtures arrive with SEVERAL allowed panels listed in CKT_Panel_CEDT.
+# The tool then pre-selects the closest listed panel that still has room for
+# the circuit; when none has room the combo is left blank and the group gets a
+# validation note (the user picks manually). A single-name value is untouched.
+PANEL_NOTE_NO_ROOM = "no listed panel has room - pick a panel manually"
+PANEL_NOTE_UNKNOWN = "none of the listed panels exist in the model - pick a panel manually"
+
+
+def parse_panel_candidates(text, known_panels=None):
+    """Split a panel value like 'RA, RB, RC' into candidate names.
+
+    Splits on comma / semicolon / slash, trims, and dedupes preserving order.
+    When ``known_panels`` is given, candidates are matched case-insensitively
+    against it and returned in the model's canonical spelling; names that
+    match no known panel are dropped.
+    """
+    if not text:
+        return []
+    s = str(text).replace(";", ",").replace("/", ",")
+    canon = None
+    if known_panels is not None:
+        canon = {}
+        for k in known_panels:
+            canon.setdefault(str(k).strip().lower(), str(k).strip())
+    seen = set()
+    out = []
+    for token in s.split(","):
+        name = token.strip()
+        if not name:
+            continue
+        if canon is not None:
+            name = canon.get(name.lower())
+            if name is None:
+                continue
+        key = name.lower()
+        if key not in seen:
+            seen.add(key)
+            out.append(name)
+    return out
+
+
+def centroid(points):
+    """Average of the given (x, y, z) tuples, ignoring Nones. None if empty."""
+    pts = [p for p in points if p is not None]
+    if not pts:
+        return None
+    n = float(len(pts))
+    return (sum(p[0] for p in pts) / n,
+            sum(p[1] for p in pts) / n,
+            sum(p[2] for p in pts) / n)
+
+
+def distance(a, b):
+    """Euclidean distance between two (x, y, z) tuples, or None if either is
+    missing."""
+    if a is None or b is None:
+        return None
+    return ((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2) ** 0.5
+
+
+def resolve_panel_assignments(requests, panel_info):
+    """Choose a panel for each multi-candidate group: the CLOSEST listed panel
+    that still has room for the circuit's poles.
+
+    requests: list of dicts
+        {"group_key": str, "candidates": [panel names], "centroid": xyz|None,
+         "poles": int|None}
+    panel_info: {panel_name: {"location": xyz|None, "open_slots": int|None}}
+        open_slots None means capacity unknown -> treated as unlimited and
+        never reserved against.
+
+    Slots are RESERVED as groups claim them, so several groups sharing the
+    same candidate list overflow onto the next-closest panel instead of all
+    piling onto one. Groups are processed nearest-first (whoever sits closest
+    to its best panel claims it first); groups with no measurable distance go
+    last and take their candidates in listed order.
+
+    Returns {group_key: {"panel": name or None, "note": ""}}; ``note`` is a
+    PANEL_NOTE_* string when no panel could be chosen.
+    """
+    remaining = {}
+    for name, info in (panel_info or {}).items():
+        remaining[name] = (info or {}).get("open_slots", None)
+
+    def _dist(req, name):
+        info = (panel_info or {}).get(name) or {}
+        return distance(req.get("centroid"), info.get("location"))
+
+    def _best_distance(req):
+        ds = [_dist(req, c) for c in req.get("candidates", [])]
+        ds = [d for d in ds if d is not None]
+        return min(ds) if ds else None
+
+    # nearest-first claim order; unmeasurable distances last, stable by key
+    order = sorted(
+        range(len(requests)),
+        key=lambda i: (
+            _best_distance(requests[i]) is None,
+            _best_distance(requests[i]) or 0.0,
+            str(requests[i].get("group_key", "")),
+        ),
+    )
+
+    results = {}
+    for i in order:
+        req = requests[i]
+        key = req.get("group_key", "")
+        candidates = [c for c in req.get("candidates", []) if c in remaining]
+        if not candidates:
+            results[key] = {"panel": None, "note": PANEL_NOTE_UNKNOWN}
+            continue
+        poles = req.get("poles") or 1
+        # candidates by distance (unknown distances keep listed order, last)
+        ranked = sorted(
+            enumerate(candidates),
+            key=lambda pair: (
+                _dist(req, pair[1]) is None,
+                _dist(req, pair[1]) or 0.0,
+                pair[0],
+            ),
+        )
+        chosen = None
+        for _, name in ranked:
+            slots = remaining.get(name)
+            if slots is None or slots >= poles:
+                chosen = name
+                break
+        if chosen is None:
+            results[key] = {"panel": None, "note": PANEL_NOTE_NO_ROOM}
+            continue
+        if remaining.get(chosen) is not None:
+            remaining[chosen] -= poles
+        results[key] = {"panel": chosen, "note": ""}
+    return results
+
+
+# ---------------------------------------------------------------------------
 # Validation
 # ---------------------------------------------------------------------------
 def effective_rows(rows):
