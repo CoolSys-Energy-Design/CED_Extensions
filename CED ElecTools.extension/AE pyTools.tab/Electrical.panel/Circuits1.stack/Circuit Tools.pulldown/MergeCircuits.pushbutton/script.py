@@ -3,7 +3,7 @@ import Autodesk.Revit.DB.Electrical as DBE
 from pyrevit import revit, DB, forms, script
 
 from Snippets import _elecutils as eu
-from Snippets import revit_helpers
+from Snippets import design_options, revit_helpers
 
 doc = revit.doc
 uidoc = revit.uidoc
@@ -184,6 +184,8 @@ def get_circuit_elements(circuit):
     elements = []
     try:
         for el in circuit.Elements:
+            if not design_options.is_main_model_element(el):
+                continue
             if isinstance(el, DB.Element):
                 elements.append(el)
     except Exception:
@@ -203,6 +205,8 @@ def dedupe_circuits(circuits):
     seen_ids = set()
     for ckt in circuits or []:
         if not isinstance(ckt, DBE.ElectricalSystem):
+            continue
+        if not design_options.is_main_model_element(ckt):
             continue
         cid = _idval(ckt.Id)
         if cid in seen_ids:
@@ -229,7 +233,7 @@ def get_selected_circuits(active_view=None):
                 element = doc.GetElement(element_id)
             except Exception:
                 element = None
-            if isinstance(element, DBE.ElectricalSystem):
+            if isinstance(element, DBE.ElectricalSystem) and design_options.is_main_model_element(element):
                 selected_circuits.append(element)
 
         if selected_circuits:
@@ -264,7 +268,7 @@ def get_circuits_from_panel_schedule_view(panel_schedule_view):
                 if cid in circuits_by_id:
                     continue
                 circuit = doc.GetElement(circuit_id)
-                if isinstance(circuit, DBE.ElectricalSystem):
+                if isinstance(circuit, DBE.ElectricalSystem) and design_options.is_main_model_element(circuit):
                     circuits_by_id[cid] = circuit
     except Exception:
         return []

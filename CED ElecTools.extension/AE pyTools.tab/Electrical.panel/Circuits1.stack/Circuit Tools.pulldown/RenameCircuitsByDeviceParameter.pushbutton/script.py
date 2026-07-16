@@ -6,7 +6,7 @@ import Autodesk.Revit.DB.Electrical as DBE
 from pyrevit import revit, DB, forms, script
 
 from Snippets import _elecutils as eu
-from Snippets import revit_helpers
+from Snippets import design_options, revit_helpers
 
 doc = revit.doc
 uidoc = revit.uidoc
@@ -67,6 +67,8 @@ def _dedupe_elements(elements):
     for element in elements or []:
         if not element:
             continue
+        if not design_options.is_main_model_element(element):
+            continue
         try:
             eid = _elid_value(element.Id)
         except Exception:
@@ -82,6 +84,8 @@ def _is_valid_circuit(circuit):
     if not isinstance(circuit, DBE.ElectricalSystem):
         return False
     if not circuit.IsValidObject:
+        return False
+    if not design_options.is_main_model_element(circuit):
         return False
     if circuit.CircuitType in [DBE.CircuitType.Spare, DBE.CircuitType.Space]:
         return False
@@ -136,6 +140,8 @@ def _get_circuit_load_elements(circuit):
     elements = []
     try:
         for element in circuit.Elements:
+            if not design_options.is_main_model_element(element):
+                continue
             if isinstance(element, DB.Element) and not isinstance(element, DBE.ElectricalSystem):
                 elements.append(element)
     except Exception:

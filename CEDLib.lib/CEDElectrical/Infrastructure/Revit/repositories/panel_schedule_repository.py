@@ -13,7 +13,7 @@ from CEDElectrical.part_types import (
     PART_TYPE_PANELBOARD,
     PART_TYPE_SWITCHBOARD,
 )
-from Snippets import revit_helpers
+from Snippets import design_options, revit_helpers
 
 SORT_MODE_SWITCHBOARD = "switchboard"
 SORT_MODE_PANELBOARD_ACROSS = "panelboard_two_columns_across"
@@ -24,7 +24,7 @@ _PANEL_SORT_MODES = (
     SORT_MODE_PANELBOARD_DOWN,
     SORT_MODE_PANELBOARD_ONE_COLUMN,
 )
-_DESIGN_OPTION_MAIN_MODEL_FILTER = DB.ElementDesignOptionFilter(DB.ElementId.InvalidElementId)
+_DESIGN_OPTION_MAIN_MODEL_FILTER = design_options.main_model_filter()
 PSTYPE_UNKNOWN = DBE.PanelScheduleType.Unknown
 PSTYPE_BRANCH = DBE.PanelScheduleType.Branch
 PSTYPE_SWITCHBOARD = DBE.PanelScheduleType.Switchboard
@@ -330,9 +330,8 @@ def get_all_panels(doc, require_mep_model=True, exclude_design_options=True, req
         DB.FilteredElementCollector(doc)
         .OfCategory(DB.BuiltInCategory.OST_ElectricalEquipment)
         .WhereElementIsNotElementType()
+        .WherePasses(_DESIGN_OPTION_MAIN_MODEL_FILTER)
     )
-    if bool(exclude_design_options):
-        collector = collector.WherePasses(_DESIGN_OPTION_MAIN_MODEL_FILTER)
 
     results = []
     for panel in collector:
@@ -2006,7 +2005,7 @@ def _collect_slot_metadata(doc, option):
             pass
 
         kind = "empty"
-        if isinstance(circuit, DBE.ElectricalSystem):
+        if isinstance(circuit, DBE.ElectricalSystem) and design_options.is_main_model_element(circuit):
             kind = _kind_from_circuit(circuit)
             if kind == "spare":
                 is_spare = True
@@ -2033,7 +2032,7 @@ def _collect_slot_metadata(doc, option):
                     continue
         if group_number <= 0:
             group_number = int(get_slot_group_number(view, slot, body=body) or 0)
-        if isinstance(circuit, DBE.ElectricalSystem):
+        if isinstance(circuit, DBE.ElectricalSystem) and design_options.is_main_model_element(circuit):
             if is_spare:
                 is_spare_removable = is_removable_spare(
                     view,
@@ -2050,7 +2049,7 @@ def _collect_slot_metadata(doc, option):
         if circuit_id_val > 0:
             if circuit_id_val in edited_by_cache:
                 edited_by = edited_by_cache[circuit_id_val]
-            elif isinstance(circuit, DBE.ElectricalSystem):
+        elif isinstance(circuit, DBE.ElectricalSystem) and design_options.is_main_model_element(circuit):
                 edited_by = get_element_edited_by(doc, circuit)
                 edited_by_cache[circuit_id_val] = edited_by
 
@@ -2102,9 +2101,15 @@ def build_panel_rows(doc, option, panel_id_set=None, all_circuits=None):
 
     circuit_by_slot = {}
     circuits = list(all_circuits) if all_circuits is not None else list(
-        DB.FilteredElementCollector(doc).OfClass(DBE.ElectricalSystem).WhereElementIsNotElementType().ToElements()
+        DB.FilteredElementCollector(doc)
+        .OfClass(DBE.ElectricalSystem)
+        .WhereElementIsNotElementType()
+        .WherePasses(design_options.main_model_filter())
+        .ToElements()
     )
     for circuit in circuits:
+        if not design_options.is_main_model_element(circuit):
+            continue
         try:
             base = getattr(circuit, "BaseEquipment", None)
             if base is None or panel is None or _idval(base.Id) != option.get("panel_id", 0):

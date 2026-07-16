@@ -8,7 +8,7 @@ from CEDElectrical.Model.panel_schedule_enums import PanelSpecialKind as Special
 from CEDElectrical.Model.panel_schedule_enums import PanelUiActionType as UiActionType
 from CEDElectrical.Model.panel_schedule_enums import PanelUiMode as UiMode
 from CEDElectrical.Model.panel_schedule_manager import PanelScheduleManager
-from Snippets import revit_helpers
+from Snippets import design_options, revit_helpers
 
 _elid_from_value = revit_helpers.elementid_from_value
 
@@ -18,6 +18,7 @@ def _collect_all_circuits(doc):
         DB.FilteredElementCollector(doc)
         .OfClass(ps_repo.DBE.ElectricalSystem)
         .WhereElementIsNotElementType()
+        .WherePasses(design_options.main_model_filter())
         .ToElements()
     )
 
@@ -68,6 +69,7 @@ def collect_panel_assignment_usage(doc):
         DB.FilteredElementCollector(doc)
         .OfClass(ps_repo.DBE.ElectricalSystem)
         .WhereElementIsNotElementType()
+        .WherePasses(design_options.main_model_filter())
         .ToElements()
     )
 
@@ -161,7 +163,7 @@ def _removable_targets_for_option(doc, option, mode, panel_circuit_index):
     targets = []
     seen_ids = set()
     for circuit in list(_get_panel_circuits(option, panel_circuit_index) or []):
-        if not isinstance(circuit, ps_repo.DBE.ElectricalSystem):
+        if not isinstance(circuit, ps_repo.DBE.ElectricalSystem) or not design_options.is_main_model_element(circuit):
             continue
         circuit_id = int(ps_repo._idval(getattr(circuit, "Id", None)))
         if circuit_id <= 0 or circuit_id in seen_ids:
@@ -265,7 +267,7 @@ def _unlock_added_slots(manager, doc, added_circuit_ids, fallback_unlock_request
         if cid <= 0:
             continue
         circuit = doc.GetElement(_elid_from_value(cid))
-        if not isinstance(circuit, ps_repo.DBE.ElectricalSystem):
+        if not isinstance(circuit, ps_repo.DBE.ElectricalSystem) or not design_options.is_main_model_element(circuit):
             continue
         base = getattr(circuit, "BaseEquipment", None)
         panel_id = int(ps_repo._idval(getattr(base, "Id", None))) if base is not None else 0

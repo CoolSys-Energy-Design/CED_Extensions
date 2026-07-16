@@ -19,7 +19,7 @@ from CEDElectrical.Domain.circuit_element_finder_bounds import (
     show_elements,
 )
 from Snippets import _elecutils as eu
-from Snippets import revit_helpers
+from Snippets import design_options, revit_helpers
 from Snippets.circuit_ui_actions import collect_circuit_targets, set_revit_selection
 
 OPTION_EXISTING_PLAN = "Open in Existing Plan View"
@@ -279,14 +279,19 @@ def _collect_target_circuit_ids(doc):
     if selection:
         selected = []
         for element in list(selection or []):
-            if isinstance(element, DB.Electrical.ElectricalSystem):
+            if isinstance(element, DB.Electrical.ElectricalSystem) and design_options.is_main_model_element(element):
                 selected.append(element)
     else:
         try:
             selected = list(eu.pick_circuits_from_list(doc, select_multiple=True) or [])
         except SystemExit:
             selected = []
-    return [_id_value(circuit.Id) for circuit in list(selected or []) if isinstance(circuit, DB.Electrical.ElectricalSystem)]
+    return [
+        _id_value(circuit.Id)
+        for circuit in list(selected or [])
+        if isinstance(circuit, DB.Electrical.ElectricalSystem)
+        and design_options.is_main_model_element(circuit)
+    ]
 
 
 def _collect_downstream_devices_strict(circuits):
@@ -361,7 +366,7 @@ def run_circuited_device_finder(uidoc=None, logger=None):
             circuit = doc.GetElement(revit_helpers.elementid_from_value(int(circuit_id)))
         except Exception:
             circuit = None
-        if isinstance(circuit, DBE.ElectricalSystem):
+        if isinstance(circuit, DBE.ElectricalSystem) and design_options.is_main_model_element(circuit):
             circuits.append(circuit)
     if not circuits:
         return {"status": "cancelled", "reason": "no_circuits"}

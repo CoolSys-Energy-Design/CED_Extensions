@@ -7,7 +7,7 @@ from pyrevit import script, forms, DB
 
 from CEDElectrical.Infrastructure.Revit.repositories import panel_schedule_repository as ps_repo
 from CEDElectrical.Model.panel_schedule_manager import PanelScheduleManager
-from Snippets import revit_helpers
+from Snippets import design_options, revit_helpers
 
 logger = script.get_logger()
 
@@ -21,7 +21,15 @@ def _elid_from(value):
 
 def move_circuits_to_panel(circuits, target_panel, doc, output):
     """Move selected circuits and optionally replace default spares/spaces when target is full."""
-    option_filter = DB.ElementDesignOptionFilter(DB.ElementId.InvalidElementId)
+    if not design_options.is_main_model_element(target_panel):
+        raise Exception("Target panel must be in the main model.")
+    circuits = [
+        circuit for circuit in design_options.filter_main_model_elements(circuits)
+        if isinstance(circuit, DBE.ElectricalSystem)
+    ]
+    if not circuits:
+        raise Exception("No main-model circuits were provided to move.")
+    option_filter = design_options.main_model_filter()
 
     def _safe_text(value, fallback=""):
         try:

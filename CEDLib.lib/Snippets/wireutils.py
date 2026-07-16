@@ -1,7 +1,7 @@
 ﻿# -*- coding: utf-8 -*-
 from pyrevit import DB
 
-from Snippets import revit_helpers
+from Snippets import design_options, revit_helpers
 
 
 def _elid_value(item):
@@ -77,11 +77,15 @@ def collect_selected_electrical_circuits(doc, uidoc, logger=None):
     circuits_by_id = {}
     for sel_id in selected_ids:
         element = doc.GetElement(sel_id)
+        if not design_options.is_main_model_element(element):
+            continue
         mep_model = getattr(element, "MEPModel", None)
         if not mep_model:
             continue
         systems = mep_model.GetElectricalSystems() or []
         for system in systems:
+            if not design_options.is_main_model_element(system):
+                continue
             # Keep all electrical system types; caller can filter.
             circuits_by_id[_elid_value(system.Id)] = system
     return list(circuits_by_id.values())
@@ -177,26 +181,39 @@ def get_wire_circuit_id(wire):
         systems = wire.GetMEPSystems()
         if systems:
             for sys in systems:
-                if isinstance(sys, DB.Electrical.ElectricalSystem):
+                if isinstance(sys, DB.Electrical.ElectricalSystem) and design_options.is_main_model_element(sys):
                     return sys.Id
     except Exception:
         pass
 
     mep_system = getattr(wire, "MEPSystem", None)
-    if mep_system and isinstance(mep_system, DB.Electrical.ElectricalSystem):
+    if (
+        mep_system
+        and isinstance(mep_system, DB.Electrical.ElectricalSystem)
+        and design_options.is_main_model_element(mep_system)
+    ):
         return mep_system.Id
 
     for wire_connector in wire.ConnectorManager.Connectors:
         for ref in wire_connector.AllRefs:
             owner = getattr(ref, "Owner", None)
-            if owner and isinstance(owner, DB.Electrical.ElectricalSystem):
+            if (
+                owner
+                and isinstance(owner, DB.Electrical.ElectricalSystem)
+                and design_options.is_main_model_element(owner)
+            ):
                 return owner.Id
     return None
 
 
 def collect_active_view_wires_by_circuit(doc, view_id):
     wire_map = {}
-    wires = DB.FilteredElementCollector(doc, view_id).OfClass(DB.Electrical.Wire).ToElements()
+    wires = (
+        DB.FilteredElementCollector(doc, view_id)
+        .OfClass(DB.Electrical.Wire)
+        .WherePasses(design_options.main_model_filter())
+        .ToElements()
+    )
     for wire in wires:
         circuit_id = get_wire_circuit_id(wire)
         if not circuit_id:

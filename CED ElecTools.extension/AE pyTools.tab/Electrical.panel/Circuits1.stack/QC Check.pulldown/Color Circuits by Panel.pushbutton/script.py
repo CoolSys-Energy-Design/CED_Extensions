@@ -138,7 +138,8 @@ def _as_sorted_unique(items):
 def get_electrical_equipment(doc):
     return list(DB.FilteredElementCollector(doc)
                 .OfCategory(DB.BuiltInCategory.OST_ElectricalEquipment)
-                .WhereElementIsNotElementType())
+                .WhereElementIsNotElementType()
+                .WherePasses(DB.ElementDesignOptionFilter(DB.ElementId.InvalidElementId)))
 
 
 def get_all_panel_names(doc):

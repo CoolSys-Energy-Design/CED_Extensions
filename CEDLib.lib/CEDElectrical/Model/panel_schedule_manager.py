@@ -5,7 +5,7 @@ import Autodesk.Revit.DB.Electrical as DBE
 from pyrevit import DB, script
 
 from CEDElectrical.Infrastructure.Revit.repositories import panel_schedule_repository as ps_repo
-from Snippets import revit_helpers
+from Snippets import design_options, revit_helpers
 from .panel_schedule_enums import PanelSpecialKind as SpecialKind
 from .panel_schedule_enums import PanelStagedAction as StagedAction
 from .panel_slot import PanelSlot
@@ -529,7 +529,8 @@ class PanelScheduleManager(object):
         if value <= 0:
             return None
         try:
-            return self.doc.GetElement(revit_helpers.elementid_from_value(value))
+            element = self.doc.GetElement(revit_helpers.elementid_from_value(value))
+            return element if design_options.is_main_model_element(element) else None
         except Exception:
             return None
 
@@ -774,7 +775,7 @@ class PanelScheduleManager(object):
                 if getter is not None:
                     try:
                         circuit = getter(int(row), int(col))
-                        if isinstance(circuit, DBE.ElectricalSystem):
+                        if isinstance(circuit, DBE.ElectricalSystem) and design_options.is_main_model_element(circuit):
                             return circuit
                     except Exception:
                         pass
@@ -785,7 +786,7 @@ class PanelScheduleManager(object):
                         if cid is None or cid == DB.ElementId.InvalidElementId:
                             continue
                         circuit = self.doc.GetElement(cid)
-                        if isinstance(circuit, DBE.ElectricalSystem):
+                        if isinstance(circuit, DBE.ElectricalSystem) and design_options.is_main_model_element(circuit):
                             return circuit
                     except Exception:
                         pass
@@ -793,7 +794,7 @@ class PanelScheduleManager(object):
 
         cached_cells = self._slot_cells(schedule_view, slot, refresh=False)
         resolved = _resolve_from_cells(cached_cells)
-        if isinstance(resolved, DBE.ElectricalSystem):
+        if isinstance(resolved, DBE.ElectricalSystem) and design_options.is_main_model_element(resolved):
             return resolved
         # Retry once from fresh API cells in case cached row/col map is stale.
         fresh_cells = self._slot_cells(schedule_view, slot, refresh=True)

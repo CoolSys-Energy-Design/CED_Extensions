@@ -5,6 +5,7 @@ import Autodesk.Revit.DB.Electrical as DBE
 from pyrevit import DB
 
 from Snippets import categories as category_utils
+from Snippets import design_options
 from Snippets import revit_helpers
 
 
@@ -29,7 +30,7 @@ class RevitCircuitRepository(object):
                     el = doc.GetElement(_elid_from_value(raw_id))
                 except Exception:
                     el = None
-                if isinstance(el, DBE.ElectricalSystem):
+                if isinstance(el, DBE.ElectricalSystem) and design_options.is_main_model_element(el):
                     circuits.append(el)
             return circuits
 
@@ -37,11 +38,13 @@ class RevitCircuitRepository(object):
             DB.FilteredElementCollector(doc)
             .OfClass(DBE.ElectricalSystem)
             .WhereElementIsNotElementType()
+            .WherePasses(design_options.main_model_filter())
             .ToElements()
         )
 
     def partition_locked_elements(self, doc, circuits, settings, collect_all_device_owners=True):
         """Split circuits into editable and locked subsets."""
+        circuits = design_options.filter_main_model_elements(circuits)
         if not getattr(doc, 'IsWorkshared', False):
             return circuits, set(), []
 
@@ -101,6 +104,8 @@ class RevitCircuitRepository(object):
 
             if write_equipment or write_fixtures:
                 for el in circuit.Elements:
+                    if not design_options.is_main_model_element(el):
+                        continue
                     if not isinstance(el, DB.FamilyInstance):
                         continue
                     cat = el.Category

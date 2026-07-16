@@ -8,7 +8,7 @@ from CEDElectrical.Application.services.move_circuits_to_panel_service import \
 from CEDElectrical.Infrastructure.Revit.repositories import distribution_equipment_repository as de_repo
 from CEDElectrical.Infrastructure.Revit.repositories import panel_schedule_repository as ps_repo
 from CEDElectrical.part_types import PART_TYPE_TRANSFORMER
-from Snippets import revit_helpers
+from Snippets import design_options, revit_helpers
 
 logger = script.get_logger()
 MOVE_MISSING_PANEL_SCHEDULE_WARNING = (
@@ -26,7 +26,7 @@ def _elid_from(value):
 
 
 #design option filter
-option_filter = DB.ElementDesignOptionFilter(DB.ElementId.InvalidElementId)
+option_filter = design_options.main_model_filter()
 def get_all_panels(doc, el_id=False):
     collector = FilteredElementCollector(doc).OfCategory(
         BuiltInCategory.OST_ElectricalEquipment).WhereElementIsNotElementType().WherePasses(option_filter)
@@ -469,6 +469,8 @@ def get_circuits_from_selection(selection):
         selection = [selection]
 
     for item in selection:
+        if not design_options.is_main_model_element(item):
+            continue
         if isinstance(item, DBE.ElectricalSystem):
             logger.debug(
                 "item {} is electrical circuit".format(
@@ -485,15 +487,15 @@ def get_circuits_from_selection(selection):
             continue
 
         if item.Category.BuiltInCategory == DB.BuiltInCategory.OST_ElectricalEquipment:
-            all_systems = mep.GetElectricalSystems() or []
-            assigned_systems = mep.GetAssignedElectricalSystems() or []
+            all_systems = design_options.filter_main_model_elements(mep.GetElectricalSystems() or [])
+            assigned_systems = design_options.filter_main_model_elements(mep.GetAssignedElectricalSystems() or [])
             assigned_ids = set([sys.Id for sys in assigned_systems])
 
             supply_systems = [sys for sys in all_systems if sys.Id not in assigned_ids]
 
             circuits.extend(supply_systems)
         else:
-            all_systems = mep.GetElectricalSystems() or []
+            all_systems = design_options.filter_main_model_elements(mep.GetElectricalSystems() or [])
             circuits.extend(all_systems)
 
     return circuits

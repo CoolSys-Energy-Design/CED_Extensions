@@ -2,7 +2,7 @@
 # IRONPYTHON 2.7 COMPATIBLE (no f-strings, no .format usage)
 from pyrevit import revit, DB, script, forms
 
-from Snippets import revit_helpers
+from Snippets import design_options, revit_helpers
 
 logger = script.get_logger()
 def _idval(item):
@@ -279,7 +279,9 @@ def build_circuits_by_panel(resolved_panels, circuits):
         result[pid] = {}
 
         try:
-            systems = panel_elem.MEPModel.GetAssignedElectricalSystems()
+            systems = design_options.filter_main_model_elements(
+                panel_elem.MEPModel.GetAssignedElectricalSystems()
+            )
         except:
             systems = []
 
@@ -403,7 +405,7 @@ def _get_fed_from_label(equipment):
         for ref_conn in refs:
             try:
                 owner = ref_conn.Owner
-                if isinstance(owner, DB.Electrical.ElectricalSystem):
+                if isinstance(owner, DB.Electrical.ElectricalSystem) and design_options.is_main_model_element(owner):
                     panel = get_model_param_value(
                         owner,
                         DB.BuiltInParameter.RBS_ELEC_CIRCUIT_PANEL_PARAM
@@ -474,7 +476,8 @@ def resolve_panels(panel_map, circuited_panel_names):
             for pdata in candidates:
                 pnl = pdata["_element"]
                 try:
-                    if pnl.MEPModel and pnl.MEPModel.GetElectricalSystems():
+                    systems = pnl.MEPModel.GetElectricalSystems() if pnl.MEPModel else []
+                    if design_options.filter_main_model_elements(systems):
                         circuited.append(pdata)
                 except:
                     pass
@@ -505,7 +508,7 @@ def _get_supplied_panel_id_from_circuit(circuit):
     Returns panel_id string or None.
     """
     try:
-        elems = circuit.Elements  # ElementSet-like
+        elems = design_options.filter_main_model_elements(circuit.Elements)
     except:
         elems = None
 

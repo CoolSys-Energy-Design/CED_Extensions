@@ -7,7 +7,7 @@ from pyrevit import DB
 from CEDElectrical.Application.dto.operation_request import OperationRequest
 from CEDElectrical.Domain import settings_manager
 from CEDElectrical.Model.CircuitBranch import CircuitBranch
-from Snippets import revit_helpers
+from Snippets import design_options, revit_helpers
 
 
 def _elid_value(item):
@@ -179,7 +179,7 @@ class SetIncludeAndRecalculateOperation(object):
                 el = doc.GetElement(_elid_from_value(raw_id))
             except Exception:
                 el = None
-            if isinstance(el, DBE.ElectricalSystem):
+            if isinstance(el, DBE.ElectricalSystem) and design_options.is_main_model_element(el):
                 circuits.append(el)
         return circuits
 

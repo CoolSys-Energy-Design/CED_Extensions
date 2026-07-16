@@ -7,7 +7,7 @@ from pyrevit import DB
 from CEDElectrical.Application.dto.operation_request import OperationRequest
 from CEDElectrical.Domain import settings_manager
 from CEDElectrical.Model.CircuitBranch import CircuitBranch
-from Snippets import revit_helpers
+from Snippets import design_options, revit_helpers
 
 
 def _elid_value(item):
@@ -59,7 +59,7 @@ class AutosizeBreakerAndRecalculateOperation(object):
                 el = doc.GetElement(_elid_from_value(cid))
             except Exception:
                 el = None
-            if isinstance(el, DBE.ElectricalSystem):
+            if isinstance(el, DBE.ElectricalSystem) and design_options.is_main_model_element(el):
                 circuits.append(el)
         if not circuits:
             return {'status': 'cancelled', 'reason': 'no_circuits'}

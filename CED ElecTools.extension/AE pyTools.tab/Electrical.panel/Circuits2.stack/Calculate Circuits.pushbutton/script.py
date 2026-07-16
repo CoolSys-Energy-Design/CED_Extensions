@@ -14,7 +14,7 @@ if not _LIB_ROOT:
 from CEDElectrical.Application.dto.operation_request import OperationRequest
 from CEDElectrical.Application.services.operation_runner import build_default_runner
 from Snippets import _elecutils as eu
-from Snippets import revit_helpers
+from Snippets import design_options, revit_helpers
 from UIClasses import Resources as UIResources
 from UIClasses import load_theme_state_from_config
 from UIClasses import resource_loader
@@ -143,14 +143,18 @@ def _collect_target_circuit_ids(doc):
     if selection:
         selected = []
         for el in selection:
-            if isinstance(el, DB.Electrical.ElectricalSystem):
+            if isinstance(el, DB.Electrical.ElectricalSystem) and design_options.is_main_model_element(el):
                 selected.append(el)
         if not selected:
             selected = eu.get_circuits_from_selection(selection)
     else:
         selected = eu.pick_circuits_from_list(doc, select_multiple=True)
 
-    return [_idval(c.Id) for c in selected if isinstance(c, DB.Electrical.ElectricalSystem)]
+    return [
+        _idval(c.Id) for c in selected
+        if isinstance(c, DB.Electrical.ElectricalSystem)
+        and design_options.is_main_model_element(c)
+    ]
 
 
 def main():

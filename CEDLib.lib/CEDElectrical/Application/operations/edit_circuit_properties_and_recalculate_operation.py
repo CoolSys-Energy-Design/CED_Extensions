@@ -8,7 +8,7 @@ from pyrevit import DB
 
 from CEDElectrical.Application.dto.operation_request import OperationRequest
 from CEDElectrical.Model.circuit_settings import CircuitVDMethod
-from Snippets import revit_helpers
+from Snippets import design_options, revit_helpers
 
 CIRCUIT_NOTES_KEY = "__bip_circuit_notes__"
 CIRCUIT_NAME_KEY = "__bip_circuit_name__"
@@ -203,7 +203,7 @@ class EditCircuitPropertiesAndRecalculateOperation(object):
                 el = doc.GetElement(_elid_from_value(raw_id))
             except Exception:
                 el = None
-            if isinstance(el, DBE.ElectricalSystem):
+            if isinstance(el, DBE.ElectricalSystem) and design_options.is_main_model_element(el):
                 circuits.append(el)
         return circuits
 

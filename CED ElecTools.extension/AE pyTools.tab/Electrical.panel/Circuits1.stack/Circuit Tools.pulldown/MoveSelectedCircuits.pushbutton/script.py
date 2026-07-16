@@ -7,7 +7,7 @@ from pyrevit import script
 
 from CEDElectrical.Application.dto.operation_request import OperationRequest
 from CEDElectrical.Application.services.operation_runner import build_default_runner
-from Snippets import revit_helpers
+from Snippets import design_options, revit_helpers
 # Import reusable utilities
 from Snippets._elecutils import get_panel_dist_system, get_compatible_panels, \
     get_all_panels, move_target_requires_schedule_confirmation, \
@@ -146,6 +146,9 @@ def get_circuits_from_selection(include_electrical_equipment=True):
     if isinstance(active_view, Electrical.PanelScheduleView):
         for element_id in selection:
             element = doc.GetElement(element_id)
+            if not design_options.is_main_model_element(element):
+                discarded_elements.append(element_id)
+                continue
 
             if isinstance(element, Electrical.ElectricalSystem):
                 circuits.append(element)
@@ -156,6 +159,10 @@ def get_circuits_from_selection(include_electrical_equipment=True):
         for element_id in selection:
             element = doc.GetElement(element_id)
             logger.info("Processing element: %s", element_id)
+
+            if not design_options.is_main_model_element(element):
+                discarded_elements.append(element_id)
+                continue
 
             if element.ViewSpecific:
                 logger.info("Removing annotation %s", element_id)
@@ -229,6 +236,8 @@ def get_circuits_from_selection(include_electrical_equipment=True):
     unique_circuits = []
     seen_ids = set()
     for circuit in circuits:
+        if not design_options.is_main_model_element(circuit):
+            continue
         cid = _idval(circuit.Id)
         if cid not in seen_ids:
             unique_circuits.append(circuit)

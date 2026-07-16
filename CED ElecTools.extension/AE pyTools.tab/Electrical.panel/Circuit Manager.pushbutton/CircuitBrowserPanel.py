@@ -41,7 +41,7 @@ from System.Windows.Shapes import Path as ShapePath
 from pyrevit import forms, revit, DB, script, HOST_APP
 
 _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
-from Snippets import revit_helpers
+from Snippets import design_options, revit_helpers
 
 from CEDElectrical.Model.alerts import get_alert_definition
 from CEDElectrical.Model.CircuitBranch import CircuitBranch
@@ -66,7 +66,6 @@ from Snippets._elecutils import (
     get_compatible_panels,
     get_panel_dist_system,
     move_target_requires_schedule_confirmation,
-    panel_has_schedule_view,
 )
 from UIClasses import Resources as UIResources
 from UIClasses import pathing as ui_pathing
@@ -2613,7 +2612,8 @@ class CircuitBrowserPanel(forms.WPFPanel):
         self._uniform_item_width = 0.0
         self._compress_item_width = False
         self._compress_hide_load_name = False
-        self._skip_width_measure_on_next_refresh = False
+        self._is_refreshing_list = False
+        self._list_layout_refresh_pending = False
         self._browser_compress_item = None
         self._applying_scroll_policy = False
         self._edit_properties_reselect_ids = []
@@ -3341,16 +3341,20 @@ class CircuitBrowserPanel(forms.WPFPanel):
 
     def list_scroll_changed(self, sender, args):
         viewer = sender if isinstance(sender, ScrollViewer) else self._get_list_scrollviewer()
-        if bool(self._applying_scroll_policy):
+        if bool(self._is_refreshing_list) or bool(self._applying_scroll_policy):
+            return
+        try:
+            viewport_width_changed = abs(float(getattr(args, "ViewportWidthChange", 0.0) or 0.0)) > 0.0
+            extent_width_changed = abs(float(getattr(args, "ExtentWidthChange", 0.0) or 0.0)) > 0.0
+        except Exception:
+            viewport_width_changed = False
+            extent_width_changed = False
+        if not viewport_width_changed and not extent_width_changed:
             return
         if self._use_compact_compress_mode():
-            try:
-                viewport_change = abs(float(getattr(args, "ViewportWidthChange", 0.0) or 0.0)) > 0.0
-            except Exception:
-                viewport_change = False
             self._applying_scroll_policy = True
             try:
-                if viewport_change:
+                if viewport_width_changed:
                     self._apply_item_width_mode(self._visible_items)
                     self._refresh_visible_items()
                 self._uniform_item_width = 0.0
@@ -3360,8 +3364,12 @@ class CircuitBrowserPanel(forms.WPFPanel):
             finally:
                 self._applying_scroll_policy = False
             return
-        self._uniform_item_width = self._compute_uniform_item_width()
-        self._apply_uniform_item_width_to_realized_rows()
+        self._applying_scroll_policy = True
+        try:
+            self._uniform_item_width = self._compute_uniform_item_width()
+            self._apply_uniform_item_width_to_realized_rows()
+        finally:
+            self._applying_scroll_policy = False
 
     def list_preview_mouse_wheel(self, sender, args):
         none_mod = getattr(ModifierKeys, "None")
@@ -3456,13 +3464,43 @@ class CircuitBrowserPanel(forms.WPFPanel):
             return
         self._last_visible_ids = list(visible_ids)
         try:
-            self._visible_items.Clear()
+            replacement = ObservableCollection[CircuitListItem]()
             for item in items:
-                self._visible_items.Add(item)
+                replacement.Add(item)
+            self._visible_items = replacement
+            if self._list is not None:
+                self._list.ItemsSource = self._visible_items
         except Exception:
             self._visible_items = ObservableCollection[CircuitListItem](items)
             if self._list is not None:
                 self._list.ItemsSource = self._visible_items
+
+    def _schedule_list_layout_refresh(self):
+        if bool(self._list_layout_refresh_pending):
+            return
+        self._list_layout_refresh_pending = True
+
+        def _finalize_layout():
+            self._list_layout_refresh_pending = False
+            if bool(self._is_refreshing_list) or self._list is None:
+                return
+            self._applying_scroll_policy = True
+            try:
+                viewer = self._get_list_scrollviewer()
+                self._apply_item_width_mode(self._visible_items)
+                self._apply_horizontal_scroll_policy(viewer)
+                if self._use_compact_compress_mode():
+                    self._uniform_item_width = 0.0
+                    self._refresh_visible_items()
+                    self._apply_uniform_item_width_to_realized_rows()
+                    self._reset_horizontal_offset_for_compress(viewer)
+                else:
+                    self._uniform_item_width = self._compute_uniform_item_width()
+                    self._apply_uniform_item_width_to_realized_rows()
+            finally:
+                self._applying_scroll_policy = False
+
+        _invoke_later(self, _finalize_layout)
 
     def _refresh_list(self):
         query = ""
@@ -3496,6 +3534,9 @@ class CircuitBrowserPanel(forms.WPFPanel):
         self._apply_item_width_mode(items)
 
         self._set_visible_items(items)
+        if bool(self._is_refreshing_list):
+            self._set_status("Showing {} of {} circuits".format(len(items), len(self._all_items)))
+            return
         viewer = self._get_list_scrollviewer()
         self._apply_horizontal_scroll_policy(viewer)
         if self._use_compact_compress_mode():
@@ -3503,11 +3544,7 @@ class CircuitBrowserPanel(forms.WPFPanel):
             self._apply_uniform_item_width_to_realized_rows()
             self._reset_horizontal_offset_for_compress(viewer)
         else:
-            if bool(self._skip_width_measure_on_next_refresh):
-                self._skip_width_measure_on_next_refresh = False
-                self._uniform_item_width = 0.0
-            else:
-                self._uniform_item_width = self._compute_uniform_item_width()
+            self._uniform_item_width = self._compute_uniform_item_width()
             self._apply_uniform_item_width_to_realized_rows()
         self._set_status("Showing {} of {} circuits".format(len(items), len(self._all_items)))
 
@@ -3559,6 +3596,7 @@ class CircuitBrowserPanel(forms.WPFPanel):
             DB.FilteredElementCollector(doc)
             .OfClass(DBE.ElectricalSystem)
             .WhereElementIsNotElementType()
+            .WherePasses(design_options.main_model_filter())
             .ToElements()
         )
         circuits.sort(key=lambda c: (
@@ -3616,11 +3654,16 @@ class CircuitBrowserPanel(forms.WPFPanel):
 
     def _load_items(self, doc, fast=False):
         self._set_status("Loading circuits...")
-        circuits = self._collect_sorted_circuits(doc)
-        if bool(fast):
-            self._load_items_fast(circuits)
-            return
-        self._load_items_full(circuits)
+        self._is_refreshing_list = True
+        try:
+            circuits = self._collect_sorted_circuits(doc)
+            if bool(fast):
+                self._load_items_fast(circuits)
+            else:
+                self._load_items_full(circuits)
+        finally:
+            self._is_refreshing_list = False
+        self._schedule_list_layout_refresh()
 
     def _target_items(self):
         checked = [x for x in self._all_items if x.is_checked]
@@ -3656,6 +3699,8 @@ class CircuitBrowserPanel(forms.WPFPanel):
         if live is None:
             return False
         if not isinstance(live, DBE.ElectricalSystem):
+            return False
+        if not design_options.is_main_model_element(live):
             return False
         try:
             item.circuit = live
@@ -4001,7 +4046,6 @@ class CircuitBrowserPanel(forms.WPFPanel):
 
     def refresh_clicked(self, sender, args):
         # Manual refresh should reflect latest circuit metadata (name/number/panel/type).
-        self._skip_width_measure_on_next_refresh = True
         self._sync_theme_from_config(apply_if_changed=False)
         self._safe_load_items()
 
@@ -4395,6 +4439,9 @@ class CircuitBrowserPanel(forms.WPFPanel):
             except Exception:
                 live = None
             if not isinstance(live, DBE.ElectricalSystem):
+                updated = True
+                continue
+            if not design_options.is_main_model_element(live):
                 updated = True
                 continue
             replacement = CircuitListItem(live, session_sync_state=self._session_state_for_circuit(live))

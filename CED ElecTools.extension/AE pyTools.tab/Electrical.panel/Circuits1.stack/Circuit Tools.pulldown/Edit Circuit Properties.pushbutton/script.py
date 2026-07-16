@@ -16,7 +16,7 @@ from CEDElectrical.Application.services.operation_runner import build_default_ru
 from CEDElectrical.Domain import settings_manager
 from CEDElectrical.ui.circuit_properties_editor import CircuitPropertiesEditorWindow
 from Snippets import _elecutils as eu
-from Snippets import revit_helpers
+from Snippets import design_options, revit_helpers
 from UIClasses import Resources as UIResources
 from UIClasses import load_theme_state_from_config
 
@@ -55,12 +55,20 @@ def _editor_xaml_path():
 
 def _collect_target_circuits(doc):
     selection = list(revit.get_selection() or [])
-    selected = [x for x in selection if isinstance(x, DB.Electrical.ElectricalSystem)]
+    selected = [
+        x for x in selection
+        if isinstance(x, DB.Electrical.ElectricalSystem)
+        and design_options.is_main_model_element(x)
+    ]
     if not selected and selection:
         selected = list(eu.get_circuits_from_selection(selection) or [])
     if not selected:
         selected = list(eu.pick_circuits_from_list(doc, select_multiple=True, include_spares_and_spaces=False) or [])
-    selected = [x for x in selected if isinstance(x, DB.Electrical.ElectricalSystem)]
+    selected = [
+        x for x in selected
+        if isinstance(x, DB.Electrical.ElectricalSystem)
+        and design_options.is_main_model_element(x)
+    ]
 
     unique = []
     seen = set()

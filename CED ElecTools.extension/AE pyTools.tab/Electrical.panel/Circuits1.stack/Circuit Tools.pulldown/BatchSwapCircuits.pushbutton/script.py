@@ -52,7 +52,7 @@ from CEDElectrical.Application.operations.panel_schedule_actions import (
 from CEDElectrical.Model.panel_schedule_enums import PanelScheduleOperationKey as OpKey
 from CEDElectrical.Model.panel_schedule_enums import PanelSpecialKind as SpecialKind
 from CEDElectrical.Model.panel_schedule_enums import PanelStagedAction as StagedAction
-from Snippets import revit_helpers
+from Snippets import design_options, revit_helpers
 from UIClasses import resource_loader
 
 UI_RESOURCES_ROOT = ui_pathing.resolve_ui_resources_root(LIB_ROOT)
@@ -590,6 +590,7 @@ class BatchSwapWindow(forms.WPFWindow):
                 DB.FilteredElementCollector(doc)
                 .OfClass(ps_repo.DBE.ElectricalSystem)
                 .WhereElementIsNotElementType()
+                .WherePasses(design_options.main_model_filter())
                 .ToElements()
             )
         except Exception:
@@ -2196,7 +2197,8 @@ class BatchSwapWindow(forms.WPFWindow):
         if value <= 0:
             return None
         try:
-            return doc.GetElement(revit_helpers.elementid_from_value(value))
+            element = doc.GetElement(revit_helpers.elementid_from_value(value))
+            return element if design_options.is_main_model_element(element) else None
         except Exception:
             return None
 
@@ -2366,7 +2368,7 @@ class BatchSwapWindow(forms.WPFWindow):
             if getter:
                 try:
                     circuit = getter(int(row), int(col))
-                    if isinstance(circuit, ps_repo.DBE.ElectricalSystem):
+                    if isinstance(circuit, ps_repo.DBE.ElectricalSystem) and design_options.is_main_model_element(circuit):
                         return circuit
                 except Exception:
                     pass
@@ -2377,7 +2379,7 @@ class BatchSwapWindow(forms.WPFWindow):
                     if cid is None or cid == DB.ElementId.InvalidElementId:
                         continue
                     circuit = doc.GetElement(cid)
-                    if isinstance(circuit, ps_repo.DBE.ElectricalSystem):
+                    if isinstance(circuit, ps_repo.DBE.ElectricalSystem) and design_options.is_main_model_element(circuit):
                         return circuit
                 except Exception:
                     pass

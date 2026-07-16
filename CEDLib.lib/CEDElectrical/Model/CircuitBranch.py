@@ -31,7 +31,7 @@ from CEDElectrical.refdata.ocp_cable_defaults import OCP_CABLE_DEFAULTS
 from CEDElectrical.refdata.service_ground_table import SERVICE_GROUND_TABLE
 from CEDElectrical.refdata.shared_params_table import SHARED_PARAMS
 from CEDElectrical.refdata.standard_ocp_table import BREAKER_FRAME_SWITCH_TABLE
-from Snippets import revit_helpers
+from Snippets import design_options, revit_helpers
 
 console = script.get_output()
 logger = script.get_logger()
@@ -245,6 +245,8 @@ class ConduitRun(object):
 # ---------------------------------------------------------------------
 class CircuitBranch(object):
     def __init__(self, circuit, settings=None, preview_values=None):
+        if not design_options.is_main_model_element(circuit):
+            raise ValueError("CircuitBranch only supports main-model circuits.")
         self.circuit = circuit
         self.settings = settings if settings else CircuitSettings()
         self._preview_values_raw = dict(preview_values or {})
@@ -559,6 +561,8 @@ class CircuitBranch(object):
         """Looks at connected elements' PART_TYPE to decide if feeder."""
         try:
             for el in self.circuit.Elements:
+                if not design_options.is_main_model_element(el):
+                    continue
                 if isinstance(el, DB.FamilyInstance):
                     family = el.Symbol.Family
                     param = family.get_Parameter(DB.BuiltInParameter.FAMILY_CONTENT_PART_TYPE)
@@ -1102,6 +1106,8 @@ class CircuitBranch(object):
         doc = revit.doc
         try:
             for el in self.circuit.Elements:
+                if not design_options.is_main_model_element(el):
+                    continue
                 if isinstance(el, DB.FamilyInstance):
                     ds_param = el.get_Parameter(DB.BuiltInParameter.RBS_FAMILY_CONTENT_DISTRIBUTION_SYSTEM)
                     if not ds_param or not ds_param.HasValue:
@@ -2154,6 +2160,8 @@ class CircuitBranch(object):
     def get_downstream_demand_current(self):
         try:
             for el in self.circuit.Elements:
+                if not design_options.is_main_model_element(el):
+                    continue
                 if self._is_transformer_primary:
                     va_param = el.get_Parameter(DB.BuiltInParameter.RBS_ELEC_PANEL_TOTALESTLOAD_PARAM)
                     if va_param and va_param.HasValue:

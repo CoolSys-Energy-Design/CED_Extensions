@@ -5,7 +5,7 @@ import Autodesk.Revit.DB.Electrical as DBE
 
 from CEDElectrical.Application.dto.operation_request import OperationRequest
 from CEDElectrical.Application.services.move_circuits_to_panel_service import move_circuits_to_panel
-from Snippets import revit_helpers
+from Snippets import design_options, revit_helpers
 from Snippets._elecutils import move_target_requires_schedule_confirmation
 
 
@@ -65,7 +65,7 @@ class MoveSelectedCircuitsOperation(object):
             raise Exception("Target panel selection is invalid.")
 
         target_panel = doc.GetElement(_elid_from_value(target_panel_id))
-        if target_panel is None:
+        if target_panel is None or not design_options.is_main_model_element(target_panel):
             raise Exception("Target panel was not found in the active document.")
         if (
             move_target_requires_schedule_confirmation(doc, target_panel)
@@ -81,6 +81,8 @@ class MoveSelectedCircuitsOperation(object):
         for cid in list(circuit_ids or []):
             circuit = doc.GetElement(_elid_from_value(int(cid)))
             if not isinstance(circuit, DBE.ElectricalSystem):
+                continue
+            if not design_options.is_main_model_element(circuit):
                 continue
             circuits.append(circuit)
             base_equipment = getattr(circuit, "BaseEquipment", None)
