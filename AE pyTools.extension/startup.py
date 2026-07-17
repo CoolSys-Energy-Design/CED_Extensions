@@ -680,6 +680,3 @@ _register_sync_handler()
 _register_proximity_sync_handler()
 _register_ref_sched_sync_handler()
 _register_place_single_profile_panel()
-_register_circuit_browser_panel()
-# Temporarily disabled to prevent startup-time dockable panel activity.
-# _register_place_single_profile_panel()

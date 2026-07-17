@@ -21,8 +21,28 @@
       </StackPanel>
     </DockPanel>
 
-    <!-- Counters -->
-    <TextBlock Grid.Row="1" x:Name="SummaryLabel" Foreground="Gray" Margin="0,0,0,6"/>
+    <!-- Counters + group-size color key -->
+    <DockPanel Grid.Row="1" Margin="0,0,0,6">
+      <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
+        <TextBlock Text="Color Key (group size):" VerticalAlignment="Center" Margin="0,0,8,0"/>
+        <Border Background="#FFFFFFFF" BorderBrush="#FFBDBDBD" BorderThickness="1" Padding="6,2" Margin="0,0,8,0">
+          <TextBlock Text="1 = No Color"/>
+        </Border>
+        <Border Background="#FF2E7D32" Padding="6,2" Margin="0,0,8,0">
+          <TextBlock Text="2 = Green" Foreground="White"/>
+        </Border>
+        <Border Background="#FF1565C0" Padding="6,2" Margin="0,0,8,0">
+          <TextBlock Text="3 = Blue" Foreground="White"/>
+        </Border>
+        <Border Background="#FF303F9F" Padding="6,2" Margin="0,0,8,0">
+          <TextBlock Text="4-7 = Indigo" Foreground="White"/>
+        </Border>
+        <Border Background="#FFC62828" Padding="6,2">
+          <TextBlock Text="8+ = Red" Foreground="White"/>
+        </Border>
+      </StackPanel>
+      <TextBlock x:Name="SummaryLabel" Foreground="Gray" VerticalAlignment="Center"/>
+    </DockPanel>
 
     <!-- Preview grid -->
     <DataGrid Grid.Row="2" x:Name="PreviewGrid"
@@ -38,6 +58,28 @@
               VerticalScrollBarVisibility="Auto"
               ColumnWidth="*"
               RowHeight="22">
+      <DataGrid.RowStyle>
+        <Style TargetType="DataGridRow">
+          <Style.Triggers>
+            <DataTrigger Binding="{Binding RowColorKey}" Value="green">
+              <Setter Property="Background" Value="#FF2E7D32"/>
+              <Setter Property="Foreground" Value="White"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding RowColorKey}" Value="blue">
+              <Setter Property="Background" Value="#FF1565C0"/>
+              <Setter Property="Foreground" Value="White"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding RowColorKey}" Value="indigo">
+              <Setter Property="Background" Value="#FF303F9F"/>
+              <Setter Property="Foreground" Value="White"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding RowColorKey}" Value="red">
+              <Setter Property="Background" Value="#FFC62828"/>
+              <Setter Property="Foreground" Value="White"/>
+            </DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </DataGrid.RowStyle>
       <DataGrid.Columns>
         <DataGridTextColumn Header="Circuit Batch"
                             Binding="{Binding GroupLabel}"

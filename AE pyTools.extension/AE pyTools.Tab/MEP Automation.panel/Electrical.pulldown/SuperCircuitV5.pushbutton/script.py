@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 __title__ = "SUPER CIRCUIT V5"
+__persistentengine__ = True  # keep engine alive for modeless window + ExternalEvent callbacks
 
 from collections import OrderedDict
 import logging
@@ -32,7 +33,10 @@ except Exception:
         pass
 
 logger = script.get_logger()
-logger.setLevel(logging.INFO)
+try:
+    logger.setLevel(logging.INFO)
+except AttributeError:
+    logger.set_level(logging.INFO)  # pyRevit 6+ LoggerWrapper
 
 try:
     basestring
@@ -53,6 +57,29 @@ client_helpers = None
 active_client_key = None
 _MODELLESS_PREVIEW_WINDOW = None
 _MODELLESS_PREVIEW_GATEWAY = None
+
+# pyRevit 6.x clears the script scope (module globals) once the command
+# completes, which kills modeless event handlers: their first global
+# lookup raises NameError silently inside the WPF dispatcher. The engine
+# itself stays alive, so we snapshot the globals while the script runs
+# and refill the (in-place-cleared) dict from every handler entry. The
+# restorer carries all its dependencies as default arguments, which
+# survive the wipe.
+_SCOPE_CANARY = True
+
+
+def _make_globals_restorer():
+    module_globals = globals()
+    snapshot = dict(module_globals)
+
+    def _restore(_g=module_globals, _snap=snapshot):
+        try:
+            if "_SCOPE_CANARY" not in _g:
+                _g.update(_snap)
+        except Exception:
+            pass
+
+    return _restore
 EXCLUDED_CATEGORY_IDS = {
     DB.ElementId(DB.BuiltInCategory.OST_LightingDevices).IntegerValue,
     DB.ElementId(DB.BuiltInCategory.OST_LightingFixtures).IntegerValue,
@@ -209,6 +236,7 @@ class _SuperCircuitPreviewExternalEventHandler(IExternalEventHandler):
         self._gateway = gateway
 
     def Execute(self, uiapp):
+        self._gateway._restore_globals()
         self._gateway._execute(uiapp)
 
     def GetName(self):
@@ -217,6 +245,7 @@ class _SuperCircuitPreviewExternalEventHandler(IExternalEventHandler):
 
 class SuperCircuitPreviewExternalEventGateway(object):
     def __init__(self, logger_obj=None):
+        self._restore_globals = _make_globals_restorer()
         self._logger = logger_obj or logger
         self._busy = False
         self._payload = None
@@ -224,6 +253,7 @@ class SuperCircuitPreviewExternalEventGateway(object):
         self._event = ExternalEvent.Create(self._handler)
 
     def _raise(self, payload):
+        self._restore_globals()
         if self._busy:
             return False
         self._busy = True
@@ -244,6 +274,7 @@ class SuperCircuitPreviewExternalEventGateway(object):
         return self._raise({"action": "select", "window": window, "row": row})
 
     def _execute(self, uiapp):
+        self._restore_globals()
         payload = self._payload or {}
         self._payload = None
         try:
@@ -402,6 +433,7 @@ class SuperCircuitPreviewWindow(forms.WPFWindow):
         source_doc=None,
     ):
         forms.WPFWindow.__init__(self, xaml_path)
+        self._restore_globals = _make_globals_restorer()
         self.rows = rows or []
         self.info_items = list(info_items or [])
         self.panel_lookup = panel_lookup or {}
@@ -611,6 +643,7 @@ class SuperCircuitPreviewWindow(forms.WPFWindow):
             self.Close()
 
     def OnInlineValueChanged(self, sender, args):
+        self._restore_globals()
         if getattr(self, "_is_refreshing", False) or getattr(self, "_is_closing", False):
             return
 
@@ -635,12 +668,14 @@ class SuperCircuitPreviewWindow(forms.WPFWindow):
         self._refresh_preview_grouping()
 
     def OnKeywordFilterChanged(self, sender, args):
+        self._restore_globals()
         if getattr(self, "_is_refreshing", False) or getattr(self, "_is_closing", False):
             return
         self.selected_run_keyword = _normalize_keyword(getattr(sender, "SelectedItem", None))
         self._refresh_preview_grouping()
 
     def OnSelectRowClicked(self, sender, args):
+        self._restore_globals()
         if not self._modeless or self._gateway is None:
             return
         row = getattr(sender, "DataContext", None)
@@ -655,6 +690,7 @@ class SuperCircuitPreviewWindow(forms.WPFWindow):
             )
 
     def _on_edit_selected(self, sender, args):
+        self._restore_globals()
         grid = self.FindName("PreviewGrid")
         if grid is None:
             return
@@ -684,6 +720,7 @@ class SuperCircuitPreviewWindow(forms.WPFWindow):
         self.Close()
 
     def _on_run(self, sender, args):
+        self._restore_globals()
         if self._modeless:
             if self._is_running:
                 return
@@ -709,6 +746,7 @@ class SuperCircuitPreviewWindow(forms.WPFWindow):
         self._close_with_result(True)
 
     def _on_cancel(self, sender, args):
+        self._restore_globals()
         self._close_with_result(False)
 
 

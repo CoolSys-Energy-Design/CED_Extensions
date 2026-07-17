@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 __title__ = "SUPER CIRCUIT V5"
+__persistentengine__ = True  # keep engine alive for modeless window + ExternalEvent callbacks
 
 from collections import OrderedDict
 import logging
@@ -32,7 +33,10 @@ except Exception:
         pass
 
 logger = script.get_logger()
-logger.setLevel(logging.INFO)
+try:
+    logger.setLevel(logging.INFO)
+except AttributeError:
+    logger.set_level(logging.INFO)  # pyRevit 6+ LoggerWrapper
 
 try:
     basestring

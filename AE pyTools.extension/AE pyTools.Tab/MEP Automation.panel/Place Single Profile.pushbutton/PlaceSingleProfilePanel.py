@@ -636,6 +636,31 @@ class _PlaceOnReferenceHandler(IExternalEventHandler):
         return "PlaceOnReferenceHandler"
 
 
+class _RefreshHandler(IExternalEventHandler):
+    """Runs the pane's document/YAML refresh inside a Revit API context.
+
+    Dockable-pane WPF events are not Revit API execution contexts;
+    reading the document (Extensible Storage) directly from a pane
+    button click can race background model activity and hard-crash
+    Revit. The pane raises this event instead so the read happens on
+    the API thread, mirroring the placement handlers above."""
+
+    def Execute(self, uiapp):  # noqa: N802
+        panel = PlaceSingleProfilePanel.get_instance()
+        if panel is None:
+            return
+        try:
+            panel._refresh_in_api_context()
+        except Exception as exc:
+            try:
+                panel._set_status("Refresh failed: {}".format(exc))
+            except Exception:
+                pass
+
+    def GetName(self):  # noqa: N802
+        return "PlaceSingleProfileRefreshHandler"
+
+
 class PlaceSingleProfilePanel(forms.WPFPanel):
     panel_id = PANEL_ID
     panel_title = "Place Single Profile"
@@ -668,6 +693,8 @@ class PlaceSingleProfilePanel(forms.WPFPanel):
         self._place_event = ExternalEvent.Create(self._place_handler)
         self._place_on_reference_handler = _PlaceOnReferenceHandler()
         self._place_on_reference_event = ExternalEvent.Create(self._place_on_reference_handler)
+        self._refresh_handler = _RefreshHandler()
+        self._refresh_event = ExternalEvent.Create(self._refresh_handler)
 
         if self._independent_only is not None:
             self._independent_only.Checked += self._on_filter_changed
@@ -745,6 +772,12 @@ class PlaceSingleProfilePanel(forms.WPFPanel):
         return True
 
     def _on_refresh(self, sender, args):
+        # WPF click on a dockable pane = no API context. Hop to the API
+        # thread via ExternalEvent; the handler calls _refresh_in_api_context.
+        self._set_status("Refreshing...")
+        self._refresh_event.Raise()
+
+    def _refresh_in_api_context(self):
         self._update_active_doc_text()
         self._refresh_data(doc=self._get_active_doc(), doc_switched=False)
         # If refresh succeeded but status was left as a load error, overwrite it.
@@ -753,7 +786,7 @@ class PlaceSingleProfilePanel(forms.WPFPanel):
                 current = self._status_text.Text or ""
             except Exception:
                 current = ""
-            if current.startswith("Failed to load active YAML"):
+            if current.startswith("Failed to load active YAML") or current == "Refreshing...":
                 self._set_status("Loaded {} profiles.".format(len(self._repo.cad_names() or [])))
 
     def _on_filter_changed(self, sender, args):

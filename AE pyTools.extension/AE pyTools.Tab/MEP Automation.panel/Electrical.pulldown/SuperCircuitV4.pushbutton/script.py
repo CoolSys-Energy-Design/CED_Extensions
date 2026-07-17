@@ -19,7 +19,10 @@ from Snippets._elecutils import (
 import circuits
 
 logger = script.get_logger()
-logger.setLevel(logging.INFO)
+try:
+    logger.setLevel(logging.INFO)
+except AttributeError:
+    logger.set_level(logging.INFO)  # pyRevit 6+ LoggerWrapper
 
 try:
     basestring

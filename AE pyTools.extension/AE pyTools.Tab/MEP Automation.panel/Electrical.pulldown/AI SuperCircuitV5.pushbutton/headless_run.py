@@ -59,7 +59,10 @@ except Exception:
         pass
 
 logger = script.get_logger()
-logger.setLevel(logging.INFO)
+try:
+    logger.setLevel(logging.INFO)
+except AttributeError:
+    logger.set_level(logging.INFO)  # pyRevit 6+ LoggerWrapper
 
 # Categories to exclude (lighting — handled by a separate tool)
 EXCLUDED_CATEGORY_IDS = {

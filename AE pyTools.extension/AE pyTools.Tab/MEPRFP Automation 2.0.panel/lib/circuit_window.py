@@ -39,6 +39,31 @@ _XAML_PATH = os.path.join(
 
 
 # ---------------------------------------------------------------------
+# Group-size row colors (same palette/thresholds as MEP Automation
+# SuperCircuitV5: 1=no color, 2=green, 3=blue, 4-7=indigo, 8+=red).
+# Exposed as a plain string key; the brushes live in the XAML row-style
+# DataTriggers because Brush objects on Python row objects don't
+# marshal through WPF binding under pythonnet (strings do).
+# ---------------------------------------------------------------------
+
+def _group_color_key(group_size):
+    try:
+        size = int(group_size or 0)
+    except Exception:
+        size = 0
+
+    if size == 2:
+        return "green"
+    if size == 3:
+        return "blue"
+    if 4 <= size <= 7:
+        return "indigo"
+    if size >= 8:
+        return "red"
+    return ""
+
+
+# ---------------------------------------------------------------------
 # Row binding object
 # ---------------------------------------------------------------------
 
@@ -60,6 +85,10 @@ class _PreviewRow(object):
         self.PanelOptions = list(panel_options or [])
         self.CircuitOptions = list(circuit_options or [])
         self.LoadOptions = list(load_options or [])
+        size = getattr(group, "member_count", None)
+        if size is None:
+            size = len(getattr(group, "members", None) or [])
+        self.RowColorKey = _group_color_key(size)
 
     @property
     def item(self):
