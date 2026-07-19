@@ -68,28 +68,6 @@ def remove_existing_wires_in_active_view(doc, view_id, circuits):
     return deleted_count, by_circuit_count
 
 
-def resolve_target_system_type(circuits):
-    types_present = {}
-    for c in circuits:
-        type_name = str(c.SystemType)
-        if type_name not in types_present:
-            types_present[type_name] = c.SystemType
-
-    if not types_present:
-        return None
-    if len(types_present) == 1:
-        return list(types_present.values())[0]
-
-    selected = forms.SelectFromList.show(
-        sorted(types_present.keys()),
-        title="Select Electrical System Type to Wire",
-        button_name="Use Type"
-    )
-    if not selected:
-        return None
-    return types_present[selected]
-
-
 class WireGenerator(object):
     def __init__(
         self,
@@ -302,16 +280,7 @@ def main():
         script.exit()
         return
 
-    target_type = resolve_target_system_type(all_circuits)
-    if target_type is None:
-        logger.warning("No system type selected. Cancelled.")
-        script.exit()
-        return
-
-    circuits = [c for c in all_circuits if c.SystemType == target_type]
-    if not circuits:
-        logger.warning("No circuits matched selected system type.")
-        return
+    circuits = all_circuits
 
     wire_type_id = resolve_wire_type_id(doc, config, logger=logger)
     if not wire_type_id:

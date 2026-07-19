@@ -41,7 +41,7 @@ from System.Windows.Shapes import Path as ShapePath
 from pyrevit import forms, revit, DB, script, HOST_APP
 
 _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
-from Snippets import design_options, revit_helpers
+from Snippets import revit_helpers
 
 from CEDElectrical.Model.alerts import get_alert_definition
 from CEDElectrical.Model.CircuitBranch import CircuitBranch
@@ -62,9 +62,11 @@ from Snippets.circuit_ui_actions import (
 )
 from Snippets._elecutils import (
     MOVE_MISSING_PANEL_SCHEDULE_WARNING,
+    get_all_circuits,
     get_all_panels,
     get_compatible_panels,
     get_panel_dist_system,
+    is_circuit_eligible,
     move_target_requires_schedule_confirmation,
 )
 from UIClasses import Resources as UIResources
@@ -760,7 +762,7 @@ class CircuitListItem(object):
         self.sort_poles = poles_value
 
         rating_value = None
-        if circuit.SystemType == DBE.ElectricalSystemType.PowerCircuit:
+        if is_circuit_eligible(circuit):
             try:
                 rating_value = int(round(circuit.Rating, 0))
             except Exception:
@@ -3592,13 +3594,7 @@ class CircuitBrowserPanel(forms.WPFPanel):
             self._applying_scroll_policy = False
 
     def _collect_sorted_circuits(self, doc):
-        circuits = list(
-            DB.FilteredElementCollector(doc)
-            .OfClass(DBE.ElectricalSystem)
-            .WhereElementIsNotElementType()
-            .WherePasses(design_options.main_model_filter())
-            .ToElements()
-        )
+        circuits = get_all_circuits(doc)
         circuits.sort(key=lambda c: (
             (getattr(getattr(c, "BaseEquipment", None), "Name", "") or ""),
             (getattr(c, "StartSlot", 0) or 0),
@@ -3698,9 +3694,7 @@ class CircuitBrowserPanel(forms.WPFPanel):
             return False
         if live is None:
             return False
-        if not isinstance(live, DBE.ElectricalSystem):
-            return False
-        if not design_options.is_main_model_element(live):
+        if not is_circuit_eligible(live):
             return False
         try:
             item.circuit = live
@@ -4438,10 +4432,7 @@ class CircuitBrowserPanel(forms.WPFPanel):
                 live = doc.GetElement(_elid_from_value(cid))
             except Exception:
                 live = None
-            if not isinstance(live, DBE.ElectricalSystem):
-                updated = True
-                continue
-            if not design_options.is_main_model_element(live):
+            if not is_circuit_eligible(live):
                 updated = True
                 continue
             replacement = CircuitListItem(live, session_sync_state=self._session_state_for_circuit(live))

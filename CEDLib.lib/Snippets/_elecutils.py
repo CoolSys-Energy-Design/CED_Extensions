@@ -3,11 +3,6 @@ import Autodesk.Revit.DB.Electrical as DBE
 from Autodesk.Revit.DB import FilteredElementCollector, Electrical, BuiltInCategory, BuiltInParameter
 from pyrevit import script, forms, DB
 
-from CEDElectrical.Application.services.move_circuits_to_panel_service import \
-    move_circuits_to_panel as _move_circuits_to_panel_service
-from CEDElectrical.Infrastructure.Revit.repositories import distribution_equipment_repository as de_repo
-from CEDElectrical.Infrastructure.Revit.repositories import panel_schedule_repository as ps_repo
-from CEDElectrical.part_types import PART_TYPE_TRANSFORMER
 from Snippets import design_options, revit_helpers
 
 logger = script.get_logger()
@@ -27,6 +22,57 @@ def _elid_from(value):
 
 #design option filter
 option_filter = design_options.main_model_filter()
+POWER_CIRCUIT_SYSTEM_TYPE = DBE.ElectricalSystemType.PowerCircuit
+
+
+def is_circuit_eligible(circuit, system_type=POWER_CIRCUIT_SYSTEM_TYPE,
+                        include_design_options=False):
+    """Return whether an element is an eligible electrical circuit."""
+    if not isinstance(circuit, DBE.ElectricalSystem):
+        return False
+    if not include_design_options and not design_options.is_main_model_element(circuit):
+        return False
+    if system_type is None:
+        return True
+    try:
+        return circuit.SystemType == system_type
+    except Exception:
+        return False
+
+
+def filter_circuits(circuits, system_type=POWER_CIRCUIT_SYSTEM_TYPE,
+                    include_design_options=False):
+    """Filter an iterable using the shared circuit eligibility rules."""
+    return [
+        circuit for circuit in list(circuits or [])
+        if is_circuit_eligible(
+            circuit,
+            system_type=system_type,
+            include_design_options=include_design_options,
+        )
+    ]
+
+
+def get_circuits_by_ids(doc, circuit_ids, el_id=False,
+                        system_type=POWER_CIRCUIT_SYSTEM_TYPE,
+                        include_design_options=False):
+    """Resolve circuit ids and apply the shared circuit eligibility rules."""
+    circuits = []
+    for raw_id in list(circuit_ids or []):
+        try:
+            circuit = doc.GetElement(_elid_from(raw_id))
+        except Exception:
+            circuit = None
+        if is_circuit_eligible(
+                circuit,
+                system_type=system_type,
+                include_design_options=include_design_options):
+            circuits.append(circuit)
+    if el_id:
+        return [circuit.Id for circuit in circuits]
+    return circuits
+
+
 def get_all_panels(doc, el_id=False):
     collector = FilteredElementCollector(doc).OfCategory(
         BuiltInCategory.OST_ElectricalEquipment).WhereElementIsNotElementType().WherePasses(option_filter)
@@ -40,6 +86,8 @@ def get_all_panels(doc, el_id=False):
 
 def panel_has_schedule_view(doc, panel):
     """Return True when the panel has a mapped non-template panel schedule view."""
+    from CEDElectrical.Infrastructure.Revit.repositories import panel_schedule_repository as ps_repo
+
     if doc is None or panel is None:
         return False
     panel_id = _elid_value(getattr(panel, "Id", None))
@@ -54,6 +102,9 @@ def panel_has_schedule_view(doc, panel):
 
 def move_target_requires_schedule_confirmation(doc, panel):
     """Return True when an unscheduled non-transformer target needs confirmation."""
+    from CEDElectrical.Infrastructure.Revit.repositories import panel_schedule_repository as ps_repo
+    from CEDElectrical.part_types import PART_TYPE_TRANSFORMER
+
     if panel is None:
         return False
     try:
@@ -74,18 +125,30 @@ def get_all_panel_types(doc, el_id=False):
     return collector
 
 
-def get_all_circuits(doc, el_id=False):
+def get_all_circuits(doc, el_id=False,
+                     system_type=POWER_CIRCUIT_SYSTEM_TYPE,
+                     include_design_options=False):
+    """Collect electrical circuits using the shared eligibility rules.
+
+    Native Revit filters narrow the collector by class and design-option
+    ownership. ElectricalSystem.SystemType is then compared directly to the
+    requested ElectricalSystemType enum value.
+    """
     collector = (
         FilteredElementCollector(doc)
         .OfClass(DBE.ElectricalSystem)
         .WhereElementIsNotElementType()
-        .WherePasses(option_filter)
+    )
+    if not include_design_options:
+        collector = collector.WherePasses(option_filter)
+    circuits = filter_circuits(
+        collector,
+        system_type=system_type,
+        include_design_options=include_design_options,
     )
     if el_id:
-        collector = collector.ToElementIds()
-    else:
-        collector = collector.ToElements()
-    return collector
+        return [circuit.Id for circuit in circuits]
+    return circuits
 
 
 def get_all_elec_fixtures(doc, el_id=False):
@@ -217,6 +280,9 @@ def get_panel_dist_system(panel, doc, debug=False):
 
 def get_compatible_panels(selected_circuit, all_panels, doc):
     """Return panels that can accept the circuit voltage/pole configuration."""
+    from CEDElectrical.Infrastructure.Revit.repositories import distribution_equipment_repository as de_repo
+    from CEDElectrical.Infrastructure.Revit.repositories import panel_schedule_repository as ps_repo
+
     circuit_voltage, circuit_poles = ps_repo.get_circuit_voltage_poles(selected_circuit)
     if circuit_poles is None:
         try:
@@ -282,7 +348,9 @@ def get_circuit_data(circuit):
 
 
 def move_circuits_to_panel(circuits, target_panel, doc, output):
-    return _move_circuits_to_panel_service(circuits, target_panel, doc, output)
+    from CEDElectrical.Application.services.move_circuits_to_panel_service import move_circuits_to_panel as service
+
+    return service(circuits, target_panel, doc, output)
 
 
 def find_open_slots(target_panel):
@@ -296,7 +364,7 @@ def find_open_slots(target_panel):
 def get_circuits_from_panel(panel, doc, sort_method=0, include_spares=True):
     """Get circuits from a selected panel with sorting and inclusion of spare/space circuits."""
     circuits = []
-    panel_circuits = FilteredElementCollector(doc).OfClass(DBE.ElectricalSystem).WherePasses(option_filter).ToElements()
+    panel_circuits = get_all_circuits(doc)
 
     for circuit in panel_circuits:
         if circuit.BaseEquipment and circuit.BaseEquipment.Id == panel.Id:
@@ -339,9 +407,7 @@ def get_circuits_from_panel(panel, doc, sort_method=0, include_spares=True):
 
 
 def pick_circuits_from_list(doc, select_multiple=False, include_spares_and_spaces=False):
-    ckts = DB.FilteredElementCollector(doc) \
-        .OfClass(DBE.ElectricalSystem) \
-        .WhereElementIsNotElementType().WherePasses(option_filter)
+    ckts = get_all_circuits(doc)
 
     grouped_options = {" All": []}
     ckt_lookup = {}
@@ -353,19 +419,14 @@ def pick_circuits_from_list(doc, select_multiple=False, include_spares_and_space
         if not include_spares_and_spaces and ckt.CircuitType in [DBE.CircuitType.Spare, DBE.CircuitType.Space]:
             continue
 
-        # Safely get rating and poles if circuit is a PowerCircuit
-        if ckt.SystemType == DBE.ElectricalSystemType.PowerCircuit:
-            try:
-                rating = int(round(ckt.Rating,0))
-            except:
-                rating = "N/A"
-
-            try:
-                pole = ckt.PolesNumber
-            except:
-                pole = "?"
-        else:
+        try:
+            rating = int(round(ckt.Rating, 0))
+        except Exception:
             rating = "N/A"
+
+        try:
+            pole = ckt.PolesNumber
+        except Exception:
             pole = "?"
 
         ckt_id = _elid_value(ckt.Id)
@@ -462,22 +523,29 @@ def pick_panel_from_list(doc, select_multiple=False):
     return selected_panels
 
 
-def get_circuits_from_selection(selection):
+def get_circuits_from_selection(selection,
+                                system_type=POWER_CIRCUIT_SYSTEM_TYPE,
+                                include_design_options=False):
     circuits = []
 
     if not isinstance(selection, (list, tuple, set)):
         selection = [selection]
 
     for item in selection:
-        if not design_options.is_main_model_element(item):
+        if not include_design_options and not design_options.is_main_model_element(item):
             continue
-        if isinstance(item, DBE.ElectricalSystem):
+        if is_circuit_eligible(
+                item,
+                system_type=system_type,
+                include_design_options=include_design_options):
             logger.debug(
                 "item {} is electrical circuit".format(
                     revit_helpers.get_elementid_value(item.Id)
                 )
             )
             circuits.append(item)
+            continue
+        if isinstance(item, DBE.ElectricalSystem):
             continue
 
         try:
@@ -487,15 +555,27 @@ def get_circuits_from_selection(selection):
             continue
 
         if item.Category.BuiltInCategory == DB.BuiltInCategory.OST_ElectricalEquipment:
-            all_systems = design_options.filter_main_model_elements(mep.GetElectricalSystems() or [])
-            assigned_systems = design_options.filter_main_model_elements(mep.GetAssignedElectricalSystems() or [])
+            all_systems = filter_circuits(
+                mep.GetElectricalSystems() or [],
+                system_type=system_type,
+                include_design_options=include_design_options,
+            )
+            assigned_systems = filter_circuits(
+                mep.GetAssignedElectricalSystems() or [],
+                system_type=system_type,
+                include_design_options=include_design_options,
+            )
             assigned_ids = set([sys.Id for sys in assigned_systems])
 
             supply_systems = [sys for sys in all_systems if sys.Id not in assigned_ids]
 
             circuits.extend(supply_systems)
         else:
-            all_systems = design_options.filter_main_model_elements(mep.GetElectricalSystems() or [])
+            all_systems = filter_circuits(
+                mep.GetElectricalSystems() or [],
+                system_type=system_type,
+                include_design_options=include_design_options,
+            )
             circuits.extend(all_systems)
 
     return circuits

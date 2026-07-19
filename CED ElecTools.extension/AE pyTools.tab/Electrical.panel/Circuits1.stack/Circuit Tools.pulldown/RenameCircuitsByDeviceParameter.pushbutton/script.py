@@ -81,11 +81,9 @@ def _dedupe_elements(elements):
 
 
 def _is_valid_circuit(circuit):
-    if not isinstance(circuit, DBE.ElectricalSystem):
+    if not eu.is_circuit_eligible(circuit):
         return False
     if not circuit.IsValidObject:
-        return False
-    if not design_options.is_main_model_element(circuit):
         return False
     if circuit.CircuitType in [DBE.CircuitType.Spare, DBE.CircuitType.Space]:
         return False
@@ -112,8 +110,10 @@ def _get_selected_elements():
 
 
 def _get_element_circuits(element):
-    if isinstance(element, DBE.ElectricalSystem):
+    if eu.is_circuit_eligible(element):
         return [element]
+    if isinstance(element, DBE.ElectricalSystem):
+        return []
 
     circuits = []
     try:
@@ -125,7 +125,7 @@ def _get_element_circuits(element):
         try:
             mep_model = element.MEPModel
             if mep_model:
-                circuits = list(mep_model.GetElectricalSystems() or [])
+                circuits = eu.filter_circuits(mep_model.GetElectricalSystems() or [])
         except Exception:
             circuits = []
 

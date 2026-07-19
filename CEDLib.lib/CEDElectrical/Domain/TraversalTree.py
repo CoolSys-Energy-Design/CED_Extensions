@@ -5,6 +5,7 @@ from CEDElectrical.part_types import PART_TYPE_MAP
 
 logger = script.get_logger()
 import csv
+from Snippets import _elecutils as eu
 from Snippets import design_options, revit_helpers
 
 get_id_value = revit_helpers.get_elementid_value
@@ -86,8 +87,8 @@ class TreeNode(object):
         if not mep:
             return
 
-        all_systems = design_options.filter_main_model_elements(mep.GetElectricalSystems())
-        assigned = design_options.filter_main_model_elements(mep.GetAssignedElectricalSystems())
+        all_systems = eu.filter_circuits(mep.GetElectricalSystems())
+        assigned = eu.filter_circuits(mep.GetAssignedElectricalSystems())
         assigned_ids = set([sys.Id for sys in assigned]) if assigned else set()
 
         for sys in all_systems:

@@ -4,6 +4,7 @@
 from System.Collections.Generic import List
 from pyrevit import DB, revit
 
+from Snippets import _elecutils as eu
 from Snippets import design_options, revit_helpers
 
 
@@ -48,9 +49,7 @@ def clear_revit_selection(uidoc=None):
 
 def collect_circuit_targets(circuit, mode):
     mode_key = str(mode or "").strip().lower()
-    if circuit is None:
-        return []
-    if not design_options.is_main_model_element(circuit):
+    if not eu.is_circuit_eligible(circuit):
         return []
     if mode_key == "circuit":
         return [circuit]

@@ -1,6 +1,7 @@
 ﻿# -*- coding: utf-8 -*-
 from pyrevit import DB
 
+from Snippets import _elecutils as eu
 from Snippets import design_options, revit_helpers
 
 
@@ -82,22 +83,14 @@ def collect_selected_electrical_circuits(doc, uidoc, logger=None):
         mep_model = getattr(element, "MEPModel", None)
         if not mep_model:
             continue
-        systems = mep_model.GetElectricalSystems() or []
+        systems = eu.filter_circuits(mep_model.GetElectricalSystems() or [])
         for system in systems:
-            if not design_options.is_main_model_element(system):
-                continue
-            # Keep all electrical system types; caller can filter.
             circuits_by_id[_elid_value(system.Id)] = system
     return list(circuits_by_id.values())
 
 
 def collect_selected_power_circuits(doc, uidoc, logger=None):
-    systems = collect_selected_electrical_circuits(doc, uidoc, logger=logger)
-    result = []
-    for sys in systems:
-        if sys.SystemType == DB.Electrical.ElectricalSystemType.PowerCircuit:
-            result.append(sys)
-    return result
+    return collect_selected_electrical_circuits(doc, uidoc, logger=logger)
 
 
 def resolve_wire_type_id(doc, config, logger=None):
@@ -181,7 +174,7 @@ def get_wire_circuit_id(wire):
         systems = wire.GetMEPSystems()
         if systems:
             for sys in systems:
-                if isinstance(sys, DB.Electrical.ElectricalSystem) and design_options.is_main_model_element(sys):
+                if eu.is_circuit_eligible(sys):
                     return sys.Id
     except Exception:
         pass
@@ -189,8 +182,7 @@ def get_wire_circuit_id(wire):
     mep_system = getattr(wire, "MEPSystem", None)
     if (
         mep_system
-        and isinstance(mep_system, DB.Electrical.ElectricalSystem)
-        and design_options.is_main_model_element(mep_system)
+        and eu.is_circuit_eligible(mep_system)
     ):
         return mep_system.Id
 
@@ -199,8 +191,7 @@ def get_wire_circuit_id(wire):
             owner = getattr(ref, "Owner", None)
             if (
                 owner
-                and isinstance(owner, DB.Electrical.ElectricalSystem)
-                and design_options.is_main_model_element(owner)
+                and eu.is_circuit_eligible(owner)
             ):
                 return owner.Id
     return None

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """Circuit Element Finder action orchestration."""
 
-import Autodesk.Revit.DB.Electrical as DBE
 from pyrevit import DB, forms, revit, script
 
 from CEDElectrical.Application.services.circuit_element_finder_graphics import (
@@ -19,7 +18,7 @@ from CEDElectrical.Domain.circuit_element_finder_bounds import (
     show_elements,
 )
 from Snippets import _elecutils as eu
-from Snippets import design_options, revit_helpers
+from Snippets import revit_helpers
 from Snippets.circuit_ui_actions import collect_circuit_targets, set_revit_selection
 
 OPTION_EXISTING_PLAN = "Open in Existing Plan View"
@@ -277,10 +276,7 @@ def _apply_dedicated_3d_section_box(doc, view, element_ids, expanded_box=None, l
 def _collect_target_circuit_ids(doc):
     selection = list(revit.get_selection() or [])
     if selection:
-        selected = []
-        for element in list(selection or []):
-            if isinstance(element, DB.Electrical.ElectricalSystem) and design_options.is_main_model_element(element):
-                selected.append(element)
+        selected = eu.filter_circuits(selection)
     else:
         try:
             selected = list(eu.pick_circuits_from_list(doc, select_multiple=True) or [])
@@ -289,8 +285,7 @@ def _collect_target_circuit_ids(doc):
     return [
         _id_value(circuit.Id)
         for circuit in list(selected or [])
-        if isinstance(circuit, DB.Electrical.ElectricalSystem)
-        and design_options.is_main_model_element(circuit)
+        if eu.is_circuit_eligible(circuit)
     ]
 
 
@@ -356,18 +351,13 @@ def run_circuited_device_finder(uidoc=None, logger=None):
     circuit_ids = [int(x) for x in list(_collect_target_circuit_ids(doc) or []) if int(x) > 0]
     if not circuit_ids:
         return {"status": "cancelled", "reason": "no_circuits"}
-    circuits = []
+    unique_ids = []
     seen = set()
-    for circuit_id in list(circuit_ids or []):
-        if circuit_id in seen:
-            continue
-        seen.add(circuit_id)
-        try:
-            circuit = doc.GetElement(revit_helpers.elementid_from_value(int(circuit_id)))
-        except Exception:
-            circuit = None
-        if isinstance(circuit, DBE.ElectricalSystem) and design_options.is_main_model_element(circuit):
-            circuits.append(circuit)
+    for circuit_id in circuit_ids:
+        if circuit_id not in seen:
+            seen.add(circuit_id)
+            unique_ids.append(circuit_id)
+    circuits = eu.get_circuits_by_ids(doc, unique_ids)
     if not circuits:
         return {"status": "cancelled", "reason": "no_circuits"}
 

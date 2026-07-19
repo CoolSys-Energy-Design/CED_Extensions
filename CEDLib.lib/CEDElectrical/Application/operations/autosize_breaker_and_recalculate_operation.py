@@ -1,21 +1,17 @@
 ﻿# -*- coding: utf-8 -*-
 """Apply breaker/frame updates and run calculate operation."""
 
-import Autodesk.Revit.DB.Electrical as DBE
 from pyrevit import DB
 
 from CEDElectrical.Application.dto.operation_request import OperationRequest
 from CEDElectrical.Domain import settings_manager
 from CEDElectrical.Model.CircuitBranch import CircuitBranch
-from Snippets import design_options, revit_helpers
+from Snippets import _elecutils as eu
+from Snippets import revit_helpers
 
 
 def _elid_value(item):
     return revit_helpers.get_elementid_value(item)
-
-
-def _elid_from_value(value):
-    return revit_helpers.elementid_from_value(value)
 
 
 def _calc_options_from_request(request):
@@ -53,14 +49,7 @@ class AutosizeBreakerAndRecalculateOperation(object):
                 continue
             by_id[cid] = row
 
-        circuits = []
-        for cid in by_id.keys():
-            try:
-                el = doc.GetElement(_elid_from_value(cid))
-            except Exception:
-                el = None
-            if isinstance(el, DBE.ElectricalSystem) and design_options.is_main_model_element(el):
-                circuits.append(el)
+        circuits = eu.get_circuits_by_ids(doc, by_id.keys())
         if not circuits:
             return {'status': 'cancelled', 'reason': 'no_circuits'}
 

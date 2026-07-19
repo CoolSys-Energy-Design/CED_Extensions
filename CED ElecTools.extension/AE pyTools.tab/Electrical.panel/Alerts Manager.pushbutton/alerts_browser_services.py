@@ -3,13 +3,11 @@
 
 import json
 
-import Autodesk.Revit.DB.Electrical as DBE
-from pyrevit import DB
-
 from CEDElectrical.Application.dto.operation_request import OperationRequest
 from CEDElectrical.Application.services.operation_runner import build_default_runner
 from CEDElectrical.Domain import settings_manager
 from CEDElectrical.Model.alerts import get_alert_definition
+from Snippets import _elecutils as eu
 from Snippets.circuit_ui_actions import format_writeback_lock_reason
 from alerts_browser_view_models import AlertCircuitItem
 from alerts_browser_view_models import AlertRow
@@ -123,12 +121,7 @@ def _build_writeback_lock_map(doc, circuits, idval_fn, lock_repository):
 def build_snapshot(doc, alert_data_param, idval_fn, lock_repository):
     if doc is None:
         return {"doc_title": "-", "items": []}
-    circuits = list(
-        DB.FilteredElementCollector(doc)
-        .OfClass(DBE.ElectricalSystem)
-        .WhereElementIsNotElementType()
-        .ToElements()
-    )
+    circuits = eu.get_all_circuits(doc)
     circuits.sort(
         key=lambda c: (
             (getattr(getattr(c, "BaseEquipment", None), "Name", "") or ""),

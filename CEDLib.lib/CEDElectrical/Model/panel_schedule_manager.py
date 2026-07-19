@@ -5,6 +5,7 @@ import Autodesk.Revit.DB.Electrical as DBE
 from pyrevit import DB, script
 
 from CEDElectrical.Infrastructure.Revit.repositories import panel_schedule_repository as ps_repo
+from Snippets import _elecutils as eu
 from Snippets import design_options, revit_helpers
 from .panel_schedule_enums import PanelSpecialKind as SpecialKind
 from .panel_schedule_enums import PanelStagedAction as StagedAction
@@ -12,7 +13,7 @@ from .panel_slot import PanelSlot
 
 
 class PanelScheduleManager(object):
-    """Model-layer orchestrator for panel schedule operations."""
+    """Model-layer orchestrator for panel schedules, including Data schedules."""
 
     def __init__(self, doc, distribution_bus=None, panel_option_lookup=None, logger=None):
         self.doc = doc
@@ -261,7 +262,7 @@ class PanelScheduleManager(object):
     def set_circuit_poles(self, circuit_id, poles):
         """Set poles on one circuit by id when writable."""
         circuit = self._element_by_id_value(circuit_id)
-        if not isinstance(circuit, DBE.ElectricalSystem):
+        if not eu.is_circuit_eligible(circuit, system_type=None):
             return False
         self._set_circuit_poles(circuit, int(max(1, poles or 1)))
         return True
@@ -277,7 +278,7 @@ class PanelScheduleManager(object):
     def move_circuit_to_panel(self, circuit_id, target_panel_id):
         """Move circuit to new panel using ElectricalSystem.SelectPanel."""
         circuit = self._element_by_id_value(circuit_id)
-        if not isinstance(circuit, DBE.ElectricalSystem):
+        if not eu.is_circuit_eligible(circuit, system_type=None):
             raise Exception("Circuit {0} could not be resolved.".format(int(circuit_id or 0)))
         target_option = self._option_for_panel_id(target_panel_id)
         if not target_option:
@@ -306,7 +307,7 @@ class PanelScheduleManager(object):
         if schedule_view is None:
             raise Exception("Panel schedule view is unavailable.")
         circuit = self._element_by_id_value(circuit_id)
-        if not isinstance(circuit, DBE.ElectricalSystem):
+        if not eu.is_circuit_eligible(circuit, system_type=None):
             raise Exception("Circuit {0} could not be resolved.".format(int(circuit_id or 0)))
         source_slot = int(ps_repo.get_circuit_start_slot(circuit) or 0)
         if source_slot <= 0:
@@ -411,7 +412,7 @@ class PanelScheduleManager(object):
             raise Exception("Target panel has no schedule view.")
 
         circuit = self._element_by_id_value(circuit_id)
-        if not isinstance(circuit, DBE.ElectricalSystem):
+        if not eu.is_circuit_eligible(circuit, system_type=None):
             raise Exception("Circuit {0} could not be resolved.".format(int(circuit_id)))
 
         current_panel = getattr(circuit, "BaseEquipment", None)
@@ -775,7 +776,7 @@ class PanelScheduleManager(object):
                 if getter is not None:
                     try:
                         circuit = getter(int(row), int(col))
-                        if isinstance(circuit, DBE.ElectricalSystem) and design_options.is_main_model_element(circuit):
+                        if eu.is_circuit_eligible(circuit, system_type=None):
                             return circuit
                     except Exception:
                         pass
@@ -786,7 +787,7 @@ class PanelScheduleManager(object):
                         if cid is None or cid == DB.ElementId.InvalidElementId:
                             continue
                         circuit = self.doc.GetElement(cid)
-                        if isinstance(circuit, DBE.ElectricalSystem) and design_options.is_main_model_element(circuit):
+                        if eu.is_circuit_eligible(circuit, system_type=None):
                             return circuit
                     except Exception:
                         pass
@@ -794,7 +795,7 @@ class PanelScheduleManager(object):
 
         cached_cells = self._slot_cells(schedule_view, slot, refresh=False)
         resolved = _resolve_from_cells(cached_cells)
-        if isinstance(resolved, DBE.ElectricalSystem) and design_options.is_main_model_element(resolved):
+        if eu.is_circuit_eligible(resolved, system_type=None):
             return resolved
         # Retry once from fresh API cells in case cached row/col map is stale.
         fresh_cells = self._slot_cells(schedule_view, slot, refresh=True)
@@ -1260,12 +1261,12 @@ class PanelScheduleManager(object):
             raise Exception("Data panels only allow adding SPACE.")
 
         occupant = self._get_circuit_at_slot(schedule_view, int(slot_value))
-        if not isinstance(occupant, DBE.ElectricalSystem):
+        if not eu.is_circuit_eligible(occupant, system_type=None):
             # Fallback only when immediate lookup fails after add.
             self.doc.Regenerate()
             self._invalidate_schedule_cache(schedule_view, slots=[int(slot_value)])
             occupant = self._get_circuit_at_slot(schedule_view, int(slot_value))
-        if not isinstance(occupant, DBE.ElectricalSystem):
+        if not eu.is_circuit_eligible(occupant, system_type=None):
             raise Exception("Added {0} could not be resolved at slot {1}.".format(str(kind).upper(), int(slot_value)))
 
         target_poles = int(requested_poles)
@@ -1319,7 +1320,7 @@ class PanelScheduleManager(object):
         snapshot = self._unlock_slots_with_snapshot(schedule_view, [int(slot_value)])
         try:
             target = self._get_circuit_at_slot(schedule_view, int(slot_value))
-            if not isinstance(target, DBE.ElectricalSystem):
+            if not eu.is_circuit_eligible(target, system_type=None):
                 raise Exception("No removable spare/space found at target slot.")
             kind = str(ps_repo._kind_from_circuit(target) or "").lower()
             if kind_hint and kind != str(kind_hint).lower():
@@ -1341,7 +1342,7 @@ class PanelScheduleManager(object):
         self._invalidate_schedule_cache(schedule_view, slots=list(covered_slots))
         for slot in list(covered_slots):
             occupant = self._get_circuit_at_slot(schedule_view, slot)
-            if not isinstance(occupant, DBE.ElectricalSystem):
+            if not eu.is_circuit_eligible(occupant, system_type=None):
                 continue
             occ_id = int(self._idval(occupant.Id))
             if occ_id <= 0 or occ_id == int(protected_circuit_id or 0):

@@ -770,7 +770,7 @@
                         <ColumnDefinition Width="8"/>
                         <ColumnDefinition Width="Auto" SharedSizeGroup="CircuitPropRightValueCol"/>
                       </Grid.ColumnDefinitions>
-                      <TextBlock Grid.Column="0" Text="Total Length" Style="{DynamicResource CED.Text.Secondary}"/>
+                      <TextBlock Grid.Column="0" Text="Total Length" Style="{StaticResource EditorLabel}"/>
                       <Border Grid.Column="2" Style="{StaticResource PreviewCompactValueBox}" Margin="0" Width="78" HorizontalAlignment="Left">
                         <TextBlock Name="TotalLengthText" Text="-" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0"/>
                       </Border>

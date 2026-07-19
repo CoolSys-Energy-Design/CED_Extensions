@@ -31,6 +31,7 @@ from CEDElectrical.refdata.ocp_cable_defaults import OCP_CABLE_DEFAULTS
 from CEDElectrical.refdata.service_ground_table import SERVICE_GROUND_TABLE
 from CEDElectrical.refdata.shared_params_table import SHARED_PARAMS
 from CEDElectrical.refdata.standard_ocp_table import BREAKER_FRAME_SWITCH_TABLE
+from Snippets import _elecutils as eu
 from Snippets import design_options, revit_helpers
 
 console = script.get_output()
@@ -245,8 +246,8 @@ class ConduitRun(object):
 # ---------------------------------------------------------------------
 class CircuitBranch(object):
     def __init__(self, circuit, settings=None, preview_values=None):
-        if not design_options.is_main_model_element(circuit):
-            raise ValueError("CircuitBranch only supports main-model circuits.")
+        if not eu.is_circuit_eligible(circuit):
+            raise ValueError("CircuitBranch only supports main-model power circuits.")
         self.circuit = circuit
         self.settings = settings if settings else CircuitSettings()
         self._preview_values_raw = dict(preview_values or {})
@@ -555,7 +556,7 @@ class CircuitBranch(object):
 
     @property
     def is_power_circuit(self):
-        return self.circuit.SystemType == DBE.ElectricalSystemType.PowerCircuit
+        return eu.is_circuit_eligible(self.circuit)
 
     def _detect_feeder(self):
         """Looks at connected elements' PART_TYPE to decide if feeder."""

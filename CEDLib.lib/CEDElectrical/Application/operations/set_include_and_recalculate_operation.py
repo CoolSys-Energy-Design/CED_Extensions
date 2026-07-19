@@ -1,21 +1,17 @@
 ﻿# -*- coding: utf-8 -*-
 """Set include flags on circuits, then run calculate operation."""
 
-import Autodesk.Revit.DB.Electrical as DBE
 from pyrevit import DB
 
 from CEDElectrical.Application.dto.operation_request import OperationRequest
 from CEDElectrical.Domain import settings_manager
 from CEDElectrical.Model.CircuitBranch import CircuitBranch
-from Snippets import design_options, revit_helpers
+from Snippets import _elecutils as eu
+from Snippets import revit_helpers
 
 
 def _elid_value(item):
     return revit_helpers.get_elementid_value(item)
-
-
-def _elid_from_value(value):
-    return revit_helpers.elementid_from_value(value)
 
 
 def _calc_options_from_request(request):
@@ -173,15 +169,7 @@ class SetIncludeAndRecalculateOperation(object):
         return calc_result
 
     def _get_target_circuits(self, doc, circuit_ids):
-        circuits = []
-        for raw_id in list(circuit_ids or []):
-            try:
-                el = doc.GetElement(_elid_from_value(raw_id))
-            except Exception:
-                el = None
-            if isinstance(el, DBE.ElectricalSystem) and design_options.is_main_model_element(el):
-                circuits.append(el)
-        return circuits
+        return eu.get_circuits_by_ids(doc, circuit_ids)
 
     def _build_updates_map(self, updates):
         mapping = {}
