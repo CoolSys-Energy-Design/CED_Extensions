@@ -53,6 +53,15 @@ ALERT_DEFINITIONS = {
         persistent=False,
         category="Circuits",
     ),
+    "data_unusable_power_factor": AlertDefinition(
+        "Data.UnusablePowerFactor",
+        "Revit's power factor data could not be used safely for voltage-drop calculations "
+        "(reported value: {raw_value}). A power factor of 1.0 was used instead.",
+        group="Data",
+        severity="MEDIUM",
+        persistent=False,
+        category="Circuits",
+    ),
     "design_non_standard_ocp_rating": AlertDefinition(
         "Design.NonStandardOCPRating",
         "Overcurrent Device has non-standard ampere rating ({breaker_size}A) per NEC Table 240.6(A).",
