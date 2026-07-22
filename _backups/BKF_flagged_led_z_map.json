@@ -1,0 +1,98 @@
+{
+ "SET-002-LED-001": {
+  "z_in": 48.0,
+  "profile": "EQ-002"
+ },
+ "SET-003-LED-001": {
+  "z_in": 48.0,
+  "profile": "EQ-003"
+ },
+ "SET-004-LED-001": {
+  "z_in": 48.0,
+  "profile": "EQ-004"
+ },
+ "SET-006-LED-001": {
+  "z_in": 18.0,
+  "profile": "EQ-006"
+ },
+ "SET-006-LED-002": {
+  "z_in": 18.0,
+  "profile": "EQ-006"
+ },
+ "SET-009-LED-001": {
+  "z_in": 48.0,
+  "profile": "EQ-009"
+ },
+ "SET-022-LED-001": {
+  "z_in": 48.0,
+  "profile": "EQ-022"
+ },
+ "SET-026-LED-001": {
+  "z_in": 0.0,
+  "profile": "EQ-026"
+ },
+ "SET-026-LED-002": {
+  "z_in": 18.0,
+  "profile": "EQ-026"
+ },
+ "SET-031-LED-001": {
+  "z_in": 48.0,
+  "profile": "EQ-031"
+ },
+ "SET-033-LED-001": {
+  "z_in": 48.0,
+  "profile": "EQ-033"
+ },
+ "SET-043-LED-001": {
+  "z_in": 18.0,
+  "profile": "EQ-043"
+ },
+ "SET-055-LED-001": {
+  "z_in": 18.0,
+  "profile": "EQ-055"
+ },
+ "SET-055-LED-002": {
+  "z_in": 18.0,
+  "profile": "EQ-055"
+ },
+ "SET-056-LED-001": {
+  "z_in": 18.0,
+  "profile": "EQ-056"
+ },
+ "SET-056-LED-002": {
+  "z_in": 18.0,
+  "profile": "EQ-056"
+ },
+ "SET-065-LED-001": {
+  "z_in": 18.0,
+  "profile": "EQ-065"
+ },
+ "SET-066-LED-001": {
+  "z_in": 18.0,
+  "profile": "EQ-066"
+ },
+ "SET-068-LED-001": {
+  "z_in": 18.0,
+  "profile": "EQ-068"
+ },
+ "SET-068-LED-002": {
+  "z_in": 18.0,
+  "profile": "EQ-068"
+ },
+ "SET-070-LED-001": {
+  "z_in": 18.0,
+  "profile": "EQ-070"
+ },
+ "SET-074-LED-001": {
+  "z_in": 48.0,
+  "profile": "EQ-074"
+ },
+ "SET-075-LED-001": {
+  "z_in": 48.0,
+  "profile": "EQ-075"
+ },
+ "SET-076-LED-001": {
+  "z_in": 48.0,
+  "profile": "EQ-076"
+ }
+}

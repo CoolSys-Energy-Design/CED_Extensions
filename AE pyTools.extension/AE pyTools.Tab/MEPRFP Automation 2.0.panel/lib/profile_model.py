@@ -327,6 +327,13 @@ class Profile(_DictBacked):
         return _bool_or(self._data.get("prompt_on_parent_mismatch"), False)
 
     @property
+    def place_z_relative_to_level(self):
+        # When True, this profile's LEDs place their Z as (level elevation
+        # + captured z offset) instead of (parent world Z + z offset).
+        # X/Y and rotation stay parent-relative.
+        return _bool_or(self._data.get("place_z_relative_to_level"), False)
+
+    @property
     def truth_source_id(self):
         return _str_or_none(self._data.get("ced_truth_source_id"))
 

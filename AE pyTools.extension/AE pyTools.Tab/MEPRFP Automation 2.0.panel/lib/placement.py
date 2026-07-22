@@ -17,16 +17,18 @@ Three target sources:
       partially or fully unavailable depending on the DWG; the
       collector returns whatever it could extract).
 
-Matching modes:
-    * ``family_name_strip_suffix`` — for linked Revit. Strips trailing
-      ``_NNN`` from both sides and compares family names case-insensitively.
+Matching modes (both exact, case-insensitive — the legacy trailing
+``_NNN`` suffix-strip fallback was removed 2026-07; the constant name
+``family_name_strip_suffix`` survives only as a mode selector):
+    * ``family_name_strip_suffix`` — for linked Revit. Compares the full
+      family name case-insensitively.
     * ``cad_aliases`` — for CSV / DWG. Each profile may declare a
       comma-separated alias list under ``equipment_properties.cad_aliases``;
       a target whose name matches any alias is placed against that profile.
       The profile's own ``name`` (plus ``parent_filter.family_name_pattern``
       and any ``merged_aliases``) is treated as an implicit alias, so a YAML
       that omits ``cad_aliases`` still matches when the CSV ``Name`` equals
-      the profile name. Same trailing-``_NNN`` strip applies.
+      the profile name.
 """
 
 import io
@@ -113,6 +115,25 @@ def normalize_name(name):
     space doesn't hide the suffix from the regex.
     """
     return strip_trailing_suffix((name or "").strip()).lower()
+
+
+def profile_flag(profile, key, default=False):
+    """Read a boolean flag off a raw profile dict, tolerating the legacy
+    ``'true'`` / ``'false'`` string forms that ``profile_model._bool_or``
+    accepts. Non-dict profiles and unrecognized values -> ``default``.
+    """
+    if not isinstance(profile, dict):
+        return default
+    val = profile.get(key)
+    if isinstance(val, bool):
+        return val
+    if isinstance(val, str):
+        low = val.strip().lower()
+        if low == "true":
+            return True
+        if low == "false":
+            return False
+    return default
 
 
 def collect_profile_aliases(profile):
@@ -299,38 +320,25 @@ class Match(object):
 def _match_one_linked_revit(target, profiles):
     """A linked-Revit target's ``name`` is the element's family name.
 
-    Two-tier match. Tier 1 looks for profiles whose raw family name is
-    a case-insensitive *exact* match to the target name (suffix included).
-    If any tier-1 hits exist they win, and the suffix-stripped fallback
-    is skipped — that's how the engine automatically resolves the
-    "three Stinger Cart_1/2/3 profiles vs. three Stinger Cart_1/2/3
-    targets" case 1:1 instead of producing a 3×3 cross-product.
-
-    Tier 2 is the legacy suffix-stripped match, used only when no
-    profile aligns exactly with the target name.
+    Exact match only: profiles whose raw case-folded family names
+    (``profile_family_names_raw``) contain the full target name —
+    trailing ``_NNN`` included. The legacy suffix-stripped fallback
+    (an HEB naming quirk) was removed 2026-07: it cross-matched
+    ``FAMILY_2`` targets onto ``FAMILY`` profiles.
     """
     target_name_lower = (target.name or "").strip().lower()
-    target_key = normalize_name(target.name)
-    if not target_key:
+    if not target_name_lower:
         return []
-
-    if target_name_lower:
-        strict = [
-            p for p in profiles
-            if target_name_lower in profile_family_names_raw(p)
-        ]
-        if strict:
-            return strict
 
     return [
         p for p in profiles
-        if target_key in profile_family_names(p)
+        if target_name_lower in profile_family_names_raw(p)
     ]
 
 
 def _match_one_cad(target, profiles):
-    """A CAD target's ``name`` is the block name. Same two-tier rule as
-    linked-Revit: prefer exact-name aliases over suffix-stripped ones.
+    """A CAD target's ``name`` is the block name. Same exact-match rule
+    as linked-Revit (no suffix-stripped fallback).
 
     Alias source is the union of explicit ``equipment_properties.cad_aliases``
     and the implicit aliases derived from the profile itself (its ``name``,
@@ -340,23 +348,13 @@ def _match_one_cad(target, profiles):
     profile name.
     """
     target_name_lower = (target.name or "").strip().lower()
-    target_key = normalize_name(target.name)
-    if not target_key:
+    if not target_name_lower:
         return []
-
-    if target_name_lower:
-        strict = [
-            p for p in profiles
-            if target_name_lower in collect_profile_aliases_raw(p)
-            or target_name_lower in profile_family_names_raw(p)
-        ]
-        if strict:
-            return strict
 
     return [
         p for p in profiles
-        if target_key in collect_profile_aliases(p)
-        or target_key in profile_family_names(p)
+        if target_name_lower in collect_profile_aliases_raw(p)
+        or target_name_lower in profile_family_names_raw(p)
     ]
 
 
@@ -920,6 +918,38 @@ def _correct_elevation_from_level(doc, inst, target_world_z, tol=1e-4):
     except Exception:
         return False
     return True
+
+
+def _level_internal_z_ft(doc, level_id, cache=None):
+    """Return the internal-coordinate elevation (feet) of the Level with
+    ElementId value ``level_id``, or ``None`` when it can't be resolved.
+
+    Prefers ``Level.ProjectElevation`` — the elevation relative to the
+    project origin, which is the level plane's internal Z regardless of
+    the survey / elevation-base display setting that makes plain
+    ``Level.Elevation`` unreliable (see ``_correct_elevation_from_level``).
+    Falls back to ``Elevation`` when ``ProjectElevation`` is unavailable.
+
+    ``cache`` (optional dict) memoizes by ``level_id`` for the run.
+    """
+    if doc is None or level_id is None:
+        return None
+    if cache is not None and level_id in cache:
+        return cache[level_id]
+    z = None
+    try:
+        lvl = doc.GetElement(ElementId(int(level_id)))
+        if isinstance(lvl, Level):
+            raw = getattr(lvl, "ProjectElevation", None)
+            if raw is None:
+                raw = getattr(lvl, "Elevation", None)
+            if raw is not None:
+                z = float(raw)
+    except Exception:
+        z = None
+    if cache is not None:
+        cache[level_id] = z
+    return z
 
 
 def _find_plan_view_for_level(doc, level_id_int):
@@ -1672,7 +1702,7 @@ def _split_label(label):
 
 def _place_fixture(doc, led, anchor_world_pt, anchor_rotation_deg, level_id,
                    allow_type_substitution=False, group_index=None,
-                   uidoc=None, z_override_ft=None):
+                   uidoc=None, z_override_ft=None, level_z_base_ft=None):
     """Place one LED at the resolved world point.
 
     Returns ``(placed_elem_or_None, status, info)`` where ``status`` is
@@ -1727,13 +1757,27 @@ def _place_fixture(doc, led, anchor_world_pt, anchor_rotation_deg, level_id,
     # height above its parent (``parent.Z + z_override_ft``) instead of
     # the LED's captured z offset. X/Y (and rotation) still follow the
     # captured offsets; only the elevation is forced. ``z_override_ft``
-    # is supplied by the caller solely for host-model targets.
+    # is supplied by the caller solely for host-model targets and wins
+    # over ``level_z_base_ft`` (it's an explicit dialog input).
+    #
+    # ``level_z_base_ft`` — per-profile "place Z relative to level":
+    # the LED's captured z offset is reinterpreted as height above the
+    # level (whose internal elevation the caller resolved), and the
+    # parent's world Z is ignored entirely. X/Y and rotation stay
+    # parent-relative.
     if z_override_ft is not None:
         try:
             parent_z = float(anchor_world_pt[2])
         except (TypeError, IndexError, ValueError):
             parent_z = target_pt_t[2]
         target_pt = XYZ(target_pt_t[0], target_pt_t[1], parent_z + z_override_ft)
+    elif level_z_base_ft is not None:
+        led_z_ft = geometry.inches_to_feet(
+            float(offset.get("z_inches", 0.0) or 0.0)
+        )
+        target_pt = XYZ(
+            target_pt_t[0], target_pt_t[1], level_z_base_ft + led_z_ft
+        )
     else:
         target_pt = XYZ(target_pt_t[0], target_pt_t[1], target_pt_t[2])
 
@@ -2869,6 +2913,12 @@ def execute_placement(doc, matches, options=None):
     plan_view_by_level = {}
     original_active_view = None
     last_activated_level = None
+    # Per-run cache for the "place Z relative to level" flag: level id ->
+    # internal elevation (feet). ``level_z_warned`` dedupes the one-line
+    # fallback warning per profile so a 200-anchor run doesn't emit 200
+    # copies.
+    level_z_cache = {}
+    level_z_warned = set()
     if uidoc is not None:
         try:
             original_active_view = uidoc.ActiveView
@@ -2902,6 +2952,13 @@ def execute_placement(doc, matches, options=None):
             else:
                 z_override_ft = None
                 height_skip_params = None
+            # Per-profile "place Z relative to level" flag: when set, each
+            # LED's captured z offset is treated as height above its
+            # resolved level instead of height above the parent. The
+            # host-height override above still wins when both apply.
+            z_relative_to_level = profile_flag(
+                m.profile, "place_z_relative_to_level", False
+            )
             # Per-target level used as a fallback for any LED whose own
             # captured ``LevelId`` is missing. Validated so a broken
             # parent (e.g. one whose own ``LevelId=-1``) doesn't
@@ -2997,12 +3054,41 @@ def execute_placement(doc, matches, options=None):
                                 view_outcome = "switch-threw:{}".format(
                                     type(exc).__name__
                                 )
+                    # Per-profile "Z relative to level": resolve the
+                    # level's internal elevation for this LED. When the
+                    # level can't be resolved, fall back to the default
+                    # parent-relative Z (and warn once per profile) —
+                    # never guess a level base. While the flag is in
+                    # force we also suppress the captured "Elevation
+                    # from Level" / "Offset" static params (same guard
+                    # as the host-height override) so a captured value
+                    # can't move the fixture off the level-relative Z.
+                    level_z_base_ft = None
+                    led_skip_params = height_skip_params
+                    if z_relative_to_level and z_override_ft is None:
+                        level_z_base_ft = _level_internal_z_ft(
+                            doc, led_level_id, cache=level_z_cache,
+                        )
+                        if level_z_base_ft is not None:
+                            led_skip_params = _HOST_HEIGHT_SKIP_PARAMS
+                        else:
+                            pid = m.profile.get("id") or "?"
+                            if pid not in level_z_warned:
+                                level_z_warned.add(pid)
+                                result.warnings.append(
+                                    "Profile {}: 'Place Z relative to "
+                                    "level' is set but no level could be "
+                                    "resolved for one or more LEDs — "
+                                    "those fell back to parent-relative "
+                                    "Z.".format(_profile_id_label(m.profile))
+                                )
                     placed, status, info = _place_fixture(
                         doc, led, anchor, anchor_rot, led_level_id,
                         allow_type_substitution=options.allow_type_substitution,
                         group_index=group_index,
                         uidoc=uidoc,
                         z_override_ft=z_override_ft,
+                        level_z_base_ft=level_z_base_ft,
                     )
                     led_id = led.get("id") or "?"
                     led_label = led.get("label") or "?"
@@ -3079,7 +3165,7 @@ def execute_placement(doc, matches, options=None):
                     # _apply_static_parameters must run before _write_linker.
                     written, _skipped = _apply_static_parameters(
                         placed, led.get("parameters"),
-                        skip_param_names=height_skip_params,
+                        skip_param_names=led_skip_params,
                     )
                     result.static_param_writes += written
                     # Resolve BYPARENT directives against the live parent

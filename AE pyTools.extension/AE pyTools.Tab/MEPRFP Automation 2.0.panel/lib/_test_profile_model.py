@@ -81,6 +81,7 @@ SAMPLE = {
             ],
             "allow_parentless": True,
             "allow_unmatched_parents": True,
+            "place_z_relative_to_level": True,
             "equipment_properties": {},
             "ced_truth_source_id": "EQ-010",
             "ced_truth_source_name": "Sample Equipment : Default",
@@ -110,6 +111,7 @@ def test_profile():
     _check("allow_parentless", p.allow_parentless is True)
     _check("allow_unmatched_parents", p.allow_unmatched_parents is True)
     _check("prompt_on_parent_mismatch", p.prompt_on_parent_mismatch is False)
+    _check("place_z_relative_to_level", p.place_z_relative_to_level is True)
     _check("truth_source_id", p.truth_source_id == "EQ-010")
     _check("truth_source_name", p.truth_source_name == "Sample Equipment : Default")
     _check("equipment_properties dict", p.equipment_properties == {})
@@ -215,6 +217,8 @@ def test_missing_optional_fields():
     _check("allow_parentless default True", p.allow_parentless is True)
     _check("prompt_on_parent_mismatch default False",
            p.prompt_on_parent_mismatch is False)
+    _check("place_z_relative_to_level default False",
+           p.place_z_relative_to_level is False)
 
 
 def test_bool_string_coercion():
@@ -227,12 +231,18 @@ def test_bool_string_coercion():
             "allow_parentless": "true",
             "allow_unmatched_parents": "false",
             "prompt_on_parent_mismatch": "TRUE",
+            "place_z_relative_to_level": "true",
         }],
     }
     p = pm.ProfileDocument(legacy).profiles[0]
     _check("'true' -> True", p.allow_parentless is True)
     _check("'false' -> False", p.allow_unmatched_parents is False)
     _check("'TRUE' -> True", p.prompt_on_parent_mismatch is True)
+    _check("place_z 'true' -> True", p.place_z_relative_to_level is True)
+    legacy["equipment_definitions"][0]["place_z_relative_to_level"] = "false"
+    _check("place_z 'false' -> False",
+           pm.ProfileDocument(legacy).profiles[0].place_z_relative_to_level
+           is False)
 
 
 def run():

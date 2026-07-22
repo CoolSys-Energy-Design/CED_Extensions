@@ -135,6 +135,46 @@ def _build_led_index(profile_data):
     return out
 
 
+def _led_annotations(led):
+    """Unified ``annotations[*]`` list for a raw LED dict.
+
+    Mirrors ``profile_model.LinkedElementDefinition.annotations``: newer
+    captures store a unified ``annotations`` list, but legacy LEDs (all
+    of the imported WFM-era YAML) keep peer ``tags`` / ``keynotes`` /
+    ``text_notes`` lists instead — reading only the ``annotations`` key
+    silently dropped every one of those fixtures from the candidate
+    list. Legacy entries also carry their placement offsets as
+    top-level ``x_inches``/``y_inches``/``z_inches``/``rotation_deg``
+    fields (with ``offsets: null``), so they get folded into the
+    ``offsets`` dict that ``geometry.target_point_from_offsets``
+    expects.
+    """
+    raw = led.get("annotations")
+    if isinstance(raw, list):
+        return [a for a in raw if isinstance(a, dict)]
+    synth = []
+    for kind, key in (("tag", "tags"), ("keynote", "keynotes"),
+                      ("text_note", "text_notes")):
+        for entry in (led.get(key) or []):
+            if not isinstance(entry, dict):
+                continue
+            copy = dict(entry)
+            copy.setdefault("kind", kind)
+            offsets = copy.get("offsets")
+            if isinstance(offsets, list):
+                offsets = offsets[0] if offsets else None
+            if not isinstance(offsets, dict):
+                offsets = {
+                    "x_inches": entry.get("x_inches") or 0.0,
+                    "y_inches": entry.get("y_inches") or 0.0,
+                    "z_inches": entry.get("z_inches") or 0.0,
+                    "rotation_deg": entry.get("rotation_deg") or 0.0,
+                }
+            copy["offsets"] = offsets
+            synth.append(copy)
+    return synth
+
+
 def _fixture_pt_and_rot(fixture):
     """Return ``((x, y, z), rotation_deg)`` for a placed fixture in the
     active doc."""
@@ -220,7 +260,7 @@ def collect_candidates(doc, view, profile_data, filters):
                 cat = (led.get("category") or "").strip()
                 if cat not in filters.categories:
                     continue
-            annotations = led.get("annotations") or []
+            annotations = _led_annotations(led)
             if not annotations:
                 continue
             fixture_pt, fixture_rot = _fixture_pt_and_rot(fixture)

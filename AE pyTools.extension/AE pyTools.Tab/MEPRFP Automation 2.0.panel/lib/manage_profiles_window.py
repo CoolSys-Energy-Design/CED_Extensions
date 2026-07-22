@@ -191,6 +191,7 @@ class ManageProfilesController(object):
         self.allow_parentless = f("AllowParentlessCheck")
         self.allow_unmatched = f("AllowUnmatchedCheck")
         self.prompt_mismatch = f("PromptMismatchCheck")
+        self.z_relative = f("ZRelativeToLevelCheck")
         self.led_tree = f("LedTree")
         self.add_led_btn = f("AddLedButton")
         self.remove_led_btn = f("RemoveLedButton")
@@ -279,6 +280,7 @@ class ManageProfilesController(object):
             self.allow_parentless.IsChecked = False
             self.allow_unmatched.IsChecked = False
             self.prompt_mismatch.IsChecked = False
+            self.z_relative.IsChecked = False
             self.profile_meta_grid.ItemsSource = ObservableCollection[_NetObject]()
             self._populate_aliases(None)
             self.led_tree.Items.Clear()
@@ -295,6 +297,7 @@ class ManageProfilesController(object):
         self.allow_parentless.IsChecked = bool(wrapper.allow_parentless)
         self.allow_unmatched.IsChecked = bool(wrapper.allow_unmatched_parents)
         self.prompt_mismatch.IsChecked = bool(wrapper.prompt_on_parent_mismatch)
+        self.z_relative.IsChecked = bool(wrapper.place_z_relative_to_level)
         self._populate_profile_metadata(profile)
         self._populate_aliases(profile)
         self._populate_led_tree(profile)
@@ -1167,6 +1170,7 @@ class ManageProfilesController(object):
         profile["allow_parentless"] = bool(self.allow_parentless.IsChecked)
         profile["allow_unmatched_parents"] = bool(self.allow_unmatched.IsChecked)
         profile["prompt_on_parent_mismatch"] = bool(self.prompt_mismatch.IsChecked)
+        profile["place_z_relative_to_level"] = bool(self.z_relative.IsChecked)
 
         # Also persist the profile metadata grid + aliases + the currently
         # selected LED / ANN before the global "Save changes" returns

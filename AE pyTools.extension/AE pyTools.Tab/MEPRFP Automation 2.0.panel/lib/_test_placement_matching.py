@@ -84,6 +84,100 @@ def profile_family_names(profile):
     return {n for n in out if n}
 
 
+def profile_family_names_raw(profile):
+    """Mirror of placement.profile_family_names_raw — case-folded only,
+    NO trailing ``_NNN`` strip. This is what the exact matchers use."""
+    if not isinstance(profile, dict):
+        return set()
+    out = set()
+
+    def _add(value):
+        if not value:
+            return
+        if " : " in value:
+            family_part, _ = value.split(" : ", 1)
+        else:
+            family_part = value
+        key = (family_part or "").strip().lower()
+        if key:
+            out.add(key)
+
+    pf = profile.get("parent_filter") or {}
+    if isinstance(pf, dict):
+        _add(pf.get("family_name_pattern"))
+    _add(profile.get("name") or "")
+    for alias in profile.get("merged_aliases") or []:
+        if isinstance(alias, str):
+            _add(alias)
+    return out
+
+
+def collect_profile_aliases_raw(profile):
+    """Mirror of placement.collect_profile_aliases_raw — case-folded
+    only, no suffix strip."""
+    if not isinstance(profile, dict):
+        return set()
+    props = profile.get("equipment_properties") or {}
+    if not isinstance(props, dict):
+        return set()
+    raw = props.get("cad_aliases")
+    if raw is None:
+        return set()
+    items = []
+    if isinstance(raw, list):
+        items = [str(x) for x in raw if x is not None]
+    elif isinstance(raw, str):
+        items = [s for s in raw.split(",")]
+    else:
+        items = [str(raw)]
+    out = set()
+    for item in items:
+        norm = (item or "").strip().lower()
+        if norm:
+            out.add(norm)
+    return out
+
+
+def match_one_linked_revit(target_name, profiles):
+    """Mirror of placement._match_one_linked_revit (exact, no suffix
+    fallback)."""
+    target_name_lower = (target_name or "").strip().lower()
+    if not target_name_lower:
+        return []
+    return [
+        p for p in profiles
+        if target_name_lower in profile_family_names_raw(p)
+    ]
+
+
+def match_one_cad(target_name, profiles):
+    """Mirror of placement._match_one_cad (exact, no suffix fallback)."""
+    target_name_lower = (target_name or "").strip().lower()
+    if not target_name_lower:
+        return []
+    return [
+        p for p in profiles
+        if target_name_lower in collect_profile_aliases_raw(p)
+        or target_name_lower in profile_family_names_raw(p)
+    ]
+
+
+def profile_flag(profile, key, default=False):
+    """Mirror of placement.profile_flag."""
+    if not isinstance(profile, dict):
+        return default
+    val = profile.get(key)
+    if isinstance(val, bool):
+        return val
+    if isinstance(val, str):
+        low = val.strip().lower()
+        if low == "true":
+            return True
+        if low == "false":
+            return False
+    return default
+
+
 # ---- tests ---------------------------------------------------------
 
 def test_strip_trailing_suffix():
@@ -148,9 +242,10 @@ def test_profile_family_names():
 
 
 def test_match_linked_revit_logic():
-    """A linked element with family 'Foo_Bar_3' should match a profile
-    whose family pattern is 'Foo_Bar' (suffix stripped both sides)."""
-    print("\n[placement] linked-revit match (suffix strip both sides)")
+    """Exact matching: 'Foo_Bar_3' must NOT match a 'Foo_Bar' profile
+    (the legacy suffix-strip fallback is gone); exact and case-different
+    names still match."""
+    print("\n[placement] linked-revit match (exact, case-insensitive)")
 
     profiles = [
         {
@@ -158,30 +253,45 @@ def test_match_linked_revit_logic():
             "parent_filter": {"family_name_pattern": "Foo_Bar"},
         },
         {
-            "id": "EQ-002", "name": "Other : Default",
+            "id": "EQ-002", "name": "Foo_Bar_3 : Default",
+            "parent_filter": {"family_name_pattern": "Foo_Bar_3"},
+        },
+        {
+            "id": "EQ-003", "name": "Other : Default",
             "parent_filter": {"family_name_pattern": "Other"},
         },
     ]
-    target_name = "Foo_Bar_3"
 
-    target_key = normalize_name(target_name)
-    matched = [p for p in profiles if target_key in profile_family_names(p)]
-    _check("Foo_Bar_3 -> Foo_Bar", len(matched) == 1 and matched[0]["id"] == "EQ-001")
+    matched = match_one_linked_revit("Foo_Bar", profiles)
+    _check("Foo_Bar -> Foo_Bar only",
+           len(matched) == 1 and matched[0]["id"] == "EQ-001",
+           "got {}".format([m["id"] for m in matched]))
 
-    target2 = "Foo_Bar"
-    matched2 = [p for p in profiles
-                if normalize_name(target2) in profile_family_names(p)]
-    _check("Foo_Bar -> Foo_Bar", len(matched2) == 1 and matched2[0]["id"] == "EQ-001")
+    matched = match_one_linked_revit("Foo_Bar_3", profiles)
+    _check("Foo_Bar_3 -> Foo_Bar_3 only (no suffix cross-match)",
+           len(matched) == 1 and matched[0]["id"] == "EQ-002",
+           "got {}".format([m["id"] for m in matched]))
 
-    target3 = "Different"
-    matched3 = [p for p in profiles
-                if normalize_name(target3) in profile_family_names(p)]
-    _check("non-match yields empty", matched3 == [])
+    matched = match_one_linked_revit("FOO_bar", profiles)
+    _check("case-insensitive still matches",
+           len(matched) == 1 and matched[0]["id"] == "EQ-001")
+
+    profiles_no_exact = [p for p in profiles if p["id"] != "EQ-002"]
+    matched = match_one_linked_revit("Foo_Bar_3", profiles_no_exact)
+    _check("Foo_Bar_5-style target with no exact profile -> no match",
+           matched == [],
+           "got {}".format([m["id"] for m in matched]))
+
+    _check("unknown name -> no match",
+           match_one_linked_revit("Different", profiles) == [])
+    _check("empty name -> no match",
+           match_one_linked_revit("", profiles) == [])
 
 
 def test_match_cad_alias_logic():
-    """A CSV / DWG block whose name matches any profile alias should match."""
-    print("\n[placement] CAD alias match (suffix strip both sides)")
+    """CAD/CSV matching is exact against aliases + implicit names —
+    no suffix-stripped fallback."""
+    print("\n[placement] CAD alias match (exact, case-insensitive)")
 
     profiles = [
         {
@@ -196,25 +306,39 @@ def test_match_cad_alias_logic():
     ]
 
     cases = [
-        ("AC_BLOCK", "EQ-001"),
-        ("ac_block", "EQ-001"),
-        ("AC_BLOCK_1", "EQ-001"),
-        ("AC_BLOCK_42", "EQ-001"),
-        ("AIR_CURTAIN_BLOCK_99", "EQ-001"),
+        ("AC_BLOCK", "EQ-001"),          # exact alias
+        ("ac_block", "EQ-001"),          # case-insensitive
+        ("AC_BLOCK_1", None),            # suffix no longer stripped
+        ("AC_BLOCK_42", None),
+        ("AIR_CURTAIN_BLOCK_99", None),
         ("OTHER_BLOCK", "EQ-002"),
+        ("ME_Air Curtain_CED", "EQ-001"),  # implicit alias from name
+        ("No aliases", "EQ-003"),          # profile name itself
         ("UNRELATED", None),
     ]
     for block_name, expect_eq in cases:
-        target_key = normalize_name(block_name)
-        matched = [p for p in profiles if target_key in collect_profile_aliases(p)]
+        matched = match_one_cad(block_name, profiles)
         if expect_eq is None:
-            _check("'{}' does not match".format(block_name), matched == [])
+            _check("'{}' does not match".format(block_name), matched == [],
+                   "got {}".format([m["id"] for m in matched]))
         else:
             _check(
                 "'{}' -> {}".format(block_name, expect_eq),
                 len(matched) == 1 and matched[0]["id"] == expect_eq,
                 "got {}".format([m["id"] for m in matched]),
             )
+
+
+def test_profile_flag():
+    print("\n[placement] profile_flag")
+    _check("bool True", profile_flag({"k": True}, "k") is True)
+    _check("bool False", profile_flag({"k": False}, "k", default=True) is False)
+    _check("string 'true'", profile_flag({"k": "true"}, "k") is True)
+    _check("string 'False'", profile_flag({"k": "False"}, "k", default=True) is False)
+    _check("missing -> default", profile_flag({}, "k") is False)
+    _check("missing -> default True", profile_flag({}, "k", default=True) is True)
+    _check("junk string -> default", profile_flag({"k": "yes"}, "k") is False)
+    _check("non-dict -> default", profile_flag(None, "k") is False)
 
 
 def run():
@@ -224,6 +348,7 @@ def run():
     test_profile_family_names()
     test_match_linked_revit_logic()
     test_match_cad_alias_logic()
+    test_profile_flag()
     return list(_FAILS)
 
 

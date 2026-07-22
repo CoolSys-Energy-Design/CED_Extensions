@@ -59,7 +59,9 @@
         <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal" Margin="0,4,0,4">
           <CheckBox x:Name="AllowParentlessCheck" Content="Allow parentless" Margin="0,0,12,0"/>
           <CheckBox x:Name="AllowUnmatchedCheck" Content="Allow unmatched parents" Margin="0,0,12,0"/>
-          <CheckBox x:Name="PromptMismatchCheck" Content="Prompt on parent mismatch"/>
+          <CheckBox x:Name="PromptMismatchCheck" Content="Prompt on parent mismatch" Margin="0,0,12,0"/>
+          <CheckBox x:Name="ZRelativeToLevelCheck" Content="Place Z relative to level"
+                    ToolTip="Place this profile's linked elements at (level elevation + captured z offset) instead of (parent Z + z offset). X/Y stay parent-relative."/>
         </StackPanel>
       </Grid>
 
