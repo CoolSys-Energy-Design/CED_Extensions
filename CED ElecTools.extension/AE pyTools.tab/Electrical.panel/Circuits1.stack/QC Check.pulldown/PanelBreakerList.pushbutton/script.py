@@ -6,6 +6,7 @@ from collections import defaultdict
 from pyrevit import revit, DB
 from pyrevit import script
 
+from Snippets import _elecutils as eu
 from Snippets import revit_helpers
 
 get_id_value = revit_helpers.get_elementid_value
@@ -21,19 +22,8 @@ output.set_width(800)
 #design option filter
 option_filter = DB.ElementDesignOptionFilter(DB.ElementId.InvalidElementId)
 
-# Collect all electrical circuits
-circuits = DB.FilteredElementCollector(doc) \
-    .OfCategory(DB.BuiltInCategory.OST_ElectricalCircuit) \
-    .WhereElementIsNotElementType() \
-    .WherePasses(option_filter) \
-    .ToElements()
-
-# Collect all internal circuits (spares and spaces)
-internal_circuits = DB.FilteredElementCollector(doc) \
-    .OfCategory(DB.BuiltInCategory.OST_ElectricalInternalCircuits) \
-    .WhereElementIsNotElementType() \
-    .WherePasses(option_filter) \
-    .ToElements()
+# Collect power circuits, including internal spare/space circuits.
+circuits = eu.get_all_circuits(doc)
 
 # Collect all Electrical Panels
 elec_equip = DB.FilteredElementCollector(doc) \
@@ -44,14 +34,13 @@ elec_equip = DB.FilteredElementCollector(doc) \
 
 # Combine both sets of circuits
 all_circuits = list(circuits)
-all_circuits.extend(internal_circuits)
 
 # Dictionary to store panel information
 panel_dict = defaultdict(lambda: {'circuits': defaultdict(int), 'spares': defaultdict(int), 'spaces': defaultdict(int)})
 
 # Process each electrical system
 for system in all_circuits:
-    if isinstance(system, DB.Electrical.ElectricalSystem):
+    if eu.is_circuit_eligible(system):
         panel = system.get_Parameter(DB.BuiltInParameter.RBS_ELEC_CIRCUIT_PANEL_PARAM).AsString()
         if panel:
             poles = system.get_Parameter(DB.BuiltInParameter.RBS_ELEC_NUMBER_OF_POLES).AsInteger()

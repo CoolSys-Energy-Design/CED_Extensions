@@ -2,7 +2,8 @@
 # IRONPYTHON 2.7 COMPATIBLE (no f-strings, no .format usage)
 from pyrevit import revit, DB, script, forms
 
-from Snippets import revit_helpers
+from Snippets import _elecutils as eu
+from Snippets import design_options, revit_helpers
 
 logger = script.get_logger()
 def _idval(item):
@@ -242,10 +243,7 @@ def _ensure_drafting_view(doc):
 def collect_all_circuits(doc, option_filter):
     circuits = []
 
-    ckt_collector = DB.FilteredElementCollector(doc) \
-        .OfClass(DB.Electrical.ElectricalSystem) \
-        .WherePasses(option_filter) \
-        .ToElements()
+    ckt_collector = eu.get_all_circuits(doc)
 
     for ckt in ckt_collector:
 
@@ -279,7 +277,9 @@ def build_circuits_by_panel(resolved_panels, circuits):
         result[pid] = {}
 
         try:
-            systems = panel_elem.MEPModel.GetAssignedElectricalSystems()
+            systems = eu.filter_circuits(
+                panel_elem.MEPModel.GetAssignedElectricalSystems()
+            )
         except:
             systems = []
 
@@ -304,10 +304,7 @@ def _collect_circuits(doc, option_filter):
     circuit_map = {}
     circuited_panel_names = set()
 
-    ckt_collector = DB.FilteredElementCollector(doc) \
-        .OfClass(DB.Electrical.ElectricalSystem) \
-        .WherePasses(option_filter) \
-        .ToElements()
+    ckt_collector = eu.get_all_circuits(doc)
 
     for ckt in ckt_collector:
         pval = get_model_param_value(ckt, DB.BuiltInParameter.RBS_ELEC_CIRCUIT_PANEL_PARAM)
@@ -403,7 +400,7 @@ def _get_fed_from_label(equipment):
         for ref_conn in refs:
             try:
                 owner = ref_conn.Owner
-                if isinstance(owner, DB.Electrical.ElectricalSystem):
+                if eu.is_circuit_eligible(owner):
                     panel = get_model_param_value(
                         owner,
                         DB.BuiltInParameter.RBS_ELEC_CIRCUIT_PANEL_PARAM
@@ -474,7 +471,8 @@ def resolve_panels(panel_map, circuited_panel_names):
             for pdata in candidates:
                 pnl = pdata["_element"]
                 try:
-                    if pnl.MEPModel and pnl.MEPModel.GetElectricalSystems():
+                    systems = pnl.MEPModel.GetElectricalSystems() if pnl.MEPModel else []
+                    if eu.filter_circuits(systems):
                         circuited.append(pdata)
                 except:
                     pass
@@ -505,7 +503,7 @@ def _get_supplied_panel_id_from_circuit(circuit):
     Returns panel_id string or None.
     """
     try:
-        elems = circuit.Elements  # ElementSet-like
+        elems = design_options.filter_main_model_elements(circuit.Elements)
     except:
         elems = None
 

@@ -18,7 +18,6 @@ def _format_summary(result):
         "Updated: {}".format(int((result or {}).get("updated") or 0)),
         "Unchanged: {}".format(int((result or {}).get("unchanged") or 0)),
         "Skipped: {}".format(int((result or {}).get("skipped") or 0)),
-        "Category unbind updates: {}".format(int((result or {}).get("unbound") or 0)),
     ]
 
     if locked:

@@ -16,7 +16,8 @@ def get_panel_surfaces(panel_names):
     surfaces = {}
     for eq in DB.FilteredElementCollector(revit.doc) \
             .OfCategory(DB.BuiltInCategory.OST_ElectricalEquipment) \
-            .WhereElementIsNotElementType():
+            .WhereElementIsNotElementType() \
+            .WherePasses(DB.ElementDesignOptionFilter(DB.ElementId.InvalidElementId)):
         param = eq.LookupParameter("Panel Name_CEDT")
         if param and param.HasValue:
             value = param.AsString().strip()
@@ -29,7 +30,8 @@ def get_panel_elements(panel_names):
     panels = {}
     for eq in DB.FilteredElementCollector(revit.doc) \
             .OfCategory(DB.BuiltInCategory.OST_ElectricalEquipment) \
-            .WhereElementIsNotElementType():
+            .WhereElementIsNotElementType() \
+            .WherePasses(DB.ElementDesignOptionFilter(DB.ElementId.InvalidElementId)):
         param = eq.LookupParameter("Panel Name_CEDT")
         if param and param.HasValue:
             value = param.AsString().strip()

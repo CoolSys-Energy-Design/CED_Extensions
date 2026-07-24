@@ -12,6 +12,7 @@ from CEDElectrical.Infrastructure.Revit.repositories import panel_schedule_repos
 from CEDElectrical.Model.CircuitBranch import CircuitBranch
 from CEDElectrical.Model.alerts import get_alert_definition
 from CEDElectrical.part_types import PART_TYPE_TRANSFORMER
+from Snippets import _elecutils as eu
 from Snippets import categories as category_utils
 from Snippets import revit_helpers
 
@@ -773,13 +774,7 @@ class ElectricalQCScanner(object):
         return devices
 
     def _collect_circuits(self):
-        collector = (
-            DB.FilteredElementCollector(self.doc)
-            .OfCategory(DB.BuiltInCategory.OST_ElectricalCircuit)
-            .WhereElementIsNotElementType()
-            .WherePasses(self.design_option_filter)
-        )
-        return list(collector.ToElements())
+        return eu.get_all_circuits(self.doc)
 
     def _prepare_equipment_models(self, equipment):
         self.equipment_by_id = {}

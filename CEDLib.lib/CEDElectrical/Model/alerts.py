@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """Alert definitions and notice collection utilities."""
 
-from CEDElectrical.Model.alert_definition import AlertDefinition
-
 
 class NoticeCollector(object):
     """Collects alerts for a branch so they can be summarized later."""
@@ -117,6 +115,13 @@ class Alerts(object):
         return {
             "definition": get_alert_definition("overrides_invalid_isolated_ground"),
             "data": {"override_value": override_value},
+        }
+
+    @staticmethod
+    def UnusablePowerFactor(raw_value):
+        return {
+            "definition": get_alert_definition("data_unusable_power_factor"),
+            "data": {"raw_value": raw_value},
         }
 
     @staticmethod

@@ -3,11 +3,11 @@
 
 from datetime import datetime
 
-import Autodesk.Revit.DB.Electrical as DBE
 from pyrevit import DB
 
 from CEDElectrical.Application.dto.operation_request import OperationRequest
 from CEDElectrical.Model.circuit_settings import CircuitVDMethod
+from Snippets import _elecutils as eu
 from Snippets import revit_helpers
 
 CIRCUIT_NOTES_KEY = "__bip_circuit_notes__"
@@ -17,10 +17,6 @@ CIRCUIT_DATA_VD_METHOD_KEY = "circuit_vd_method"
 
 def _elid_value(item):
     return revit_helpers.get_elementid_value(item)
-
-
-def _elid_from_value(value):
-    return revit_helpers.elementid_from_value(value)
 
 
 def _calc_options_from_request(request):
@@ -197,15 +193,7 @@ class EditCircuitPropertiesAndRecalculateOperation(object):
         return bool(self._alert_store.write_alert_payload(circuit, payload))
 
     def _get_target_circuits(self, doc, circuit_ids):
-        circuits = []
-        for raw_id in list(circuit_ids or []):
-            try:
-                el = doc.GetElement(_elid_from_value(raw_id))
-            except Exception:
-                el = None
-            if isinstance(el, DBE.ElectricalSystem):
-                circuits.append(el)
-        return circuits
+        return eu.get_circuits_by_ids(doc, circuit_ids)
 
     def _set_param_value(self, circuit, param_name, value):
         key_text = str(param_name or "")

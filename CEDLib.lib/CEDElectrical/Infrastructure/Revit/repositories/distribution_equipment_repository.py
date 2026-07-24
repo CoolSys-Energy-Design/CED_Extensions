@@ -2,8 +2,8 @@
 """Revit mappers for DistributionEquipment domain models."""
 
 import Autodesk.Revit.DB.Electrical as DBE
-from pyrevit import DB
 from System import Guid
+from pyrevit import DB
 
 from CEDElectrical.Model.distribution_equipment import DistributionEquipment, PowerBus, Transformer
 from CEDElectrical.part_types import (
@@ -13,7 +13,8 @@ from CEDElectrical.part_types import (
     PART_TYPE_SWITCHBOARD,
     PART_TYPE_TRANSFORMER,
 )
-from Snippets import revit_helpers
+from Snippets import _elecutils as eu
+from Snippets import design_options, revit_helpers
 
 PSTYPE_UNKNOWN = DBE.PanelScheduleType.Unknown
 PSTYPE_BRANCH = DBE.PanelScheduleType.Branch
@@ -590,6 +591,8 @@ def _connector_system_ids(connector):
     ids = []
 
     def _add_system(system):
+        if not design_options.is_main_model_element(system):
+            return
         try:
             sid = _idval(system.Id)
         except Exception:
@@ -717,7 +720,7 @@ def electrical_systems_for_element(element):
         system_id = _idval(getattr(system, "Id", None))
         if system_id <= 0 or system_id in seen:
             continue
-        if not isinstance(system, DBE.ElectricalSystem):
+        if not eu.is_circuit_eligible(system):
             continue
         seen.add(system_id)
         systems.append(system)
@@ -751,7 +754,7 @@ def supply_circuits_for_model(doc, model, primary_only=False):
             circuit = doc.GetElement(revit_helpers.elementid_from_value(circuit_id))
         except Exception:
             circuit = None
-        if isinstance(circuit, DBE.ElectricalSystem):
+        if eu.is_circuit_eligible(circuit):
             circuits.append(circuit)
     return circuits
 
@@ -830,7 +833,7 @@ def _total_power_current_snapshot(equipment):
 
 def build_distribution_equipment(doc, equipment, schedule_view=None):
     """Map a Revit electrical equipment instance into a domain model object."""
-    if equipment is None:
+    if equipment is None or not design_options.is_main_model_element(equipment):
         return None
 
     part_type = get_family_part_type(equipment)
@@ -853,11 +856,11 @@ def build_distribution_equipment(doc, equipment, schedule_view=None):
     assigned_systems = []
     if mep is not None:
         try:
-            all_systems = list(mep.GetElectricalSystems() or [])
+            all_systems = eu.filter_circuits(mep.GetElectricalSystems() or [])
         except Exception:
             all_systems = []
         try:
-            assigned_systems = list(mep.GetAssignedElectricalSystems() or [])
+            assigned_systems = eu.filter_circuits(mep.GetAssignedElectricalSystems() or [])
         except Exception:
             assigned_systems = []
     assigned_ids = set(_system_ids(assigned_systems))

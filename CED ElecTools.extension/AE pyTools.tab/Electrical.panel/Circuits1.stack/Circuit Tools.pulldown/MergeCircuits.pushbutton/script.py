@@ -3,7 +3,7 @@ import Autodesk.Revit.DB.Electrical as DBE
 from pyrevit import revit, DB, forms, script
 
 from Snippets import _elecutils as eu
-from Snippets import revit_helpers
+from Snippets import design_options, revit_helpers
 
 doc = revit.doc
 uidoc = revit.uidoc
@@ -63,15 +63,14 @@ def format_circuit_label(circuit):
 
     rating = "N/A"
     pole = "?"
-    if circuit.SystemType == DBE.ElectricalSystemType.PowerCircuit:
-        try:
-            rating = int(round(circuit.Rating, 0))
-        except Exception:
-            rating = "N/A"
-        try:
-            pole = circuit.PolesNumber
-        except Exception:
-            pole = "?"
+    try:
+        rating = int(round(circuit.Rating, 0))
+    except Exception:
+        rating = "N/A"
+    try:
+        pole = circuit.PolesNumber
+    except Exception:
+        pole = "?"
 
     return "[{}]  {}/{} - {}  ({} A/{}P)".format(ckt_id, panel_name, circuit_number, load_name, rating, pole)
 
@@ -184,6 +183,8 @@ def get_circuit_elements(circuit):
     elements = []
     try:
         for el in circuit.Elements:
+            if not design_options.is_main_model_element(el):
+                continue
             if isinstance(el, DB.Element):
                 elements.append(el)
     except Exception:
@@ -201,9 +202,7 @@ def build_element_set(elements):
 def dedupe_circuits(circuits):
     unique = []
     seen_ids = set()
-    for ckt in circuits or []:
-        if not isinstance(ckt, DBE.ElectricalSystem):
-            continue
+    for ckt in eu.filter_circuits(circuits):
         cid = _idval(ckt.Id)
         if cid in seen_ids:
             continue
@@ -229,7 +228,7 @@ def get_selected_circuits(active_view=None):
                 element = doc.GetElement(element_id)
             except Exception:
                 element = None
-            if isinstance(element, DBE.ElectricalSystem):
+            if eu.is_circuit_eligible(element):
                 selected_circuits.append(element)
 
         if selected_circuits:
@@ -264,7 +263,7 @@ def get_circuits_from_panel_schedule_view(panel_schedule_view):
                 if cid in circuits_by_id:
                     continue
                 circuit = doc.GetElement(circuit_id)
-                if isinstance(circuit, DBE.ElectricalSystem):
+                if eu.is_circuit_eligible(circuit):
                     circuits_by_id[cid] = circuit
     except Exception:
         return []
@@ -278,11 +277,7 @@ def main():
     if panel_schedule_mode:
         all_circuits = get_circuits_from_panel_schedule_view(active_view)
     else:
-        all_circuits = DB.FilteredElementCollector(doc) \
-            .OfClass(DBE.ElectricalSystem) \
-            .WhereElementIsNotElementType() \
-            .WherePasses(eu.option_filter) \
-            .ToElements()
+        all_circuits = eu.get_all_circuits(doc)
 
     all_circuits = [c for c in all_circuits if c.CircuitType not in [DBE.CircuitType.Spare, DBE.CircuitType.Space]]
 

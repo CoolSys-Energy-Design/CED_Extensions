@@ -1,7 +1,8 @@
 ﻿# -*- coding: utf-8 -*-
 from pyrevit import DB
 
-from Snippets import revit_helpers
+from Snippets import _elecutils as eu
+from Snippets import design_options, revit_helpers
 
 
 def _elid_value(item):
@@ -77,23 +78,19 @@ def collect_selected_electrical_circuits(doc, uidoc, logger=None):
     circuits_by_id = {}
     for sel_id in selected_ids:
         element = doc.GetElement(sel_id)
+        if not design_options.is_main_model_element(element):
+            continue
         mep_model = getattr(element, "MEPModel", None)
         if not mep_model:
             continue
-        systems = mep_model.GetElectricalSystems() or []
+        systems = eu.filter_circuits(mep_model.GetElectricalSystems() or [])
         for system in systems:
-            # Keep all electrical system types; caller can filter.
             circuits_by_id[_elid_value(system.Id)] = system
     return list(circuits_by_id.values())
 
 
 def collect_selected_power_circuits(doc, uidoc, logger=None):
-    systems = collect_selected_electrical_circuits(doc, uidoc, logger=logger)
-    result = []
-    for sys in systems:
-        if sys.SystemType == DB.Electrical.ElectricalSystemType.PowerCircuit:
-            result.append(sys)
-    return result
+    return collect_selected_electrical_circuits(doc, uidoc, logger=logger)
 
 
 def resolve_wire_type_id(doc, config, logger=None):
@@ -177,26 +174,37 @@ def get_wire_circuit_id(wire):
         systems = wire.GetMEPSystems()
         if systems:
             for sys in systems:
-                if isinstance(sys, DB.Electrical.ElectricalSystem):
+                if eu.is_circuit_eligible(sys):
                     return sys.Id
     except Exception:
         pass
 
     mep_system = getattr(wire, "MEPSystem", None)
-    if mep_system and isinstance(mep_system, DB.Electrical.ElectricalSystem):
+    if (
+        mep_system
+        and eu.is_circuit_eligible(mep_system)
+    ):
         return mep_system.Id
 
     for wire_connector in wire.ConnectorManager.Connectors:
         for ref in wire_connector.AllRefs:
             owner = getattr(ref, "Owner", None)
-            if owner and isinstance(owner, DB.Electrical.ElectricalSystem):
+            if (
+                owner
+                and eu.is_circuit_eligible(owner)
+            ):
                 return owner.Id
     return None
 
 
 def collect_active_view_wires_by_circuit(doc, view_id):
     wire_map = {}
-    wires = DB.FilteredElementCollector(doc, view_id).OfClass(DB.Electrical.Wire).ToElements()
+    wires = (
+        DB.FilteredElementCollector(doc, view_id)
+        .OfClass(DB.Electrical.Wire)
+        .WherePasses(design_options.main_model_filter())
+        .ToElements()
+    )
     for wire in wires:
         circuit_id = get_wire_circuit_id(wire)
         if not circuit_id:

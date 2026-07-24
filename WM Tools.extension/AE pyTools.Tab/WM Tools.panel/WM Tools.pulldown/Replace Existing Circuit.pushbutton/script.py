@@ -5,6 +5,9 @@ import Autodesk.Revit.DB.Electrical as DBE
 from pyrevit import revit, DB, forms, script, output
 from pyrevit.revit import query
 
+from Snippets import _elecutils as eu
+from Snippets import design_options
+
 doc = revit.doc
 uidoc = revit.uidoc
 logger = script.get_logger()
@@ -123,18 +126,14 @@ def main():
         return
 
     # Filter for electrical circuits
-    circuits = []
-
-    for el in selection:
-        if isinstance(el, DB.Electrical.ElectricalSystem):
-            circuits.append(el)
+    circuits = eu.filter_circuits(selection)
 
     if len(circuits) != 1:
         forms.alert("You must select exactly one circuit.")
         return
 
     circuit = circuits[0]
-    connected_elements = list(circuit.Elements)
+    connected_elements = design_options.filter_main_model_elements(circuit.Elements)
     placeholder = None
 
     for el in connected_elements:

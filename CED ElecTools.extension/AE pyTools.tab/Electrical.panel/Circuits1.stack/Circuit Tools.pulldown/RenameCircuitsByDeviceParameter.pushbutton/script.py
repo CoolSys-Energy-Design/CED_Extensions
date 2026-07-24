@@ -6,7 +6,7 @@ import Autodesk.Revit.DB.Electrical as DBE
 from pyrevit import revit, DB, forms, script
 
 from Snippets import _elecutils as eu
-from Snippets import revit_helpers
+from Snippets import design_options, revit_helpers
 
 doc = revit.doc
 uidoc = revit.uidoc
@@ -67,6 +67,8 @@ def _dedupe_elements(elements):
     for element in elements or []:
         if not element:
             continue
+        if not design_options.is_main_model_element(element):
+            continue
         try:
             eid = _elid_value(element.Id)
         except Exception:
@@ -79,7 +81,7 @@ def _dedupe_elements(elements):
 
 
 def _is_valid_circuit(circuit):
-    if not isinstance(circuit, DBE.ElectricalSystem):
+    if not eu.is_circuit_eligible(circuit):
         return False
     if not circuit.IsValidObject:
         return False
@@ -108,8 +110,10 @@ def _get_selected_elements():
 
 
 def _get_element_circuits(element):
-    if isinstance(element, DBE.ElectricalSystem):
+    if eu.is_circuit_eligible(element):
         return [element]
+    if isinstance(element, DBE.ElectricalSystem):
+        return []
 
     circuits = []
     try:
@@ -121,7 +125,7 @@ def _get_element_circuits(element):
         try:
             mep_model = element.MEPModel
             if mep_model:
-                circuits = list(mep_model.GetElectricalSystems() or [])
+                circuits = eu.filter_circuits(mep_model.GetElectricalSystems() or [])
         except Exception:
             circuits = []
 
@@ -136,6 +140,8 @@ def _get_circuit_load_elements(circuit):
     elements = []
     try:
         for element in circuit.Elements:
+            if not design_options.is_main_model_element(element):
+                continue
             if isinstance(element, DB.Element) and not isinstance(element, DBE.ElectricalSystem):
                 elements.append(element)
     except Exception:

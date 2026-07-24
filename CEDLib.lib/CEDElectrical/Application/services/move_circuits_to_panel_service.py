@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """Move Selected Circuits legacy implementation extracted from Snippets._elecutils."""
 
-import Autodesk.Revit.DB.Electrical as DBE
 from Autodesk.Revit.DB import Transaction, BuiltInParameter
 from pyrevit import script, forms, DB
 
 from CEDElectrical.Infrastructure.Revit.repositories import panel_schedule_repository as ps_repo
 from CEDElectrical.Model.panel_schedule_manager import PanelScheduleManager
-from Snippets import revit_helpers
+from Snippets import _elecutils as eu
+from Snippets import design_options, revit_helpers
 
 logger = script.get_logger()
 
@@ -21,8 +21,11 @@ def _elid_from(value):
 
 def move_circuits_to_panel(circuits, target_panel, doc, output):
     """Move selected circuits and optionally replace default spares/spaces when target is full."""
-    option_filter = DB.ElementDesignOptionFilter(DB.ElementId.InvalidElementId)
-
+    if not design_options.is_main_model_element(target_panel):
+        raise Exception("Target panel must be in the main model.")
+    circuits = eu.filter_circuits(circuits)
+    if not circuits:
+        raise Exception("No main-model circuits were provided to move.")
     def _safe_text(value, fallback=""):
         try:
             if value is None:
@@ -385,6 +388,7 @@ def move_circuits_to_panel(circuits, target_panel, doc, output):
         return False
 
     def _get_slot_circuit(schedule_view, slot):
+        # Slot restoration must recognize special-row systems regardless of type.
         for row, col in list(ps_repo.get_cells_by_slot_number(schedule_view, int(slot or 0)) or []):
             try:
                 cid = schedule_view.GetCircuitIdByCell(int(row), int(col))
@@ -393,7 +397,7 @@ def move_circuits_to_panel(circuits, target_panel, doc, output):
             if cid is None or cid == DB.ElementId.InvalidElementId:
                 continue
             element = doc.GetElement(cid)
-            if isinstance(element, DBE.ElectricalSystem):
+            if eu.is_circuit_eligible(element, system_type=None):
                 return element
         return None
 
@@ -460,7 +464,7 @@ def move_circuits_to_panel(circuits, target_panel, doc, output):
                     if isinstance(result, bool) and not result:
                         continue
                     occupant = _get_slot_circuit(schedule_view, slot_value)
-                    if isinstance(occupant, DBE.ElectricalSystem):
+                    if eu.is_circuit_eligible(occupant, system_type=None):
                         _set_circuit_poles(occupant, int(max(1, poles or 1)))
                     return True
                 except Exception as ex:
@@ -486,13 +490,7 @@ def move_circuits_to_panel(circuits, target_panel, doc, output):
         settings = ps_repo.get_electrical_settings(doc)
         default_rating = ps_repo.get_default_circuit_rating(settings)
         entries = []
-        circuits_in_panel = (
-            DB.FilteredElementCollector(doc)
-            .OfClass(DBE.ElectricalSystem)
-            .WhereElementIsNotElementType()
-            .WherePasses(option_filter)
-            .ToElements()
-        )
+        circuits_in_panel = eu.get_all_circuits(doc, system_type=None)
         for circuit in list(circuits_in_panel or []):
             base = getattr(circuit, "BaseEquipment", None)
             if base is None or _elid_value(getattr(base, "Id", None)) != panel_id:
