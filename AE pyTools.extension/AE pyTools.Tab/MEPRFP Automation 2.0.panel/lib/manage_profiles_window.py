@@ -38,11 +38,15 @@ import merge_workflow
 import wpf_dialogs
 import revit_symbol_index as _sym_index
 import directives_dialog as _directives_dialog
+import space_led_details_window as _led_details
 
 
 _XAML_PATH = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "_resources", "ManageProfilesWindow.xaml"
 )
+
+# Change Type dropdown marker for model-group entries (vs Family : Type).
+_GROUP_OPTION_PREFIX = "[Group] "
 
 
 class _ProfileItem(object):
@@ -196,6 +200,7 @@ class ManageProfilesController(object):
         self.add_led_btn = f("AddLedButton")
         self.remove_led_btn = f("RemoveLedButton")
         self.change_type_btn = f("ChangeTypeButton")
+        self.annotations_btn = f("AnnotationsButton")
         self.copy_fixture_btn = f("CopyFixtureButton")
         self.paste_fixture_btn = f("PasteFixtureButton")
         self.relationship_box = f("RelationshipBox")
@@ -227,6 +232,7 @@ class ManageProfilesController(object):
         self.add_led_btn.Click += self._on_add_led_clicked
         self.remove_led_btn.Click += self._on_remove_led
         self.change_type_btn.Click += self._on_change_type
+        self.annotations_btn.Click += self._on_edit_annotations
         self.copy_fixture_btn.Click += self._on_copy_fixture
         self.paste_fixture_btn.Click += self._on_paste_fixture
         self.led_tree.SelectedItemChanged += self._on_led_selected
@@ -644,17 +650,29 @@ class ManageProfilesController(object):
 
         if self._current_led is not None:
             options = self._enumerate_all_family_types()
+            group_options = [
+                _GROUP_OPTION_PREFIX + name
+                for name in self._enumerate_model_group_types()
+            ]
+            options = options + group_options
             if not options:
                 self._set_status("No FamilySymbols loaded in the project.")
                 return
             chosen = wpf_dialogs.pick_from_list(
                 options,
                 title="Change Type",
-                prompt="Pick a Family : Type for the LED:",
+                prompt="Pick a Family : Type (or a [Group]) for the LED:",
             )
             if not chosen:
                 return
-            self._current_led["label"] = chosen
+            if chosen.startswith(_GROUP_OPTION_PREFIX):
+                # Model group LED: raw group name as label (no " : "
+                # split axis), flagged so placement uses PlaceGroup.
+                self._current_led["label"] = chosen[len(_GROUP_OPTION_PREFIX):]
+                self._current_led["is_group"] = True
+            else:
+                self._current_led["label"] = chosen
+                self._current_led["is_group"] = False
             self.dirty = True
             if self._current_profile is not None:
                 self._populate_led_tree(self._current_profile)
@@ -684,6 +702,32 @@ class ManageProfilesController(object):
             out.add("{} : {}".format(fam_name, type_name))
         return sorted(out, key=lambda s: s.lower())
 
+    def _enumerate_model_group_types(self):
+        """Sorted names of every Model Group type in the project.
+
+        Detail groups are excluded — ``PlaceGroup`` rejects them, and
+        capture only ever flags model groups.
+        """
+        if self.doc is None:
+            return []
+        from Autodesk.Revit.DB import (
+            BuiltInCategory, FilteredElementCollector, GroupType,
+        )
+        out = set()
+        try:
+            collector = (
+                FilteredElementCollector(self.doc)
+                .OfClass(GroupType)
+                .OfCategory(BuiltInCategory.OST_IOSModelGroups)
+            )
+        except Exception:
+            return []
+        for gt in collector:
+            name = getattr(gt, "Name", "") or ""
+            if name:
+                out.add(name)
+        return sorted(out, key=lambda s: s.lower())
+
     def _enumerate_text_note_types(self):
         if self.doc is None:
             return []
@@ -694,6 +738,58 @@ class ManageProfilesController(object):
             if name:
                 out.add(name)
         return sorted(out, key=lambda s: s.lower())
+
+    def _on_edit_annotations(self, sender, e):
+        """Open the shared LED-details dialog on the Annotations tab so
+        the user can add/edit tags, keynotes, and text notes for the
+        selected LED (also reachable with an annotation selected — the
+        owning LED is edited)."""
+        led = self._current_led
+        if led is None:
+            self._set_status("Pick a LED first")
+            return
+        # Persist any in-flight param/offset grid edits before the
+        # dialog snapshots the LED (same pattern as Copy fixture).
+        self._save_selected_to_data()
+        # The dialog appends into led["annotations"]; legacy LEDs keep
+        # annotations in peer lists, so migrate to the unified list
+        # first — otherwise added entries would be invisible to
+        # removal / placement.
+        profile_model.materialize_annotations(led)
+        committed = _led_details.show_modal(
+            led_dict=led,
+            header="Annotations for {} ({})".format(
+                led.get("label") or "(no label)", led.get("id") or "?",
+            ),
+            owner=self.window,
+            doc=self.doc,
+            led_label=led.get("label"),
+            reconcile_elevation=False,
+            initial_tab="annotations",
+        )
+        if not committed:
+            self._set_status("Annotation edit cancelled")
+            return
+        # New rows get uuid-style ids from the dialog — renumber to the
+        # capture convention ({led_id}-ANN-NNN).
+        profile_model.canonicalize_annotation_ids(led)
+        self.dirty = True
+        if self._current_profile is not None:
+            self._populate_led_tree(self._current_profile)
+            self._select_led_node(led)
+        n_anns = len(led.get("annotations") or [])
+        self._set_status(
+            "Annotations updated — {} on this LED (unsaved)".format(n_anns)
+        )
+
+    def _select_led_node(self, led):
+        """Re-select ``led``'s node after a tree rebuild."""
+        for set_node in self.led_tree.Items:
+            for led_node in set_node.Items:
+                tag = getattr(led_node, "Tag", None)
+                if isinstance(tag, tuple) and len(tag) == 3 and tag[2] is led:
+                    led_node.IsSelected = True
+                    return
 
     def _on_copy_fixture(self, sender, e):
         if self._current_led is None:

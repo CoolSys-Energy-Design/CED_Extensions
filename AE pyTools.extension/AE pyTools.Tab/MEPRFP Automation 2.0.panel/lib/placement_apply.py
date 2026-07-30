@@ -271,3 +271,97 @@ def get_or_create_gateway():
     if _GATEWAY_SINGLETON is None:
         _GATEWAY_SINGLETON = PlacementGateway()
     return _GATEWAY_SINGLETON
+
+
+# ---------------------------------------------------------------------
+# Profile-save gateway (fuzzy-alias persistence)
+# ---------------------------------------------------------------------
+
+class _ProfileSaveExternalEventHandler(IExternalEventHandler):
+    """Internal handler for ``ProfileSaveGateway``. Separate event from
+    the placement handler so a queued alias-save can never clobber (or
+    be clobbered by) a queued placement in the single-slot gateways.
+
+    Distinct ``__namespace__`` — the CLR requires each registered
+    handler type's fully-qualified name to be session-unique.
+    """
+
+    __namespace__ = "MEPRFP.Automation.ProfileSave"
+
+    def __init__(self, gateway):
+        self._gateway = gateway
+
+    def Execute(self, uiapp):
+        try:
+            self._gateway._execute_pending(uiapp)
+        except Exception:
+            # Never raise into Revit's external-event loop.
+            pass
+
+    def GetName(self):
+        return "MEPRFP Profile Save"
+
+
+class ProfileSaveGateway(object):
+    """Persist the in-memory profile store from a modeless window.
+
+    The placement window mutates ``profile_data`` in place (e.g. when
+    the user accepts a fuzzy-match alias) but, being modeless, has no
+    valid API context to open a transaction in. This gateway runs
+    ``active_yaml.save_active_data`` on Revit's main thread. Slot
+    replacement is harmless here: the payload references the live
+    ``profile_data`` dict, so the last Execute serializes the superset
+    of all accepted edits.
+    """
+
+    def __init__(self):
+        self._handler = _ProfileSaveExternalEventHandler(self)
+        self._event = ExternalEvent.Create(self._handler)
+        self._pending = None
+
+    def request_save(self, doc, profile_data, action="MEPRFP 2.0 edit",
+                     on_complete=None):
+        self._pending = {
+            "doc": doc,
+            "profile_data": profile_data,
+            "action": action,
+            "on_complete": on_complete,
+        }
+        self._event.Raise()
+
+    # ----- internal -------------------------------------------------
+
+    def _execute_pending(self, uiapp):
+        payload = self._pending
+        if not payload:
+            return
+        self._pending = None
+        callback = payload["on_complete"]
+        error = None
+        try:
+            from pyrevit import revit
+            import active_yaml
+            with revit.Transaction(payload["action"], doc=payload["doc"]):
+                active_yaml.save_active_data(
+                    payload["doc"], payload["profile_data"],
+                    action=payload["action"],
+                )
+        except Exception as exc:
+            error = "Profile save failed: {}".format(exc)
+        if callback is not None:
+            try:
+                callback(error)
+            except Exception:
+                pass
+
+
+_SAVE_GATEWAY_SINGLETON = None
+
+
+def get_or_create_save_gateway():
+    """Return the per-Revit-session ``ProfileSaveGateway``. Same
+    first-call-needs-API-context rule as ``get_or_create_gateway``."""
+    global _SAVE_GATEWAY_SINGLETON
+    if _SAVE_GATEWAY_SINGLETON is None:
+        _SAVE_GATEWAY_SINGLETON = ProfileSaveGateway()
+    return _SAVE_GATEWAY_SINGLETON

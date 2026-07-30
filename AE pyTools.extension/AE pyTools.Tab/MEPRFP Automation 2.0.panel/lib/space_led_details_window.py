@@ -532,13 +532,19 @@ class SpaceLedDetailsController(object):
     Family:Type). Both are no-ops when ``doc`` is None.
     """
 
-    def __init__(self, led_dict, header="", doc=None, led_label=None):
+    def __init__(self, led_dict, header="", doc=None, led_label=None,
+                 reconcile_elevation=True, initial_tab=None):
         self._led = led_dict if isinstance(led_dict, dict) else {}
         # Take a deep snapshot so Cancel can fully restore.
         self._snapshot = copy.deepcopy(self._led)
         self._committed = False
         self._doc = doc
         self._led_label_for_autofill = led_label or self._led.get("label") or ""
+        # Space LEDs keep "Elevation from Level" and offsets[0].z_inches
+        # in lockstep (both mean height-above-level). Equipment LEDs'
+        # offsets are parent-relative, so that reconcile would corrupt
+        # the captured parameter — equipment callers pass False.
+        self._reconcile_elevation = bool(reconcile_elevation)
 
         # Build per-kind Family:Type indexes. Each kind gets its own
         # CLR list + lookup, shared across all annotation rows. The
@@ -579,6 +585,11 @@ class SpaceLedDetailsController(object):
             self._led.get("id") or "?",
         )
         self._reload_all_tabs()
+        if initial_tab == "annotations":
+            try:
+                self.tabs.SelectedIndex = 2
+            except Exception:
+                pass
         self._set_status("Ready.")
 
     # ----- bootstrapping -------------------------------------------
@@ -951,7 +962,8 @@ class SpaceLedDetailsController(object):
         # parameter is missing/blank — so authors who only set z_inches
         # still get a parameter value that reads correctly in the
         # Parameters tab on next open.
-        self._reconcile_elevation_from_level(params_out)
+        if self._reconcile_elevation:
+            self._reconcile_elevation_from_level(params_out)
 
         # Annotations same — mutated in place via setters, just rebuild
         # the list from current rows.
@@ -1060,16 +1072,20 @@ def _new_id(prefix):
     return "{}-{}".format(prefix, uuid.uuid4().hex[:8].upper())
 
 
-def show_modal(led_dict, header="", owner=None, doc=None, led_label=None):
+def show_modal(led_dict, header="", owner=None, doc=None, led_label=None,
+               reconcile_elevation=True, initial_tab=None):
     """Open the Details dialog for ``led_dict``. Returns True on OK.
 
     ``doc`` enables the parameter auto-fill button and the annotation
     Family:Type dropdown. ``led_label`` is the LED's "Family : Type"
     label (used as the auto-fill source); falls back to
-    ``led_dict['label']`` when omitted.
+    ``led_dict['label']`` when omitted. ``reconcile_elevation=False``
+    for equipment LEDs (parent-relative offsets — see controller).
+    ``initial_tab="annotations"`` opens on the Annotations tab.
     """
     controller = SpaceLedDetailsController(
         led_dict=led_dict, header=header,
         doc=doc, led_label=led_label,
+        reconcile_elevation=reconcile_elevation, initial_tab=initial_tab,
     )
     return controller.show_modal(owner=owner)

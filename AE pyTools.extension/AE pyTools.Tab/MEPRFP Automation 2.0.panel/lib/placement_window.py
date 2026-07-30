@@ -42,9 +42,12 @@ from Autodesk.Revit.DB import (  # noqa: E402
     Phase,
 )
 
+import fuzzy_match
+import merge_workflow
 import placement
 import placement_apply
 import wpf as _wpf
+import wpf_dialogs
 
 
 _XAML_PATH = os.path.join(
@@ -133,6 +136,13 @@ class PlacementController(object):
         except Exception as exc:
             self._gateway = None
             self._gateway_error = str(exc)
+        # Separate save gateway so accepting a fuzzy-match alias can
+        # persist the profile store from this modeless window without
+        # colliding with a queued placement run.
+        try:
+            self._save_gateway = placement_apply.get_or_create_save_gateway()
+        except Exception:
+            self._save_gateway = None
         self.window = _wpf.load_xaml(_XAML_PATH)
         self._lookup_controls()
         self._populate_filters()
@@ -488,6 +498,9 @@ class PlacementController(object):
         return item.value if item is not None else None
 
     def _on_match_clicked(self, sender, e):
+        self._run_match(offer_fuzzy=True)
+
+    def _run_match(self, offer_fuzzy=True):
         source_value = self._selected_source_value()
         if source_value is None and self._source_kind != "csv":
             self._set_status("Pick a source first")
@@ -534,6 +547,15 @@ class PlacementController(object):
             return
 
         raw_matches = placement.match_targets(targets, profiles, mode)
+
+        # Matching is strictly exact, so near-miss family names (renames,
+        # _2 suffixes, typos) produce zero matches silently. Offer to
+        # record ≥80%-similar unmatched names as aliases on their
+        # closest profile, then re-match once so they land immediately.
+        if offer_fuzzy and self._offer_fuzzy_aliases(
+                targets, raw_matches, profiles, mode):
+            return self._run_match(offer_fuzzy=False)
+
         deduped_count = 0
         if self.one_profile_per_target_check.IsChecked:
             self.matches = placement.dedupe_matches_per_target(raw_matches)
@@ -555,6 +577,96 @@ class PlacementController(object):
             "Review the list, uncheck rows to skip, then Place." if self.matches
             else "No matches. Try different filters or a different source."
         )
+
+    # ---- fuzzy alias proposals -------------------------------------
+
+    def _offer_fuzzy_aliases(self, targets, raw_matches, profiles, mode):
+        """Prompt to alias unmatched target names onto their closest
+        profile (>= 80% similar). Returns True when at least one alias
+        was added (caller re-runs the match once)."""
+        matched_names = set()
+        for m in raw_matches:
+            name = (getattr(m.target, "name", "") or "").strip().lower()
+            if name:
+                matched_names.add(name)
+        unmatched = []
+        seen = set()
+        for t in targets:
+            name = (getattr(t, "name", "") or "").strip()
+            key = name.lower()
+            if not name or key in matched_names or key in seen:
+                continue
+            seen.add(key)
+            unmatched.append(name)
+        if not unmatched:
+            return False
+
+        profile_keys = []
+        for idx, p in enumerate(profiles):
+            keys = set(placement.profile_family_names_raw(p))
+            if mode == placement.MATCH_CAD_ALIASES:
+                keys |= placement.collect_profile_aliases_raw(p)
+            if keys:
+                profile_keys.append((idx, sorted(keys)))
+        if not profile_keys:
+            return False
+
+        proposals = fuzzy_match.propose_aliases(unmatched, profile_keys)
+        # A name some profile already answers to as an alias must not be
+        # re-proposed onto a different profile.
+        proposals = [
+            prop for prop in proposals
+            if merge_workflow.find_alias_owner(self.profile_data, prop[0]) is None
+        ]
+        if not proposals:
+            return False
+
+        def _label(prop):
+            name, idx, _key, score = prop
+            profile_name = profiles[idx].get("name") or "(unnamed)"
+            return "{}  ->  {}  ({:.0f}%)".format(name, profile_name, score)
+
+        chosen = wpf_dialogs.multi_select_from_list(
+            proposals,
+            title="Close matches found",
+            prompt=(
+                "These source families didn't match any profile but are "
+                "close to one. Check the ones to add as aliases:"
+            ),
+            display_func=_label,
+        )
+        if not chosen:
+            return False
+
+        added = 0
+        for name, idx, _key, _score in chosen:
+            if merge_workflow.add_alias(profiles[idx], name):
+                added += 1
+        if not added:
+            return False
+
+        # ``profiles`` holds live references into ``profile_data``, so
+        # the re-match sees the aliases immediately; persistence goes
+        # through the dedicated ExternalEvent (modeless window — no
+        # direct transaction allowed here).
+        if self._save_gateway is not None:
+            self._save_gateway.request_save(
+                self.doc, self.profile_data,
+                action="MEPRFP 2.0: add matching aliases",
+                on_complete=self._on_alias_save_done,
+            )
+        else:
+            self._set_status(
+                "Alias(es) applied for this session only — save gateway "
+                "unavailable; use Manage Profiles to persist them."
+            )
+        return True
+
+    def _on_alias_save_done(self, error):
+        if error:
+            self._set_status(error)
+        else:
+            self._set_status("Alias(es) saved to the profile store.")
 
     # ---- preview rendering -----------------------------------------
 

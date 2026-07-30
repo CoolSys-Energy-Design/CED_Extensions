@@ -22,6 +22,8 @@ import _test_profile_model
 import _test_directives
 import _test_capture_idgen
 import _test_placement_matching
+import _test_placement_rules
+import _test_fuzzy_match
 import _test_merge
 import _test_circuit_grouping
 
@@ -37,6 +39,8 @@ def main():
         _test_directives,
         _test_capture_idgen,
         _test_placement_matching,
+        _test_placement_rules,
+        _test_fuzzy_match,
         _test_merge,
         _test_circuit_grouping,
     ):

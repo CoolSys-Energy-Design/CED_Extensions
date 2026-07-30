@@ -245,6 +245,75 @@ def test_bool_string_coercion():
            is False)
 
 
+def test_materialize_annotations():
+    print("\n[profile_model] materialize_annotations (legacy migration)")
+    led = {
+        "id": "SET-1-LED-001",
+        "tags": [{"family_name": "TagFam", "type_name": "T1",
+                  "parameters": {}, "offsets": {"x_inches": 0.0}}],
+        "keynotes": [{"family_name": "GA_Keynote Symbol_CED",
+                      "type_name": "K1"}],
+        "text_notes": [{"type_name": "N1", "text": "hello"}],
+    }
+    anns = pm.materialize_annotations(led)
+    _check("returns the led list", anns is led["annotations"])
+    _check("three migrated", len(anns) == 3)
+    _check("kinds assigned",
+           [a["kind"] for a in anns] == ["tag", "keynote", "text_note"])
+    _check("ids assigned",
+           [a["id"] for a in anns] == ["SET-1-LED-001-ANN-001",
+                                       "SET-1-LED-001-ANN-002",
+                                       "SET-1-LED-001-ANN-003"])
+    _check("legacy keys deleted",
+           "tags" not in led and "keynotes" not in led
+           and "text_notes" not in led)
+    # Idempotent: second call must not duplicate or renumber.
+    before = [dict(a) for a in anns]
+    again = pm.materialize_annotations(led)
+    _check("idempotent", again == before and len(again) == 3)
+
+    # Existing kind on a legacy entry is preserved.
+    led2 = {"id": "L2", "tags": [{"kind": "keynote", "family_name": "F"}]}
+    anns2 = pm.materialize_annotations(led2)
+    _check("existing kind preserved", anns2[0]["kind"] == "keynote")
+
+    # LED already on the unified shape: untouched (list identity kept).
+    unified = [{"id": "L3-ANN-001", "kind": "tag"}]
+    led3 = {"id": "L3", "annotations": unified, "tags": [{"x": 1}]}
+    anns3 = pm.materialize_annotations(led3)
+    _check("unified list identity kept", anns3 is unified)
+    _check("legacy peers still removed", "tags" not in led3)
+
+
+def test_canonicalize_annotation_ids():
+    print("\n[profile_model] canonicalize_annotation_ids")
+    led = {
+        "id": "SET-9-LED-002",
+        "annotations": [
+            {"id": "SET-9-LED-002-ANN-001", "kind": "tag"},   # conforming
+            {"id": "ANN-DEADBEEF", "kind": "tag"},            # uuid-style
+            {"kind": "keynote"},                              # missing id
+            {"id": "SET-9-LED-002-ANN-005", "kind": "tag"},   # conforming gap
+        ],
+    }
+    pm.canonicalize_annotation_ids(led)
+    ids = [a.get("id") for a in led["annotations"]]
+    _check("conforming ids kept",
+           ids[0] == "SET-9-LED-002-ANN-001"
+           and ids[3] == "SET-9-LED-002-ANN-005")
+    _check("uuid renumbered", ids[1] == "SET-9-LED-002-ANN-002")
+    _check("missing id assigned", ids[2] == "SET-9-LED-002-ANN-003")
+    _check("no collisions", len(set(ids)) == 4)
+
+    # No annotations key / wrong shape: no crash, no mutation.
+    led2 = {"id": "X"}
+    pm.canonicalize_annotation_ids(led2)
+    _check("absent annotations tolerated", "annotations" not in led2)
+    led3 = {"id": "X", "annotations": "junk"}
+    pm.canonicalize_annotation_ids(led3)
+    _check("non-list annotations tolerated", led3["annotations"] == "junk")
+
+
 def run():
     test_document()
     test_profile()
@@ -256,6 +325,8 @@ def run():
     test_mutation_propagates()
     test_missing_optional_fields()
     test_bool_string_coercion()
+    test_materialize_annotations()
+    test_canonicalize_annotation_ids()
     return list(_FAILS)
 
 

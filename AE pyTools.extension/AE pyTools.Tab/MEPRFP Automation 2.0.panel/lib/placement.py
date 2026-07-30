@@ -70,6 +70,7 @@ import element_linker_io as _el_io
 import geometry
 import hosted_annotations
 import links
+import placement_rules
 
 
 # ---------------------------------------------------------------------
@@ -1689,15 +1690,9 @@ def build_group_type_index(doc):
     return {"by_name": by_name, "by_norm": by_norm}
 
 
-def _split_label(label):
-    """``"Family : Type"`` -> ``("Family", "Type")``. Single-word labels
-    fall back to ``(label, "")``."""
-    if not label:
-        return "", ""
-    if " : " in label:
-        family, type_name = label.split(" : ", 1)
-        return family.strip(), type_name.strip()
-    return label.strip(), ""
+# Moved to placement_rules (pure module, offline-testable); kept under
+# the old name for external callers (space_apply).
+_split_label = placement_rules.split_label
 
 
 def _place_fixture(doc, led, anchor_world_pt, anchor_rotation_deg, level_id,
@@ -1781,63 +1776,53 @@ def _place_fixture(doc, led, anchor_world_pt, anchor_rotation_deg, level_id,
     else:
         target_pt = XYZ(target_pt_t[0], target_pt_t[1], target_pt_t[2])
 
-    family_name, type_name = _split_label(label)
-
-    # "Looks like a group" heuristic: a label captured from a Revit
-    # Group is serialized as "<group name> : <group name>" because
-    # groups have no real "type" axis. Catches cases where the YAML
-    # ``is_group`` flag is wrong (e.g. P_-prefixed model groups in V5
-    # that captured as ``is_group: false``). The P_ prefix is the
-    # project-wide naming convention for model groups, so we treat any
-    # P_-prefixed label as group-shaped regardless of the family/type
-    # split.
-    looks_like_group = bool(
-        family_name and (
-            (type_name and family_name == type_name)
-            or family_name.startswith("P_")
-            or label.startswith("P_")
-        )
+    kind, group_candidates, family_name, type_name = (
+        placement_rules.resolve_placement_kind(label, is_group)
     )
 
-    if is_group or looks_like_group:
-        # Always look up by the family-name half — groups are named
-        # ``"X"`` in the GroupType collection, not ``"X : X"``.
-        group_type, gstatus = _resolve_group_type(
-            doc, family_name or label, group_index=group_index,
-        )
-        if group_type is not None:
+    if kind in ("group", "maybe_group"):
+        for candidate in group_candidates:
+            group_type, gstatus = _resolve_group_type(
+                doc, candidate, group_index=group_index,
+            )
+            if group_type is None:
+                continue
             try:
                 group = doc.Create.PlaceGroup(target_pt, group_type)
             except Exception:
                 # Detail group, or some other PlaceGroup-rejecting
-                # type — fall through to family path so a real family
-                # with the same name (rare) still gets a shot.
+                # type — try the next candidate / fall through.
                 group = None
-            if group is not None:
-                if abs(target_rot_deg) > geometry.Tolerances.ROTATION_DEG:
-                    try:
-                        from Autodesk.Revit.DB import ElementTransformUtils, Line
-                        axis = Line.CreateBound(
-                            target_pt,
-                            XYZ(target_pt.X, target_pt.Y, target_pt.Z + 1.0),
-                        )
-                        ElementTransformUtils.RotateElement(
-                            doc, group.Id, axis, math.radians(target_rot_deg),
-                        )
-                    except Exception:
-                        pass
+            if group is None:
+                continue
+            if abs(target_rot_deg) > geometry.Tolerances.ROTATION_DEG:
                 try:
-                    doc.Regenerate()
+                    from Autodesk.Revit.DB import ElementTransformUtils, Line
+                    axis = Line.CreateBound(
+                        target_pt,
+                        XYZ(target_pt.X, target_pt.Y, target_pt.Z + 1.0),
+                    )
+                    ElementTransformUtils.RotateElement(
+                        doc, group.Id, axis, math.radians(target_rot_deg),
+                    )
                 except Exception:
                     pass
-                return group, gstatus, {"requested_group": family_name or label}
-        # Group lookup failed (or PlaceGroup rejected). If the YAML
-        # explicitly said is_group AND we have nothing else to try,
-        # surface a clean group_missing — otherwise the label might
-        # legitimately be a family with family==type (rare but
-        # possible) so we fall through.
-        if is_group and not looks_like_group and " : " not in label:
-            return None, "group_missing", {"requested_group": family_name or label}
+            try:
+                doc.Regenerate()
+            except Exception:
+                pass
+            return group, gstatus, {
+                "requested_group": candidate,
+                "target_world_z": target_pt.Z,
+            }
+        # No candidate resolved (or PlaceGroup rejected them all). A
+        # trusted ``is_group`` flag never falls through to the family
+        # path — surface a clean group_missing. The legacy "X : X"
+        # heuristic might genuinely be a family, so it falls through.
+        if kind == "group":
+            return None, "group_missing", {
+                "requested_group": group_candidates[0] if group_candidates else label,
+            }
 
     if not family_name:
         return None, "no_label", {}
@@ -3095,8 +3080,9 @@ def execute_placement(doc, matches, options=None):
                     # Verify the placed instance actually got bound to
                     # the level we intended. ``actual_level_id`` is what
                     # Revit ended up with on FamilyInstance.LevelId.
+                    placed_is_group = isinstance(placed, Group)
                     actual_level_id = None
-                    if placed is not None:
+                    if placed is not None and not placed_is_group:
                         try:
                             alid = placed.LevelId
                             if alid is not None:
@@ -3108,16 +3094,25 @@ def execute_placement(doc, matches, options=None):
                             actual_level_id = None
                     # Diagnostic key — collapses identical outcomes
                     # across many anchors. We sample the FIRST anchor's
-                    # full context per key.
+                    # full context per key. Groups carry no LevelId, so
+                    # a level comparison would report a spurious
+                    # mismatch on every group placement.
                     overload_used = (info or {}).get("overload", "?")
+                    if placed_is_group:
+                        level_outcome = "group"
+                    elif (actual_level_id == led_level_id
+                          and led_level_id is not None):
+                        level_outcome = "match"
+                    else:
+                        level_outcome = "mismatch:{}->{}".format(
+                            led_level_id, actual_level_id,
+                        )
                     dbg_key = (
                         led_id,
                         led_level_src,
                         view_outcome,
                         overload_used,
-                        "match" if (actual_level_id == led_level_id
-                                    and led_level_id is not None)
-                        else "mismatch:{}->{}".format(led_level_id, actual_level_id),
+                        level_outcome,
                     )
                     entry = level_debug.get(dbg_key)
                     if entry is None:
@@ -3185,7 +3180,9 @@ def execute_placement(doc, matches, options=None):
                     # SAME ``led_level_id`` we passed to
                     # ``NewFamilyInstance`` so FAMILY_LEVEL_PARAM and
                     # SCHEDULE_LEVEL_PARAM agree on the same Level.
-                    if led_level_id is not None:
+                    if led_level_id is not None and not placed_is_group:
+                        # Groups expose no writable Level parameter —
+                        # the writeback is family-instance-shaped.
                         _ensure_instance_level_param(
                             doc, placed, led_level_id,
                             uidoc=uidoc,

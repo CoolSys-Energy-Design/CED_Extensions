@@ -450,6 +450,21 @@ def _build_led_entry(child_ref, parent_world_pt, parent_world_rot_deg, led_id,
         )
 
     auto_dependents = hosted_annotations.collect_hosted_dependents(elem)
+    if isinstance(elem, Group):
+        # GetDependentElements on a Group returns its MEMBER elements,
+        # which PlaceGroup will recreate at placement time — sweeping
+        # them in as annotations double-places every member keynote.
+        # Keep only genuinely external dependents (a tag on the group
+        # itself, a keynote targeting a member from outside).
+        try:
+            member_ids = {_id_value(m) for m in elem.GetMemberIds()}
+        except Exception:
+            member_ids = set()
+        member_ids.discard(None)
+        auto_dependents = [
+            d for d in auto_dependents
+            if _id_value(d) not in member_ids
+        ]
     annotations = _build_annotation_entries(
         led_id, child_world_pt, child_world_rot,
         auto_dependents, ann_refs_for_this_fixture or [], result,

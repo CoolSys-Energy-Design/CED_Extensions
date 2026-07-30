@@ -371,3 +371,73 @@ class ProfileDocument(_DictBacked):
             if p.name == name:
                 return p
         return None
+
+
+_LEGACY_ANNOTATION_KEYS = (("tag", "tags"), ("keynote", "keynotes"),
+                           ("text_note", "text_notes"))
+
+
+def _annotation_id_prefix(led_dict):
+    led_id = _str_or_none(led_dict.get("id")) or "LED"
+    return led_id + "-ANN-"
+
+
+def materialize_annotations(led_dict):
+    """Ensure ``led_dict["annotations"]`` is a real list and return it.
+
+    Legacy LEDs store annotations in ``tags``/``keynotes``/``text_notes``
+    peer lists with no ``annotations`` key; editors that need to append
+    (Manage Profiles "Add annotations") must mutate a list that every
+    reader — including removal by identity — actually sees. Migrates the
+    legacy entries in place (same normalization as ``LED.annotations``),
+    assigns missing ids, and deletes the legacy keys so there is exactly
+    one source of truth afterwards. Idempotent.
+    """
+    raw = led_dict.get("annotations")
+    if not isinstance(raw, list):
+        raw = []
+        for kind, key in _LEGACY_ANNOTATION_KEYS:
+            for entry in (led_dict.get(key) or []):
+                if not isinstance(entry, dict):
+                    continue
+                entry.setdefault("kind", kind)
+                raw.append(entry)
+        led_dict["annotations"] = raw
+    for _, key in _LEGACY_ANNOTATION_KEYS:
+        led_dict.pop(key, None)
+    canonicalize_annotation_ids(led_dict)
+    return raw
+
+
+def canonicalize_annotation_ids(led_dict):
+    """Renumber annotation ids to the ``{led_id}-ANN-NNN`` convention.
+
+    Editors (e.g. the shared LED-details dialog) mint uuid-style ids for
+    new rows; capture and the copy/paste path number sequentially. Any
+    id that doesn't carry this LED's prefix is reassigned to the next
+    free NNN; conforming ids are kept so lineage references stay stable.
+    """
+    annotations = led_dict.get("annotations")
+    if not isinstance(annotations, list):
+        return
+    prefix = _annotation_id_prefix(led_dict)
+    taken = set()
+    for ann in annotations:
+        if isinstance(ann, dict):
+            ann_id = _str_or_none(ann.get("id"))
+            if ann_id and ann_id.startswith(prefix):
+                taken.add(ann_id)
+    next_num = 1
+    for ann in annotations:
+        if not isinstance(ann, dict):
+            continue
+        ann_id = _str_or_none(ann.get("id"))
+        if ann_id and ann_id.startswith(prefix):
+            continue
+        while True:
+            candidate = "{}{:03d}".format(prefix, next_num)
+            next_num += 1
+            if candidate not in taken:
+                break
+        taken.add(candidate)
+        ann["id"] = candidate

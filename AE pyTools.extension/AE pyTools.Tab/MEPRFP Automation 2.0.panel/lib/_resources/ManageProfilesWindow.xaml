@@ -144,6 +144,9 @@
           <Button x:Name="ChangeTypeButton" Content="Change Type"
                   ToolTip="Replace the Family : Type label of the currently selected LED or annotation."
                   Margin="0,8,0,4"/>
+          <Button x:Name="AnnotationsButton" Content="Add annotations"
+                  ToolTip="Open the annotations editor for the selected LED to add or edit tags, keynotes, and text notes."
+                  Margin="0,0,0,4"/>
           <Button x:Name="CopyFixtureButton" Content="Copy fixture"
                   ToolTip="Copy the selected LED (and its annotations + parameters) to a clipboard so it can be pasted into another profile."
                   Margin="0,4,0,4"/>
