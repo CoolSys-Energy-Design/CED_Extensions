@@ -12,6 +12,30 @@ output.close_others()
 output.set_width(800)
 logger = script.get_logger()
 
+APPARENT_LOAD_KEYS = set([
+    "Apparent Load Ph 1_CED",
+    "Apparent Load Ph 2_CED",
+    "Apparent Load Ph 3_CED",
+    "Apparent Load Input_CED",
+])
+
+
+def apparent_load_to_va(value):
+    """Return an Excel apparent-load value in VA.
+
+    Circuit spreadsheets use kVA for bare numeric load values. Explicit
+    suffixes are also accepted so a value such as '2500 VA' is not scaled
+    again.
+    """
+    text = str(value).strip()
+    match = re.match(r"^([+-]?[0-9][0-9,]*(?:\.[0-9]+)?)\s*(KVA|VA)?$", text, re.IGNORECASE)
+    if not match:
+        raise ValueError("Invalid apparent load value: {}".format(value))
+
+    number = float(match.group(1).replace(",", ""))
+    unit = (match.group(2) or "KVA").upper()
+    return number * 1000.0 if unit == "KVA" else number
+
 def get_panel_surfaces(panel_names):
     surfaces = {}
     for eq in DB.FilteredElementCollector(revit.doc) \
@@ -103,15 +127,14 @@ def set_instance_parameters(inst, row):
                     param.Set(int(float(val)))
                 elif param.StorageType == DB.StorageType.Double:
                     # --- Apparent Load (VA) ---
-                    if key in ["Apparent Load Ph 1_CED",
-                               "Apparent Load Ph 2_CED",
-                               "Apparent Load Ph 3_CED",
-                               "Apparent Load Input_CED"]:
+                    if key in APPARENT_LOAD_KEYS:
                         logger.debug("Setting Apparent Load Units (VA)")
                         forge_type_va = DB.ForgeTypeId("autodesk.unit.unit:voltAmperes-1.0.1")
-                        converted = DB.UnitUtils.ConvertToInternalUnits(float(val), forge_type_va)
+                        va_value = apparent_load_to_va(val)
+                        converted = DB.UnitUtils.ConvertToInternalUnits(va_value, forge_type_va)
                         param.Set(converted)
-                        logger.debug("Original Val: {}, Converted (VA): {}".format(val, converted))
+                        logger.debug("Original Val: {}, VA Value: {}, Converted (internal): {}".format(
+                            val, va_value, converted))
 
                     # --- Voltage (V) ---
                     elif "Voltage" in key:   # or use a stricter list if needed
