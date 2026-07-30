@@ -1,0 +1,11 @@
+title: Circuit Grouper
+
+tooltip: >-
+  Collect circuitable devices (case controllers for now), group them by
+  CKT_Circuit Number_CEDT, validate voltage/pole compatibility, regroup by
+  drag-and-drop or "New Group from Selected", set a panel / breaker rating /
+  load name per row, then create one native Revit circuit per group in a
+  single pass. Only devices with CKT_Circuit Number_CEDT populated are loaded.
+
+author: >-
+  CED

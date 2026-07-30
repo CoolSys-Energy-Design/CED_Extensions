@@ -1,0 +1,7 @@
+title: Place Identity Mark
+tooltip: |
+  Copy Identity Mark values from refrigerated cases to matching mechanical control devices.
+  The workflow prioritizes host relationships and then checks controller location within case extents.
+  It also writes related controller fields used for panel and circuit naming when available.
+  A summary in the output panel reports updated, skipped, and unmatched elements.
+is_beta: false

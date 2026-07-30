@@ -1,0 +1,10 @@
+title: Print Profiles
+
+tooltip: >-
+  Export every profile in the active project's stored YAML
+  (Extensible Storage) to an Excel (.xlsx) workbook: one row per child
+  element, with the profile name and parent-filter data on the first row
+  of each profile and every parameter spread into its own column.
+
+author: >-
+  CED

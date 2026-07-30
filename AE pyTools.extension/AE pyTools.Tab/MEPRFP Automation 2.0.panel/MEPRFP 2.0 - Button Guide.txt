@@ -1,0 +1,368 @@
+================================================================================
+MEPRFP AUTOMATION 2.0 - DESIGNER'S GUIDE
+================================================================================
+New to this panel? Read this page first. It explains the idea in plain terms,
+then walks through every button in the order you'd actually use them.
+
+
+THE BIG IDEA (in one sentence)
+--------------------------------------------------------------------------------
+You set up a piece of equipment and everything around it ONE time, and the panel
+copies that exact setup wherever you tell it to - same parts, same spacing, same
+tags - so you don't have to place the same thing by hand over and over.
+
+Think of it like a custom rubber stamp. You design the stamp once, then stamp it
+across the whole project.
+
+
+A REAL EXAMPLE TO KEEP IN MIND
+--------------------------------------------------------------------------------
+Say every walk-in cooler in your project needs the same things next to it:
+a disconnect switch 2 feet to the left, a receptacle below it, and an equipment
+tag. Instead of placing those three items by hand at all 30 coolers, you:
+
+  1. Set them up correctly at ONE cooler.
+  2. "Capture" that arrangement (the panel remembers the parts and exactly where
+     they sit relative to the cooler).
+  3. Tell the panel to repeat it at the other 29 coolers automatically.
+
+That captured arrangement is called a PROFILE.
+
+
+THE FIVE WORDS YOU'LL SEE
+--------------------------------------------------------------------------------
+PROFILE   - One saved arrangement: a main piece of equipment plus the parts that
+            belong with it. (The cooler + its disconnect + receptacle + tag.)
+
+PARENT    - The main piece of equipment the arrangement is built around.
+            (The walk-in cooler.) Everything else is positioned relative to it.
+
+CHILD     - A part that travels with the parent. (The disconnect, the receptacle.)
+            The panel remembers each child's exact position relative to the parent,
+            so if the parent is rotated, the children rotate with it.
+
+LIBRARY   - The collection of all the profiles you've saved. It lives inside the
+            Revit project file itself. (Import/Export move it in and out as a file.)
+
+SPACE PROFILE - The same idea, but for ROOMS instead of equipment. Instead of
+            "things around a cooler," it's "things in a restroom" - positioned
+            relative to the room's door and walls. (See the SPACES section.)
+
+Every part the panel places gets a hidden tag on it recording which profile it
+came from. That's how the audit and cleanup buttons later know what belongs
+where - you never touch it directly, it just works behind the scenes.
+
+
+================================================================================
+STEP 1 - BUILD YOUR PROFILE LIBRARY        (the "Modify Profiles" menu)
+================================================================================
+This is where you create and edit your saved arrangements.
+
+NEW PROFILE  <- start here
+    Creates a new arrangement. The panel walks you through it:
+      1. Click the main piece of equipment (the PARENT).
+      2. Click each part that belongs with it (the CHILDREN), then click Finish.
+    That's it - the profile is named automatically after the parent's family/type.
+    (Tags and keynotes already attached to the children come along for free.)
+
+    Optional advanced step: you can tell a child to copy a value from its parent
+    instead of using a fixed number - for example, "this disconnect's voltage
+    should always match whatever the cooler's voltage is." Skip this if you're
+    not sure; fixed values are the safe default.
+
+ADD TO PROFILE
+    Same as picking children in New Profile, but it adds them to an arrangement
+    you already made. Use it when you forgot a part or the layout grew.
+
+CREATE INDEPENDENT PROFILE
+    Makes an arrangement that ISN'T built around one main piece of equipment -
+    just a group of parts you want to stamp down together at a point you pick.
+    Use it for a repeatable cluster that has no obvious "parent."
+
+MANAGE PROFILES
+    Your library editor. Opens a window listing every profile you've saved. Here
+    you can rename them, tweak a part's position or settings, delete ones you
+    don't want, or add another part. Changes are saved when you close the window.
+
+MERGE PROFILES / BULK MERGE PROFILES
+    Use this when two different equipment types should be treated as the same
+    arrangement. Example: two cooler models that get the identical disconnect +
+    receptacle setup. "Merging" lets one profile also answer to the other's name,
+    so both get stamped the same way - without you building it twice. "Bulk" does
+    several of these at once.
+
+UNMERGE PROFILE
+    Undoes a merge - separates two equipment types you'd previously linked.
+
+
+================================================================================
+STEP 2 - STAMP YOUR PROFILES INTO THE MODEL        (the placement buttons)
+================================================================================
+These are the top-level buttons on the panel (not in a menu).
+
+PLACE FROM CAD OR LINKED MODEL  <- the main one
+    The bulk "do it everywhere" button. Point it at a linked Revit model, a
+    linked CAD/DWG, or a spreadsheet that shows where the equipment goes. The
+    panel finds every matching piece of equipment and stamps the right profile at
+    each one - all the parts, correctly spaced, across the whole floor in one run.
+
+PLACE SINGLE PROFILE
+    The manual version. Pick one profile, then click points in the model. Each
+    click stamps that whole arrangement right there. Good for one-offs or when
+    you want hands-on control.
+
+PLACE ELEMENT ANNOTATIONS
+    Places the TAGS, keynotes, and text notes for your placed parts. Run this
+    from a 2D view (a plan, section, etc.). It's a separate button on purpose:
+    place the equipment first, then come back and tag it per sheet/view. If you
+    re-run it in a different view, it tags there too.
+
+
+================================================================================
+STEP 3 - WIRE IT UP        (the "Circuiting" menu)
+================================================================================
+SUPERCIRCUIT V5
+    Automatically creates the electrical circuits for the equipment you placed,
+    following your client's circuiting rules. You can run it on just the items
+    you've selected, or let it handle every eligible item in the project.
+
+AUDIT CIRCUITS
+    A read-only check that looks for circuiting problems (missing circuits, wrong
+    panel/breaker assignments, etc.) so you can review before relying on it. It
+    changes nothing - it just reports.
+
+
+================================================================================
+STEP 4 - CHECK AND CLEAN UP        (the "Misc Ops" menu)
+================================================================================
+QAQC  <- run this before you trust a placement
+    The main quality check. It compares what's currently in the model against
+    what your profiles say SHOULD be there, and lists anything that drifted -
+    a part someone moved, a missing tag, a deleted item, a changed setting. Most
+    items are just flagged for your review; a few it can fix for you.
+
+OPTIMIZE
+    A cleanup pass. If placed parts have drifted away from their equipment, this
+    re-attaches them to the nearest correct piece of equipment and tidies their
+    positions, then reports what it moved.
+
+CHECK SYNCED RELATIONSHIPS
+    A read-only check that flags broken links between parents and their children.
+    It stays open on the side so you can keep working and jump to flagged items.
+
+FOLLOW PARENT
+    Snaps selected parts back to their correct position relative to their parent
+    equipment - handy if someone nudged a disconnect out of place and you want it
+    back where the profile says it goes.
+
+UPDATE VECTOR
+    The "I moved it on purpose, remember this new spot" button. Move a part by
+    hand, select it, run this, and the profile learns the new relative position
+    so future stamps use it.
+
+HIDE EXISTING PROFILES
+    Makes a copy of your current view with all the already-placed profile items
+    hidden. Useful for spotting what you HAVEN'T covered yet.
+
+
+================================================================================
+SAVING, SHARING, AND BACKUPS        (the "Import-Export Profiles" menu)
+================================================================================
+Your profile library lives inside the Revit project. These buttons move it in
+and out as a file so you can back it up or reuse it on another project.
+
+EXPORT YAML FILE   - Saves your whole library to a file. (Do this to back up or
+                     to share your profiles with another project.)
+IMPORT YAML FILE   - Loads a library file into the current project.
+
+
+================================================================================
+THE ROOM VERSION        (the "SPACES" menu)
+================================================================================
+Everything above is built around a piece of EQUIPMENT. The Spaces menu does the
+same thing built around a ROOM instead - parts positioned relative to the room's
+door and walls (e.g. "a receptacle on the wall opposite the door in every
+restroom"). The buttons mirror the equipment ones:
+
+CLASSIFY SPACES        - Sorts your rooms into types ("restroom", "office", ...)
+                         so a profile can target all rooms of one type at once.
+MANAGE SPACE BUCKETS   - Edit those room-type definitions / keywords.
+CAPTURE SPACE PROFILE  - Like New Profile, but for a room: pick the room, pick
+                         its door, pick the parts inside. Positions are saved
+                         relative to the door/walls.
+MANAGE SPACE PROFILES  - The library editor for room profiles.
+PLACE SPACE ELEMENTS   - Stamps a room profile into every matching room.
+PLACE SPACE ANNOTATIONS- Tags the placed room parts (run from a 2D view).
+EXPORT / IMPORT SPACE CONFIG - Back up or share your room setup as a file.
+
+
+================================================================================
+QUICK START (equipment) - the order to click things
+================================================================================
+  1. NEW PROFILE ......................... set up one piece of equipment + its
+                                           parts, capture it
+  2. MANAGE PROFILES ..................... double-check names, spacing, settings
+  3. PLACE FROM CAD OR LINKED MODEL ...... stamp it everywhere it belongs
+  4. PLACE ELEMENT ANNOTATIONS ........... add the tags (from a plan view)
+  5. SUPERCIRCUIT V5  ->  AUDIT CIRCUITS . create the circuits, then check them
+  6. QAQC  (and OPTIMIZE if needed) ...... confirm nothing drifted, clean up
+  7. EXPORT YAML FILE .................... back up your library
+
+For rooms, follow the same flow using the SPACES menu.
+================================================================================
+
+
+================================================================================
+WALKTHROUGH - YOUR FIRST PROFILE, CLICK BY CLICK
+================================================================================
+Let's actually do the walk-in cooler example from start to finish. Follow along
+in a real (or practice) project.
+
+GOAL: every cooler should get a disconnect, a receptacle, and a tag - placed for
+you at all of them after we set it up at one.
+
+  1.  Place the parts correctly at ONE cooler by hand, the way you want them at
+      all of them: the disconnect where it goes, the receptacle where it goes,
+      and tag the cooler. Get this one perfect - the panel copies it exactly.
+
+  2.  Click NEW PROFILE.
+        - A summary pops up explaining the 3 steps. Click Yes to begin.
+        - It asks if the PARENT is in a linked model. For most jobs the cooler is
+          in your active model, so click No.
+        - "Step 1: Pick the PARENT" - click the cooler. The profile is now named
+          after the cooler's family/type automatically.
+
+  3.  "Step 2: Pick the CHILD elements" - click the disconnect, then the
+      receptacle. (You don't need to click the tag - tags attached to the parts
+      come along automatically.) Click FINISH in the ribbon when done.
+
+  4.  "Step 3: directives?" - this is the optional advanced step. Click No for
+      now to keep every setting as a fixed value. (You can add directives later.)
+
+  5.  Done. A report appears confirming the profile was created and how many
+      parts it captured. Your library now has one profile.
+
+  6.  Now stamp it everywhere. Click PLACE FROM CAD OR LINKED MODEL, point it at
+      the source that shows where your coolers are (a linked model, a CAD file,
+      or a spreadsheet), and let it run. Every matching cooler gets the disconnect
+      and receptacle placed at the same spacing you set up in step 1.
+
+  7.  Open a plan view and click PLACE ELEMENT ANNOTATIONS to drop the tags.
+
+  8.  Click QAQC to confirm everything matches your profile. You're done.
+
+If something looks off, nothing is permanent - delete the placed parts, fix your
+one good cooler, re-capture, and stamp again.
+
+
+================================================================================
+UNDERSTANDING POSITIONS AND THE OPTIONAL "DIRECTIVES"
+================================================================================
+HOW POSITIONS ARE REMEMBERED
+    The panel doesn't remember "the disconnect is at grid line B-4." It remembers
+    "the disconnect is 2 feet left and 1 foot up FROM THE COOLER." That's why it
+    works at every cooler regardless of where the cooler sits - and why, if a
+    cooler is rotated 90 degrees, its disconnect and receptacle rotate with it
+    and stay in the right spot. You don't manage any of this; just place your one
+    example correctly and the relationship is captured.
+
+WHAT "DIRECTIVES" ARE (the optional Step 3 in New Profile)
+    Normally each part keeps the exact settings it had when you captured it -
+    fixed values. A directive is a rule that says "don't use a fixed value here,
+    figure it out at placement time." Two kinds:
+      - "Match the parent": e.g. the disconnect's voltage should always equal the
+        cooler's voltage, whatever that cooler happens to be.
+      - "Match a sibling": e.g. this part should match another part in the same
+        arrangement.
+    Use directives only when a value genuinely changes from one piece of
+    equipment to the next. When in doubt, skip them - fixed values are simpler
+    and predictable.
+
+
+================================================================================
+GLOSSARY (plain-language)
+================================================================================
+PROFILE ............ One saved arrangement: a main piece of equipment plus the
+                     parts and tags that belong with it.
+PARENT ............. The main piece of equipment the arrangement is built around.
+CHILD .............. A part that travels with the parent (disconnect, receptacle,
+                     etc.). Its position is remembered relative to the parent.
+LIBRARY ............ All the profiles you've saved; stored inside the project.
+PLACE / STAMP ...... Drop a profile's parts into the model at a location.
+ANNOTATION ......... A tag, keynote, or text note. Placed separately from the
+                     equipment, and always from a 2D view.
+DIRECTIVE .......... An optional rule for a part's setting: "match the parent" or
+                     "match a sibling" instead of a fixed value.
+MERGE / ALIAS ...... Letting one profile also apply to a second equipment type so
+                     both get the same arrangement without rebuilding it.
+SPACE PROFILE ...... The room-based version of a profile (parts positioned by the
+                     room's door and walls).
+BUCKET ............. A room TYPE (restroom, office...) that a space profile targets.
+YAML FILE .......... The file format used to export/import your library for
+                     backups and sharing.
+LINEAGE TAG ........ A hidden marker the panel puts on every part it places,
+                     recording which profile made it. Powers QAQC and cleanup.
+                     You never edit it directly.
+
+
+================================================================================
+FAQ AND TROUBLESHOOTING
+================================================================================
+Q: I clicked Place but nothing happened / it says "no profiles."
+   You haven't built a library yet, or it's empty. Use NEW PROFILE first (or
+   IMPORT YAML FILE if a colleague gave you a library file).
+
+Q: Place Element Annotations won't run.
+   You must be in a 2D view (plan, section, elevation, drafting, callout). Switch
+   to a plan view and try again.
+
+Q: I placed everything but the spacing is wrong at every cooler.
+   Your one captured example was off. Fix the parts at one cooler, re-capture
+   (New Profile gives it a fresh name, or use Manage Profiles to adjust the
+   existing one), delete the bad placements, and stamp again.
+
+Q: Someone moved a disconnect and now it's in the wrong place.
+   Select it and use FOLLOW PARENT to snap it back to where the profile says it
+   goes. If the new position is actually correct and you want to keep it, use
+   UPDATE VECTOR instead so the profile learns the new spot.
+
+Q: How do I know my placed model still matches my profiles?
+   Run QAQC. It lists everything that has drifted. Run OPTIMIZE to auto-clean
+   parts that have come loose from their equipment.
+
+Q: Two cooler models need the exact same setup. Do I build it twice?
+   No - build it once, then use MERGE PROFILES to make the second model share the
+   first one's arrangement.
+
+Q: Can I reuse my profiles on a different project?
+   Yes. EXPORT YAML FILE in this project, then IMPORT YAML FILE in the other one.
+
+Q: I made a mistake - is anything permanent?
+   No. Placed parts can be deleted like any Revit element, profiles can be edited
+   or deleted in Manage Profiles, and Revit Undo works. Nothing here is one-way.
+
+
+================================================================================
+BEST PRACTICES / TIPS
+================================================================================
+- Make your ONE captured example perfect. Everything downstream copies it, so
+  five minutes getting the first cooler right saves rework across all 30.
+
+- Capture geometry first, annotate later. Place all your equipment, confirm it
+  looks right, THEN run the annotation buttons per view. Don't mix the two.
+
+- Export your library regularly. A quick EXPORT YAML FILE is a cheap backup and
+  the easiest way to carry your work to the next project.
+
+- Run QAQC before you trust a layout - especially after anyone has manually
+  edited placed parts. It's read-only, so it's always safe to run.
+
+- Skip directives until you need them. Fixed values are predictable; only reach
+  for "match the parent" when a setting truly varies by equipment.
+
+- Use HIDE EXISTING PROFILES to see what's left. It hides what you've already
+  placed so the gaps stand out.
+
+- Start small. Build and place ONE profile end-to-end before building ten. Once
+  the flow clicks, the rest is repetition.
+================================================================================

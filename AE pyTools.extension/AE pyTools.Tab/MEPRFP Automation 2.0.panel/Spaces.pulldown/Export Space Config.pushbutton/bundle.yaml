@@ -1,0 +1,6 @@
+title: "Export\nSpace Config"
+tooltip: |
+  Write the active project's space_buckets and space_profiles to a
+  YAML file you can import into another project. Equipment data and
+  per-project classifications are excluded.
+is_beta: false

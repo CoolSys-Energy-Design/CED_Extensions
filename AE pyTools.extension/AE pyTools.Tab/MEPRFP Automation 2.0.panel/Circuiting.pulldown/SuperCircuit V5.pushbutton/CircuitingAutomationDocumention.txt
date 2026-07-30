@@ -1,0 +1,176 @@
+================================================================================
+  SuperCircuit V5  —  What It Does (for the Electrical Designer)
+  MEPRFP Automation 2.0  ::  Circuiting tools
+================================================================================
+
+THE SHORT VERSION
+--------------------------------------------------------------------------------
+SuperCircuit V5 builds your electrical circuits for you. Instead of selecting
+fixtures and creating circuits one at a time, you let the tool read the circuiting
+information that is already on your placed fixtures — what panel they feed from,
+their circuit number, load name, breaker rating, and pole count — figure out which
+fixtures belong together on the same circuit, show you the plan, and then create
+all of the Revit electrical systems at once with the panel already connected.
+
+Think of it as taking the design intent you (or the placement tool) already put on
+the fixtures and turning it into finished, panel-connected circuits — in seconds
+instead of an afternoon of clicking.
+
+
+WHERE THE CIRCUIT INFORMATION COMES FROM
+--------------------------------------------------------------------------------
+Every fixture the tool circuits already carries its circuiting intent. For each
+fixture, SuperCircuit looks for the panel, circuit number, load name, rating, and
+poles in this order:
+
+  1. The hidden tag the placement engine stamps on each fixture when it places it
+     (so anything you placed with the 2.0 tools is ready to go automatically).
+  2. The fixture's own CKT parameters (Panel, Circuit Number, Load Name, Rating,
+     Voltage, Number of Poles, Schedule Notes) — so hand-placed fixtures work too,
+     as long as those fields are filled in.
+  3. The saved profile/YAML values as a final fallback for anything still blank.
+
+Bottom line: if the panel and circuit number are on the fixture, SuperCircuit can
+wire it. The cleaner that information is, the less you have to touch afterward.
+
+
+WHAT IT CIRCUITS (AND WHAT IT LEAVES ALONE)
+--------------------------------------------------------------------------------
+It circuits power and low-voltage device families: electrical fixtures (receptacles,
+equipment connections), data, communication, fire alarm, nurse call, security,
+telephone, and mechanical control devices.
+
+It intentionally LEAVES LIGHTING ALONE — lighting fixtures and lighting devices are
+circuited by a separate workflow, so SuperCircuit will never grab them.
+
+
+HOW IT DECIDES WHICH FIXTURES SHARE A CIRCUIT
+--------------------------------------------------------------------------------
+This is the core of the automation. The tool reads each fixture's circuit number
+and sorts it into one of a few behaviors:
+
+  • A plain number (the normal case) — fixtures with the SAME panel and SAME
+    circuit number are put together on one circuit. This is how you batch a row of
+    receptacles onto circuit 6, for example.
+
+  • DEDICATED — the fixture gets its own circuit, never shared. Use this for
+    equipment that must be on its own breaker.
+
+  • BYPARENT — all the children of one piece of equipment share a single circuit
+    (the tool knows which fixtures belong to which parent). Good for a piece of
+    gear whose accessories should ride along with it.
+
+  • SECONDBYPARENT — lets that same parent drive a SECOND circuit in parallel,
+    without merging into its first one.
+
+  • Client-specific groupings — for HEB, case controllers that share a prefix get
+    bundled together, and there are position rules for things like checkstands,
+    self-checkouts, tables, desks, and electric carts.
+
+When fixtures are merged onto one circuit, the breaker is sized to cover the
+HEAVIEST fixture in the group (the rating becomes the max of the members), and the
+pole count follows the largest member. If a fixture is missing its panel or its
+circuit number, it is NOT silently circuited — it is set aside in a "needs review"
+state so you can catch it.
+
+
+PICK YOUR CLIENT FIRST
+--------------------------------------------------------------------------------
+When you launch the tool it asks which client's rules to apply — HEB or Planet
+Fitness — because their circuiting conventions differ slightly:
+
+  • Planet Fitness — mostly straightforward. It just sorts the equipment so
+    treadmills, powered bikes, and stairmasters show up first in the list.
+
+  • HEB — adds the smarter touches: when a fixture lists more than one possible
+    panel, it picks the panel physically closest to the fixture; it tags the load
+    name with the room/space the fixture sits in; and it applies the case-controller
+    and checkstand/desk/cart grouping rules.
+
+Picking the client just loads the right rule set — you do not have to configure
+anything.
+
+
+THE STEP-BY-STEP WORKFLOW
+--------------------------------------------------------------------------------
+  1. (Optional) Select the fixtures you want to work on. If you select nothing,
+     the tool considers every eligible fixture in the model.
+
+  2. Click SuperCircuit V5.
+
+  3. Pick the client (HEB or Planet Fitness).
+
+  4. Choose whether to limit the run to your selection or run the whole model.
+
+  5. Review the PREVIEW. Each row is one planned circuit, showing its panel,
+     circuit number, and load name. You can edit any of those on any row before a
+     single circuit is created. There is also a filter so you can show just one
+     category at a time (for example, only the DEDICATED circuits, or only the
+     case controllers).
+
+  6. Click Run. The tool creates every planned circuit, connects each one to its
+     panel, and writes the load name, breaker rating, and schedule notes onto the
+     circuit. It also writes the panel / circuit / load values back onto the
+     fixtures themselves so they always agree with the circuit.
+
+  7. The window stays OPEN while it works (it is modeless), so you can keep working
+     in Revit. When it finishes it reports how many circuits were created, how many
+     were skipped (the needs-review ones), and any warnings.
+
+
+WHAT HAPPENS IF A PANEL IS FULL
+--------------------------------------------------------------------------------
+SuperCircuit does NOT track how many breaker spaces a panel has left, and it does
+not stop you from over-filling a panel. It hands each circuit to Revit and asks
+Revit to connect it to the panel you specified — exactly as if you had made the
+circuit by hand and picked that panel.
+
+What that means in practice:
+
+  • The CIRCUIT NUMBER comes from your fixture (its CKT Circuit Number), not from
+    Revit picking the next open slot. You are the one assigning the slot, so two
+    fixtures you intend for circuit 6 land on 6, and the tool never quietly bumps a
+    fixture to a different number to find room.
+
+  • If the panel you point a circuit at has no room left, Revit handles it the same
+    way it always does — the circuit is still created, but the connection may fail
+    or the circuit lands as an over-assigned / "extra" circuit on that panel's
+    schedule. When the panel connection fails, SuperCircuit still creates the
+    circuit (so no work is lost) and reports it in the WARNINGS list at the end so
+    you can see exactly which ones didn't seat cleanly.
+
+  • The tool will not invent a different panel to absorb the overflow. It only ever
+    connects to the panel named on the fixture (HEB's nearest-panel logic only
+    chooses among the panels the fixture ALREADY lists — it never adds a new one).
+
+So balancing panel fill is still a design decision you own. When the panel the data
+points to is full, it is up to YOU to choose an overflow panel — the tool will not
+pick one for you. The fix is the normal one: change the panel (and/or circuit
+number) on the affected fixtures to a panel that has room. You can do this right in
+the preview before clicking Run, or edit it on the fixtures and re-run, then create
+the circuits against the overflow panel you selected. The warnings list after a run
+is the place to catch panels that came up short.
+
+
+A FEW THINGS WORTH KNOWING
+--------------------------------------------------------------------------------
+  • Nothing is created until you click Run. The preview is safe to explore and edit.
+
+  • Anything missing a panel or circuit number is flagged for review and skipped,
+    not guessed at — so a blank field can never quietly produce a wrong circuit.
+
+  • It will not double-up if you click Run twice in a row; a stray extra click does
+    not stack duplicate circuits.
+
+  • Failures are per-circuit, not all-or-nothing. If one circuit can't be made, the
+    rest still get created and the problem one shows up as a warning.
+
+  • Phase balancing: when you create a batch of single-pole circuits at once, the
+    tool spreads them across phases A / B / C in rotation per panel so they don't
+    all stack on one phase. It is a sensible starting point, not a full load
+    balance — Revit still assigns the final slot.
+
+  • It circuits what you already designed. Garbage in, garbage out — the better the
+    panel and circuit-number info on your fixtures, the less cleanup afterward.
+
+================================================================================

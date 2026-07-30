@@ -32,12 +32,79 @@ Caller contract:
 import os
 
 from Autodesk.Revit.DB import (
-    BuiltInParameterGroup,
     Category,
     CategorySet,
     InstanceBinding,
     TypeBinding,
 )
+
+# BuiltInParameterGroup was deprecated in Revit 2024 and REMOVED in
+# Revit 2025+. GroupTypeId (a ForgeTypeId) is its replacement. Import
+# both tolerantly so this module loads on 2024 (enum present) and
+# 2025/2026 (enum absent); _resolve_parameter_group() picks whichever
+# the running build's BindingMap.Insert overload accepts at bind time.
+try:
+    from Autodesk.Revit.DB import BuiltInParameterGroup
+except ImportError:
+    BuiltInParameterGroup = None
+try:
+    from Autodesk.Revit.DB import GroupTypeId
+except ImportError:
+    GroupTypeId = None
+
+
+# Legacy BuiltInParameterGroup member name -> GroupTypeId property name.
+_GROUP_TOKEN_TO_FORGE_ATTR = {
+    "PG_DATA": "Data",
+    "PG_IDENTITY_DATA": "IdentityData",
+    "PG_TEXT": "Text",
+    "PG_GRAPHICS": "Graphics",
+    "PG_CONSTRAINTS": "Constraints",
+    "PG_MATERIALS": "Materials",
+    "PG_GEOMETRY": "Geometry",
+}
+
+
+def _resolve_parameter_group(group):
+    """Return a parameter-group object valid for the running Revit version.
+
+    Accepts a string token (e.g. ``"PG_DATA"``), an actual
+    ``BuiltInParameterGroup`` value (Revit 2024), or a
+    ``ForgeTypeId``/``GroupTypeId`` (Revit 2025+) and returns whatever
+    the running build's ``BindingMap.Insert`` overload expects. Returns
+    ``None`` when it can't resolve, so the caller can fall back to the
+    no-group overload (binds under a default group).
+    """
+    if group is None:
+        return None
+    if not isinstance(group, str):
+        # Already a concrete API object — pass through unchanged.
+        return group
+    if BuiltInParameterGroup is not None:
+        val = getattr(BuiltInParameterGroup, group, None)
+        if val is not None:
+            return val
+    if GroupTypeId is not None:
+        attr = _GROUP_TOKEN_TO_FORGE_ATTR.get(group)
+        if attr is not None:
+            return getattr(GroupTypeId, attr, None)
+    return None
+
+
+def _insert_binding(bindmap, definition, binding, group, reinsert):
+    """Insert/ReInsert a binding, tolerating the 2025+ group-type change.
+
+    Uses the 3-arg (group) overload when a group is available; on any
+    overload-resolution failure (or when ``group`` is ``None``) falls
+    back to the 2-arg overload, which binds under a default group.
+    """
+    fn = bindmap.ReInsert if reinsert else bindmap.Insert
+    if group is not None:
+        try:
+            return fn(definition, binding, group)
+        except Exception:
+            pass
+    return fn(definition, binding)
 
 
 # Sentinel values for BindResult.status -----------------------------------
@@ -89,7 +156,7 @@ class ProjectParameterSpec(object):
         shared_param_file,
         group_name_in_spfile,
         builtin_categories,
-        parameter_group=BuiltInParameterGroup.PG_DATA,
+        parameter_group="PG_DATA",
         instance=True,
     ):
         self.name = name
@@ -334,11 +401,12 @@ def ensure_bound(doc, spec):
 
     binding = _build_binding(cat_set, spec.instance)
     bindmap = doc.ParameterBindings
+    group = _resolve_parameter_group(spec.parameter_group)
     if existing_binding is not None:
-        ok = bindmap.ReInsert(definition, binding, spec.parameter_group)
+        ok = _insert_binding(bindmap, definition, binding, group, reinsert=True)
         status = EXTENDED
     else:
-        ok = bindmap.Insert(definition, binding, spec.parameter_group)
+        ok = _insert_binding(bindmap, definition, binding, group, reinsert=False)
         status = CREATED
     if not ok:
         raise SharedParamError(
