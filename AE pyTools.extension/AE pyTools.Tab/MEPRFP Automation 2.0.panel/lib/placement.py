@@ -275,6 +275,8 @@ class Target(object):
 
     ``source``      one of SOURCE_*
     ``name``        block name / family name / csv name
+    ``type_name``   linked element's type (FamilySymbol) name; "" for
+                    sources that have no type (CSV, DWG, Groups)
     ``world_pt``    (x, y, z) in the host doc's coordinate frame, feet
     ``rotation_deg`` rotation around Z, host frame, degrees
     ``level_id``    ElementId.Value (int) for placement level, or None
@@ -283,14 +285,16 @@ class Target(object):
     """
 
     __slots__ = (
-        "source", "name", "world_pt", "rotation_deg",
+        "source", "name", "type_name", "world_pt", "rotation_deg",
         "level_id", "link_inst", "link_elem_id",
     )
 
     def __init__(self, source, name, world_pt, rotation_deg=0.0,
-                 level_id=None, link_inst=None, link_elem_id=None):
+                 level_id=None, link_inst=None, link_elem_id=None,
+                 type_name=""):
         self.source = source
         self.name = name or ""
+        self.type_name = type_name or ""
         self.world_pt = tuple(world_pt) if world_pt else (0.0, 0.0, 0.0)
         self.rotation_deg = float(rotation_deg or 0.0)
         self.level_id = level_id
@@ -1174,6 +1178,7 @@ def find_targets_in_linked_revit(link_inst, phase_id=None):
             out.append(Target(
                 source=SOURCE_LINKED_REVIT,
                 name=name,
+                type_name=_element_type_name(elem),
                 world_pt=(world_pt.X, world_pt.Y, world_pt.Z),
                 rotation_deg=rot_deg,
                 level_id=host_level_id,
@@ -1192,6 +1197,19 @@ def _element_family_name(elem):
     if isinstance(elem, Group):
         gtype = getattr(elem, "GroupType", None)
         return gtype.Name if gtype else ""
+    return ""
+
+
+def _element_type_name(elem):
+    """FamilySymbol (type) name for a FamilyInstance; "" for Groups —
+    a GroupType's name IS the group name, repeating it adds nothing."""
+    if isinstance(elem, FamilyInstance):
+        sym = getattr(elem, "Symbol", None)
+        if sym is not None:
+            try:
+                return getattr(sym, "Name", "") or ""
+            except Exception:
+                return ""
     return ""
 
 

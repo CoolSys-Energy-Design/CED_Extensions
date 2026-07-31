@@ -591,10 +591,19 @@ class PlacementController(object):
                 matched_names.add(name)
         unmatched = []
         seen = set()
+        # Every type seen per unmatched family name — shown in the
+        # proposal label so the reviewer can judge whether the linked
+        # element's TYPE (not just its family) fits the profile.
+        types_by_name = {}
         for t in targets:
             name = (getattr(t, "name", "") or "").strip()
             key = name.lower()
-            if not name or key in matched_names or key in seen:
+            if not name or key in matched_names:
+                continue
+            type_name = (getattr(t, "type_name", "") or "").strip()
+            if type_name:
+                types_by_name.setdefault(key, set()).add(type_name)
+            if key in seen:
                 continue
             seen.add(key)
             unmatched.append(name)
@@ -623,15 +632,26 @@ class PlacementController(object):
 
         def _label(prop):
             name, idx, _key, score = prop
-            profile_name = profiles[idx].get("name") or "(unnamed)"
-            return "{}  ->  {}  ({:.0f}%)".format(name, profile_name, score)
+            profile = profiles[idx]
+            profile_name = profile.get("name") or "(unnamed)"
+            types = sorted(types_by_name.get(name.lower()) or ())
+            left = "{} : {}".format(name, " | ".join(types)) if types else name
+            pf = profile.get("parent_filter") or {}
+            prof_fam = (pf.get("family_name_pattern") or "").strip()
+            prof_type = (pf.get("type_name_pattern") or "").strip()
+            right = profile_name
+            if prof_fam or prof_type:
+                right += "  [{} : {}]".format(prof_fam or "*", prof_type or "*")
+            return "{}  ->  {}  ({:.0f}%)".format(left, right, score)
 
         chosen = wpf_dialogs.multi_select_from_list(
             proposals,
             title="Close matches found",
             prompt=(
                 "These source families didn't match any profile but are "
-                "close to one. Check the ones to add as aliases:"
+                "close to one. Check the ones to add as aliases:\n"
+                "Format:  Family : Type  ->  Profile  "
+                "[family pattern : type pattern]  (similarity)"
             ),
             display_func=_label,
         )
