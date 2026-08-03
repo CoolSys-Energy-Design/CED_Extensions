@@ -215,26 +215,27 @@ def _parameter_definition_owned_by_other(doc, definition):
     return True, owner
 
 
-def _resolve_target_category_set(doc, row, settings):
+def _resolve_target_category_set(doc, row, settings, remove_disabled_writeback_categories=False):
     category_text = str((row or {}).get("Categories") or "").strip()
     category_ids, missing_tokens = category_utils.resolve_binding_category_ids(doc, category_text)
 
-    writeback_flags = {}
-    try:
-        writeback_flags = dict(getattr(settings, "get_binding_writeback_flags")() or {})
-    except Exception:
+    if remove_disabled_writeback_categories:
         writeback_flags = {}
+        try:
+            writeback_flags = dict(getattr(settings, "get_binding_writeback_flags")() or {})
+        except Exception:
+            writeback_flags = {}
 
-    write_equipment = bool(writeback_flags.get("write_equipment_results", getattr(settings, "write_equipment_results", True)))
-    write_fixtures = bool(writeback_flags.get("write_fixture_results", getattr(settings, "write_fixture_results", False)))
-    filtered_ids = category_utils.apply_writeback_filter(
-        doc,
-        category_ids,
-        write_equipment_results=write_equipment,
-        write_fixture_results=write_fixtures,
-    )
+        write_equipment = bool(writeback_flags.get("write_equipment_results", getattr(settings, "write_equipment_results", True)))
+        write_fixtures = bool(writeback_flags.get("write_fixture_results", getattr(settings, "write_fixture_results", False)))
+        category_ids = category_utils.apply_writeback_filter(
+            doc,
+            category_ids,
+            write_equipment_results=write_equipment,
+            write_fixture_results=write_fixtures,
+        )
 
-    category_set, inserted, missing_ids = category_utils.build_category_set(doc, filtered_ids)
+    category_set, inserted, missing_ids = category_utils.build_category_set(doc, category_ids)
     return category_set, inserted, missing_tokens, missing_ids
 
 
@@ -249,7 +250,16 @@ def _binding_needs_update(existing_binding, target_category_set, is_instance):
     return bool(needs_update), removed
 
 
-def _sync_parameter_bindings(doc, app, rows, shared_param_file, settings, logger, check_ownership=True):
+def _sync_parameter_bindings(
+    doc,
+    app,
+    rows,
+    shared_param_file,
+    settings,
+    logger,
+    check_ownership=True,
+    remove_disabled_writeback_categories=False,
+):
     bindmap = doc.ParameterBindings
     updated = 0
     unchanged = 0
@@ -271,13 +281,18 @@ def _sync_parameter_bindings(doc, app, rows, shared_param_file, settings, logger
             skipped += 1
             continue
 
-        category_set, inserted, missing_tokens, missing_ids = _resolve_target_category_set(doc, row, settings)
+        category_set, inserted, missing_tokens, missing_ids = _resolve_target_category_set(
+            doc,
+            row,
+            settings,
+            remove_disabled_writeback_categories=remove_disabled_writeback_categories,
+        )
         if missing_tokens:
             warnings.append("{}: unresolved category token(s): {}".format(name, ", ".join(list(missing_tokens))))
         if missing_ids:
             warnings.append("{}: category id(s) not found in project: {}".format(name, ", ".join(list(missing_ids))))
         if inserted <= 0:
-            warnings.append("{}: no valid categories after writeback filtering; skipped.".format(name))
+            warnings.append("{}: no valid target categories; skipped.".format(name))
             skipped += 1
             continue
 
@@ -286,12 +301,36 @@ def _sync_parameter_bindings(doc, app, rows, shared_param_file, settings, logger
         group_id = LOAD_PARAMS_GROUP_MAP.get(group_label, DB.GroupTypeId.ElectricalCircuiting)
 
         existing_binding = _get_existing_binding(doc, definition.Name)
+        if existing_binding is not None and not remove_disabled_writeback_categories:
+            current_categories = getattr(existing_binding, "Categories", [])
+            current_values = category_utils.category_id_values_from_categories(current_categories)
+            target_values = category_utils.category_id_values_from_categories(category_set)
+            expected_values = current_values.union(target_values)
+            merged_set, merged_count, merged_missing = category_utils.merge_category_sets(
+                doc,
+                current_categories,
+                category_set,
+            )
+            if merged_missing or int(merged_count or 0) < len(expected_values):
+                errors.append(
+                    "{}: binding update skipped because existing categories could not be preserved.".format(name)
+                )
+                skipped += 1
+                continue
+            category_set = merged_set
+
         needs_update, removed_categories = _binding_needs_update(existing_binding, category_set, is_instance)
         if not needs_update:
             unchanged += 1
             continue
 
         if removed_categories:
+            if not remove_disabled_writeback_categories:
+                errors.append(
+                    "{}: binding update refused because it would remove existing categories.".format(name)
+                )
+                skipped += 1
+                continue
             unbound += 1
 
         if check_ownership and existing_binding is not None:
@@ -338,8 +377,9 @@ def sync_electrical_parameter_bindings(
     settings=None,
     check_ownership=True,
     transaction_name="Load Electrical Parameters",
+    remove_disabled_writeback_categories=False,
 ):
-    """Load and reconcile electrical shared parameter bindings using current writeback settings."""
+    """Load or extend electrical shared parameter bindings without removing categories."""
     logger = logger or script.get_logger()
     app = doc.Application
     settings = settings or load_circuit_settings(doc)
@@ -389,6 +429,7 @@ def sync_electrical_parameter_bindings(
             settings=settings,
             logger=logger,
             check_ownership=check_ownership,
+            remove_disabled_writeback_categories=remove_disabled_writeback_categories,
         )
         tx.Commit()
 
@@ -429,7 +470,8 @@ def sync_electrical_parameter_bindings(
 def ensure_electrical_parameters_for_calculate(doc, logger=None):
     """
     Ensure persisted settings and required shared parameters are available before calculate.
-    Existing parameter bindings are left alone; explicit load/config actions reconcile them.
+    Existing parameter categories are preserved; explicit load/config actions
+    may add missing categories but never remove them.
     """
     settings = ensure_circuit_settings(doc)
     try:
@@ -459,7 +501,11 @@ def ensure_electrical_parameters_for_calculate(doc, logger=None):
 
 
 def unbind_disabled_writeback_categories(doc, logger=None, settings=None, check_ownership=True):
-    """Reconcile project-parameter categories with the active writeback settings."""
+    """Explicitly prune categories disabled by writeback settings.
+
+    This destructive mechanism is retained for a future opt-in command. No
+    automatic load, verify, calculate, or settings-save path calls it.
+    """
     active_settings = settings or load_circuit_settings(doc)
     return sync_electrical_parameter_bindings(
         doc,
@@ -467,6 +513,7 @@ def unbind_disabled_writeback_categories(doc, logger=None, settings=None, check_
         settings=active_settings,
         check_ownership=check_ownership,
         transaction_name="Update Electrical Parameter Categories",
+        remove_disabled_writeback_categories=True,
     )
 
 

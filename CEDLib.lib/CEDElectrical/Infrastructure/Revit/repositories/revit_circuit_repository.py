@@ -1,19 +1,16 @@
 ﻿# -*- coding: utf-8 -*-
 """Revit-backed circuit repository adapter."""
 
-import Autodesk.Revit.DB.Electrical as DBE
 from pyrevit import DB
 
+from Snippets import _elecutils as eu
 from Snippets import categories as category_utils
+from Snippets import design_options
 from Snippets import revit_helpers
 
 
 def _elid_value(item):
     return revit_helpers.get_elementid_value(item)
-
-
-def _elid_from_value(value):
-    return revit_helpers.elementid_from_value(value)
 
 
 class RevitCircuitRepository(object):
@@ -23,25 +20,12 @@ class RevitCircuitRepository(object):
         """Return circuits from explicit ids or all project circuits."""
         circuit_ids = list(circuit_ids or [])
         if circuit_ids:
-            circuits = []
-            for raw_id in circuit_ids:
-                try:
-                    el = doc.GetElement(_elid_from_value(raw_id))
-                except Exception:
-                    el = None
-                if isinstance(el, DBE.ElectricalSystem):
-                    circuits.append(el)
-            return circuits
-
-        return list(
-            DB.FilteredElementCollector(doc)
-            .OfClass(DBE.ElectricalSystem)
-            .WhereElementIsNotElementType()
-            .ToElements()
-        )
+            return eu.get_circuits_by_ids(doc, circuit_ids)
+        return eu.get_all_circuits(doc)
 
     def partition_locked_elements(self, doc, circuits, settings, collect_all_device_owners=True):
         """Split circuits into editable and locked subsets."""
+        circuits = eu.filter_circuits(circuits)
         if not getattr(doc, 'IsWorkshared', False):
             return circuits, set(), []
 
@@ -101,6 +85,8 @@ class RevitCircuitRepository(object):
 
             if write_equipment or write_fixtures:
                 for el in circuit.Elements:
+                    if not design_options.is_main_model_element(el):
+                        continue
                     if not isinstance(el, DB.FamilyInstance):
                         continue
                     cat = el.Category
@@ -159,7 +145,7 @@ class RevitCircuitRepository(object):
         )
         for eid in locked_ids:
             el = doc.GetElement(eid)
-            if isinstance(el, DBE.ElectricalSystem):
+            if eu.is_circuit_eligible(el):
                 summary['circuits'] += 1
                 continue
             if isinstance(el, DB.FamilyInstance):

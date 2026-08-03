@@ -4,6 +4,7 @@
 from pyrevit import DB
 
 from Snippets import categories as category_utils
+from Snippets import design_options
 
 
 class RevitCircuitWriter(object):
@@ -11,6 +12,8 @@ class RevitCircuitWriter(object):
 
     def write_circuit_parameters(self, circuit, param_values):
         """Write calculated parameter map to a circuit element."""
+        if not design_options.is_main_model_element(circuit):
+            return
         for param_name, value in param_values.items():
             param = circuit.LookupParameter(param_name)
             if not param:
@@ -45,6 +48,8 @@ class RevitCircuitWriter(object):
         fixture_count = 0
         equipment_count = 0
         locked_ids = locked_ids or set()
+        if not design_options.is_main_model_element(circuit):
+            return fixture_count, equipment_count
 
         write_fixtures = getattr(settings, 'write_fixture_results', False)
         write_equipment = getattr(settings, 'write_equipment_results', False)
@@ -60,6 +65,8 @@ class RevitCircuitWriter(object):
         )
 
         for el in circuit.Elements:
+            if not design_options.is_main_model_element(el):
+                continue
             if not isinstance(el, DB.FamilyInstance):
                 continue
             if el.Id in locked_ids:

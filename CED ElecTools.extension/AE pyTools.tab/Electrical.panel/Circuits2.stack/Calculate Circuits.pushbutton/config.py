@@ -498,7 +498,7 @@ class CircuitSettingsWindow(forms.WPFWindow):
         self.clear_writeback_alert.Visibility = Visibility.Visible if show_alert else Visibility.Collapsed
         self.clear_writeback_alert.ToolTip = (
             "Some downstream equipment or devices may still have out-of-date data. "
-            "Use 'Clear persistent write-back data' to resync disabled categories."
+            "Use 'Clear persistent write-back data' to clear stale data from disabled categories."
         ) if show_alert else None
 
     def _set_verify_status(self, text, level=None):
@@ -530,7 +530,8 @@ class CircuitSettingsWindow(forms.WPFWindow):
         enable_equipment = (not self._previous_equipment_write) and updated.write_equipment_results
         enable_fixtures = (not self._previous_fixture_write) and updated.write_fixture_results
         writeback_changed = clear_equipment or clear_fixtures or enable_equipment or enable_fixtures
-        bindings_reconciled = False
+        binding_update_required = enable_equipment or enable_fixtures
+        bindings_extended = False
         clear_message = ""
 
         already_cleared = (
@@ -588,7 +589,7 @@ class CircuitSettingsWindow(forms.WPFWindow):
                         )
                     )
 
-            if writeback_changed:
+            if binding_update_required:
                 result = settings_manager.sync_electrical_parameter_bindings(
                     self.doc,
                     logger=logger,
@@ -615,11 +616,11 @@ class CircuitSettingsWindow(forms.WPFWindow):
                         writeback_group.RollBack()
                         writeback_group = None
                     forms.alert(
-                        "Write-back settings were not saved because electrical parameter bindings could not be fully updated."
+                        "Write-back settings were not saved because required electrical parameter bindings could not be added."
                         "\n\n{}".format("\n".join(details) or "Unknown binding error.")
                     )
                     return
-                bindings_reconciled = True
+                bindings_extended = True
 
             settings_manager.save_circuit_settings(self.doc, updated)
             if writeback_group is not None:
@@ -649,8 +650,8 @@ class CircuitSettingsWindow(forms.WPFWindow):
         if clear_message:
             forms.alert(clear_message)
         save_message = "Calculate Circuits settings saved to project."
-        if bindings_reconciled:
-            save_message += "\n\nElectrical parameter bindings were reconciled with the current write-back settings."
+        if bindings_extended:
+            save_message += "\n\nMissing electrical parameter category bindings were added. Existing bindings were retained."
         forms.alert(save_message)
         self.Close()
 
@@ -701,7 +702,6 @@ class CircuitSettingsWindow(forms.WPFWindow):
                 "Updated: {}".format(result.get("updated", 0)),
                 "Unchanged: {}".format(result.get("unchanged", 0)),
                 "Skipped: {}".format(result.get("skipped", 0)),
-                "Category unbind updates: {}".format(result.get("unbound", 0)),
             ]
             if locked:
                 summary.append("Skipped (owned by others): {}".format(len(locked)))

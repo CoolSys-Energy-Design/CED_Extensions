@@ -55,12 +55,12 @@ def _editor_xaml_path():
 
 def _collect_target_circuits(doc):
     selection = list(revit.get_selection() or [])
-    selected = [x for x in selection if isinstance(x, DB.Electrical.ElectricalSystem)]
+    selected = eu.filter_circuits(selection)
     if not selected and selection:
         selected = list(eu.get_circuits_from_selection(selection) or [])
     if not selected:
         selected = list(eu.pick_circuits_from_list(doc, select_multiple=True, include_spares_and_spaces=False) or [])
-    selected = [x for x in selected if isinstance(x, DB.Electrical.ElectricalSystem)]
+    selected = eu.filter_circuits(selected)
 
     unique = []
     seen = set()

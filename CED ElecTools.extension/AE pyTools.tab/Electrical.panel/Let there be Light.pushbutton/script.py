@@ -83,7 +83,7 @@ if not LIB_ROOT or not os.path.isdir(LIB_ROOT):
 
 from UIClasses import load_theme_state_from_config
 from UIClasses.ui_bases import CEDWindowBase, TEXTBOX_MODE_SELECT_ALL_ON_FIRST_CLICK
-from Snippets import revit_helpers
+from Snippets import design_options, revit_helpers
 
 
 # -----------------------------------------------------------------------------
@@ -869,6 +869,7 @@ class RevitLinkLightSource(object):
             FilteredElementCollector(link_doc)
             .OfCategory(BuiltInCategory.OST_LightingFixtures)
             .WhereElementIsNotElementType()
+            .WherePasses(design_options.main_model_filter())
         )
 
         for element in collector:
@@ -1118,6 +1119,7 @@ class PlacementEngine(object):
             FilteredElementCollector(self.doc)
             .OfCategory(BuiltInCategory.OST_LightingFixtures)
             .WhereElementIsNotElementType()
+            .WherePasses(design_options.main_model_filter())
         )
         for instance in collector:
             if not isinstance(instance, FamilyInstance):
@@ -1422,7 +1424,11 @@ def collect_host_levels(doc):
 
 
 def collect_link_options(doc):
-    collector = FilteredElementCollector(doc).OfClass(RevitLinkInstance)
+    collector = (
+        FilteredElementCollector(doc)
+        .OfClass(RevitLinkInstance)
+        .WherePasses(design_options.main_model_filter())
+    )
     options = []
     for link in collector:
         loaded = False

@@ -663,6 +663,7 @@ class CalculateCircuitsOperation(object):
         label_map = {
             'Overrides': 'Overrides',
             'Calculation': 'Calculation',
+            'Data': 'Data',
             'Design': 'Design',
             'Error': 'Error',
             'Other': 'Other',

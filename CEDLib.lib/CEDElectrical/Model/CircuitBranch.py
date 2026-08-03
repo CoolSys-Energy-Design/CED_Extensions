@@ -1,6 +1,7 @@
 ﻿# -*- coding: utf-8 -*-
 
 import json
+import math
 
 import Autodesk.Revit.DB.Electrical as DBE
 from System import Guid
@@ -31,7 +32,8 @@ from CEDElectrical.refdata.ocp_cable_defaults import OCP_CABLE_DEFAULTS
 from CEDElectrical.refdata.service_ground_table import SERVICE_GROUND_TABLE
 from CEDElectrical.refdata.shared_params_table import SHARED_PARAMS
 from CEDElectrical.refdata.standard_ocp_table import BREAKER_FRAME_SWITCH_TABLE
-from Snippets import revit_helpers
+from Snippets import _elecutils as eu
+from Snippets import design_options, revit_helpers
 
 console = script.get_output()
 logger = script.get_logger()
@@ -245,6 +247,8 @@ class ConduitRun(object):
 # ---------------------------------------------------------------------
 class CircuitBranch(object):
     def __init__(self, circuit, settings=None, preview_values=None):
+        if not eu.is_circuit_eligible(circuit):
+            raise ValueError("CircuitBranch only supports main-model power circuits.")
         self.circuit = circuit
         self.settings = settings if settings else CircuitSettings()
         self._preview_values_raw = dict(preview_values or {})
@@ -292,6 +296,10 @@ class CircuitBranch(object):
 
         # calculation results
         self._calculated_breaker = None
+        self._voltage_drop_pf_resolved = False
+        self._voltage_drop_power_factor = None
+        self._voltage_drop_sin_phi = None
+        self._voltage_drop_failure_logged = False
 
         # models for wires & conduit
         self.cable = CableSet()
@@ -553,12 +561,14 @@ class CircuitBranch(object):
 
     @property
     def is_power_circuit(self):
-        return self.circuit.SystemType == DBE.ElectricalSystemType.PowerCircuit
+        return eu.is_circuit_eligible(self.circuit)
 
     def _detect_feeder(self):
         """Looks at connected elements' PART_TYPE to decide if feeder."""
         try:
             for el in self.circuit.Elements:
+                if not design_options.is_main_model_element(el):
+                    continue
                 if isinstance(el, DB.FamilyInstance):
                     family = el.Symbol.Family
                     param = family.get_Parameter(DB.BuiltInParameter.FAMILY_CONTENT_PART_TYPE)
@@ -1102,6 +1112,8 @@ class CircuitBranch(object):
         doc = revit.doc
         try:
             for el in self.circuit.Elements:
+                if not design_options.is_main_model_element(el):
+                    continue
                 if isinstance(el, DB.FamilyInstance):
                     ds_param = el.get_Parameter(DB.BuiltInParameter.RBS_FAMILY_CONTENT_DISTRIBUTION_SYSTEM)
                     if not ds_param or not ds_param.HasValue:
@@ -2078,6 +2090,69 @@ class CircuitBranch(object):
             )
             return None
 
+    @staticmethod
+    def _format_raw_power_factor(raw_value):
+        try:
+            return "{:.17g}".format(float(raw_value))
+        except Exception:
+            try:
+                return repr(raw_value)
+            except Exception:
+                return "<unavailable>"
+
+    def _resolve_voltage_drop_power_factor(self):
+        """Return one validated PF/sin pair and warn once when Revit data is unusable."""
+        if self._voltage_drop_pf_resolved:
+            return self._voltage_drop_power_factor, self._voltage_drop_sin_phi
+
+        self._voltage_drop_pf_resolved = True
+        raw_value = self.power_factor
+
+        # Preserve the existing fallback when Revit does not provide a value.
+        if raw_value is None:
+            self._voltage_drop_power_factor = 0.9
+            self._voltage_drop_sin_phi = math.sqrt(1.0 - (0.9 ** 2))
+            return self._voltage_drop_power_factor, self._voltage_drop_sin_phi
+
+        converted_value = None
+        radicand = None
+        try:
+            converted_value = float(raw_value)
+            if math.isnan(converted_value) or math.isinf(converted_value):
+                raise ValueError("power factor is not finite")
+            if converted_value < 0.0 or converted_value > 1.0:
+                raise ValueError("power factor is outside the range 0 through 1")
+
+            radicand = 1.0 - (converted_value ** 2)
+            if radicand < 0.0:
+                raise ValueError("power factor produced a negative square-root input")
+
+            self._voltage_drop_power_factor = converted_value
+            self._voltage_drop_sin_phi = math.sqrt(radicand)
+            return self._voltage_drop_power_factor, self._voltage_drop_sin_phi
+        except Exception as ex:
+            reported_value = self._format_raw_power_factor(raw_value)
+            self._voltage_drop_power_factor = 1.0
+            self._voltage_drop_sin_phi = 0.0
+            self.log_warning(Alerts.UnusablePowerFactor(reported_value))
+
+            try:
+                raw_type = type(raw_value).__name__
+            except Exception:
+                raw_type = "<unavailable>"
+            logger.warning(
+                "{}: unusable Revit power factor; raw={!r}, type={}, converted={!r}, "
+                "radicand={!r}, error={}. Using 1.0 for voltage-drop calculations.".format(
+                    self.name,
+                    raw_value,
+                    raw_type,
+                    converted_value,
+                    radicand,
+                    ex,
+                )
+            )
+            return self._voltage_drop_power_factor, self._voltage_drop_sin_phi
+
     def _fail_cable_sizing(self, msg):
         if isinstance(msg, dict):
             self.log_error(msg)
@@ -2115,7 +2190,7 @@ class CircuitBranch(object):
         try:
             length = self.length
             volts = self.voltage
-            pf = self.power_factor or 0.9
+            pf, sin_phi = self._resolve_voltage_drop_power_factor()
             phase = self.phase
             amps = self._get_voltage_drop_current()
 
@@ -2140,20 +2215,30 @@ class CircuitBranch(object):
 
             R = R / float(sets)
             X = X / float(sets)
-            sin_phi = (1 - pf ** 2) ** 0.5
 
             if phase == 3:
                 drop = (1.732 * amps * (R * pf + X * sin_phi) * length) / 1000.0
             else:
                 drop = (2 * amps * (R * pf + X * sin_phi) * length) / 1000.0
-
             return drop / volts
-        except Exception:
-            return 0
+        except Exception as ex:
+            if not self._voltage_drop_failure_logged:
+                self._voltage_drop_failure_logged = True
+                logger.warning(
+                    "{}: voltage-drop calculation failed for wire {} and {} set(s): {}".format(
+                        self.name,
+                        wire_size_formatted,
+                        sets,
+                        ex,
+                    )
+                )
+            return None
 
     def get_downstream_demand_current(self):
         try:
             for el in self.circuit.Elements:
+                if not design_options.is_main_model_element(el):
+                    continue
                 if self._is_transformer_primary:
                     va_param = el.get_Parameter(DB.BuiltInParameter.RBS_ELEC_PANEL_TOTALESTLOAD_PARAM)
                     if va_param and va_param.HasValue:

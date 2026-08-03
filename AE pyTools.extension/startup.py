@@ -37,12 +37,25 @@ try:
 except Exception:
     EventHandler = None
 
+try:
+    from System.Diagnostics import Process
+except Exception:
+    Process = None
+
 _SYNC_HANDLER_UI = None
 _SYNC_HANDLER_APP = None
 _MODULE = None
 _IS_RUNNING = False
 
 _DOCKABLE_REGISTERED = False
+
+LOCAL_TELEMETRY_CLEANUP_VERSION = 1
+PYTOOLS_ABOUT_METADATA_RELATIVE_PATH = os.path.join(
+    "AE pyTools.Tab",
+    "CED Tools.panel",
+    "About.pushbutton",
+    "about.yaml",
+)
 
 def _telemetry_source_folder():
     if telemetry_route is not None:
@@ -67,6 +80,24 @@ def _normalize_path(value):
     if value in (None, ""):
         return ""
     return os.path.normcase(os.path.normpath(value))
+
+
+def _canonical_telemetry_folder(value):
+    if value in (None, ""):
+        return ""
+    try:
+        return os.path.abspath(os.path.normpath(str(value)))
+    except Exception:
+        return str(value or "")
+
+
+def _telemetry_folder_matches(current_value, expected_value):
+    try:
+        current_text = os.path.normcase(str(current_value or "").strip())
+        expected_text = os.path.normcase(str(expected_value or "").strip())
+        return current_text == expected_text
+    except Exception:
+        return current_value == expected_value
 
 
 def _fallback_acc_root_is_viable(candidate_root):
@@ -96,16 +127,49 @@ def _fallback_acc_root_is_viable(candidate_root):
     return True
 
 
-def _event_flags_to_int(value):
-    if value in (None, ""):
-        return 0
+def _clean_yaml_scalar(value):
+    value_text = str(value or "").split("#", 1)[0].strip()
+    if len(value_text) >= 2:
+        first_char = value_text[0]
+        last_char = value_text[-1]
+        if first_char == last_char and first_char in ("'", '"'):
+            value_text = value_text[1:-1].strip()
+    return value_text
+
+
+def _read_pytools_release_metadata(metadata_path=None):
+    result = {
+        "toolbar_version": "",
+        "build_version": "",
+    }
+    if not metadata_path:
+        metadata_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            PYTOOLS_ABOUT_METADATA_RELATIVE_PATH,
+        )
+
     try:
-        value_text = str(value).strip()
-        if value_text.lower().startswith("0x"):
-            return int(value_text, 16)
-        return int(value_text)
+        with open(metadata_path, "r") as metadata_file:
+            for raw_line in metadata_file:
+                stripped = str(raw_line or "").strip()
+                if not stripped or stripped.startswith("#"):
+                    continue
+                key, separator, value = stripped.partition(":")
+                if not separator:
+                    continue
+                key = key.strip().lower()
+                if key == "toolbar_version":
+                    result["toolbar_version"] = _clean_yaml_scalar(value)
+                elif key == "build":
+                    result["build_version"] = _clean_yaml_scalar(value)
     except Exception:
-        return 0
+        pass
+    return result
+
+
+_PYTOOLS_RELEASE_METADATA = _read_pytools_release_metadata()
+PYTOOLS_TOOLBAR_VERSION = _PYTOOLS_RELEASE_METADATA.get("toolbar_version", "")
+PYTOOLS_BUILD_VERSION = _PYTOOLS_RELEASE_METADATA.get("build_version", "")
 
 
 def _configure_pyrevit_telemetry():
@@ -114,60 +178,57 @@ def _configure_pyrevit_telemetry():
     if not folder_ok:
         logger.warning("Telemetry folder not available: %s", folder_error)
         return
+    source_folder = _canonical_telemetry_folder(source_folder)
 
     try:
-        telemetry_cfg = script.get_config("telemetry")
-
         expected_settings = {
             "utc_timestamps": True,
             "active": True,
             "telemetry_file_dir": source_folder,
-            "telemetry_server_url": "",
             "include_hooks": True,
-            "active_app": False,
-            "apptelemetry_server_url": "",
-            "apptelemetry_event_flags": "0x0",
         }
 
-        current_settings = {
-            setting_name: telemetry_cfg.get_option(setting_name, default_value="")
-            for setting_name in expected_settings
+        setting_getters = {
+            "utc_timestamps": telemetry.get_telemetry_utc_timestamp,
+            "active": telemetry.get_telemetry_state,
+            "telemetry_file_dir": telemetry.get_telemetry_file_dir,
+            "include_hooks": telemetry.get_telemetry_include_hooks,
         }
 
         setting_setters = {
             "utc_timestamps": telemetry.set_telemetry_utc_timestamp,
             "active": telemetry.set_telemetry_state,
             "telemetry_file_dir": telemetry.set_telemetry_file_dir,
-            "telemetry_server_url": telemetry.set_telemetry_server_url,
             "include_hooks": telemetry.set_telemetry_include_hooks,
-            "active_app": telemetry.set_apptelemetry_state,
-            "apptelemetry_server_url": telemetry.set_apptelemetry_server_url,
-            "apptelemetry_event_flags": lambda _: telemetry.set_apptelemetry_event_flags(0),
-        }
-
-        value_normalizers = {
-            "telemetry_file_dir": _normalize_path,
-            "apptelemetry_event_flags": _event_flags_to_int,
         }
 
         changed_settings = []
         for setting_name, expected_value in expected_settings.items():
-            current_value = current_settings.get(setting_name)
-            normalizer = value_normalizers.get(setting_name)
-            if normalizer:
-                current_value = normalizer(current_value)
-                expected_value = normalizer(expected_value)
-            if current_value != expected_value:
-                setting_setters[setting_name](expected_settings[setting_name])
-                changed_settings.append(setting_name)
+            current_value = setting_getters[setting_name]()
+            if setting_name == "telemetry_file_dir":
+                values_match = _telemetry_folder_matches(
+                    current_value,
+                    expected_value,
+                )
+            else:
+                values_match = current_value == expected_value
+            if values_match:
+                continue
+            setting_setters[setting_name](expected_value)
+            changed_settings.append(setting_name)
 
-        if changed_settings:
+        current_file_path = telemetry.get_telemetry_file_path()
+        runtime_file_missing = not str(current_file_path or "").strip()
+
+        if changed_settings or runtime_file_missing:
             # setup_telemetry() applies derived runtime state (session file path,
             # handlers, env vars) and persists the updated config once.
             telemetry.setup_telemetry()
             logger.info(
-                "pyRevit telemetry updated via telemetry API. changed=%s file_dir=%s",
-                ", ".join(changed_settings),
+                "pyRevit telemetry initialized via telemetry API. "
+                "changed=%s runtime_file_missing=%s file_dir=%s",
+                ", ".join(changed_settings) or "none",
+                runtime_file_missing,
                 source_folder,
             )
         else:
@@ -434,227 +495,727 @@ def _register_place_single_profile_panel():
         logger.warning("Failed to register Place Single Profile panel: %s", exc)
 
 
-def _nonclobber_path(dst_path):
-    if not os.path.exists(dst_path):
-        return dst_path
-    base, ext = os.path.splitext(dst_path)
-    tick = int(time.time())
-    candidate = "{}_{}{}".format(base, tick, ext)
-    if not os.path.exists(candidate):
-        return candidate
-    index = 1
-    while True:
-        candidate = "{}_{}_{}{}".format(base, tick, index, ext)
-        if not os.path.exists(candidate):
-            return candidate
-        index += 1
+def _utc_now():
+    return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+
+
+def _to_int(value):
+    try:
+        return int(value or 0)
+    except Exception:
+        return 0
+
+
+def _is_telemetry_file_name(file_name):
+    try:
+        return str(file_name or "").lower().endswith("_telemetry.json")
+    except Exception:
+        return False
+
+
+def _is_last_revit_process(process_type=None, diagnostics=None):
+    """Return True only when no other live Revit is in this Windows session."""
+    details = diagnostics if isinstance(diagnostics, dict) else {}
+    details["status"] = "inspection_failed"
+    details["error"] = ""
+    details["other_process_id"] = None
+
+    process_api = process_type or Process
+    if process_api is None:
+        details["error"] = "System.Diagnostics.Process is unavailable."
+        return False
+
+    try:
+        current_process = process_api.GetCurrentProcess()
+        current_process_id = int(current_process.Id)
+        current_session_id = int(current_process.SessionId)
+        details["current_process_id"] = current_process_id
+        details["current_session_id"] = current_session_id
+
+        revit_processes = process_api.GetProcessesByName("Revit")
+        for revit_process in revit_processes:
+            process_id = int(revit_process.Id)
+            if process_id == current_process_id:
+                continue
+
+            session_id = int(revit_process.SessionId)
+            if session_id != current_session_id:
+                continue
+
+            if not bool(revit_process.HasExited):
+                details["status"] = "another_revit_process"
+                details["other_process_id"] = process_id
+                return False
+
+        details["status"] = "last_revit_process"
+        return True
+    except Exception as ex:
+        details["status"] = "inspection_failed"
+        details["error"] = str(ex)
+        return False
+
+
+def _empty_current_file_result(current_path=""):
+    return {
+        "status": "not_found",
+        "source_path": current_path or "",
+        "file_name": "",
+        "destination_path": "",
+        "eligible": False,
+        "found": False,
+        "copy_attempted": False,
+        "copied": False,
+        "copy_failed": False,
+        "copy_error": "",
+        "delete_attempted": False,
+        "deleted": False,
+        "delete_failed": False,
+        "delete_error": "",
+        "dropped": False,
+    }
+
+
+def _transfer_and_delete_telemetry_file(source_path, destination_folder):
+    result = _empty_current_file_result(current_path=source_path)
+    file_name = os.path.basename(source_path or "")
+    result["file_name"] = file_name
+    result["eligible"] = _is_telemetry_file_name(file_name)
+
+    if not result["eligible"]:
+        result["status"] = "ineligible_name"
+        return result
+
+    if not os.path.isfile(source_path):
+        result["status"] = "not_found"
+        return result
+
+    result["found"] = True
+    if destination_folder:
+        destination_path = os.path.join(destination_folder, file_name)
+        result["destination_path"] = destination_path
+        result["copy_attempted"] = True
+        try:
+            # Exact-name copy intentionally overwrites an existing destination.
+            shutil.copyfile(source_path, destination_path)
+            result["copied"] = True
+        except Exception as ex:
+            result["copy_failed"] = True
+            result["copy_error"] = str(ex)
+    else:
+        result["copy_failed"] = True
+        result["copy_error"] = "destination_unavailable"
+        result["status"] = "destination_unavailable"
+        return result
+
+    # Local deletion is required even when the copy fails. Failed telemetry is
+    # intentionally not retained for a later replay.
+    result["delete_attempted"] = True
+    try:
+        os.remove(source_path)
+        result["deleted"] = True
+    except Exception as ex:
+        result["delete_failed"] = True
+        result["delete_error"] = str(ex)
+
+    result["dropped"] = bool(result["copy_failed"] and result["deleted"])
+    if result["delete_failed"]:
+        result["status"] = "delete_failed"
+    elif result["copy_failed"]:
+        result["status"] = "dropped"
+    else:
+        result["status"] = "success"
+    return result
+
+
+def _local_telemetry_files(source_folder, excluded_paths=None):
+    if not os.path.isdir(source_folder):
+        return [], ""
+
+    excluded = set()
+    for path in list(excluded_paths or []):
+        if path:
+            excluded.add(_normalize_path(path))
+
+    state_file_name = ".ced_usage_route_status.json"
+    if telemetry_route is not None:
+        state_file_name = getattr(
+            telemetry_route,
+            "STATE_FILE_NAME",
+            state_file_name,
+        )
+
+    try:
+        telemetry_files = []
+        for file_name in sorted(os.listdir(source_folder)):
+            if str(file_name).lower() == str(state_file_name).lower():
+                continue
+            if not _is_telemetry_file_name(file_name):
+                continue
+            source_path = os.path.join(source_folder, file_name)
+            if _normalize_path(source_path) in excluded:
+                continue
+            if os.path.isfile(source_path):
+                telemetry_files.append(source_path)
+        return telemetry_files, ""
+    except Exception as ex:
+        return [], str(ex)
+
+
+def _empty_legacy_cleanup_result():
+    return {
+        "status": "not_required",
+        "ran": False,
+        "deferred": False,
+        "defer_reason": "",
+        "files_found": 0,
+        "files_deleted": 0,
+        "files_failed": 0,
+        "files_remaining": 0,
+        "error": "",
+        "complete": False,
+    }
+
+
+def _run_legacy_local_cleanup(source_folder):
+    result = _empty_legacy_cleanup_result()
+    result["ran"] = True
+    result["status"] = "running"
+
+    telemetry_files, list_error = _local_telemetry_files(source_folder)
+    if list_error:
+        result["status"] = "enumeration_failed"
+        result["error"] = list_error
+        return result
+
+    result["files_found"] = len(telemetry_files)
+    for source_path in telemetry_files:
+        try:
+            os.remove(source_path)
+            result["files_deleted"] += 1
+        except Exception as ex:
+            result["files_failed"] += 1
+            result["error"] = str(ex)
+
+    remaining_files, verify_error = _local_telemetry_files(source_folder)
+    result["files_remaining"] = len(remaining_files)
+    if verify_error:
+        result["status"] = "verification_failed"
+        result["error"] = verify_error
+        return result
+
+    if result["files_failed"] or result["files_remaining"]:
+        result["status"] = "partial_failure"
+        return result
+
+    result["status"] = "success"
+    result["complete"] = True
+    return result
+
+
+def _empty_sweep_result():
+    return {
+        "status": "not_required",
+        "ran": False,
+        "deferred": False,
+        "defer_reason": "",
+        "files_found": 0,
+        "files_copied": 0,
+        "files_copy_failed": 0,
+        "files_deleted": 0,
+        "files_dropped": 0,
+        "files_delete_failed": 0,
+        "error": "",
+    }
+
+
+def _run_post_migration_sweep(source_folder, destination_folder, current_path=""):
+    result = _empty_sweep_result()
+    result["ran"] = True
+    result["status"] = "running"
+
+    telemetry_files, list_error = _local_telemetry_files(
+        source_folder,
+        excluded_paths=[current_path],
+    )
+    if list_error:
+        result["status"] = "enumeration_failed"
+        result["error"] = list_error
+        return result
+
+    result["files_found"] = len(telemetry_files)
+    for source_path in telemetry_files:
+        file_result = _transfer_and_delete_telemetry_file(
+            source_path,
+            destination_folder,
+        )
+        if file_result.get("copied"):
+            result["files_copied"] += 1
+        if file_result.get("copy_failed"):
+            result["files_copy_failed"] += 1
+            result["error"] = file_result.get("copy_error", "")
+        if file_result.get("deleted"):
+            result["files_deleted"] += 1
+        if file_result.get("dropped"):
+            result["files_dropped"] += 1
+        if file_result.get("delete_failed"):
+            result["files_delete_failed"] += 1
+            result["error"] = file_result.get("delete_error", "")
+
+    if result["files_copy_failed"] or result["files_delete_failed"]:
+        result["status"] = "partial_success"
+    else:
+        result["status"] = "success"
+    return result
+
+
+def _resolve_shutdown_destination(username, source_folder):
+    result = {
+        "status": "route_unresolved",
+        "route_status": "",
+        "route_reason": "",
+        "resolved_root": "",
+        "destination_folder": "",
+        "error": "",
+    }
+
+    acc_root = None
+    if telemetry_route is not None:
+        try:
+            route_result = telemetry_route.resolve_usage_route(
+                username=username,
+                source_folder=source_folder,
+                persist=True,
+            )
+            result["route_status"] = route_result.get("status", "")
+            result["route_reason"] = route_result.get("reason", "")
+            acc_root = route_result.get("resolved_root")
+        except Exception as ex:
+            result["route_status"] = "error"
+            result["route_reason"] = str(ex)
+
+    if not acc_root:
+        try:
+            acc_root = _find_acc_root()
+        except Exception as ex:
+            result["error"] = str(ex)
+
+    if not acc_root:
+        return result
+
+    result["resolved_root"] = acc_root
+    usage_base = os.path.join(
+        acc_root,
+        "Project Files",
+        "03 Automations",
+        "Usage",
+    )
+    if not os.path.isdir(usage_base):
+        result["status"] = "usage_base_missing"
+        return result
+
+    try:
+        if telemetry_route is not None and hasattr(telemetry_route, "ensure_user_folder"):
+            folder_result = telemetry_route.ensure_user_folder(
+                acc_root,
+                username=username,
+            )
+            destination_folder = folder_result.get("path") or os.path.join(
+                usage_base,
+                username,
+            )
+            if not folder_result.get("ok"):
+                result["status"] = "failed_create_user_folder"
+                result["error"] = folder_result.get(
+                    "reason",
+                    "user_folder_unavailable",
+                )
+                return result
+        else:
+            destination_folder = os.path.join(usage_base, username)
+            if not os.path.isdir(destination_folder):
+                os.mkdir(destination_folder)
+    except Exception as ex:
+        result["status"] = "failed_create_user_folder"
+        result["error"] = str(ex)
+        return result
+
+    result["status"] = "ready"
+    result["destination_folder"] = destination_folder
+    return result
+
+
+def _state_snapshot_paths(source_folder, destination_folder):
+    state_file_name = ".ced_usage_route_status.json"
+    if telemetry_route is not None:
+        state_file_name = getattr(
+            telemetry_route,
+            "STATE_FILE_NAME",
+            state_file_name,
+        )
+
+    if telemetry_route is not None and hasattr(telemetry_route, "state_file_path"):
+        source_path = telemetry_route.state_file_path(source_folder)
+    else:
+        source_path = os.path.join(source_folder, state_file_name)
+
+    destination_path = ""
+    if destination_folder:
+        destination_path = os.path.join(destination_folder, state_file_name)
+    return state_file_name, source_path, destination_path
+
+
+def _planned_state_snapshot_result(source_folder, destination_folder):
+    file_name, source_path, destination_path = _state_snapshot_paths(
+        source_folder,
+        destination_folder,
+    )
+    result = {
+        "status": "destination_unavailable",
+        "file_name": file_name,
+        "source_path": source_path,
+        "destination_path": destination_path,
+        "copy_attempted": False,
+        "copied": False,
+        "overwritten": False,
+        "source_retained": True,
+        "delete_attempted": False,
+        "deleted": False,
+        "error": "",
+        "updated_utc": _utc_now(),
+    }
+    if destination_path:
+        result["status"] = "success"
+        result["copy_attempted"] = True
+        result["copied"] = True
+        try:
+            result["overwritten"] = os.path.isfile(destination_path)
+        except Exception:
+            result["overwritten"] = False
+    return result
+
+
+def _record_shutdown_state(log_data, source_folder):
+    if telemetry_route is None:
+        return False, "telemetry_route_unavailable"
+
+    if hasattr(telemetry_route, "load_state") and hasattr(telemetry_route, "save_state"):
+        snapshot_result = None
+        try:
+            snapshot_result = _planned_state_snapshot_result(
+                source_folder,
+                log_data.get("destination_folder", ""),
+            )
+            log_data["pytools_toolbar_version"] = PYTOOLS_TOOLBAR_VERSION
+            log_data["pytools_build_version"] = PYTOOLS_BUILD_VERSION
+            log_data["state_snapshot_copy"] = snapshot_result
+
+            state_payload = telemetry_route.load_state(source_folder=source_folder)
+            shutdown_state = dict(log_data)
+            set_cleanup_version = bool(
+                shutdown_state.pop("_set_cleanup_version", False)
+            )
+            shutdown_state["updated_utc"] = _utc_now()
+            state_payload["last_shutdown_transfer"] = shutdown_state
+            state_payload["pytools_toolbar_version"] = PYTOOLS_TOOLBAR_VERSION
+            state_payload["pytools_build_version"] = PYTOOLS_BUILD_VERSION
+            state_payload["last_state_snapshot_copy"] = dict(snapshot_result)
+
+            legacy_cleanup = log_data.get("legacy_cleanup") or {}
+            if legacy_cleanup.get("ran") or legacy_cleanup.get("deferred"):
+                cleanup_state = dict(legacy_cleanup)
+                cleanup_state["required_version"] = LOCAL_TELEMETRY_CLEANUP_VERSION
+                cleanup_state["previous_version"] = log_data.get(
+                    "cleanup_version_before",
+                    0,
+                )
+                cleanup_state["updated_utc"] = _utc_now()
+                state_payload["last_local_telemetry_cleanup"] = cleanup_state
+
+            if set_cleanup_version:
+                saved_cleanup_version = _to_int(
+                    state_payload.get("local_telemetry_cleanup_version", 0)
+                )
+                if saved_cleanup_version < LOCAL_TELEMETRY_CLEANUP_VERSION:
+                    cleanup_utc = _utc_now()
+                    state_payload["local_telemetry_cleanup_version"] = (
+                        LOCAL_TELEMETRY_CLEANUP_VERSION
+                    )
+                    state_payload["local_telemetry_cleanup_utc"] = cleanup_utc
+
+            current_file = log_data.get("current_file") or {}
+            sweep = log_data.get("post_migration_sweep") or {}
+            files_found = int(bool(
+                current_file.get("found") and current_file.get("eligible")
+            )) + _to_int(sweep.get("files_found", 0))
+            files_copied = int(bool(current_file.get("copied"))) + _to_int(
+                sweep.get("files_copied", 0)
+            )
+            files_failed = int(bool(current_file.get("copy_failed"))) + _to_int(
+                sweep.get("files_copy_failed", 0)
+            )
+            state_payload["last_transfer"] = {
+                "status": log_data.get("status", ""),
+                "username": log_data.get("username", ""),
+                "resolved_root": log_data.get("resolved_route", ""),
+                "destination_folder": log_data.get("destination_folder", ""),
+                "files_found": files_found,
+                "files_copied": files_copied,
+                "files_failed": files_failed,
+                "files_deleted": int(bool(current_file.get("deleted"))) + _to_int(
+                    sweep.get("files_deleted", 0)
+                ),
+                "files_dropped": int(bool(current_file.get("dropped"))) + _to_int(
+                    sweep.get("files_dropped", 0)
+                ),
+                "note": "Exact-name telemetry transfer; local deletion attempted after each copy attempt.",
+                "updated_utc": _utc_now(),
+            }
+            telemetry_route.save_state(state_payload, source_folder=source_folder)
+
+            if snapshot_result.get("copy_attempted"):
+                try:
+                    shutil.copyfile(
+                        snapshot_result.get("source_path", ""),
+                        snapshot_result.get("destination_path", ""),
+                    )
+                except Exception as snapshot_error:
+                    snapshot_result["status"] = "copy_failed"
+                    snapshot_result["copied"] = False
+                    snapshot_result["error"] = str(snapshot_error)
+                    snapshot_result["source_retained"] = os.path.isfile(
+                        snapshot_result.get("source_path", "")
+                    )
+                    snapshot_result["updated_utc"] = _utc_now()
+                    log_data["state_snapshot_copy"] = snapshot_result
+                    state_payload["last_state_snapshot_copy"] = dict(
+                        snapshot_result
+                    )
+                    state_payload["last_shutdown_transfer"][
+                        "state_snapshot_copy"
+                    ] = dict(snapshot_result)
+                    telemetry_route.save_state(
+                        state_payload,
+                        source_folder=source_folder,
+                    )
+            return True, ""
+        except Exception as ex:
+            if snapshot_result is not None:
+                if snapshot_result.get("status") == "success":
+                    snapshot_result["status"] = "state_save_failed"
+                    snapshot_result["copy_attempted"] = False
+                    snapshot_result["copied"] = False
+                snapshot_result["error"] = str(ex)
+                snapshot_result["updated_utc"] = _utc_now()
+                log_data["state_snapshot_copy"] = snapshot_result
+            return False, str(ex)
+
+    if hasattr(telemetry_route, "record_transfer_state"):
+        try:
+            current_file = log_data.get("current_file") or {}
+            sweep = log_data.get("post_migration_sweep") or {}
+            telemetry_route.record_transfer_state(
+                status=log_data.get("status", ""),
+                username=log_data.get("username"),
+                resolved_root=log_data.get("resolved_route", ""),
+                files_found=int(bool(current_file.get("found"))) + _to_int(
+                    sweep.get("files_found", 0)
+                ),
+                files_copied=int(bool(current_file.get("copied"))) + _to_int(
+                    sweep.get("files_copied", 0)
+                ),
+                files_failed=int(bool(current_file.get("copy_failed"))) + _to_int(
+                    sweep.get("files_copy_failed", 0)
+                ),
+                source_folder=source_folder,
+                note="Exact-name telemetry transfer; local deletion attempted after each copy attempt.",
+            )
+            return True, ""
+        except Exception as ex:
+            return False, str(ex)
+
+    return False, "state_writer_unavailable"
 
 
 def _on_app_closing(sender, args):
-
+    source_folder = _telemetry_source_folder()
     log_data = {
-        "username": None,
-        "files_found": 0,
-        "files_copied": 0,
-        "files_failed": 0,
         "status": "unknown",
-        "error": None,
-        "route_status": None,
-        "route_reason": None,
-        "route_root": None,
-        "recovery_status": None,
-        "recovery_error": None,
+        "error": "",
+        "username": "",
+        "source_folder": source_folder,
+        "route_status": "",
+        "route_reason": "",
+        "resolved_route": "",
+        "destination_folder": "",
+        "current_file_lookup_error": "",
+        "current_file_handled": False,
+        "current_file": _empty_current_file_result(),
+        "is_last_revit_process": False,
+        "process_check_status": "not_run",
+        "process_check_error": "",
+        "another_revit_process_open": False,
+        "cleanup_deferred": False,
+        "cleanup_defer_reason": "",
+        "cleanup_version_required": LOCAL_TELEMETRY_CLEANUP_VERSION,
+        "cleanup_version_before": 0,
+        "cleanup_version_after": 0,
+        "legacy_cleanup": _empty_legacy_cleanup_result(),
+        "post_migration_sweep": _empty_sweep_result(),
+        "_set_cleanup_version": False,
     }
 
     try:
-        # Username
         try:
             username = getpass.getuser()
         except Exception:
             username = os.environ.get("USERNAME", "UnknownUser")
-
         log_data["username"] = username
 
-        source_folder = _telemetry_source_folder()
-        if not os.path.exists(source_folder):
-            log_data["status"] = "no_source_folder"
-            return
+        route_info = _resolve_shutdown_destination(username, source_folder)
+        log_data["route_status"] = route_info.get("route_status", "")
+        log_data["route_reason"] = route_info.get("route_reason", "")
+        log_data["resolved_route"] = route_info.get("resolved_root", "")
+        log_data["destination_folder"] = route_info.get(
+            "destination_folder",
+            "",
+        )
 
-        acc_root = None
-        if telemetry_route is not None:
-            try:
-                route_result = telemetry_route.resolve_usage_route(username=username, persist=True)
-                log_data["route_status"] = route_result.get("status")
-                log_data["route_reason"] = route_result.get("reason")
-                acc_root = route_result.get("resolved_root")
-            except Exception as ex:
-                log_data["route_status"] = "error"
-                log_data["route_reason"] = str(ex)
-
-        if not acc_root:
-            acc_root = _find_acc_root()
-
-        log_data["route_root"] = acc_root
-        if acc_root is None:
-            log_data["status"] = "route_unresolved"
-            if telemetry_route is not None:
-                telemetry_route.record_transfer_state(
-                    status="route_unresolved",
-                    username=username,
-                    resolved_root="",
-                    files_found=0,
-                    files_copied=0,
-                    files_failed=0,
-                    source_folder=source_folder,
-                    note=log_data.get("route_reason") or "No ACC root resolved.",
-                )
-            return
-
-        base_path = os.path.join(acc_root, "Project Files", "03 Automations", "Usage")
-        if not os.path.isdir(base_path):
-            log_data["status"] = "usage_base_missing"
-            if telemetry_route is not None:
-                telemetry_route.record_transfer_state(
-                    status="usage_base_missing",
-                    username=username,
-                    resolved_root=acc_root,
-                    files_found=0,
-                    files_copied=0,
-                    files_failed=0,
-                    source_folder=source_folder,
-                    note="Usage base folder not found. Transfer canceled.",
-                )
-            return
-
+        current_path = ""
         try:
-            if telemetry_route is not None and hasattr(telemetry_route, "ensure_user_folder"):
-                folder_result = telemetry_route.ensure_user_folder(acc_root, username=username)
-                user_folder = folder_result.get("path") or os.path.join(base_path, username)
-                if not folder_result.get("ok"):
-                    raise Exception(folder_result.get("reason", "user_folder_unavailable"))
+            current_path = telemetry.get_telemetry_file_path() or ""
+        except Exception as ex:
+            log_data["current_file_lookup_error"] = str(ex)
+
+        log_data["current_file"] = _transfer_and_delete_telemetry_file(
+            current_path,
+            log_data["destination_folder"],
+        )
+        current_file = log_data.get("current_file") or {}
+        log_data["current_file_handled"] = bool(
+            not log_data.get("current_file_lookup_error")
+            and (
+                not current_file.get("found")
+                or not current_file.get("eligible")
+                or current_file.get("copy_attempted")
+            )
+        )
+
+        process_details = {}
+        is_last_process = _is_last_revit_process(diagnostics=process_details)
+        log_data["is_last_revit_process"] = is_last_process
+        log_data["process_check_status"] = process_details.get("status", "")
+        log_data["process_check_error"] = process_details.get("error", "")
+        log_data["another_revit_process_open"] = (
+            process_details.get("status") == "another_revit_process"
+        )
+
+        state_payload = {}
+        state_available = False
+        if telemetry_route is not None and hasattr(telemetry_route, "load_state"):
+            try:
+                state_payload = telemetry_route.load_state(
+                    source_folder=source_folder,
+                )
+                state_available = hasattr(telemetry_route, "save_state")
+            except Exception as ex:
+                log_data["cleanup_defer_reason"] = "state_load_failed"
+                log_data["error"] = str(ex)
+
+        cleanup_version = _to_int(
+            state_payload.get("local_telemetry_cleanup_version", 0)
+        )
+        log_data["cleanup_version_before"] = cleanup_version
+        log_data["cleanup_version_after"] = cleanup_version
+
+        if not is_last_process:
+            defer_reason = process_details.get("status") or "process_check_failed"
+            log_data["cleanup_deferred"] = True
+            log_data["cleanup_defer_reason"] = defer_reason
+            if cleanup_version < LOCAL_TELEMETRY_CLEANUP_VERSION:
+                log_data["legacy_cleanup"]["status"] = "deferred"
+                log_data["legacy_cleanup"]["deferred"] = True
+                log_data["legacy_cleanup"]["defer_reason"] = defer_reason
             else:
-                user_folder = os.path.join(base_path, username)
-                if not os.path.exists(user_folder):
-                    # Intentionally create only the username folder under an existing Usage base.
-                    os.mkdir(user_folder)
-        except Exception as e:
-            log_data["status"] = "failed_create_user_folder"
-            log_data["error"] = str(e)
-            if telemetry_route is not None:
-                telemetry_route.record_transfer_state(
-                    status="failed_create_user_folder",
-                    username=username,
-                    resolved_root=acc_root,
-                    files_found=0,
-                    files_copied=0,
-                    files_failed=0,
-                    source_folder=source_folder,
-                    note=str(e),
+                log_data["post_migration_sweep"]["status"] = "deferred"
+                log_data["post_migration_sweep"]["deferred"] = True
+                log_data["post_migration_sweep"]["defer_reason"] = defer_reason
+        elif not log_data.get("current_file_handled"):
+            if log_data.get("current_file_lookup_error"):
+                current_defer_reason = "current_file_lookup_failed"
+            else:
+                current_defer_reason = (
+                    (log_data.get("current_file") or {}).get("status")
+                    or "current_file_not_handled"
                 )
-            # from Snippets import hooks_logger
-            # hooks_logger.log_hook(__file__, log_data)
-            return
-
-        recovery_result = None
-        if telemetry_route is not None and hasattr(telemetry_route, "recover_stale_usage_jsons"):
-            try:
-                recovery_result = telemetry_route.recover_stale_usage_jsons(
-                    acc_root,
-                    username=username,
-                    source_folder=source_folder,
+            log_data["cleanup_deferred"] = True
+            log_data["cleanup_defer_reason"] = current_defer_reason
+            if cleanup_version < LOCAL_TELEMETRY_CLEANUP_VERSION:
+                log_data["legacy_cleanup"]["status"] = "deferred"
+                log_data["legacy_cleanup"]["deferred"] = True
+                log_data["legacy_cleanup"]["defer_reason"] = current_defer_reason
+            else:
+                log_data["post_migration_sweep"]["status"] = "deferred"
+                log_data["post_migration_sweep"]["deferred"] = True
+                log_data["post_migration_sweep"]["defer_reason"] = (
+                    current_defer_reason
                 )
-                log_data["recovery_status"] = recovery_result.get("status")
-                if hasattr(telemetry_route, "record_recovery_state"):
-                    telemetry_route.record_recovery_state(
-                        recovery_result,
-                        source_folder=source_folder,
-                    )
-            except Exception as e:
-                recovery_result = {
-                    "status": "error",
-                    "username": username,
-                    "resolved_root": acc_root,
-                    "destination_folder": user_folder,
-                    "stale_folders_checked": [],
-                    "files_found": 0,
-                    "files_moved": 0,
-                    "files_failed": 0,
-                    "error": str(e),
-                }
-                log_data["recovery_status"] = "error"
-                log_data["recovery_error"] = str(e)
-                if hasattr(telemetry_route, "record_recovery_state"):
-                    try:
-                        telemetry_route.record_recovery_state(
-                            recovery_result,
-                            source_folder=source_folder,
-                        )
-                    except Exception:
-                        pass
-
-        files = os.listdir(source_folder)
-        log_data["files_found"] = len(files)
-
-        for fname in files:
-            try:
-                src = os.path.join(source_folder, fname)
-
-                if not os.path.isfile(src):
-                    continue
-
-                if telemetry_route is not None and fname == telemetry_route.STATE_FILE_NAME:
-                    # Keep route status local; never transfer it to ACC.
-                    continue
-
-                dst = _nonclobber_path(os.path.join(user_folder, fname))
-                # Copy instead of move so local telemetry remains available.
-                shutil.copy2(src, dst)
-                log_data["files_copied"] += 1
-
-            except Exception:
-                log_data["files_failed"] += 1
-
-        if log_data["files_failed"] > 0:
-            log_data["status"] = "partial_success"
+        elif not state_available:
+            log_data["cleanup_deferred"] = True
+            log_data["cleanup_defer_reason"] = "state_unavailable"
+            log_data["legacy_cleanup"]["status"] = "deferred"
+            log_data["legacy_cleanup"]["deferred"] = True
+            log_data["legacy_cleanup"]["defer_reason"] = "state_unavailable"
+        elif cleanup_version < LOCAL_TELEMETRY_CLEANUP_VERSION:
+            legacy_cleanup = _run_legacy_local_cleanup(source_folder)
+            log_data["legacy_cleanup"] = legacy_cleanup
+            if legacy_cleanup.get("complete"):
+                log_data["_set_cleanup_version"] = True
+                log_data["cleanup_version_after"] = (
+                    LOCAL_TELEMETRY_CLEANUP_VERSION
+                )
+        elif not log_data.get("destination_folder"):
+            log_data["cleanup_deferred"] = True
+            log_data["cleanup_defer_reason"] = "destination_unavailable"
+            log_data["post_migration_sweep"]["status"] = "deferred"
+            log_data["post_migration_sweep"]["deferred"] = True
+            log_data["post_migration_sweep"]["defer_reason"] = (
+                "destination_unavailable"
+            )
         else:
-            log_data["status"] = "success"
-
-        if telemetry_route is not None:
-            telemetry_route.record_transfer_state(
-                status=log_data["status"],
-                username=username,
-                resolved_root=acc_root,
-                files_found=log_data["files_found"],
-                files_copied=log_data["files_copied"],
-                files_failed=log_data["files_failed"],
-                source_folder=source_folder,
-                note="Copied telemetry files to ACC; local files retained.",
+            log_data["post_migration_sweep"] = _run_post_migration_sweep(
+                source_folder,
+                log_data["destination_folder"],
+                current_path=current_path,
             )
 
-    except Exception as e:
-        log_data["status"] = "fatal_error"
-        log_data["error"] = str(e)
-        if telemetry_route is not None:
-            try:
-                telemetry_route.record_transfer_state(
-                    status="fatal_error",
-                    username=log_data.get("username"),
-                    resolved_root=log_data.get("route_root") or "",
-                    files_found=log_data.get("files_found", 0),
-                    files_copied=log_data.get("files_copied", 0),
-                    files_failed=log_data.get("files_failed", 0),
-                    source_folder=_telemetry_source_folder(),
-                    note=str(e),
-                )
-            except Exception:
-                pass
+        current_file = log_data.get("current_file") or {}
+        legacy_cleanup = log_data.get("legacy_cleanup") or {}
+        sweep = log_data.get("post_migration_sweep") or {}
+        has_transfer_failure = bool(
+            current_file.get("copy_failed")
+            or current_file.get("delete_failed")
+            or legacy_cleanup.get("status") in (
+                "enumeration_failed",
+                "verification_failed",
+                "partial_failure",
+            )
+            or sweep.get("status") in ("enumeration_failed", "partial_success")
+        )
 
-    # Always log
-    # try:
-    #     from Snippets import hooks_logger
-    #     hooks_logger.log_hook(__file__, log_data)
-    # except:
-    #     pass
+        if has_transfer_failure or log_data.get("current_file_lookup_error"):
+            log_data["status"] = "partial_success"
+        elif route_info.get("status") != "ready":
+            log_data["status"] = route_info.get("status", "route_unresolved")
+        else:
+            log_data["status"] = "success"
+    except Exception as ex:
+        log_data["status"] = "fatal_error"
+        log_data["error"] = str(ex)
+
+    state_saved, state_error = _record_shutdown_state(log_data, source_folder)
+    log_data["state_saved"] = state_saved
+    log_data["state_error"] = state_error
+    return log_data
 
 def _register_shutdown_hook():
     logger = script.get_logger()

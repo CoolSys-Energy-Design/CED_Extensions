@@ -9,6 +9,7 @@ __doc__ = '''Working ok.
 from pyrevit import forms, script, revit, DB
 
 import Snippets._elecutils as eu
+from Snippets import design_options
 
 # Start the transaction for modifying the Revit model
 doc = revit.doc
@@ -36,7 +37,12 @@ def get_distribution_system_name(panel):
 selection = revit.get_selection()  # Directly use pyRevit's get_selection() to retrieve selected elements
 
 # Filter selected elements to only those that are valid for electrical systems
-fixtures_with_mep_model = [elem for elem in selection if hasattr(elem, 'MEPModel') and elem.MEPModel]
+fixtures_with_mep_model = [
+    elem for elem in selection
+    if design_options.is_main_model_element(elem)
+    and hasattr(elem, 'MEPModel')
+    and elem.MEPModel
+]
 
 # If no valid fixtures are selected, alert the user
 if not fixtures_with_mep_model:

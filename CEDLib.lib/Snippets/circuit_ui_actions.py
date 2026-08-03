@@ -4,7 +4,8 @@
 from System.Collections.Generic import List
 from pyrevit import DB, revit
 
-from Snippets import revit_helpers
+from Snippets import _elecutils as eu
+from Snippets import design_options, revit_helpers
 
 
 def _idval(item):
@@ -18,6 +19,8 @@ def set_revit_selection(elements, uidoc=None):
     ids = List[DB.ElementId]()
     seen = set()
     for element in list(elements or []):
+        if not design_options.is_main_model_element(element):
+            continue
         element_id = element.Id
         if element_id is None:
             continue
@@ -46,7 +49,7 @@ def clear_revit_selection(uidoc=None):
 
 def collect_circuit_targets(circuit, mode):
     mode_key = str(mode or "").strip().lower()
-    if circuit is None:
+    if not eu.is_circuit_eligible(circuit):
         return []
     if mode_key == "circuit":
         return [circuit]
@@ -55,10 +58,10 @@ def collect_circuit_targets(circuit, mode):
             base_equipment = circuit.BaseEquipment
         except Exception:
             base_equipment = None
-        return [base_equipment] if base_equipment is not None else []
+        return [base_equipment] if design_options.is_main_model_element(base_equipment) else []
     if mode_key == "device":
         try:
-            return [el for el in list(circuit.Elements or []) if el is not None]
+            return design_options.filter_main_model_elements(circuit.Elements)
         except Exception:
             return []
     return []

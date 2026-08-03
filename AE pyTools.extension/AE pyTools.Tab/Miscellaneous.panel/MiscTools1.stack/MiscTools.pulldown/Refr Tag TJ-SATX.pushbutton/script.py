@@ -17,6 +17,8 @@ from collections import defaultdict
 
 from pyrevit import revit, DB, script
 
+from Snippets import _elecutils as eu
+
 doc    = revit.doc
 logger = script.get_logger()
 
@@ -53,10 +55,9 @@ def build_multiline_text(fixt):
     if not mep:
         return None
 
-    elecs = list(mep.GetAssignedElectricalSystems())
+    elecs = eu.filter_circuits(mep.GetAssignedElectricalSystems())
     if not elecs:
-        elecs = [s for s in mep.GetElectricalSystems()
-                 if s.GetType().Name == 'ElectricalSystem']
+        elecs = eu.filter_circuits(mep.GetElectricalSystems())
     if not elecs:
         return None
 

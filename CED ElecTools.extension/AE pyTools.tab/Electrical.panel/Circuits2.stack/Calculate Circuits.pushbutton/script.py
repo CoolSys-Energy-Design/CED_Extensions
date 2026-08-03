@@ -2,7 +2,7 @@
 
 import os
 
-from pyrevit import DB, forms, revit, script
+from pyrevit import forms, revit, script
 
 from UIClasses import pathing as ui_pathing
 
@@ -141,16 +141,15 @@ class CalculationPreviewWindow(forms.WPFWindow):
 def _collect_target_circuit_ids(doc):
     selection = list(revit.get_selection() or [])
     if selection:
-        selected = []
-        for el in selection:
-            if isinstance(el, DB.Electrical.ElectricalSystem):
-                selected.append(el)
+        selected = eu.filter_circuits(selection)
         if not selected:
             selected = eu.get_circuits_from_selection(selection)
     else:
         selected = eu.pick_circuits_from_list(doc, select_multiple=True)
 
-    return [_idval(c.Id) for c in selected if isinstance(c, DB.Electrical.ElectricalSystem)]
+    return [
+        _idval(c.Id) for c in eu.filter_circuits(selected)
+    ]
 
 
 def main():

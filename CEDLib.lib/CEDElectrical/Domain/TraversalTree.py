@@ -5,7 +5,8 @@ from CEDElectrical.part_types import PART_TYPE_MAP
 
 logger = script.get_logger()
 import csv
-from Snippets import revit_helpers
+from Snippets import _elecutils as eu
+from Snippets import design_options, revit_helpers
 
 get_id_value = revit_helpers.get_elementid_value
 
@@ -86,8 +87,8 @@ class TreeNode(object):
         if not mep:
             return
 
-        all_systems = mep.GetElectricalSystems()
-        assigned = mep.GetAssignedElectricalSystems()
+        all_systems = eu.filter_circuits(mep.GetElectricalSystems())
+        assigned = eu.filter_circuits(mep.GetAssignedElectricalSystems())
         assigned_ids = set([sys.Id for sys in assigned]) if assigned else set()
 
         for sys in all_systems:
@@ -174,6 +175,8 @@ class SystemTree(object):
 
             if hasattr(system, "Elements"):
                 for e in list(system.Elements):
+                    if not design_options.is_main_model_element(e):
+                        continue
                     if e.Category and int(get_id_value(e.Category.Id)) == int(DB.BuiltInCategory.OST_ElectricalEquipment):
                         if e.Id not in visited:
                             branch.is_feeder = True
@@ -207,7 +210,8 @@ def get_all_equipment_nodes(doc):
     nodes = {}
     collector = DB.FilteredElementCollector(doc) \
         .OfCategory(DB.BuiltInCategory.OST_ElectricalEquipment) \
-        .WhereElementIsNotElementType()
+        .WhereElementIsNotElementType() \
+        .WherePasses(design_options.main_model_filter())
 
     for equip in collector:
         node = TreeNode(equip)

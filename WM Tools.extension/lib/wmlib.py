@@ -324,7 +324,7 @@ class ExcelCircuitLoader(object):
         self.required_headers = [
             "CKT_Panel_CEDT", "CKT_Circuit Number_CEDT", "CKT_Load Name_CEDT",
             "CKT_Rating_CED", "CKT_Frame_CED", "Voltage_CED", "Number of Poles_CED",
-            "Apparent Load Ph 1_CED", "Apparent Load Ph 2_CED", "Apparent Load Ph 3_CED","Apparent Load Input_CED"
+            "Apparent Load Ph 1_CED", "Apparent Load Ph 2_CED", "Apparent Load Ph 3_CED", "Apparent Load Input_CED",
             "Family", "Type"
         ]
 
