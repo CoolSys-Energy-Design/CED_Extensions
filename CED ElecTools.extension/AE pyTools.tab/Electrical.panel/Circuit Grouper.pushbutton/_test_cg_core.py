@@ -90,6 +90,22 @@ def run():
           cg_core.default_group_param(["Level", "Family:Type"]) == "Level")
     check("default empty when none", cg_core.default_group_param([]) == "")
 
+    # --- name-by parameter: default + name seeding -----------------------
+    check("name default prefers load name",
+          cg_core.default_name_param(["Identity Mark", "CKT_Load Name_CEDT"]) == "CKT_Load Name_CEDT")
+    check("name default falls back to identity",
+          cg_core.default_name_param(["Level", "Identity Mark"]) == "Identity Mark")
+    check("name default first when no preferred",
+          cg_core.default_name_param(["Level", "Family:Type"]) == "Level")
+    check("name default empty when none", cg_core.default_name_param([]) == "")
+
+    check("name shared value", cg_core.name_from_values(["BAKERY CASE", "BAKERY CASE"]) == "BAKERY CASE")
+    check("name ignores blanks", cg_core.name_from_values(["", "BAKERY CASE", None]) == "BAKERY CASE")
+    check("name common stem", cg_core.name_from_values(["RA-12A", "RA-12B"]) == "RA-12")
+    check("name fallback on all blank", cg_core.name_from_values(["", None], fallback="R9") == "R9")
+    check("name fallback on no stem", cg_core.name_from_values(["AAA", "BBB"], fallback="R9") == "R9")
+    check("name empty no fallback", cg_core.name_from_values([]) == "")
+
     # --- Space is offered via its own control, never the parameter combo ---
     space_rows = [
         {"group_values": {"Identity Mark": "RA-1", "Space": "101 - Office"}},

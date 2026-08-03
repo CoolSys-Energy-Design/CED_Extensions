@@ -2,8 +2,10 @@
 """Circuit Grouper - apply layer (wraps the Revit transaction).
 
 Creates one native Revit ElectricalSystem (power circuit) per plan, assigns the
-chosen panel, sets the circuit rating + load name, and mirrors the choices onto
-the CKT_* shared parameters of each member so the CED data model stays in sync.
+chosen panel, sets the circuit rating + load name, and mirrors the panel and
+rating onto the CKT_* shared parameters of each member so the CED data model
+stays in sync. The load name is set on the circuit ONLY - each member's
+CKT_Load Name_CEDT is deliberately left untouched.
 """
 
 from System.Collections.Generic import List
@@ -281,10 +283,12 @@ def run(doc, plans, name_to_id, logger=None):
                         cg_collect.element_id_value(el.Id)
                     )
 
-            # mirror CKT_* onto every member regardless of connector status
+            # mirror panel + rating CKT_* onto every member regardless of
+            # connector status. The load name is NOT mirrored - members'
+            # CKT_Load Name_CEDT stays whatever it already was; the chosen
+            # name goes on the native circuit below.
             for el in elems:
                 _set_text(el, cg_collect.PARAM_PANEL, panel_name)
-                _set_text(el, cg_collect.PARAM_LOAD_NAME, load_name)
                 if amps is not None:
                     _set_double(el, cg_collect.PARAM_RATING, amps)
 

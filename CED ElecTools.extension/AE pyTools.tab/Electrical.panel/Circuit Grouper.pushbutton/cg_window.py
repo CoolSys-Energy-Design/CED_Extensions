@@ -184,7 +184,8 @@ class RowVM(_Notifier):
 class CircuitGrouperWindow(forms.WPFWindow):
     def __init__(self, rows_data, panel_options, name_to_id, rating_options,
                  group_param_options=None, default_group_param="", title="",
-                 panel_info=None):
+                 panel_info=None, name_param_options=None,
+                 default_name_param=""):
         forms.WPFWindow.__init__(self, _XAML)
 
         self.PanelOptions = List[str]()
@@ -196,6 +197,10 @@ class CircuitGrouperWindow(forms.WPFWindow):
         self.GroupParamOptions = List[str]()
         for gp in (group_param_options or []):
             self.GroupParamOptions.Add(gp)
+        self.NameParamOptions = List[str]()
+        for np in (name_param_options if name_param_options is not None
+                   else (group_param_options or [])):
+            self.NameParamOptions.Add(np)
 
         self._name_to_id = name_to_id
         self._panel_info = panel_info or {}
@@ -207,6 +212,13 @@ class CircuitGrouperWindow(forms.WPFWindow):
         # which parameter the circuits are grouped on (user-switchable)
         self._group_param = default_group_param or (
             group_param_options[0] if group_param_options else "")
+        # which parameter SEEDS each circuit's Load Name (user-switchable,
+        # independent of grouping). Must be set before _rebuild_groups, which
+        # seeds the load names from it.
+        _name_opts = (name_param_options if name_param_options is not None
+                      else (group_param_options or []))
+        self._name_param = default_name_param or (
+            _name_opts[0] if _name_opts else "")
         # when True, group on the Space property instead of the parameter combo
         self._group_by_space = False
         # the key currently driving grouping (a parameter name, or SPACE_GROUP_KEY)
@@ -224,6 +236,7 @@ class CircuitGrouperWindow(forms.WPFWindow):
         self.ValidationText = self.FindName("ValidationText")
         self.GroupByCombo = self.FindName("GroupByCombo")
         self.GroupBySpaceCheck = self.FindName("GroupBySpaceCheck")
+        self.NameByCombo = self.FindName("NameByCombo")
 
         self._items = ObservableCollection[object]()
         for vm in self._rows:
@@ -246,9 +259,11 @@ class CircuitGrouperWindow(forms.WPFWindow):
         self._view = self._cvs.View
         self.Grid.ItemsSource = self._view
 
-        # seed the group-by combo without triggering a redundant regroup
+        # seed the combos without triggering a redundant regroup/reseed
         if self.GroupByCombo is not None and self._group_param:
             self.GroupByCombo.SelectedItem = self._group_param
+        if self.NameByCombo is not None and self._name_param:
+            self.NameByCombo.SelectedItem = self._name_param
         self._suppress_regroup = False
 
         self._revalidate()
@@ -356,14 +371,42 @@ class CircuitGrouperWindow(forms.WPFWindow):
         if key and key != self._active_key:
             self._apply_grouping(key)
 
+    def name_param_changed(self, sender, args):
+        """Re-seed every circuit's Load Name from the newly chosen name-by
+        parameter (replacing any hand edits, since the user asked for a new
+        naming source)."""
+        if self._suppress_regroup:
+            return
+        item = sender.SelectedItem
+        value = str(item) if item is not None else ""
+        if not value or value == self._name_param:
+            return
+        self._name_param = value
+        for g in self._groups:
+            self._seed_load_name(g)
+            g.notify("load_name")
+        self._refresh_view()
+        self._revalidate()
+
     # -- setup helpers ----------------------------------------------------
     def _members(self, group):
         return [r for r in self._rows if r.group is group]
 
+    def _seed_load_name(self, group, members=None):
+        """Seed the group's Load Name from the members' values of the name-by
+        parameter; falls back to the Identity-Mark common stem, then the group
+        key, when that parameter is blank on every member."""
+        if members is None:
+            members = self._members(group)
+        fallback = cg_core.default_load_name(
+            [r.identity_mark for r in members], fallback=group.key)
+        group.load_name = cg_core.name_from_values(
+            [r.group_values.get(self._name_param, "") for r in members],
+            fallback=fallback)
+
     def _init_group_defaults(self, group):
         members = self._members(group)
-        group.load_name = cg_core.default_load_name(
-            [r.identity_mark for r in members], fallback=group.key)
+        self._seed_load_name(group, members)
         for r in members:
             if r.src_panel:
                 group.panel = r.src_panel
@@ -547,8 +590,7 @@ class CircuitGrouperWindow(forms.WPFWindow):
             return
         new_key = cg_core.next_new_group_key(self._all_group_keys())
         g = GroupVM(new_key)
-        g.load_name = cg_core.default_load_name(
-            [r.identity_mark for r in selected], fallback=new_key)
+        self._seed_load_name(g, members=selected)
         self._groups.append(g)
         for vm in selected:
             vm.move_to(g)
@@ -668,9 +710,12 @@ class CircuitGrouperWindow(forms.WPFWindow):
 
 def show_window(rows_data, panel_options, name_to_id, rating_options,
                 group_param_options=None, default_group_param="",
-                panel_info=None):
+                panel_info=None, name_param_options=None,
+                default_name_param=""):
     win = CircuitGrouperWindow(
         rows_data, panel_options, name_to_id, rating_options,
-        group_param_options, default_group_param, panel_info=panel_info)
+        group_param_options, default_group_param, panel_info=panel_info,
+        name_param_options=name_param_options,
+        default_name_param=default_name_param)
     win.show_dialog()
     return win.result_plans, win._name_to_id

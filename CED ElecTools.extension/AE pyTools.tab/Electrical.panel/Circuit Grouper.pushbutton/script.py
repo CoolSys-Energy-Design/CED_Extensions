@@ -77,6 +77,8 @@ def main():
 
     group_param_options = cg_core.common_group_params(rows_data)
     default_group_param = cg_core.default_group_param(group_param_options)
+    # name-by offers the same common-parameter list, with its own default
+    default_name_param = cg_core.default_name_param(group_param_options)
 
     logger.debug("Circuit Grouper scope=%s, %d circuitable element(s)",
                  scope_label, len(rows_data))
@@ -87,6 +89,8 @@ def main():
         rows_data, panel_names, name_to_id, cg_core.RATING_OPTIONS,
         group_param_options, default_group_param,
         panel_info=panel_info,
+        name_param_options=group_param_options,
+        default_name_param=default_name_param,
     )
 
     if not plans:
@@ -138,7 +142,8 @@ def main():
     if report["skipped_no_connector"]:
         output.print_md("### Skipped (no power connector)")
         output.print_md("These element ids had no power connector, so no native "
-                        "circuit could include them (CKT_* params were still set):")
+                        "circuit could include them (their CKT_ Panel/Rating "
+                        "params were still set):")
         output.print_md("`{}`".format(
             ", ".join(str(i) for i in report["skipped_no_connector"])))
 

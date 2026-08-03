@@ -75,6 +75,11 @@
                 ItemsSource="{Binding GroupParamOptions}"
                 SelectionChanged="group_param_changed"
                 ToolTip="Parameter used to group elements into circuits"/>
+      <TextBlock Text="Name by:" Margin="16,0,4,0" Foreground="{StaticResource SubText}"/>
+      <ComboBox Name="NameByCombo" Width="220" VerticalAlignment="Center"
+                ItemsSource="{Binding NameParamOptions}"
+                SelectionChanged="name_param_changed"
+                ToolTip="Parameter used to seed each circuit's Load Name (the name set on the created Revit circuit). Switching it re-seeds every name; you can still edit any name by hand."/>
       <TextBlock Name="SummaryText" Margin="16,0,0,0" Foreground="{StaticResource SubText}" Text="Ready"/>
     </StackPanel>
 
@@ -187,7 +192,7 @@
 
                           <TextBox Grid.Column="1"
                                    Text="{Binding load_name, Mode=OneWay}"
-                                   ToolTip="Load name (CKT_Load Name_CEDT) for this circuit"
+                                   ToolTip="Load name for this circuit (set on the created Revit circuit only; the members' CKT_Load Name_CEDT is never modified)"
                                    FontWeight="Bold"
                                    LostFocus="group_load_name_changed"/>
 

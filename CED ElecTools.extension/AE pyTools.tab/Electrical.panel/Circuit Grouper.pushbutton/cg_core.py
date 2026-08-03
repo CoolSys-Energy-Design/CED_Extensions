@@ -79,6 +79,35 @@ def default_group_param(options):
             return p
     return options[0] if options else ""
 
+
+# ---------------------------------------------------------------------------
+# Name-by parameter selection
+# ---------------------------------------------------------------------------
+# Independently of the group-by choice, the window lets the user pick which
+# parameter SEEDS each circuit's Load Name (the user can still hand-edit any
+# name after). The option list is the same common-parameter set as group-by.
+def default_name_param(options):
+    """Pick the initial name-by parameter: prefer the existing load name, then
+    identity mark, otherwise the first available option."""
+    for p in ("CKT_Load Name_CEDT", "Identity Mark"):
+        if p in options:
+            return p
+    return options[0] if options else ""
+
+
+def name_from_values(values, fallback=""):
+    """Circuit name derived from the members' values of the name-by parameter:
+    the shared value when all non-blank values agree, else their common leading
+    characters trimmed of trailing separators, else the fallback."""
+    vals = [(v or "").strip() for v in values]
+    nonblank = [v for v in vals if v]
+    if not nonblank:
+        return fallback or ""
+    if len(set(nonblank)) == 1:
+        return nonblank[0]
+    prefix = longest_common_prefix(nonblank).rstrip(" -_/.").strip()
+    return prefix or (fallback or "")
+
 # ---------------------------------------------------------------------------
 # Breaker rating options + parsing
 # ---------------------------------------------------------------------------
