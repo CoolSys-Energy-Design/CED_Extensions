@@ -601,25 +601,7 @@ def cleanup_stale_user_folders(approved_root, username=None, source_folder=None)
     return {"removed": removed, "skipped": skipped}
 
 
-def _nonclobber_file_path(dst_path):
-    if not os.path.exists(dst_path):
-        return dst_path
-
-    base, ext = os.path.splitext(dst_path)
-    tick = int(time.time())
-    candidate = "{}_{}{}".format(base, tick, ext)
-    if not os.path.exists(candidate):
-        return candidate
-
-    index = 1
-    while True:
-        candidate = "{}_{}_{}{}".format(base, tick, index, ext)
-        if not os.path.exists(candidate):
-            return candidate
-        index += 1
-
-
-def _json_files_in_folder(folder_path):
+def _telemetry_files_in_folder(folder_path):
     if not os.path.isdir(folder_path):
         return []
 
@@ -635,7 +617,7 @@ def _json_files_in_folder(folder_path):
             continue
         if name.lower() == STATE_FILE_NAME.lower():
             continue
-        if not name.lower().endswith(".json"):
+        if not name.lower().endswith("_telemetry.json"):
             continue
         results.append((name, source_path))
 
@@ -655,6 +637,7 @@ def recover_stale_usage_jsons(resolved_root, username=None, source_folder=None, 
         "files_found": 0,
         "files_moved": 0,
         "files_failed": 0,
+        "files_skipped_existing": 0,
         "error": "",
     }
 
@@ -690,14 +673,15 @@ def recover_stale_usage_jsons(resolved_root, username=None, source_folder=None, 
             continue
 
         result["stale_folders_checked"].append(stale_user_folder)
-        stale_jsons = _json_files_in_folder(stale_user_folder)
-        result["files_found"] += len(stale_jsons)
+        stale_telemetry_files = _telemetry_files_in_folder(stale_user_folder)
+        result["files_found"] += len(stale_telemetry_files)
 
-        for name, source_path in stale_jsons:
+        for name, source_path in stale_telemetry_files:
             try:
-                destination_path = _nonclobber_file_path(
-                    os.path.join(destination_folder, name)
-                )
+                destination_path = os.path.join(destination_folder, name)
+                if os.path.exists(destination_path):
+                    result["files_skipped_existing"] += 1
+                    continue
                 shutil.move(source_path, destination_path)
                 result["files_moved"] += 1
             except Exception as ex:
@@ -706,7 +690,7 @@ def recover_stale_usage_jsons(resolved_root, username=None, source_folder=None, 
 
     if result["files_failed"] > 0:
         result["status"] = "partial_success"
-    elif result["files_moved"] > 0:
+    elif result["files_moved"] > 0 or result["files_skipped_existing"] > 0:
         result["status"] = "success"
     else:
         result["status"] = "no_stale_jsons"
@@ -732,6 +716,7 @@ def record_recovery_state(recovery_result, source_folder=None):
         "files_found": _to_int(recovery_result.get("files_found", 0)),
         "files_moved": _to_int(recovery_result.get("files_moved", 0)),
         "files_failed": _to_int(recovery_result.get("files_failed", 0)),
+        "files_skipped_existing": _to_int(recovery_result.get("files_skipped_existing", 0)),
         "error": _to_text(recovery_result.get("error", "")),
         "updated_utc": _utc_now(),
     }

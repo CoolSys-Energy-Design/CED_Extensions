@@ -54,6 +54,14 @@ def _print_diagnostics():
     output.print_md("- **Approved root:** `{}`".format(state_payload.get("approved_root", "")))
     output.print_md("- **Last status:** `{}`".format((state_payload.get("last_resolution") or {}).get("status", "")))
     output.print_md("")
+    last_recovery = state_payload.get("last_stale_recovery") or {}
+    output.print_md("## Last Stale Telemetry Recovery")
+    output.print_md("- **status:** `{}`".format(last_recovery.get("status", "")))
+    output.print_md("- **files found:** `{}`".format(last_recovery.get("files_found", 0)))
+    output.print_md("- **files moved:** `{}`".format(last_recovery.get("files_moved", 0)))
+    output.print_md("- **files failed:** `{}`".format(last_recovery.get("files_failed", 0)))
+    output.print_md("- **files skipped-existing:** `{}`".format(last_recovery.get("files_skipped_existing", 0)))
+    output.print_md("")
     output.print_md("## Resolution Summary")
     output.print_md("- **status:** `{}`".format(result.get("status", "")))
     output.print_md("- **reason:** `{}`".format(result.get("reason", "")))
@@ -137,6 +145,7 @@ def _manual_resolve():
         "files_found": 0,
         "files_moved": 0,
         "files_failed": 0,
+        "files_skipped_existing": 0,
     }
     if hasattr(telemetry_route, "recover_stale_usage_jsons"):
         try:
@@ -152,6 +161,7 @@ def _manual_resolve():
                 "files_found": 0,
                 "files_moved": 0,
                 "files_failed": 0,
+                "files_skipped_existing": 0,
                 "error": str(ex),
             }
     refreshed = telemetry_route.resolve_usage_route(username=username, persist=True)
@@ -163,9 +173,10 @@ def _manual_resolve():
         "Resolved root:\n{}\n\n"
         "User folder created: {}\n"
         "Stale recovery status: {}\n"
-        "Stale JSON files found: {}\n"
-        "Stale JSON files moved: {}\n"
-        "Stale JSON files failed: {}\n\n"
+        "Stale telemetry files found: {}\n"
+        "Stale telemetry files moved: {}\n"
+        "Stale telemetry files failed: {}\n"
+        "Stale telemetry files skipped-existing: {}\n\n"
         "State file:\n{}".format(
             selected_root,
             refreshed.get("status", ""),
@@ -175,6 +186,7 @@ def _manual_resolve():
             recovery_result.get("files_found", 0),
             recovery_result.get("files_moved", 0),
             recovery_result.get("files_failed", 0),
+            recovery_result.get("files_skipped_existing", 0),
             refreshed.get("state_file", ""),
         ),
         title="ACC Path Resolver",
