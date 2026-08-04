@@ -18,6 +18,10 @@ clr.AddReference("WindowsBase")
 
 from pyrevit import forms, script, telemetry
 try:
+    from pyrevit.userconfig import user_config
+except Exception:
+    user_config = None
+try:
     import telemetry_route
 except Exception:
     telemetry_route = None
@@ -43,6 +47,63 @@ _MODULE = None
 _IS_RUNNING = False
 
 _DOCKABLE_REGISTERED = False
+
+# Emergency release switches. Keep both False in distributed builds.
+# Set both True only in a local test build after telemetry is deliberately
+# re-enabled. The disabled path changes only pyRevit's active state; it never
+# assigns, creates, clears, or transfers a telemetry file or folder.
+ENABLE_PYREVIT_TELEMETRY = False
+ENABLE_DESKTOP_CONNECTOR_TELEMETRY_TRANSFER = False
+
+
+def _telemetry_state_is_enabled(value):
+    return str(value or "").strip().lower() in (
+        "true",
+        "1",
+        "yes",
+        "on",
+    )
+
+
+def _set_pyrevit_telemetry_active(enabled):
+    """Set only pyRevit's global active setting when it differs."""
+    logger = script.get_logger()
+    config_enabled = None
+    runtime_enabled = None
+
+    if user_config is not None:
+        try:
+            config_enabled = _telemetry_state_is_enabled(
+                user_config.telemetry_status
+            )
+        except Exception as exc:
+            logger.warning("Could not read pyRevit telemetry config: %s", exc)
+
+    try:
+        runtime_enabled = _telemetry_state_is_enabled(
+            telemetry.get_telemetry_state()
+        )
+    except Exception as exc:
+        logger.warning("Could not read pyRevit telemetry state: %s", exc)
+
+    if config_enabled == enabled and runtime_enabled == enabled:
+        logger.info("pyRevit telemetry active state already %s.", enabled)
+        return
+
+    try:
+        telemetry.set_telemetry_state(enabled)
+        config_saved = False
+        if user_config is not None and config_enabled != enabled:
+            user_config.save_changes()
+            config_saved = True
+        logger.info(
+            "pyRevit telemetry active state set to %s. config_saved=%s",
+            enabled,
+            config_saved,
+        )
+    except Exception as exc:
+        logger.warning("Failed to set pyRevit telemetry active state: %s", exc)
+
 
 def _telemetry_source_folder():
     if telemetry_route is not None:
@@ -109,6 +170,14 @@ def _event_flags_to_int(value):
 
 
 def _configure_pyrevit_telemetry():
+    if not ENABLE_PYREVIT_TELEMETRY:
+        # Release behavior: turn telemetry off without touching any telemetry
+        # path or invoking pyRevit setup, which owns session-file creation.
+        _set_pyrevit_telemetry_active(False)
+        return
+
+    # Local test behavior: restore the retained telemetry setup below.
+    _set_pyrevit_telemetry_active(True)
     logger = script.get_logger()
     source_folder, folder_ok, folder_error = _ensure_telemetry_source_folder()
     if not folder_ok:
@@ -451,6 +520,11 @@ def _nonclobber_path(dst_path):
 
 
 def _on_app_closing(sender, args):
+    if not ENABLE_DESKTOP_CONNECTOR_TELEMETRY_TRANSFER:
+        return {
+            "status": "disabled_by_release_switch",
+            "transfer_disabled": True,
+        }
 
     log_data = {
         "username": None,
@@ -658,6 +732,12 @@ def _on_app_closing(sender, args):
 
 def _register_shutdown_hook():
     logger = script.get_logger()
+    if not ENABLE_DESKTOP_CONNECTOR_TELEMETRY_TRANSFER:
+        logger.info(
+            "Desktop Connector telemetry transfer disabled; "
+            "ApplicationClosing hook not registered."
+        )
+        return
     if _get_env(ENV_APP_CLOSING_HANDLER_KEY):
         logger.info("ApplicationClosing hook already registered; skipping.")
         return
