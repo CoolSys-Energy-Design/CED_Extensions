@@ -18,6 +18,10 @@ clr.AddReference("WindowsBase")
 
 from pyrevit import forms, script, telemetry
 try:
+    from pyrevit.userconfig import user_config
+except Exception:
+    user_config = None
+try:
     import telemetry_route
 except Exception:
     telemetry_route = None
@@ -48,6 +52,13 @@ _MODULE = None
 _IS_RUNNING = False
 
 _DOCKABLE_REGISTERED = False
+
+# Emergency release switches. Keep both False in distributed builds.
+# Set both True only in a local test build after telemetry is deliberately
+# re-enabled. The disabled path changes only pyRevit's active state; it never
+# assigns, creates, clears, or transfers a telemetry file or folder.
+ENABLE_PYREVIT_TELEMETRY = False
+ENABLE_DESKTOP_CONNECTOR_TELEMETRY_TRANSFER = False
 
 LOCAL_TELEMETRY_CLEANUP_VERSION = 1
 PYTOOLS_ABOUT_METADATA_RELATIVE_PATH = os.path.join(
@@ -98,6 +109,69 @@ def _telemetry_folder_matches(current_value, expected_value):
         return current_text == expected_text
     except Exception:
         return current_value == expected_value
+
+
+def _has_safe_pyrevit_telemetry_persistence():
+    """Return True only for pyRevit's 6.5+ non-persistent startup API."""
+    try:
+        setter = telemetry.set_telemetry_file_dir
+        code_object = getattr(setter, "func_code", None)
+        if code_object is None:
+            code_object = getattr(setter, "__code__", None)
+        argument_count = getattr(code_object, "co_argcount", 0)
+        argument_names = getattr(code_object, "co_varnames", ())[:argument_count]
+        return "persist" in argument_names
+    except Exception:
+        return False
+
+
+def _telemetry_state_is_enabled(value):
+    return str(value or "").strip().lower() in (
+        "true",
+        "1",
+        "yes",
+        "on",
+    )
+
+
+def _set_pyrevit_telemetry_active(enabled):
+    """Set only pyRevit's global active setting when it differs."""
+    logger = script.get_logger()
+    config_enabled = None
+    runtime_enabled = None
+
+    if user_config is not None:
+        try:
+            config_enabled = _telemetry_state_is_enabled(
+                user_config.telemetry_status
+            )
+        except Exception as exc:
+            logger.warning("Could not read pyRevit telemetry config: %s", exc)
+
+    try:
+        runtime_enabled = _telemetry_state_is_enabled(
+            telemetry.get_telemetry_state()
+        )
+    except Exception as exc:
+        logger.warning("Could not read pyRevit telemetry state: %s", exc)
+
+    if config_enabled == enabled and runtime_enabled == enabled:
+        logger.info("pyRevit telemetry active state already %s.", enabled)
+        return
+
+    try:
+        telemetry.set_telemetry_state(enabled)
+        config_saved = False
+        if user_config is not None and config_enabled != enabled:
+            user_config.save_changes()
+            config_saved = True
+        logger.info(
+            "pyRevit telemetry active state set to %s. config_saved=%s",
+            enabled,
+            config_saved,
+        )
+    except Exception as exc:
+        logger.warning("Failed to set pyRevit telemetry active state: %s", exc)
 
 
 def _fallback_acc_root_is_viable(candidate_root):
@@ -173,6 +247,14 @@ PYTOOLS_BUILD_VERSION = _PYTOOLS_RELEASE_METADATA.get("build_version", "")
 
 
 def _configure_pyrevit_telemetry():
+    if not ENABLE_PYREVIT_TELEMETRY:
+        # Release behavior: turn telemetry off without touching any telemetry
+        # path or invoking pyRevit setup, which owns session-file creation.
+        _set_pyrevit_telemetry_active(False)
+        return
+
+    # Local test behavior: restore the retained telemetry setup below.
+    _set_pyrevit_telemetry_active(True)
     logger = script.get_logger()
     source_folder, folder_ok, folder_error = _ensure_telemetry_source_folder()
     if not folder_ok:
@@ -180,49 +262,56 @@ def _configure_pyrevit_telemetry():
         return
     source_folder = _canonical_telemetry_folder(source_folder)
 
+    if user_config is None:
+        logger.warning(
+            "pyRevit user_config is unavailable. Telemetry configuration "
+            "was not changed."
+        )
+        return
+
+    if not _has_safe_pyrevit_telemetry_persistence():
+        logger.warning(
+            "pyRevit telemetry configuration was not changed because the "
+            "installed pyRevit lacks the 6.5+ persistence fix."
+        )
+        return
+
     try:
-        telemetry_cfg = script.get_config("telemetry")
-        expected_settings = {
-            "utc_timestamps": True,
-            "active": True,
-            "telemetry_file_dir": source_folder,
-            "include_hooks": True,
-        }
+        config_matches = _telemetry_folder_matches(
+            user_config.telemetry_file_dir,
+            source_folder,
+        )
+        try:
+            runtime_folder = telemetry.get_telemetry_file_dir()
+        except Exception:
+            runtime_folder = None
+        runtime_matches = _telemetry_folder_matches(
+            runtime_folder,
+            source_folder,
+        )
 
-        changed_settings = []
-        for setting_name, expected_value in expected_settings.items():
-            current_value = telemetry_cfg.get_option(
-                setting_name,
-                default_value="",
-            )
-            if setting_name == "telemetry_file_dir":
-                values_match = _telemetry_folder_matches(
-                    current_value,
-                    expected_value,
-                )
-            else:
-                values_match = current_value == expected_value
-            if values_match:
-                continue
-            telemetry_cfg.set_option(setting_name, value=expected_value)
-            changed_settings.append(setting_name)
-
-        if changed_settings:
-            # Persist configuration for pyRevit to apply during its next normal
-            # startup. CED must not initialize telemetry or create a second
-            # session file inside the current Revit process.
-            script.save_config()
+        if config_matches and runtime_matches:
             logger.info(
-                "pyRevit telemetry configuration saved for next launch. "
-                "changed=%s file_dir=%s",
-                ", ".join(changed_settings),
-                source_folder,
-            )
-        else:
-            logger.info(
-                "pyRevit telemetry already matched required settings. "
+                "pyRevit telemetry configuration already matched. "
                 "No config write needed."
             )
+            return
+
+        # Use pyRevit 6.5+'s native setter to update the running environment
+        # and its user configuration together. Do not call setup_telemetry()
+        # here: the next native startup owns JSON-file creation.
+        telemetry.set_telemetry_file_dir(source_folder, persist=True)
+        if not config_matches:
+            user_config.save_changes()
+        logger.info(
+            "pyRevit telemetry file directory updated. "
+            "config_matched=%s runtime_matched=%s config_saved=%s "
+            "file_dir=%s",
+            config_matches,
+            runtime_matches,
+            not config_matches,
+            source_folder,
+        )
     except Exception as exc:
         logger.warning("Failed to configure pyRevit telemetry: %s", exc)
 
@@ -1024,6 +1113,12 @@ def _record_shutdown_state(log_data, source_folder):
 
 
 def _on_app_closing(sender, args):
+    if not ENABLE_DESKTOP_CONNECTOR_TELEMETRY_TRANSFER:
+        return {
+            "status": "disabled_by_release_switch",
+            "transfer_disabled": True,
+        }
+
     source_folder = _telemetry_source_folder()
     log_data = {
         "status": "unknown",
@@ -1206,6 +1301,12 @@ def _on_app_closing(sender, args):
 
 def _register_shutdown_hook():
     logger = script.get_logger()
+    if not ENABLE_DESKTOP_CONNECTOR_TELEMETRY_TRANSFER:
+        logger.info(
+            "Desktop Connector telemetry transfer disabled; "
+            "ApplicationClosing hook not registered."
+        )
+        return
     if _get_env(ENV_APP_CLOSING_HANDLER_KEY):
         logger.info("ApplicationClosing hook already registered; skipping.")
         return
