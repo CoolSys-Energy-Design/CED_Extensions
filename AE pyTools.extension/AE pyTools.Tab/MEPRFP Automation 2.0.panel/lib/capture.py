@@ -702,14 +702,16 @@ def execute_capture(doc, profile_doc, request):
     else:
         parent_world_pt, parent_world_rot = None, None
 
-    # For independent captures, anchor offsets to the centroid of fixtures.
+    # For independent captures, anchor offsets to the X/Y centroid of
+    # fixtures. Z stays 0 so each z offset stores the fixture's true
+    # elevation — averaging Z skewed mounting heights at placement.
     if parent_world_pt is None and fixture_refs:
         pts = [p for p in (_world_point(c) for c in fixture_refs) if p is not None]
         if pts:
             parent_world_pt = (
                 sum(p[0] for p in pts) / len(pts),
                 sum(p[1] for p in pts) / len(pts),
-                sum(p[2] for p in pts) / len(pts),
+                0.0,
             )
             parent_world_rot = 0.0
 
