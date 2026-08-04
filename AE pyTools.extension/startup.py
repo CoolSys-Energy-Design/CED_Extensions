@@ -181,6 +181,7 @@ def _configure_pyrevit_telemetry():
     source_folder = _canonical_telemetry_folder(source_folder)
 
     try:
+        telemetry_cfg = script.get_config("telemetry")
         expected_settings = {
             "utc_timestamps": True,
             "active": True,
@@ -188,23 +189,12 @@ def _configure_pyrevit_telemetry():
             "include_hooks": True,
         }
 
-        setting_getters = {
-            "utc_timestamps": telemetry.get_telemetry_utc_timestamp,
-            "active": telemetry.get_telemetry_state,
-            "telemetry_file_dir": telemetry.get_telemetry_file_dir,
-            "include_hooks": telemetry.get_telemetry_include_hooks,
-        }
-
-        setting_setters = {
-            "utc_timestamps": telemetry.set_telemetry_utc_timestamp,
-            "active": telemetry.set_telemetry_state,
-            "telemetry_file_dir": telemetry.set_telemetry_file_dir,
-            "include_hooks": telemetry.set_telemetry_include_hooks,
-        }
-
         changed_settings = []
         for setting_name, expected_value in expected_settings.items():
-            current_value = setting_getters[setting_name]()
+            current_value = telemetry_cfg.get_option(
+                setting_name,
+                default_value="",
+            )
             if setting_name == "telemetry_file_dir":
                 values_match = _telemetry_folder_matches(
                     current_value,
@@ -214,21 +204,18 @@ def _configure_pyrevit_telemetry():
                 values_match = current_value == expected_value
             if values_match:
                 continue
-            setting_setters[setting_name](expected_value)
+            telemetry_cfg.set_option(setting_name, value=expected_value)
             changed_settings.append(setting_name)
 
-        current_file_path = telemetry.get_telemetry_file_path()
-        runtime_file_missing = not str(current_file_path or "").strip()
-
-        if changed_settings or runtime_file_missing:
-            # setup_telemetry() applies derived runtime state (session file path,
-            # handlers, env vars) and persists the updated config once.
-            telemetry.setup_telemetry()
+        if changed_settings:
+            # Persist configuration for pyRevit to apply during its next normal
+            # startup. CED must not initialize telemetry or create a second
+            # session file inside the current Revit process.
+            script.save_config()
             logger.info(
-                "pyRevit telemetry initialized via telemetry API. "
-                "changed=%s runtime_file_missing=%s file_dir=%s",
-                ", ".join(changed_settings) or "none",
-                runtime_file_missing,
+                "pyRevit telemetry configuration saved for next launch. "
+                "changed=%s file_dir=%s",
+                ", ".join(changed_settings),
                 source_folder,
             )
         else:
