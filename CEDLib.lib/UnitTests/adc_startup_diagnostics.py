@@ -137,9 +137,14 @@ class _FakeOutput(object):
 class _FakeConfig(object):
     def __init__(self, options=None):
         self.options = dict(options or {})
+        self.set_calls = []
 
     def get_option(self, name, default_value=""):
         return self.options.get(name, default_value)
+
+    def set_option(self, name, value=None):
+        self.options[name] = value
+        self.set_calls.append((name, value))
 
 
 class _FakeTelemetry(types.ModuleType):
@@ -233,6 +238,7 @@ class _PyRevitShim(object):
         self.logger = _FakeLogger()
         self.output = _FakeOutput()
         self.config = _FakeConfig(config_options)
+        self.save_config_count = 0
         self.telemetry = _FakeTelemetry(config_options)
         self.forms = _FakeForms()
 
@@ -240,6 +246,7 @@ class _PyRevitShim(object):
         self.script.get_logger = lambda: self.logger
         self.script.get_output = lambda: self.output
         self.script.get_config = lambda section=None: self.config
+        self.script.save_config = self._save_config
         self.script.get_envvar = lambda name: None
         self.script.set_envvar = lambda name, value: None
 
@@ -289,6 +296,9 @@ class _PyRevitShim(object):
             "error": "",
         }
         self.route.record_recovery_state = lambda *args, **kwargs: None
+
+    def _save_config(self):
+        self.save_config_count += 1
 
     def modules(self):
         return {
@@ -795,19 +805,28 @@ class StartupTests(unittest.TestCase):
         self.assertEqual("", metadata["toolbar_version"])
         self.assertEqual("", metadata["build_version"])
 
-    def test_configure_telemetry_canonicalizes_folder_without_touching_endpoints(self):
+    def test_configure_telemetry_saves_next_launch_without_initializing_runtime(self):
         doubled_folder = self.source_folder.replace("\\", "\\\\")
-        self.shim.telemetry.utc_timestamps = False
-        self.shim.telemetry.active = False
-        self.shim.telemetry.telemetry_file_dir = doubled_folder
-        self.shim.telemetry.include_hooks = False
-        self.shim.telemetry.telemetry_file_path = ""
+        self.shim.config.options.update({
+            "utc_timestamps": False,
+            "active": False,
+            "telemetry_file_dir": doubled_folder,
+            "telemetry_server_url": "existing-script-endpoint",
+            "include_hooks": False,
+            "active_app": True,
+            "apptelemetry_server_url": "existing-app-endpoint",
+            "apptelemetry_event_flags": "0x2",
+        })
+        active_path = self.shim.telemetry.telemetry_file_path
+        files_before = set(os.listdir(self.source_folder))
+        self.shim.config.set_calls = []
+        self.shim.save_config_count = 0
         self.shim.telemetry.calls = []
         self.shim.telemetry.setup_count = 0
 
         self.startup._configure_pyrevit_telemetry()
 
-        changed = dict(self.shim.telemetry.calls)
+        changed = dict(self.shim.config.set_calls)
         self.assertEqual(True, changed["utc_timestamps"])
         self.assertEqual(True, changed["active"])
         self.assertEqual(
@@ -819,28 +838,51 @@ class StartupTests(unittest.TestCase):
         self.assertNotIn("active_app", changed)
         self.assertNotIn("apptelemetry_server_url", changed)
         self.assertNotIn("apptelemetry_event_flags", changed)
-        self.assertEqual(1, self.shim.telemetry.setup_count)
-        self.assertTrue(self.shim.telemetry.telemetry_file_path)
-
-    def test_configure_telemetry_initializes_blank_runtime_file(self):
-        self.shim.telemetry.telemetry_file_path = ""
-        self.shim.telemetry.calls = []
-        self.shim.telemetry.setup_count = 0
-
-        self.startup._configure_pyrevit_telemetry()
-
-        self.assertEqual([], self.shim.telemetry.calls)
-        self.assertEqual(1, self.shim.telemetry.setup_count)
-        self.assertTrue(self.shim.telemetry.telemetry_file_path)
-
-    def test_configure_telemetry_leaves_initialized_runtime_untouched(self):
-        self.shim.telemetry.calls = []
-        self.shim.telemetry.setup_count = 0
-
-        self.startup._configure_pyrevit_telemetry()
-
+        self.assertEqual(
+            "existing-script-endpoint",
+            self.shim.config.options["telemetry_server_url"],
+        )
+        self.assertEqual(
+            "existing-app-endpoint",
+            self.shim.config.options["apptelemetry_server_url"],
+        )
         self.assertEqual([], self.shim.telemetry.calls)
         self.assertEqual(0, self.shim.telemetry.setup_count)
+        self.assertEqual(active_path, self.shim.telemetry.telemetry_file_path)
+        self.assertEqual(files_before, set(os.listdir(self.source_folder)))
+        self.assertEqual(1, self.shim.save_config_count)
+
+    def test_configure_telemetry_leaves_blank_runtime_file_uninitialized(self):
+        self.shim.telemetry.telemetry_file_path = ""
+        files_before = set(os.listdir(self.source_folder))
+        self.shim.config.set_calls = []
+        self.shim.save_config_count = 0
+        self.shim.telemetry.calls = []
+        self.shim.telemetry.setup_count = 0
+
+        self.startup._configure_pyrevit_telemetry()
+
+        self.assertEqual([], self.shim.config.set_calls)
+        self.assertEqual(0, self.shim.save_config_count)
+        self.assertEqual([], self.shim.telemetry.calls)
+        self.assertEqual(0, self.shim.telemetry.setup_count)
+        self.assertEqual("", self.shim.telemetry.telemetry_file_path)
+        self.assertEqual(files_before, set(os.listdir(self.source_folder)))
+
+    def test_configure_telemetry_leaves_initialized_runtime_untouched(self):
+        active_path = self.shim.telemetry.telemetry_file_path
+        self.shim.config.set_calls = []
+        self.shim.save_config_count = 0
+        self.shim.telemetry.calls = []
+        self.shim.telemetry.setup_count = 0
+
+        self.startup._configure_pyrevit_telemetry()
+
+        self.assertEqual([], self.shim.config.set_calls)
+        self.assertEqual(0, self.shim.save_config_count)
+        self.assertEqual([], self.shim.telemetry.calls)
+        self.assertEqual(0, self.shim.telemetry.setup_count)
+        self.assertEqual(active_path, self.shim.telemetry.telemetry_file_path)
 
     def test_check_acc_sync_does_not_open_ui_when_candidates_exist(self):
         self.startup.telemetry_route.resolve_usage_route = lambda **kwargs: {
