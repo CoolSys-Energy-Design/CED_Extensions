@@ -783,6 +783,7 @@ class CircuitListItem(object):
                 device_count = int(count_param.AsInteger() or 0)
         except Exception:
             device_count = 0
+        self.sort_device_count = device_count
         self.device_line = "# Devices: {}".format(device_count)
 
         load_current = _lookup_param_value(circuit, "Circuit Load Current_CED")
@@ -3570,6 +3571,15 @@ class CircuitBrowserPanel(forms.WPFPanel):
                 str(getattr(x, "sort_load_name", "") or ""),
             ))
             return sorted_items
+        if mode == "device_count":
+            sorted_items.sort(key=lambda x: (
+                -int(getattr(x, "sort_device_count", 0) or 0),
+                str(getattr(x, "sort_panel", "") or ""),
+                int(getattr(x, "sort_circuit_slot", 0) or 0),
+                str(getattr(x, "sort_load_name", "") or ""),
+                str(getattr(x, "circuit_number", "") or "").lower(),
+            ))
+            return sorted_items
         sorted_items.sort(key=lambda x: (
             str(getattr(x, "sort_panel", "") or ""),
             int(getattr(x, "sort_circuit_slot", 0) or 0),
@@ -4195,6 +4205,7 @@ class CircuitBrowserPanel(forms.WPFPanel):
             ("circuit", "Circuit"),
             ("load_name", "Load Name"),
             ("rating", "Rating"),
+            ("device_count", "Device Count"),
         ):
             item = MenuItem()
             _set_if_resource(self, item, "Style", "CED.MenuItem.Base")
@@ -4330,7 +4341,7 @@ class CircuitBrowserPanel(forms.WPFPanel):
 
     def browser_sort_clicked(self, sender, args):
         mode = str(getattr(sender, "Tag", "circuit")).lower()
-        if mode not in ("circuit", "load_name", "rating"):
+        if mode not in ("circuit", "load_name", "rating", "device_count"):
             mode = "circuit"
         if self._sort_mode == mode:
             self._sync_browser_options_menu_state()

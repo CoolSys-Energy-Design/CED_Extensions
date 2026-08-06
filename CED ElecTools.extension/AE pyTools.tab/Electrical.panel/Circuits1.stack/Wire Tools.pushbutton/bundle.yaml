@@ -1,0 +1,11 @@
+title:
+  en_us: Wire Tools
+tooltip:
+  en_us: >-
+    Modeless multi-scheme wiring tool to 
+    create and tag wires with flexible routing and configuration options.
+author: Anthony Evelina - CoolSys
+engine:
+  persistent: true
+  full_frame: false
+context: doc-project
