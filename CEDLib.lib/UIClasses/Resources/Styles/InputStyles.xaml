@@ -8,6 +8,47 @@
     <Setter Property="Background" Value="{DynamicResource CED.Brush.SearchBackground}"/>
     <Setter Property="VerticalContentAlignment" Value="Center"/>
     <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="TextBox">
+          <Border x:Name="InputBorder"
+                  Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="4"
+                  Padding="{TemplateBinding Padding}"
+                  SnapsToDevicePixels="True">
+            <Grid>
+              <ScrollViewer x:Name="PART_ContentHost" Margin="0" VerticalAlignment="Center"/>
+              <Border x:Name="InputStateOverlay"
+                      Background="Transparent"
+                      CornerRadius="4"
+                      IsHitTestVisible="False"/>
+            </Grid>
+          </Border>
+          <ControlTemplate.Triggers>
+            <MultiDataTrigger>
+              <MultiDataTrigger.Conditions>
+                <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource TemplatedParent}}" Value="True"/>
+                <Condition Binding="{Binding IsReadOnly, RelativeSource={RelativeSource TemplatedParent}}" Value="False"/>
+                <Condition Binding="{Binding IsEnabled, RelativeSource={RelativeSource TemplatedParent}}" Value="True"/>
+              </MultiDataTrigger.Conditions>
+              <Setter TargetName="InputBorder" Property="BorderBrush" Value="{DynamicResource CED.Brush.Accent}"/>
+              <Setter TargetName="InputStateOverlay" Property="Background" Value="{DynamicResource CED.Brush.ButtonStateOverlayHover}"/>
+            </MultiDataTrigger>
+            <MultiDataTrigger>
+              <MultiDataTrigger.Conditions>
+                <Condition Binding="{Binding IsKeyboardFocusWithin, RelativeSource={RelativeSource TemplatedParent}}" Value="True"/>
+                <Condition Binding="{Binding IsReadOnly, RelativeSource={RelativeSource TemplatedParent}}" Value="False"/>
+                <Condition Binding="{Binding IsEnabled, RelativeSource={RelativeSource TemplatedParent}}" Value="True"/>
+              </MultiDataTrigger.Conditions>
+              <Setter TargetName="InputBorder" Property="BorderBrush" Value="{DynamicResource CED.Brush.Accent}"/>
+              <Setter TargetName="InputStateOverlay" Property="Background" Value="{DynamicResource CED.Brush.ButtonStateOverlayHover}"/>
+            </MultiDataTrigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
   </Style>
 
   <Style x:Key="CED.Input.TextBox.PercentCompact" TargetType="TextBox" BasedOn="{StaticResource CED.Input.TextBox}">
@@ -86,6 +127,7 @@
                   Background="{TemplateBinding Background}"
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="4"
                   SnapsToDevicePixels="True">
             <ContentPresenter Margin="{TemplateBinding Padding}"
                               HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
@@ -140,10 +182,16 @@
                 Fill="{DynamicResource CED.Brush.IconMuted}"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"/>
-          <ToggleButton Grid.ColumnSpan="2"
+          <ToggleButton x:Name="ComboToggle"
+                        Grid.ColumnSpan="2"
                         Style="{StaticResource CED.Input.ComboBox.ToggleOverlay}"
                         IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                         ClickMode="Press"/>
+          <Border x:Name="ComboStateOverlay"
+                  Grid.ColumnSpan="2"
+                  Background="Transparent"
+                  CornerRadius="6"
+                  IsHitTestVisible="False"/>
         </Grid>
       </Border>
       <Popup Name="PART_Popup"
@@ -170,12 +218,18 @@
     <ControlTemplate.Triggers>
       <Trigger Property="IsMouseOver" Value="True">
         <Setter TargetName="ComboBorder" Property="BorderBrush" Value="{DynamicResource CED.Brush.Accent}"/>
+        <Setter TargetName="ComboStateOverlay" Property="Background" Value="{DynamicResource CED.Brush.ButtonStateOverlayHover}"/>
       </Trigger>
       <Trigger Property="IsKeyboardFocusWithin" Value="True">
         <Setter TargetName="ComboBorder" Property="BorderBrush" Value="{DynamicResource CED.Brush.Accent}"/>
+        <Setter TargetName="ComboStateOverlay" Property="Background" Value="{DynamicResource CED.Brush.ButtonStateOverlayHover}"/>
       </Trigger>
       <Trigger Property="IsDropDownOpen" Value="True">
         <Setter TargetName="ComboBorder" Property="BorderBrush" Value="{DynamicResource CED.Brush.Accent}"/>
+        <Setter TargetName="ComboStateOverlay" Property="Background" Value="{DynamicResource CED.Brush.ButtonStateOverlayPressed}"/>
+      </Trigger>
+      <Trigger SourceName="ComboToggle" Property="IsPressed" Value="True">
+        <Setter TargetName="ComboStateOverlay" Property="Background" Value="{DynamicResource CED.Brush.ButtonStateOverlayPressed}"/>
       </Trigger>
       <Trigger Property="HasItems" Value="False">
         <Setter TargetName="DropDownBorder" Property="MinHeight" Value="24"/>
@@ -329,10 +383,16 @@
                 Fill="{DynamicResource CED.Brush.IconMuted}"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"/>
-          <ToggleButton Grid.ColumnSpan="2"
+          <ToggleButton x:Name="ComboToggle"
+                        Grid.ColumnSpan="2"
                         Style="{StaticResource CED.Input.ComboBox.ToggleOverlay}"
                         IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                         ClickMode="Press"/>
+          <Border x:Name="ComboStateOverlay"
+                  Grid.ColumnSpan="2"
+                  Background="Transparent"
+                  CornerRadius="6"
+                  IsHitTestVisible="False"/>
         </Grid>
       </Border>
       <Popup Name="PART_Popup"
@@ -362,12 +422,18 @@
     <ControlTemplate.Triggers>
       <Trigger Property="IsMouseOver" Value="True">
         <Setter TargetName="ComboBorder" Property="BorderBrush" Value="{DynamicResource CED.Brush.Accent}"/>
+        <Setter TargetName="ComboStateOverlay" Property="Background" Value="{DynamicResource CED.Brush.ButtonStateOverlayHover}"/>
       </Trigger>
       <Trigger Property="IsKeyboardFocusWithin" Value="True">
         <Setter TargetName="ComboBorder" Property="BorderBrush" Value="{DynamicResource CED.Brush.Accent}"/>
+        <Setter TargetName="ComboStateOverlay" Property="Background" Value="{DynamicResource CED.Brush.ButtonStateOverlayHover}"/>
       </Trigger>
       <Trigger Property="IsDropDownOpen" Value="True">
         <Setter TargetName="ComboBorder" Property="BorderBrush" Value="{DynamicResource CED.Brush.Accent}"/>
+        <Setter TargetName="ComboStateOverlay" Property="Background" Value="{DynamicResource CED.Brush.ButtonStateOverlayPressed}"/>
+      </Trigger>
+      <Trigger SourceName="ComboToggle" Property="IsPressed" Value="True">
+        <Setter TargetName="ComboStateOverlay" Property="Background" Value="{DynamicResource CED.Brush.ButtonStateOverlayPressed}"/>
       </Trigger>
       <Trigger Property="HasItems" Value="False">
         <Setter TargetName="DropDownBorder" Property="MinHeight" Value="24"/>
@@ -407,10 +473,16 @@
                 Fill="{DynamicResource CED.Brush.IconMuted}"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"/>
-          <ToggleButton Grid.Column="1"
+          <ToggleButton x:Name="ComboToggle"
+                        Grid.Column="1"
                         Style="{StaticResource CED.Input.ComboBox.ToggleOverlay}"
                         IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                         ClickMode="Press"/>
+          <Border x:Name="ComboStateOverlay"
+                  Grid.ColumnSpan="2"
+                  Background="Transparent"
+                  CornerRadius="6"
+                  IsHitTestVisible="False"/>
         </Grid>
       </Border>
       <Popup Name="PART_Popup"
@@ -440,12 +512,18 @@
     <ControlTemplate.Triggers>
       <Trigger Property="IsMouseOver" Value="True">
         <Setter TargetName="ComboBorder" Property="BorderBrush" Value="{DynamicResource CED.Brush.Accent}"/>
+        <Setter TargetName="ComboStateOverlay" Property="Background" Value="{DynamicResource CED.Brush.ButtonStateOverlayHover}"/>
       </Trigger>
       <Trigger Property="IsKeyboardFocusWithin" Value="True">
         <Setter TargetName="ComboBorder" Property="BorderBrush" Value="{DynamicResource CED.Brush.Accent}"/>
+        <Setter TargetName="ComboStateOverlay" Property="Background" Value="{DynamicResource CED.Brush.ButtonStateOverlayHover}"/>
       </Trigger>
       <Trigger Property="IsDropDownOpen" Value="True">
         <Setter TargetName="ComboBorder" Property="BorderBrush" Value="{DynamicResource CED.Brush.Accent}"/>
+        <Setter TargetName="ComboStateOverlay" Property="Background" Value="{DynamicResource CED.Brush.ButtonStateOverlayPressed}"/>
+      </Trigger>
+      <Trigger SourceName="ComboToggle" Property="IsPressed" Value="True">
+        <Setter TargetName="ComboStateOverlay" Property="Background" Value="{DynamicResource CED.Brush.ButtonStateOverlayPressed}"/>
       </Trigger>
       <Trigger Property="HasItems" Value="False">
         <Setter TargetName="DropDownBorder" Property="MinHeight" Value="24"/>
