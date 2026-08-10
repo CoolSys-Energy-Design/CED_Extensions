@@ -1,0 +1,223 @@
+﻿Breaker Rating,Voltage,Poles,Configuration,Baseline Hot Wire Size,Maximum Tested Length,Maximum Hot Wire Size,Hot Upsize Steps Reached,Five Upsizes Reached,Adaptive Search Status,Status / Notes,Coarse Row Count,Refinement Row Count,Failure Row Count
+15,120.0,1,120 V / 1 pole,#12,400,3,5,Yes,REACHED_FIVE_UPSIZES,,170,672,0
+15,277.0,1,277 V / 1 pole,#12,925,3,5,Yes,REACHED_FIVE_UPSIZES,,380,672,0
+15,208.0,2,208 V / 2 pole,#12,700,3,5,Yes,REACHED_FIVE_UPSIZES,,290,672,0
+15,208.0,3,208 V / 3 pole,#12,800,3,5,Yes,REACHED_FIVE_UPSIZES,,330,672,0
+15,480.0,2,480 V / 2 pole,#12,1575,3,5,Yes,REACHED_FIVE_UPSIZES,,640,672,0
+15,480.0,3,480 V / 3 pole,#12,1825,3,5,Yes,REACHED_FIVE_UPSIZES,,740,672,0
+20,120.0,1,120 V / 1 pole,#12,300,3,5,Yes,REACHED_FIVE_UPSIZES,,130,672,0
+20,277.0,1,277 V / 1 pole,#12,700,3,5,Yes,REACHED_FIVE_UPSIZES,,290,672,0
+20,208.0,2,208 V / 2 pole,#12,525,3,5,Yes,REACHED_FIVE_UPSIZES,,220,672,0
+20,208.0,3,208 V / 3 pole,#12,600,3,5,Yes,REACHED_FIVE_UPSIZES,,250,672,0
+20,480.0,2,480 V / 2 pole,#12,1200,3,5,Yes,REACHED_FIVE_UPSIZES,,490,672,0
+20,480.0,3,480 V / 3 pole,#12,1375,3,5,Yes,REACHED_FIVE_UPSIZES,,560,672,0
+25,120.0,1,120 V / 1 pole,#10,300,2,5,Yes,REACHED_FIVE_UPSIZES,,130,576,0
+25,277.0,1,277 V / 1 pole,#10,675,2,5,Yes,REACHED_FIVE_UPSIZES,,280,552,0
+25,208.0,2,208 V / 2 pole,#10,500,2,5,Yes,REACHED_FIVE_UPSIZES,,210,552,0
+25,208.0,3,208 V / 3 pole,#10,575,2,5,Yes,REACHED_FIVE_UPSIZES,,240,552,0
+25,480.0,2,480 V / 2 pole,#10,1150,2,5,Yes,REACHED_FIVE_UPSIZES,,470,552,0
+25,480.0,3,480 V / 3 pole,#10,1350,2,5,Yes,REACHED_FIVE_UPSIZES,,550,552,0
+30,120.0,1,120 V / 1 pole,#10,250,2,5,Yes,REACHED_FIVE_UPSIZES,,110,576,0
+30,277.0,1,277 V / 1 pole,#10,575,2,5,Yes,REACHED_FIVE_UPSIZES,,240,576,0
+30,208.0,2,208 V / 2 pole,#10,425,2,5,Yes,REACHED_FIVE_UPSIZES,,180,552,0
+30,208.0,3,208 V / 3 pole,#10,500,2,5,Yes,REACHED_FIVE_UPSIZES,,210,576,0
+30,480.0,2,480 V / 2 pole,#10,975,2,5,Yes,REACHED_FIVE_UPSIZES,,400,552,0
+30,480.0,3,480 V / 3 pole,#10,1125,2,5,Yes,REACHED_FIVE_UPSIZES,,460,552,0
+35,120.0,1,120 V / 1 pole,#8,275,1,5,Yes,REACHED_FIVE_UPSIZES,,120,552,0
+35,277.0,1,277 V / 1 pole,#8,600,1,5,Yes,REACHED_FIVE_UPSIZES,,250,528,0
+35,208.0,2,208 V / 2 pole,#8,450,1,5,Yes,REACHED_FIVE_UPSIZES,,190,528,0
+35,208.0,3,208 V / 3 pole,#8,525,1,5,Yes,REACHED_FIVE_UPSIZES,,220,528,0
+35,480.0,2,480 V / 2 pole,#8,1025,1,5,Yes,REACHED_FIVE_UPSIZES,,420,504,0
+35,480.0,3,480 V / 3 pole,#8,1175,1,5,Yes,REACHED_FIVE_UPSIZES,,480,504,0
+40,120.0,1,120 V / 1 pole,#8,225,1,5,Yes,REACHED_FIVE_UPSIZES,,100,528,0
+40,277.0,1,277 V / 1 pole,#8,525,1,5,Yes,REACHED_FIVE_UPSIZES,,220,528,0
+40,208.0,2,208 V / 2 pole,#8,400,1,5,Yes,REACHED_FIVE_UPSIZES,,170,528,0
+40,208.0,3,208 V / 3 pole,#8,450,1,5,Yes,REACHED_FIVE_UPSIZES,,190,528,0
+40,480.0,2,480 V / 2 pole,#8,900,1,5,Yes,REACHED_FIVE_UPSIZES,,370,528,0
+40,480.0,3,480 V / 3 pole,#8,1025,1,5,Yes,REACHED_FIVE_UPSIZES,,420,504,0
+45,120.0,1,120 V / 1 pole,#8,200,1,5,Yes,REACHED_FIVE_UPSIZES,,90,528,0
+45,277.0,1,277 V / 1 pole,#8,475,1,5,Yes,REACHED_FIVE_UPSIZES,,200,528,0
+45,208.0,2,208 V / 2 pole,#8,350,1,5,Yes,REACHED_FIVE_UPSIZES,,150,528,0
+45,208.0,3,208 V / 3 pole,#8,400,1,5,Yes,REACHED_FIVE_UPSIZES,,170,528,0
+45,480.0,2,480 V / 2 pole,#8,800,1,5,Yes,REACHED_FIVE_UPSIZES,,330,528,0
+45,480.0,3,480 V / 3 pole,#8,925,1,5,Yes,REACHED_FIVE_UPSIZES,,380,528,0
+50,120.0,1,120 V / 1 pole,#8,200,1,5,Yes,REACHED_FIVE_UPSIZES,,90,600,0
+50,277.0,1,277 V / 1 pole,#8,425,1,5,Yes,REACHED_FIVE_UPSIZES,,180,528,0
+50,208.0,2,208 V / 2 pole,#8,325,1,5,Yes,REACHED_FIVE_UPSIZES,,140,528,0
+50,208.0,3,208 V / 3 pole,#8,375,1,5,Yes,REACHED_FIVE_UPSIZES,,160,528,0
+50,480.0,2,480 V / 2 pole,#8,725,1,5,Yes,REACHED_FIVE_UPSIZES,,300,528,0
+50,480.0,3,480 V / 3 pole,#8,825,1,5,Yes,REACHED_FIVE_UPSIZES,,340,504,0
+60,120.0,1,120 V / 1 pole,#6,200,1/0,5,Yes,REACHED_FIVE_UPSIZES,,90,552,0
+60,277.0,1,277 V / 1 pole,#6,425,1/0,5,Yes,REACHED_FIVE_UPSIZES,,180,480,0
+60,208.0,2,208 V / 2 pole,#6,325,1/0,5,Yes,REACHED_FIVE_UPSIZES,,140,480,0
+60,208.0,3,208 V / 3 pole,#6,375,1/0,5,Yes,REACHED_FIVE_UPSIZES,,160,480,0
+60,480.0,2,480 V / 2 pole,#6,725,1/0,5,Yes,REACHED_FIVE_UPSIZES,,300,456,0
+60,480.0,3,480 V / 3 pole,#6,825,1/0,5,Yes,REACHED_FIVE_UPSIZES,,340,456,0
+70,120.0,1,120 V / 1 pole,#4,400,2/0,5,Yes,REACHED_FIVE_UPSIZES,,170,744,0
+70,277.0,1,277 V / 1 pole,#4,900,2/0,5,Yes,REACHED_FIVE_UPSIZES,,370,744,0
+70,208.0,2,208 V / 2 pole,#4,700,2/0,5,Yes,REACHED_FIVE_UPSIZES,,290,744,0
+70,208.0,3,208 V / 3 pole,#4,800,2/0,5,Yes,REACHED_FIVE_UPSIZES,,330,744,0
+70,480.0,2,480 V / 2 pole,#4,1575,2/0,5,Yes,REACHED_FIVE_UPSIZES,,640,744,0
+70,480.0,3,480 V / 3 pole,#4,1800,2/0,5,Yes,REACHED_FIVE_UPSIZES,,730,744,0
+80,120.0,1,120 V / 1 pole,#4,350,2/0,5,Yes,REACHED_FIVE_UPSIZES,,150,720,0
+80,277.0,1,277 V / 1 pole,#4,800,2/0,5,Yes,REACHED_FIVE_UPSIZES,,330,744,0
+80,208.0,2,208 V / 2 pole,#4,600,2/0,5,Yes,REACHED_FIVE_UPSIZES,,250,744,0
+80,208.0,3,208 V / 3 pole,#4,700,2/0,5,Yes,REACHED_FIVE_UPSIZES,,290,744,0
+80,480.0,2,480 V / 2 pole,#4,1375,2/0,5,Yes,REACHED_FIVE_UPSIZES,,560,744,0
+80,480.0,3,480 V / 3 pole,#4,1575,2/0,5,Yes,REACHED_FIVE_UPSIZES,,640,744,0
+90,120.0,1,120 V / 1 pole,#2,225,4/0,5,Yes,REACHED_FIVE_UPSIZES,,100,456,0
+90,277.0,1,277 V / 1 pole,#2,500,4/0,5,Yes,REACHED_FIVE_UPSIZES,,210,432,0
+90,208.0,2,208 V / 2 pole,#2,375,4/0,5,Yes,REACHED_FIVE_UPSIZES,,160,408,0
+90,208.0,3,208 V / 3 pole,#2,450,4/0,5,Yes,REACHED_FIVE_UPSIZES,,190,456,0
+90,480.0,2,480 V / 2 pole,#2,875,4/0,5,Yes,REACHED_FIVE_UPSIZES,,360,432,0
+90,480.0,3,480 V / 3 pole,#2,1000,4/0,5,Yes,REACHED_FIVE_UPSIZES,,410,432,0
+100,120.0,1,120 V / 1 pole,#2,200,4/0,5,Yes,REACHED_FIVE_UPSIZES,,90,456,0
+100,277.0,1,277 V / 1 pole,#2,450,4/0,5,Yes,REACHED_FIVE_UPSIZES,,190,432,0
+100,208.0,2,208 V / 2 pole,#2,350,4/0,5,Yes,REACHED_FIVE_UPSIZES,,150,456,0
+100,208.0,3,208 V / 3 pole,#2,400,4/0,5,Yes,REACHED_FIVE_UPSIZES,,170,456,0
+100,480.0,2,480 V / 2 pole,#2,775,4/0,5,Yes,REACHED_FIVE_UPSIZES,,320,408,0
+100,480.0,3,480 V / 3 pole,#2,900,4/0,5,Yes,REACHED_FIVE_UPSIZES,,370,432,0
+125,120.0,1,120 V / 1 pole,#1,200,250,5,Yes,REACHED_FIVE_UPSIZES,,90,456,0
+125,277.0,1,277 V / 1 pole,#1,425,250,5,Yes,REACHED_FIVE_UPSIZES,,180,432,0
+125,208.0,2,208 V / 2 pole,#1,325,250,5,Yes,REACHED_FIVE_UPSIZES,,140,432,0
+125,208.0,3,208 V / 3 pole,#1,375,250,5,Yes,REACHED_FIVE_UPSIZES,,160,432,0
+125,480.0,2,480 V / 2 pole,#1,750,250,5,Yes,REACHED_FIVE_UPSIZES,,310,432,0
+125,480.0,3,480 V / 3 pole,#1,850,250,5,Yes,REACHED_FIVE_UPSIZES,,350,432,0
+150,120.0,1,120 V / 1 pole,#1/0,175,300,5,Yes,REACHED_FIVE_UPSIZES,,80,312,0
+150,277.0,1,277 V / 1 pole,#1/0,400,300,5,Yes,REACHED_FIVE_UPSIZES,,170,360,0
+150,208.0,2,208 V / 2 pole,#1/0,300,300,5,Yes,REACHED_FIVE_UPSIZES,,130,360,0
+150,208.0,3,208 V / 3 pole,#1/0,350,300,5,Yes,REACHED_FIVE_UPSIZES,,150,360,0
+150,480.0,2,480 V / 2 pole,#1/0,675,300,5,Yes,REACHED_FIVE_UPSIZES,,280,336,0
+150,480.0,3,480 V / 3 pole,#1/0,800,300,5,Yes,REACHED_FIVE_UPSIZES,,330,360,0
+175,120.0,1,120 V / 1 pole,#2/0,175,350,5,Yes,REACHED_FIVE_UPSIZES,,80,312,0
+175,277.0,1,277 V / 1 pole,#2/0,400,350,5,Yes,REACHED_FIVE_UPSIZES,,170,360,0
+175,208.0,2,208 V / 2 pole,#2/0,300,350,5,Yes,REACHED_FIVE_UPSIZES,,130,360,0
+175,208.0,3,208 V / 3 pole,#2/0,350,350,5,Yes,REACHED_FIVE_UPSIZES,,150,360,0
+175,480.0,2,480 V / 2 pole,#2/0,675,350,5,Yes,REACHED_FIVE_UPSIZES,,280,360,0
+175,480.0,3,480 V / 3 pole,#2/0,775,350,5,Yes,REACHED_FIVE_UPSIZES,,320,360,0
+200,120.0,1,120 V / 1 pole,#3/0,475,400,5,Yes,REACHED_FIVE_UPSIZES,,200,1632,0
+200,277.0,1,277 V / 1 pole,#3/0,1100,400,5,Yes,REACHED_FIVE_UPSIZES,,450,1704,0
+200,208.0,2,208 V / 2 pole,#3/0,825,400,5,Yes,REACHED_FIVE_UPSIZES,,340,1704,0
+200,208.0,3,208 V / 3 pole,#3/0,950,400,5,Yes,REACHED_FIVE_UPSIZES,,390,1704,0
+200,480.0,2,480 V / 2 pole,#3/0,1900,400,5,Yes,REACHED_FIVE_UPSIZES,,770,1704,0
+200,480.0,3,480 V / 3 pole,#3/0,2200,400,5,Yes,REACHED_FIVE_UPSIZES,,890,1704,0
+225,120.0,1,120 V / 1 pole,#4/0,475,500,5,Yes,REACHED_FIVE_UPSIZES,,200,1584,0
+225,277.0,1,277 V / 1 pole,#4/0,1050,500,5,Yes,REACHED_FIVE_UPSIZES,,430,1728,0
+225,208.0,2,208 V / 2 pole,#4/0,800,500,5,Yes,REACHED_FIVE_UPSIZES,,330,1656,0
+225,208.0,3,208 V / 3 pole,#4/0,925,500,5,Yes,REACHED_FIVE_UPSIZES,,380,1632,0
+225,480.0,2,480 V / 2 pole,#4/0,1825,500,5,Yes,REACHED_FIVE_UPSIZES,,740,1728,0
+225,480.0,3,480 V / 3 pole,#4/0,2100,500,5,Yes,REACHED_FIVE_UPSIZES,,850,1752,0
+250,120.0,1,120 V / 1 pole,#250,475,600,5,Yes,REACHED_FIVE_UPSIZES,,200,1704,0
+250,277.0,1,277 V / 1 pole,#250,1075,600,5,Yes,REACHED_FIVE_UPSIZES,,440,1920,0
+250,208.0,2,208 V / 2 pole,#250,800,600,5,Yes,REACHED_FIVE_UPSIZES,,330,1896,0
+250,208.0,3,208 V / 3 pole,#250,925,600,5,Yes,REACHED_FIVE_UPSIZES,,380,1896,0
+250,480.0,2,480 V / 2 pole,#250,1850,600,5,Yes,REACHED_FIVE_UPSIZES,,750,1968,0
+250,480.0,3,480 V / 3 pole,#250,2125,600,5,Yes,REACHED_FIVE_UPSIZES,,860,1920,0
+300,120.0,1,120 V / 1 pole,#350,450,750,5,Yes,REACHED_FIVE_UPSIZES,,190,1728,0
+300,277.0,1,277 V / 1 pole,#350,1000,750,5,Yes,REACHED_FIVE_UPSIZES,,410,2040,0
+300,208.0,2,208 V / 2 pole,#350,750,750,5,Yes,REACHED_FIVE_UPSIZES,,310,1920,0
+300,208.0,3,208 V / 3 pole,#350,875,750,5,Yes,REACHED_FIVE_UPSIZES,,360,1992,0
+300,480.0,2,480 V / 2 pole,#350,1750,750,5,Yes,REACHED_FIVE_UPSIZES,,710,2040,0
+300,480.0,3,480 V / 3 pole,#350,2000,750,5,Yes,REACHED_FIVE_UPSIZES,,810,2040,0
+350,120.0,1,120 V / 1 pole,#500,775,1000,5,Yes,REACHED_FIVE_UPSIZES,,320,3312,0
+350,277.0,1,277 V / 1 pole,#500,1800,1000,5,Yes,REACHED_FIVE_UPSIZES,,730,3648,0
+350,208.0,2,208 V / 2 pole,#500,1350,1000,5,Yes,REACHED_FIVE_UPSIZES,,550,3648,0
+350,208.0,3,208 V / 3 pole,#500,1575,1000,5,Yes,REACHED_FIVE_UPSIZES,,640,3672,0
+350,480.0,2,480 V / 2 pole,#500,3100,1000,5,Yes,REACHED_FIVE_UPSIZES,,1250,3720,0
+350,480.0,3,480 V / 3 pole,#500,3600,1000,5,Yes,REACHED_FIVE_UPSIZES,,1450,3672,0
+400,120.0,1,120 V / 1 pole,#3/0,175,500,6,Yes,REACHED_FIVE_UPSIZES,,80,312,0
+400,277.0,1,277 V / 1 pole,#3/0,375,400,5,Yes,REACHED_FIVE_UPSIZES,,160,336,0
+400,208.0,2,208 V / 2 pole,#3/0,275,400,5,Yes,REACHED_FIVE_UPSIZES,,120,288,0
+400,208.0,3,208 V / 3 pole,#3/0,325,400,5,Yes,REACHED_FIVE_UPSIZES,,140,336,0
+400,480.0,2,480 V / 2 pole,#3/0,650,400,5,Yes,REACHED_FIVE_UPSIZES,,270,336,0
+400,480.0,3,480 V / 3 pole,#3/0,750,400,5,Yes,REACHED_FIVE_UPSIZES,,310,336,0
+450,120.0,1,120 V / 1 pole,#4/0,175,600,6,Yes,REACHED_FIVE_UPSIZES,,80,264,0
+450,277.0,1,277 V / 1 pole,#4/0,350,500,5,Yes,REACHED_FIVE_UPSIZES,,150,264,0
+450,208.0,2,208 V / 2 pole,#4/0,275,500,5,Yes,REACHED_FIVE_UPSIZES,,120,264,0
+450,208.0,3,208 V / 3 pole,#4/0,325,500,5,Yes,REACHED_FIVE_UPSIZES,,140,288,0
+450,480.0,2,480 V / 2 pole,#4/0,625,500,5,Yes,REACHED_FIVE_UPSIZES,,260,288,0
+450,480.0,3,480 V / 3 pole,#4/0,700,500,5,Yes,REACHED_FIVE_UPSIZES,,290,264,0
+500,120.0,1,120 V / 1 pole,#250,325,600,5,Yes,REACHED_FIVE_UPSIZES,,140,1104,0
+500,277.0,1,277 V / 1 pole,#250,375,600,5,Yes,REACHED_FIVE_UPSIZES,,160,312,0
+500,208.0,2,208 V / 2 pole,#250,275,600,5,Yes,REACHED_FIVE_UPSIZES,,120,288,0
+500,208.0,3,208 V / 3 pole,#250,325,600,5,Yes,REACHED_FIVE_UPSIZES,,140,288,0
+500,480.0,2,480 V / 2 pole,#250,625,600,5,Yes,REACHED_FIVE_UPSIZES,,260,288,0
+500,480.0,3,480 V / 3 pole,#250,725,600,5,Yes,REACHED_FIVE_UPSIZES,,300,288,0
+600,120.0,1,120 V / 1 pole,#350,300,750,5,Yes,REACHED_FIVE_UPSIZES,,130,960,0
+600,277.0,1,277 V / 1 pole,#350,675,750,5,Yes,REACHED_FIVE_UPSIZES,,280,1320,0
+600,208.0,2,208 V / 2 pole,#350,500,750,5,Yes,REACHED_FIVE_UPSIZES,,210,1224,0
+600,208.0,3,208 V / 3 pole,#350,600,750,5,Yes,REACHED_FIVE_UPSIZES,,250,1296,0
+600,480.0,2,480 V / 2 pole,#350,1175,750,5,Yes,REACHED_FIVE_UPSIZES,,480,1368,0
+600,480.0,3,480 V / 3 pole,#350,1350,750,5,Yes,REACHED_FIVE_UPSIZES,,550,1392,0
+700,120.0,1,120 V / 1 pole,#500,475,1000,5,Yes,REACHED_FIVE_UPSIZES,,200,2136,0
+700,277.0,1,277 V / 1 pole,#500,1050,1000,5,Yes,REACHED_FIVE_UPSIZES,,430,2496,0
+700,208.0,2,208 V / 2 pole,#500,800,1000,5,Yes,REACHED_FIVE_UPSIZES,,330,2568,0
+700,208.0,3,208 V / 3 pole,#500,925,1000,5,Yes,REACHED_FIVE_UPSIZES,,380,2640,0
+700,480.0,2,480 V / 2 pole,#500,1825,1000,5,Yes,REACHED_FIVE_UPSIZES,,740,2736,0
+700,480.0,3,480 V / 3 pole,#500,2100,1000,5,Yes,REACHED_FIVE_UPSIZES,,850,2736,0
+800,120.0,1,120 V / 1 pole,#600,475,1000,4,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,200,2208,0
+800,277.0,1,277 V / 1 pole,#600,1050,1000,4,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,430,2856,0
+800,208.0,2,208 V / 2 pole,#600,800,1000,4,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,330,2712,0
+800,208.0,3,208 V / 3 pole,#600,925,1000,4,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,380,2832,0
+800,480.0,2,480 V / 2 pole,#600,1825,1000,4,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,740,3024,0
+800,480.0,3,480 V / 3 pole,#600,2100,1000,4,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,850,3024,0
+1000,120.0,1,120 V / 1 pole,#400,375,1000,6,Yes,REACHED_FIVE_UPSIZES,,160,1440,0
+1000,277.0,1,277 V / 1 pole,#400,850,1000,6,Yes,REACHED_FIVE_UPSIZES,,350,2064,0
+1000,208.0,2,208 V / 2 pole,#400,650,1000,6,Yes,REACHED_FIVE_UPSIZES,,270,1896,0
+1000,208.0,3,208 V / 3 pole,#400,725,1000,6,Yes,REACHED_FIVE_UPSIZES,,300,2040,0
+1000,480.0,2,480 V / 2 pole,#400,1450,1000,6,Yes,REACHED_FIVE_UPSIZES,,590,2160,0
+1000,480.0,3,480 V / 3 pole,#400,1675,1000,6,Yes,REACHED_FIVE_UPSIZES,,680,2232,0
+1200,120.0,1,120 V / 1 pole,#600,325,1000,4,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,140,1152,0
+1200,277.0,1,277 V / 1 pole,#600,700,1000,4,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,290,1728,0
+1200,208.0,2,208 V / 2 pole,#600,525,1000,4,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,220,1512,0
+1200,208.0,3,208 V / 3 pole,#600,625,1000,4,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,260,1704,0
+1200,480.0,2,480 V / 2 pole,#600,1225,1000,4,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,500,1824,0
+1200,480.0,3,480 V / 3 pole,#600,1400,1000,4,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,570,1872,0
+1600,120.0,1,120 V / 1 pole,#600,300,1000,4,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,130,672,0
+1600,277.0,1,277 V / 1 pole,#600,675,1000,4,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,280,1536,0
+1600,208.0,2,208 V / 2 pole,#600,500,1000,4,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,210,1344,0
+1600,208.0,3,208 V / 3 pole,#600,575,1000,4,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,240,1512,0
+1600,480.0,2,480 V / 2 pole,#600,1150,1000,4,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,470,1704,0
+1600,480.0,3,480 V / 3 pole,#600,1325,1000,4,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,540,1656,0
+2000,120.0,1,120 V / 1 pole,#600,275,1000,4,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,120,456,0
+2000,277.0,1,277 V / 1 pole,#600,650,1000,4,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,270,1416,0
+2000,208.0,2,208 V / 2 pole,#600,475,1000,4,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,200,1128,0
+2000,208.0,3,208 V / 3 pole,#600,550,1000,4,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,230,1320,0
+2000,480.0,2,480 V / 2 pole,#600,1100,1000,4,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,450,1560,0
+2000,480.0,3,480 V / 3 pole,#600,1275,1000,4,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,520,1608,0
+2500,120.0,1,120 V / 1 pole,#600,350,1000,4,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,150,840,0
+2500,277.0,1,277 V / 1 pole,#600,800,1000,4,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,330,2496,0
+2500,208.0,2,208 V / 2 pole,#600,600,1000,4,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,250,1824,0
+2500,208.0,3,208 V / 3 pole,#600,700,1000,4,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,290,2328,0
+2500,480.0,2,480 V / 2 pole,#600,1375,1000,4,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,560,3360,0
+2500,480.0,3,480 V / 3 pole,#600,1600,1000,4,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,650,3624,0
+3000,120.0,1,120 V / 1 pole,#500,300,1000,5,Yes,REACHED_FIVE_UPSIZES,,130,576,0
+3000,277.0,1,277 V / 1 pole,#500,675,1000,5,Yes,REACHED_FIVE_UPSIZES,,280,1680,0
+3000,208.0,2,208 V / 2 pole,#500,500,1000,5,Yes,REACHED_FIVE_UPSIZES,,210,864,0
+3000,208.0,3,208 V / 3 pole,#500,575,1000,5,Yes,REACHED_FIVE_UPSIZES,,240,1272,0
+3000,480.0,2,480 V / 2 pole,#500,1150,1000,5,Yes,REACHED_FIVE_UPSIZES,,470,2448,0
+3000,480.0,3,480 V / 3 pole,#500,1325,1000,5,Yes,REACHED_FIVE_UPSIZES,,540,2568,0
+3500,120.0,1,120 V / 1 pole,#700,250,1000,3,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,110,480,0
+3500,277.0,1,277 V / 1 pole,#700,575,1000,3,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,240,1008,0
+3500,208.0,2,208 V / 2 pole,#700,450,1000,3,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,190,624,0
+3500,208.0,3,208 V / 3 pole,#700,500,1000,3,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,210,696,0
+3500,480.0,2,480 V / 2 pole,#700,1000,1000,3,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,410,2112,0
+3500,480.0,3,480 V / 3 pole,#700,1150,1000,3,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,470,2304,0
+4000,120.0,1,120 V / 1 pole,#600,225,1000,4,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,100,336,0
+4000,277.0,1,277 V / 1 pole,#600,500,1000,4,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,210,432,0
+4000,208.0,2,208 V / 2 pole,#600,375,1000,4,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,160,360,0
+4000,208.0,3,208 V / 3 pole,#600,450,1000,4,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,190,456,0
+4000,480.0,2,480 V / 2 pole,#600,875,1000,4,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,360,1248,0
+4000,480.0,3,480 V / 3 pole,#600,1000,1000,4,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,410,1248,0
+5000,120.0,1,120 V / 1 pole,#750,175,1000,2,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,80,120,0
+5000,277.0,1,277 V / 1 pole,#750,400,1000,2,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,170,120,0
+5000,208.0,2,208 V / 2 pole,#750,300,1000,2,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,130,168,0
+5000,208.0,3,208 V / 3 pole,#750,350,1000,2,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,150,264,0
+5000,480.0,2,480 V / 2 pole,#750,700,1000,2,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,290,696,0
+5000,480.0,3,480 V / 3 pole,#750,800,1000,2,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,330,600,0
+6000,120.0,1,120 V / 1 pole,#750,175,1000,2,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,80,168,0
+6000,277.0,1,277 V / 1 pole,#750,350,1000,2,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,150,144,0
+6000,208.0,2,208 V / 2 pole,#750,275,1000,2,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,120,24,0
+6000,208.0,3,208 V / 3 pole,#750,325,1000,2,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,140,144,0
+6000,480.0,2,480 V / 2 pole,#750,625,1000,2,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,260,360,0
+6000,480.0,3,480 V / 3 pole,#750,700,1000,2,No,UPPER_LIMIT_FIRST,Production conductor ladder ended before five additional sizes were available.,290,336,0

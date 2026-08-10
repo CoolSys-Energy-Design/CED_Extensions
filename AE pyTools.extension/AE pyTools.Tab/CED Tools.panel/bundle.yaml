@@ -1,6 +1,7 @@
 is_beta: false
 layout:
   - About
+  - Parameter Monitor
   - Revisions
   - ">>>>>"
   - Docs
