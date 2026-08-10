@@ -119,6 +119,10 @@ class GroupVM(_Notifier):
         self.is_expanded = True
 
     def set_status(self, text, color):
+        # skip the PropertyChanged round-trip when nothing changed; at
+        # thousands of rows the no-op notifies are a real UI cost
+        if self.status == text and self.status_color is color:
+            return
         self.status = text
         self.status_color = color
         self.notify("status")
@@ -129,7 +133,10 @@ class GroupVM(_Notifier):
         self.notify("is_expanded")
 
     def set_warning(self, show):
-        self.rating_warning_visibility = Visibility.Visible if show else Visibility.Collapsed
+        vis = Visibility.Visible if show else Visibility.Collapsed
+        if self.rating_warning_visibility == vis:
+            return
+        self.rating_warning_visibility = vis
         self.notify("rating_warning_visibility")
 
 
@@ -166,10 +173,22 @@ class RowVM(_Notifier):
         self.status_order = _BUCKET_ORDER[self.status_bucket]
 
     def set_status(self, text, color):
+        if self.status == text and self.status_color is color:
+            return
         self.status = text
         self.status_color = color
         self.notify("status")
         self.notify("status_color")
+
+    def set_include(self, value):
+        """Programmatic include changes (Toggle Checked) must notify so the
+        row's CheckBox updates through its binding - the old code forced a
+        full view refresh for this, which stalls at large row counts."""
+        value = bool(value)
+        if self.include == value:
+            return
+        self.include = value
+        self.notify("include")
 
     def move_to(self, group):
         self.group = group
@@ -274,6 +293,7 @@ class CircuitGrouperWindow(forms.WPFWindow):
         touch the view (callers refresh)."""
         self._active_key = param_name
         groups_by_key = {}
+        members_by_group = {}
         self._groups = []
         for r in self._rows:
             key = (r.group_values.get(param_name, "") or "").strip()
@@ -289,14 +309,15 @@ class CircuitGrouperWindow(forms.WPFWindow):
                 groups_by_key[bucket_key] = g
                 self._groups.append(g)
             r.move_to(g)
+            members_by_group.setdefault(g, []).append(r)
         for g in self._groups:
-            self._init_group_defaults(g)
+            members = members_by_group.get(g, [])
+            self._init_group_defaults(g, members)
             # default state: fully-circuited circuits open collapsed
-            members = self._members(g)
             g.is_expanded = not (members and all(r.already_circuited for r in members))
-        self._auto_assign_panels()
+        self._auto_assign_panels(members_by_group)
 
-    def _auto_assign_panels(self):
+    def _auto_assign_panels(self, members_by_group=None):
         """Resolve groups whose source panel value lists MULTIPLE panels
         ('RA, RB, RC, RD') to the closest listed panel that still has room
         for the circuit. Slots are reserved across this session's groups, so
@@ -305,10 +326,12 @@ class CircuitGrouperWindow(forms.WPFWindow):
         validation note. Single-name values keep today's behavior."""
         if not self._panel_info:
             return
+        if members_by_group is None:
+            members_by_group = self._members_map()
         requests = []
         group_by_key = {}
         for g in self._groups:
-            members = self._members(g)
+            members = members_by_group.get(g, [])
             if members and all(r.already_circuited for r in members):
                 continue
             # multi-panel means the RAW text lists several names, whether or
@@ -382,15 +405,26 @@ class CircuitGrouperWindow(forms.WPFWindow):
         if not value or value == self._name_param:
             return
         self._name_param = value
+        members_by_group = self._members_map()
         for g in self._groups:
-            self._seed_load_name(g)
+            self._seed_load_name(g, members_by_group.get(g, []))
             g.notify("load_name")
-        self._refresh_view()
+        # load_name is not a grouping/sort key, so the header bindings update
+        # on their own - no view refresh needed here
         self._revalidate()
 
     # -- setup helpers ----------------------------------------------------
     def _members(self, group):
         return [r for r in self._rows if r.group is group]
+
+    def _members_map(self):
+        """All groups' member lists in ONE pass over the rows. Anything that
+        touches every group must use this instead of per-group _members()
+        scans, which are O(groups x rows) and visibly stall at 5000 items."""
+        members_by_group = {}
+        for r in self._rows:
+            members_by_group.setdefault(r.group, []).append(r)
+        return members_by_group
 
     def _seed_load_name(self, group, members=None):
         """Seed the group's Load Name from the members' values of the name-by
@@ -404,8 +438,9 @@ class CircuitGrouperWindow(forms.WPFWindow):
             [r.group_values.get(self._name_param, "") for r in members],
             fallback=fallback)
 
-    def _init_group_defaults(self, group):
-        members = self._members(group)
+    def _init_group_defaults(self, group, members=None):
+        if members is None:
+            members = self._members(group)
         self._seed_load_name(group, members)
         for r in members:
             if r.src_panel:
@@ -433,15 +468,20 @@ class CircuitGrouperWindow(forms.WPFWindow):
             pass
 
     def _set_bucket(self, group, members, name):
+        """Returns True when the group or any member actually hopped buckets,
+        i.e. only then does the grouped view need a (costly) Refresh."""
         order = _BUCKET_ORDER[name]
+        changed = group.status_bucket != name
         group.status_bucket = name
         group.status_order = order
         for r in members:
             if r.status_bucket != name:
+                changed = True
                 r.status_bucket = name
                 r.status_order = order
                 r.notify("status_bucket")
                 r.notify("status_order")
+        return changed
 
     # -- validation -------------------------------------------------------
     def _revalidate(self):
@@ -453,6 +493,7 @@ class CircuitGrouperWindow(forms.WPFWindow):
         ready = 0
         not_ready = 0
         lines = []
+        buckets_changed = False
 
         for g in self._groups:
             members = members_by_group.get(g, [])
@@ -469,10 +510,12 @@ class CircuitGrouperWindow(forms.WPFWindow):
             if not eff:
                 if members and all(r.already_circuited for r in members):
                     g.set_status("Already circuited", BRUSH_INFO)
-                    self._set_bucket(g, members, STATUS_ALREADY)
+                    if self._set_bucket(g, members, STATUS_ALREADY):
+                        buckets_changed = True
                 else:
                     g.set_status("No items selected", BRUSH_OFF)
-                    self._set_bucket(g, members, STATUS_NOT_READY)
+                    if self._set_bucket(g, members, STATUS_NOT_READY):
+                        buckets_changed = True
                 g.set_warning(False)
                 continue
 
@@ -482,19 +525,22 @@ class CircuitGrouperWindow(forms.WPFWindow):
             if problems:
                 g.set_status(u"⚠ " + "; ".join(problems), BRUSH_BAD)
                 g.set_warning(False)
-                self._set_bucket(g, members, STATUS_NOT_READY)
+                if self._set_bucket(g, members, STATUS_NOT_READY):
+                    buckets_changed = True
                 not_ready += 1
                 lines.append(u"'{}': {}".format(label, "; ".join(problems)))
             elif not valid:
                 g.set_status("Invalid rating - not ready", BRUSH_BAD)
                 g.set_warning(False)
-                self._set_bucket(g, members, STATUS_NOT_READY)
+                if self._set_bucket(g, members, STATUS_NOT_READY):
+                    buckets_changed = True
                 not_ready += 1
                 lines.append(u"'{}': invalid breaker rating '{}'".format(label, g.rating))
             else:
                 g.set_status("Ready", BRUSH_READY)
                 g.set_warning(not standard)
-                self._set_bucket(g, members, STATUS_READY)
+                if self._set_bucket(g, members, STATUS_READY):
+                    buckets_changed = True
                 ready += 1
                 if not standard:
                     lines.append(u"'{}': non-standard breaker size ({} A)".format(
@@ -505,8 +551,12 @@ class CircuitGrouperWindow(forms.WPFWindow):
 
         self.SummaryText.Text = "{} circuit(s) ready | {} not ready".format(ready, not_ready)
         self.ValidationText.Text = "\n".join(lines) if lines else "No validation issues."
-        # re-group/re-sort so circuits hop buckets as their status changes
-        self._refresh_view()
+        # Refresh() rebuilds the whole grouped view - the single most
+        # expensive UI operation at large row counts - so only re-group when
+        # a circuit actually hopped status buckets. Plain status-text/color
+        # changes flow through the row bindings without a refresh.
+        if buckets_changed:
+            self._refresh_view()
 
     # -- group header handlers (sender.DataContext == GroupVM) -----------
     def group_load_name_changed(self, sender, args):
@@ -606,9 +656,8 @@ class CircuitGrouperWindow(forms.WPFWindow):
             return
         new_value = not all(vm.include for vm in targets)
         for vm in targets:
-            vm.include = new_value
+            vm.set_include(new_value)
         self._revalidate()
-        self._refresh_view()
 
     # -- drag and drop ----------------------------------------------------
     def _find_row_item(self, source):

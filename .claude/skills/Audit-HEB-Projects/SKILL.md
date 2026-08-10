@@ -16,12 +16,15 @@ Everything is READ-ONLY: never start transactions, never save, never sync either
    - Skip comparison (Part 1 audit only)
 2. **Prompt for the SUSPECT project** (the one being audited). Same options. The Suspect is
    usually the active document.
-3. **Prompt for extra QC checks**: ask "Any additional QC checks to add for this run?" (free-text
+3. **Prompt for the report save location**: ask the user where to save the PDF report(s) and ask
+   them to paste the full folder path in chat. Verify the folder exists before Phase 1; if they
+   don't provide one, fall back to the Desktop (check for OneDrive redirect).
+4. **Prompt for extra QC checks**: ask "Any additional QC checks to add for this run?" (free-text
    via Other). If the user adds any:
    - Run them this session as additional audit steps, AND
    - Ask per check: "Save this check into the skill for all future runs?" If yes, append it to the
      **Custom QC Checks** section at the bottom of this file via Edit (keep the numbered format).
-4. **Both models must be open in the same Revit session before extraction begins.**
+5. **Both models must be open in the same Revit session before extraction begins.**
    NEVER open a document via `app.OpenDocumentFile` from MCP without explicitly warning the user
    first — it freezes the entire Revit UI for the duration (20+ min for a full store model) and
    blocks the MCP queue. The strongly preferred path: ask the user to open both models through
@@ -96,8 +99,8 @@ For each headline finding, export the sheet from BOTH models and present side-by
 
 ## Phase 4 — Deliverables
 
-Two PDFs on the user's Desktop (check for OneDrive redirect:
-`C:\Users\<user>\OneDrive - CoolSys Inc\Desktop`):
+Two PDFs saved to the folder the user provided in Phase 0 step 3 (fallback: Desktop — check for
+OneDrive redirect: `C:\Users\<user>\OneDrive - CoolSys Inc\Desktop`):
 - **"<Suspect> Audit Part 1.pdf"** — suspect-project audit with full ID/sheet tables.
 - **"<Suspect> Audit Part 2.pdf"** — standards comparison with side-by-side screenshots and a
   separate expected-building-differences table.
@@ -129,4 +132,12 @@ Verify circuit numbers and quoted strings against the dumped JSON before citing 
 
 ## Custom QC Checks (user-added; append new checks here, numbered)
 
-(none yet)
+1. **Receptacle abbreviation standard is "RECS" — MANDATORY every run** (added by Reed
+   2026-08-07). Sweep every circuit load name AND every sheet text string in the Suspect project
+   for receptacle references. The ONLY acceptable form is `RECS`. Flag EVERY instance of any
+   other variant — `REC`, `RECEPT`, `RECEPTS`, `RCPT`, `RCPTS`, `RECPT`, `RECPTS`, `RECEPTACLE`,
+   `RECEPTACLES` — with panel/circuit number (for load names) or sheet number (for sheet text),
+   the full source string, and the suggested `RECS` replacement. Report as its own section with
+   a total count per variant. Regex guide: match word-boundary tokens
+   `\b(REC|RECEPTS?|RCPTS?|RECPTS?|RECEPTACLES?)\b` case-insensitive; exclude legitimate
+   non-receptacle words (RECEIVING, RECESSED, RECORD, RECOVERY, RECIRCULATING, RECYCL*).
