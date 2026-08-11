@@ -65,6 +65,76 @@ class UiProjectionTests(unittest.TestCase):
         self.assertFalse(first_property.changed)
         self.assertTrue(second_property.changed)
 
+    def test_linker_children_hidden_from_grid_and_listed_under_parent(self):
+        location = {
+            "state": models.VALUE_VALID,
+            "x": 0.0, "y": 0.0, "z": 0.0, "rotation": 0.0,
+        }
+        parent = _record("Parent 1", "A", "A")
+        parent["persistent_id"] = "host:p1"
+        parent["track_location"] = True
+        parent["accepted_location"] = dict(location)
+        parent["current_location"] = dict(location, x=5.0)
+        child_profile = _record("Child 1", "A", "A")
+        child_profile["persistent_id"] = "host:c1"
+        child_profile["parent_persistent_id"] = "host:p1"
+        child_profile["linker_meta"] = {"role": "child", "led_id": "LED-1"}
+        child_profile["metadata"]["family_type"] = "Recep Family : Quad"
+        child_manual = _record("Child 2", "A", "A")
+        child_manual["persistent_id"] = "host:c2"
+        child_manual["parent_persistent_id"] = "host:p1"
+        child_removed = _record("Child 3", "A", "A")
+        child_removed["persistent_id"] = "host:c3"
+        child_removed["parent_persistent_id"] = "host:p1"
+        child_removed["state"] = models.ELEMENT_REMOVED
+        child_linked = _record("Child 4", "A", "A")
+        child_linked["persistent_id"] = "link:L1:c4"
+        child_linked["parent_persistent_id"] = "host:p1"
+        child_linked["linker_meta"] = {"role": "child"}
+        tracking_set = {
+            "elements": {
+                "host:p1": parent,
+                "host:c1": child_profile,
+                "host:c2": child_manual,
+                "host:c3": child_removed,
+                "link:L1:c4": child_linked,
+            },
+            "location_defaults": {
+                "translation_tolerance": 0.001,
+                "angular_tolerance": 0.0017453292519943296,
+            },
+        }
+
+        grid_rows = viewmodel.element_rows(tracking_set)
+        self.assertEqual([row.persistent_id for row in grid_rows], ["host:p1"])
+
+        info = viewmodel.linked_children_info(tracking_set, parent)
+        self.assertEqual(info["count"], 4)
+        by_id = dict([(row.persistent_id, row) for row in info["children"]])
+        self.assertEqual(by_id["host:c1"].origin, "Profile")
+        self.assertEqual(by_id["host:c1"].family, "Recep Family")
+        self.assertEqual(by_id["host:c1"].type, "Quad")
+        self.assertEqual(by_id["host:c2"].origin, "Manual")
+        self.assertTrue(info["parent_moved"])
+        # Removed children and linked-model children are not movable.
+        self.assertEqual(
+            sorted(info["movable_child_ids"]), ["host:c1", "host:c2"]
+        )
+
+    def test_linked_children_info_in_sync_parent(self):
+        parent = _record("Parent 1", "A", "A")
+        parent["persistent_id"] = "host:p1"
+        child = _record("Child 1", "A", "A")
+        child["persistent_id"] = "host:c1"
+        child["parent_persistent_id"] = "host:p1"
+        tracking_set = {"elements": {"host:p1": parent, "host:c1": child}}
+        info = viewmodel.linked_children_info(tracking_set, parent)
+        self.assertEqual(info["count"], 1)
+        self.assertFalse(info["parent_moved"])
+        self.assertEqual(info["movable_child_ids"], [])
+        empty = viewmodel.linked_children_info(tracking_set, child)
+        self.assertEqual(empty["count"], 0)
+
     def test_element_rows_keep_their_own_record_objects(self):
         tracking_set = {
             "elements": {

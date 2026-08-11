@@ -135,6 +135,29 @@ def resolve_source(host_document, descriptor):
     }
 
 
+# Categories users may build tracking sets from. Matched case-insensitively
+# against Revit's category names; "Fire Alarm Devices" covers the category
+# Revit actually names that way.
+ALLOWED_CATEGORY_NAMES = set([
+    "mechanical control devices",
+    "duct accessories",
+    "mechanical equipment",
+    "plumbing fixtures",
+    "plumbing equipment",
+    "pipe accessories",
+    "electrical equipment",
+    "electrical fixtures",
+    "lighting fixtures",
+    "lighting devices",
+    "data devices",
+    "security devices",
+    "fire alarm devices",
+    "fire alarm fixtures",
+    "specialty equipment",
+    "generic models",
+])
+
+
 def category_descriptor(category):
     value = _id_value(category.Id)
     return {
@@ -160,6 +183,8 @@ def list_categories(source_document):
             pass
         value = _id_value(category.Id)
         if value == 0:
+            continue
+        if str(category.Name or "").strip().lower() not in ALLOWED_CATEGORY_NAMES:
             continue
         categories[value] = category_descriptor(category)
     return sorted(categories.values(), key=lambda item: item.get("name", "").lower())
@@ -204,4 +229,136 @@ def persistent_id(source_descriptor, element):
             element_unique_id,
         )
     return "host:{}".format(element_unique_id)
+
+
+def parse_persistent_id(persistent_key):
+    """Split a persistent id into ``(kind, link_instance_unique_id, element_unique_id)``.
+
+    ``kind`` is "host" or "link"; link_instance_unique_id is None for host ids.
+    """
+    text = str(persistent_key or "")
+    if text.startswith("link:"):
+        parts = text.split(":", 2)
+        if len(parts) == 3:
+            return "link", parts[1], parts[2]
+        return "link", "", parts[-1]
+    if text.startswith("host:"):
+        return "host", None, text[len("host:"):]
+    return "host", None, text
+
+
+def unique_id_from_persistent_id(persistent_key):
+    """Return the element UniqueId encoded in a persistent id ("host:..." / "link:...:...")."""
+    return parse_persistent_id(persistent_key)[2]
+
+
+def link_total_transform(link_instance):
+    """Total transform of a link instance, or None."""
+    if link_instance is None:
+        return None
+    for method_name in ("GetTotalTransform", "GetTransform"):
+        try:
+            transform = getattr(link_instance, method_name)()
+            if transform is not None:
+                return transform
+        except Exception:
+            pass
+    return None
+
+
+def resolve_member(host_document, persistent_key):
+    """Resolve an explicit-membership persistent id to a live element.
+
+    Returns ``(element, element_document, location_transform)``. Host members
+    resolve directly; ``link:`` members resolve through their link instance,
+    with the link's total transform for host/world location conversion.
+    """
+    kind, link_unique_id, element_unique_id = parse_persistent_id(persistent_key)
+    if host_document is None or not element_unique_id:
+        return None, None, None
+    if kind == "host":
+        try:
+            element = host_document.GetElement(element_unique_id)
+        except Exception:
+            element = None
+        return element, host_document, None
+    link_instance = None
+    if link_unique_id:
+        try:
+            link_instance = host_document.GetElement(link_unique_id)
+        except Exception:
+            link_instance = None
+    link_document = None
+    if link_instance is not None:
+        try:
+            link_document = link_instance.GetLinkDocument()
+        except Exception:
+            link_document = None
+    if link_document is None:
+        return None, None, None
+    try:
+        element = link_document.GetElement(element_unique_id)
+    except Exception:
+        element = None
+    return element, link_document, link_total_transform(link_instance)
+
+
+def collect_set_member_pairs(source_document, tracking_set):
+    """Collect ``(persistent_id, element, element_document, location_transform)``
+    tuples for a tracking set.
+
+    Category-membership sets keep the original category sweep in the source
+    document. Explicit sets resolve their recorded members (tracked +
+    untracked) by persistent id; for explicit sets ``source_document`` must
+    be the host document so ``link:`` members can resolve through their link
+    instance.
+    """
+    tracking_set = tracking_set or {}
+    membership = str(tracking_set.get("membership") or models.MEMBERSHIP_CATEGORY)
+    if membership != models.MEMBERSHIP_EXPLICIT:
+        pairs = []
+        seen = set()
+        for element in collect_elements(source_document, tracking_set.get("category") or {}):
+            key = persistent_id(tracking_set.get("source") or {}, element)
+            pairs.append((key, element, source_document, None))
+            seen.add(key)
+        # Manually linked children (Add Device) can be any category, so a
+        # category sweep alone would drop them on every scan — resolve
+        # parent-linked records explicitly.
+        for key, record in list((tracking_set.get("elements") or {}).items()):
+            key = str(key or "")
+            if not key or key in seen:
+                continue
+            if not str((record or {}).get("parent_persistent_id") or ""):
+                continue
+            element, element_document, transform = resolve_member(source_document, key)
+            if element is None:
+                continue
+            if DB is not None and isinstance(element, DB.ElementType):
+                continue
+            pairs.append((key, element, element_document, transform))
+        return pairs
+    if source_document is None:
+        return []
+    keys = list((tracking_set.get("elements") or {}).keys())
+    keys.extend(list(tracking_set.get("untracked_ids") or []))
+    pairs = []
+    seen = set()
+    for key in keys:
+        key = str(key or "")
+        if not key or key in seen:
+            continue
+        seen.add(key)
+        element, element_document, transform = resolve_member(source_document, key)
+        if element is None:
+            continue
+        if DB is not None and isinstance(element, DB.ElementType):
+            continue
+        pairs.append((key, element, element_document, transform))
+    return pairs
+
+
+def collect_set_elements(source_document, tracking_set):
+    """Live elements a tracking set covers (element objects only)."""
+    return [pair[1] for pair in collect_set_member_pairs(source_document, tracking_set)]
 

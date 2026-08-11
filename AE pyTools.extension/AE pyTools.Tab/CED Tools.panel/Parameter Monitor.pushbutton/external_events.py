@@ -10,9 +10,11 @@ import traceback
 from Autodesk.Revit.UI import ExternalEvent, IExternalEventHandler
 from pyrevit import forms, script
 
+import element_linker_sync_service
 import models
 import navigation_service
 import parameter_service
+import parent_move_service
 import relationship_service
 import set_io
 import source_service
@@ -105,8 +107,9 @@ def _parameter_label(descriptor):
     )
 
 
-def _choose_parameters(source_document, category, selected_keys=None):
-    elements = source_service.collect_elements(source_document, category)
+def _choose_parameters(source_document, category, selected_keys=None, elements=None):
+    if elements is None:
+        elements = source_service.collect_elements(source_document, category)
     descriptors = parameter_service.discover_parameters(elements, source_document)
     selected_keys = set(selected_keys or [])
     choices = [
@@ -188,10 +191,16 @@ def _edit_set_interactive(document, store, set_id, logger):
     if not resolved.get("available"):
         raise ValueError(resolved.get("message") or "Source model is unavailable.")
     selected_keys = [item.get("key") for item in tracking_set.get("tracked_properties") or []]
+    explicit_elements = None
+    if str(tracking_set.get("membership") or "") == models.MEMBERSHIP_EXPLICIT:
+        explicit_elements = source_service.collect_set_elements(
+            resolved.get("source_document"), tracking_set
+        )
     descriptors = _choose_parameters(
         resolved.get("source_document"),
         tracking_set.get("category") or {},
         selected_keys=selected_keys,
+        elements=explicit_elements,
     )
     if descriptors is None:
         return None
@@ -507,9 +516,17 @@ class _ParameterMonitorExternalEventHandler(IExternalEventHandler):
             uidocument = application.ActiveUIDocument
             document = uidocument.Document if uidocument is not None else None
             if not _same_document(document, self.gateway.document):
-                raise ValueError(
-                    "The active document changed. Close and reopen Parameter Monitor for the active project."
-                )
+                if operation == "refresh_store" and document is not None:
+                    # Reload Project Data is the recovery path after a
+                    # document switch: re-target the gateway to the active
+                    # document and load its monitor data.
+                    self.gateway.document = document
+                else:
+                    raise ValueError(
+                        "The active document changed. Click 'Reload Project "
+                        "Data' to re-target Parameter Monitor to the active "
+                        "project."
+                    )
             result = self._execute_operation(document, uidocument, operation, payload)
             if result is None:
                 status = "cancelled"
@@ -713,17 +730,41 @@ class _ParameterMonitorExternalEventHandler(IExternalEventHandler):
                 "Location tracking {}d for available elements.".format(verb),
                 "Parameter Monitor - Bulk Location Tracking",
             )
-        if operation == "pick_device":
+        if operation == "add_device_child":
             device = relationship_service.pick_device(uidocument)
             if device is None:
                 return None
-            updated, _tracking_set = tracking_service.link_device(
-                store, set_id, persistent_id, device
+            updated, _tracking_set, record = tracking_service.add_manual_child(
+                document, store, set_id, persistent_id, device
             )
-            return self._save_result(document, updated, "Host device linked.", "Parameter Monitor - Link Device")
-        if operation == "unlink_device":
-            updated, _tracking_set = tracking_service.unlink_device(store, set_id, persistent_id)
-            return self._save_result(document, updated, "Host device relationship removed.", "Parameter Monitor - Unlink Device")
+            label = ((record.get("metadata") or {}).get("friendly_name")
+                     or "Device")
+            return self._save_result(
+                document,
+                updated,
+                "{} added as a Manual linked child.".format(label),
+                "Parameter Monitor - Add Device Child",
+            )
+        if operation == "unlink_child":
+            child_key = str(payload.get("child_persistent_id") or "")
+            if not child_key:
+                raise ValueError("Select a linked child first.")
+            if not forms.alert(
+                "Unlink this Manual child? It will no longer be monitored.",
+                title=TITLE,
+                yes=True,
+                no=True,
+            ):
+                return None
+            updated, _tracking_set = tracking_service.remove_manual_child(
+                store, set_id, child_key
+            )
+            return self._save_result(
+                document,
+                updated,
+                "Linked child removed from the monitor.",
+                "Parameter Monitor - Unlink Child",
+            )
         if operation in ("select_element", "show_element"):
             tracking_set = models.find_set(store, set_id)
             records = [
@@ -790,6 +831,27 @@ class _ParameterMonitorExternalEventHandler(IExternalEventHandler):
         if operation == "export_report":
             message = _export_report(store, set_id)
             return {"store": store, "message": message} if message else None
+        if operation == "sync_element_linker":
+            synced = element_linker_sync_service.run_sync(
+                document, uidocument, store, logger=self.gateway.logger
+            )
+            if synced is None:
+                return None
+            updated, sync_set_id, message = synced
+            result = self._save_result(
+                document, updated, message, "Parameter Monitor - Element Linker Sync"
+            )
+            result["sync_set_id"] = sync_set_id
+            return result
+        if operation == "move_with_parent":
+            if not persistent_ids:
+                raise ValueError("Select one or more tracked child elements first.")
+            updated, message = parent_move_service.move_children_with_parent(
+                document, store, set_id, persistent_ids, logger=self.gateway.logger
+            )
+            return self._save_result(
+                document, updated, message, "Parameter Monitor - Move with Parent"
+            )
         raise ValueError("Unknown Parameter Monitor operation: {}".format(operation))
 
     def GetName(self):  # noqa: N802

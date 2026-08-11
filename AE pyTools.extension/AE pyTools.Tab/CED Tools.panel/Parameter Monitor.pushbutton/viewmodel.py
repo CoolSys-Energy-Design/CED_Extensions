@@ -3,6 +3,7 @@
 
 from __future__ import print_function
 
+import comparison_engine
 import models
 import tracking_service
 
@@ -107,8 +108,8 @@ class TrackingSetRow(object):
         self.summary = tracking_service.set_summary(tracking_set)
         self.element_count = len(tracking_set.get("elements") or {})
         self.unresolved_count = int(self.summary.get("unresolved", 0) or 0)
-        self.subtitle = "{} | {} properties | {} elements".format(
-            self.source, self.property_count, self.element_count
+        self.subtitle = "Category: {} | Param Sets: {} | Model: {} | {} elements".format(
+            self.category, self.property_count, self.source, self.element_count
         )
         self.counts_text = "{} changed  |  {} added  |  {} removed".format(
             self.summary.get("changed", 0),
@@ -180,6 +181,7 @@ class ElementRow(object):
         self.can_restore = untracked
         self.can_remove_record = state == models.ELEMENT_REMOVED
         self.has_relationship = bool((record or {}).get("relationship"))
+        self.parent_persistent_id = str((record or {}).get("parent_persistent_id") or "")
 
 
 class PropertyRow(object):
@@ -192,6 +194,80 @@ class PropertyRow(object):
         self.changed = bool(changed)
         self.state = "Changed" if changed else str(value_state or "Unchanged").replace("_", " ").title()
         self.can_resolve = bool(changed)
+
+
+class LinkedChildRow(object):
+    """One row of the LINKED CHILDREN panel list."""
+
+    def __init__(self, persistent_id, record):
+        record = record or {}
+        metadata = (
+            record.get("current_metadata")
+            or record.get("metadata")
+            or {}
+        )
+        self.persistent_id = str(persistent_id or "")
+        self.family = _display(_metadata_value(metadata, "family_name"))
+        self.type = _display(_metadata_value(metadata, "type_name"))
+        # Profile = registered by the Element Linker sync (profile-placed);
+        # Manual = a monitored element linked by hand.
+        self.origin = "Profile" if record.get("linker_meta") else "Manual"
+        self.state = str(record.get("state") or models.ELEMENT_TRACKED)
+
+
+def linked_children_info(tracking_set, record):
+    """Children of a selected (parent) record, plus follow-move state.
+
+    ``parent_moved`` is True when the selected record's own accepted vs
+    current locations differ beyond the set's tolerances — the condition
+    under which its children can follow. ``movable_child_ids`` are the
+    non-removed children to pass to the move operation.
+    """
+    info = {
+        "children": [],
+        "count": 0,
+        "parent_moved": False,
+        "movable_child_ids": [],
+    }
+    if tracking_set is None or record is None:
+        return info
+    parent_key = str(record.get("persistent_id") or "")
+    if not parent_key:
+        return info
+    children = []
+    for persistent_id, candidate in sorted(
+        (tracking_set.get("elements") or {}).items()
+    ):
+        if str((candidate or {}).get("parent_persistent_id") or "") != parent_key:
+            continue
+        children.append((persistent_id, candidate))
+    if not children:
+        return info
+    info["children"] = [
+        LinkedChildRow(persistent_id, candidate)
+        for persistent_id, candidate in children
+    ]
+    info["count"] = len(children)
+    if bool(record.get("track_location", False)) and record.get(
+        "state"
+    ) != models.ELEMENT_REMOVED:
+        defaults = (tracking_set.get("location_defaults") or {})
+        info["parent_moved"] = not comparison_engine.locations_equal(
+            record.get("accepted_location"),
+            record.get("current_location"),
+            defaults.get("translation_tolerance", 0.001),
+            defaults.get("angular_tolerance", 0.0017453292519943296),
+        )
+    if info["parent_moved"]:
+        # Linked-model children are monitor-only: Revit cannot edit link
+        # documents, so only host children can follow the parent.
+        info["movable_child_ids"] = [
+            persistent_id
+            for persistent_id, candidate in children
+            if (candidate or {}).get("state") != models.ELEMENT_REMOVED
+            and not str(persistent_id or "").startswith("link:")
+        ]
+    return info
 
 
 def tracking_set_rows(store):
@@ -207,6 +283,10 @@ def element_rows(tracking_set, filter_key=FILTER_ALL, search_text=""):
             rows.append(ElementRow(persistent_id, record=None, untracked=True))
         return rows
     for persistent_id, record in list((tracking_set.get("elements") or {}).items()):
+        # Element Linker children are filed under their parent's LINKED
+        # CHILDREN panel instead of cluttering the main grid.
+        if str((record or {}).get("parent_persistent_id") or ""):
+            continue
         row = ElementRow(persistent_id, record=record)
         if tracking_set.get("status") in (
             models.SET_SOURCE_UNAVAILABLE,

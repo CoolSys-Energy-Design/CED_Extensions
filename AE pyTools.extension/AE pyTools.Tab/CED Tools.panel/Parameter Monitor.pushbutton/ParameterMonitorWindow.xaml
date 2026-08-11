@@ -6,6 +6,7 @@
         MinWidth="1280"
         MinHeight="650"
         PreviewKeyDown="window_preview_key_down"
+        Activated="window_activated"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource CED.Brush.WindowBackground}">
     <Window.Resources>
@@ -161,7 +162,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="5" />
-            <RowDefinition Height="130" MinHeight="80" />
+            <RowDefinition x:Name="ConsoleRowDefinition" Height="130" MinHeight="80" />
         </Grid.RowDefinitions>
 
         <Border Grid.Row="0" Background="#14243A" Padding="12,9">
@@ -175,7 +176,7 @@
                         <TextBlock Text="Accepted-baseline review for host and linked model data" Foreground="#CFD8E6" FontSize="11" />
                     </StackPanel>
                 </StackPanel>
-                <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
+                <WrapPanel x:Name="HeaderActionsPanel" DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
                     <Button Style="{StaticResource PM.PrimaryButton}" Content="+ Add Set" Click="add_set_clicked" />
                     <Button Style="{StaticResource PM.Button}" Content="Edit Set" Click="edit_set_clicked" />
                     <Button Style="{StaticResource PM.ScanButton}" Content="Scan Selected Set" ToolTip="Scan the selected set against the current Revit model. This does not accept changes." Click="check_set_clicked" />
@@ -197,14 +198,14 @@
                 <ColumnDefinition x:Name="TrackingSetsColumn" Width="290" MinWidth="0" />
                 <ColumnDefinition x:Name="TrackingSetsSplitterColumn" Width="6" />
                 <ColumnDefinition Width="*" MinWidth="460" />
-                <ColumnDefinition Width="6" />
-                <ColumnDefinition Width="480" MinWidth="420" />
+                <ColumnDefinition x:Name="RightPanelSplitterColumn" Width="6" />
+                <ColumnDefinition x:Name="RightPanelColumn" Width="480" MinWidth="420" />
             </Grid.ColumnDefinitions>
 
             <GridSplitter x:Name="TrackingSetsSplitter" Grid.Column="1" Width="6" HorizontalAlignment="Stretch"
                           ResizeDirection="Columns" ResizeBehavior="PreviousAndNext"
                           Background="Transparent" />
-            <GridSplitter Grid.Column="3" Width="6" HorizontalAlignment="Stretch"
+            <GridSplitter x:Name="RightPanelSplitter" Grid.Column="3" Width="6" HorizontalAlignment="Stretch"
                           ResizeDirection="Columns" ResizeBehavior="PreviousAndNext"
                           Background="Transparent" />
 
@@ -218,8 +219,8 @@
                     <DockPanel Grid.Row="0" Margin="0,0,0,8" LastChildFill="False">
                         <TextBlock Text="TRACKING SETS" FontWeight="Bold" VerticalAlignment="Center" />
                         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                            <Button Style="{StaticResource PM.Button}" Content="Reload Project Data" ToolTip="Re-read persisted monitor data if another command or session changed it. This does not scan the model." Padding="7,3" Click="refresh_store_clicked" />
-                            <Button Style="{StaticResource PM.Button}" Content="◀" ToolTip="Collapse Tracking Sets" Padding="7,3" Click="collapse_tracking_sets_clicked" />
+                            <Button x:Name="ReloadProjectDataButton" Style="{StaticResource PM.Button}" Content="Reload Project Data" ToolTip="Re-read persisted monitor data if another command or session changed it. This does not scan the model." Padding="7,3" Click="refresh_store_clicked" />
+                            <Button x:Name="CollapseTrackingSetsButton" Style="{StaticResource PM.Button}" Content="◀" ToolTip="Collapse Tracking Sets" Padding="7,3" Click="collapse_tracking_sets_clicked" />
                         </StackPanel>
                     </DockPanel>
                     <ListBox x:Name="TrackingSetList" Grid.Row="1" SelectionChanged="tracking_set_selection_changed"
@@ -248,7 +249,7 @@
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
-                    <StackPanel Grid.Row="2" Margin="0,8,0,0">
+                    <StackPanel x:Name="TrackingSetsFooterPanel" Grid.Row="2" Margin="0,8,0,0">
                         <Button Style="{StaticResource PM.Button}" Content="Toggle Set Active State" ToolTip="Inactive sets remain stored but are skipped by Scan All Active Sets." Click="toggle_active_clicked" />
                         <Button Style="{StaticResource PM.DangerButton}" Content="Delete Selected Set" Click="delete_set_clicked" />
                     </StackPanel>
@@ -261,7 +262,7 @@
                         Click="expand_tracking_sets_clicked" />
             </Border>
 
-            <Grid Grid.Column="2">
+            <Grid x:Name="MiddleColumnGrid" Grid.Column="2">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
@@ -282,15 +283,18 @@
                     </DockPanel>
                 </Border>
 
-                <Grid Grid.Row="1" Margin="0,0,0,7">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <Border Grid.Column="0" Style="{StaticResource PM.Card}"><StackPanel><TextBlock x:Name="ChangedCountText" Text="0" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource CED.Brush.AccentRed}" /><TextBlock Text="Changed" /></StackPanel></Border>
-                    <Border Grid.Column="1" Style="{StaticResource PM.Card}"><StackPanel><TextBlock x:Name="AddedCountText" Text="0" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource CED.Brush.AccentGreen}" /><TextBlock Text="Added" /></StackPanel></Border>
-                    <Border Grid.Column="2" Style="{StaticResource PM.Card}"><StackPanel><TextBlock x:Name="RemovedCountText" Text="0" FontSize="24" FontWeight="Bold" Foreground="#D58512" /><TextBlock Text="Removed" /></StackPanel></Border>
-                    <Border Grid.Column="3" Style="{StaticResource PM.Card}"><StackPanel><TextBlock x:Name="UnchangedCountText" Text="0" FontSize="24" FontWeight="Bold" /><TextBlock Text="Unchanged" /></StackPanel></Border>
-                </Grid>
+                <Expander Grid.Row="1" Margin="0,0,0,7" IsExpanded="True">
+                    <Expander.Header><TextBlock Text="SET SUMMARY" FontWeight="Bold" /></Expander.Header>
+                    <Grid Margin="0,4,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Border Grid.Column="0" Style="{StaticResource PM.Card}"><StackPanel><TextBlock x:Name="ChangedCountText" Text="0" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource CED.Brush.AccentRed}" /><TextBlock Text="Changed" /></StackPanel></Border>
+                        <Border Grid.Column="1" Style="{StaticResource PM.Card}"><StackPanel><TextBlock x:Name="AddedCountText" Text="0" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource CED.Brush.AccentGreen}" /><TextBlock Text="Added" /></StackPanel></Border>
+                        <Border Grid.Column="2" Style="{StaticResource PM.Card}"><StackPanel><TextBlock x:Name="RemovedCountText" Text="0" FontSize="24" FontWeight="Bold" Foreground="#D58512" /><TextBlock Text="Removed" /></StackPanel></Border>
+                        <Border Grid.Column="3" Style="{StaticResource PM.Card}"><StackPanel><TextBlock x:Name="UnchangedCountText" Text="0" FontSize="24" FontWeight="Bold" /><TextBlock Text="Unchanged" /></StackPanel></Border>
+                    </Grid>
+                </Expander>
 
                 <Border Grid.Row="2" Style="{StaticResource PM.Card}" Margin="0,0,0,7" Padding="8">
                     <Grid>
@@ -353,63 +357,117 @@
                 </DataGrid>
             </Grid>
 
-            <Border Grid.Column="4" Style="{StaticResource PM.Card}" Margin="0">
+            <Border x:Name="RightPanelBorder" Grid.Column="4" Style="{StaticResource PM.Card}" Margin="0">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
+                        <RowDefinition x:Name="ParametersRowDefinition" Height="*" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <StackPanel Grid.Row="0">
-                        <TextBlock Text="ELEMENT DETAILS" FontWeight="Bold" />
-                        <TextBlock x:Name="ElementTitleText" Text="Select an element" FontSize="18" FontWeight="Bold" Margin="0,9,0,0" />
-                        <TextBlock x:Name="ElementContextText" Text="-" Foreground="{DynamicResource CED.Brush.SecondaryText}" TextWrapping="Wrap" />
-                    </StackPanel>
-                    <WrapPanel Grid.Row="1" Margin="0,8,0,8">
-                        <Button x:Name="ShowElementButton" Style="{StaticResource PM.Button}" Content="Show in Model" Click="show_element_clicked" />
-                        <Button x:Name="SelectElementButton" Style="{StaticResource PM.Button}" Content="Select in Model" Click="select_element_clicked" />
-                    </WrapPanel>
-                    <DataGrid x:Name="PropertyGrid" Grid.Row="2" SelectionChanged="property_selection_changed"
-                              RowStyle="{StaticResource PM.PropertyRow}"
-                              ScrollViewer.HorizontalScrollBarVisibility="Auto">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="Property" Binding="{Binding name}" Width="1.3*" MinWidth="105" />
-                            <DataGridTextColumn Header="Scope" Binding="{Binding scope}" Width="0.65*" MinWidth="58" />
-                            <DataGridTextColumn Header="Accepted" Binding="{Binding accepted}" Width="1.1*" MinWidth="90" />
-                            <DataGridTextColumn Header="Current" Binding="{Binding current}" Width="1.1*" MinWidth="90" />
-                            <DataGridTextColumn Header="State" Binding="{Binding state}" Width="0.8*" MinWidth="75" />
-                        </DataGrid.Columns>
-                    </DataGrid>
-                    <WrapPanel Grid.Row="3" Margin="0,8,0,0">
-                        <Button x:Name="ResolvePropertyButton" Style="{StaticResource PM.Button}" Content="Resolve Property" Click="resolve_property_clicked" />
-                        <Button x:Name="ResolveElementButton" Style="{StaticResource PM.PrimaryButton}" Content="Resolve Element" Click="resolve_element_clicked" />
-                        <Button x:Name="UntrackButton" Style="{StaticResource PM.DangerButton}" Content="Untrack" Click="untrack_clicked" />
-                        <Button x:Name="RestoreButton" Style="{StaticResource PM.Button}" Content="Restore Tracking" Click="restore_clicked" />
-                        <Button x:Name="RemoveRecordButton" Style="{StaticResource PM.DangerButton}" Content="Remove Record" Click="remove_record_clicked" />
-                    </WrapPanel>
-                    <Border Grid.Row="4" BorderBrush="{DynamicResource CED.Brush.InfoPanelBorder}" BorderThickness="1" CornerRadius="5" Background="{DynamicResource CED.Brush.InfoPanelBackground}" Padding="8" Margin="0,8,0,0">
-                        <StackPanel>
-                            <TextBlock Text="HOST DEVICE / CIRCUIT" FontWeight="Bold" />
-                            <TextBlock x:Name="RelationshipText" Text="No host device linked" Margin="0,4,0,3" TextWrapping="Wrap" />
-                            <WrapPanel>
-                                <Button x:Name="LinkDeviceButton" Style="{StaticResource PM.Button}" Content="Pick / Change Device" Click="link_device_clicked" />
-                                <Button x:Name="UnlinkDeviceButton" Style="{StaticResource PM.Button}" Content="Unlink" Click="unlink_device_clicked" />
-                                <Button x:Name="SelectDeviceButton" Style="{StaticResource PM.Button}" Content="Select Device" Click="select_device_clicked" />
-                                <Button x:Name="ShowDeviceButton" Style="{StaticResource PM.Button}" Content="Show Device" Click="show_device_clicked" />
-                                <Button x:Name="SelectCircuitButton" Style="{StaticResource PM.Button}" Content="Select Circuit" Click="select_circuit_clicked" />
+                        <DockPanel LastChildFill="False">
+                            <TextBlock Text="ELEMENT DETAILS" FontWeight="Bold" VerticalAlignment="Center" />
+                            <Button DockPanel.Dock="Right" Style="{StaticResource PM.Button}" Content="▶"
+                                    ToolTip="Collapse the details panel" Padding="7,3"
+                                    Click="collapse_right_panel_clicked" />
+                        </DockPanel>
+                        <StackPanel Margin="0,4,0,0">
+                            <TextBlock x:Name="ElementTitleText" Text="Select an element" FontSize="18" FontWeight="Bold" Margin="0,4,0,0" />
+                            <TextBlock x:Name="ElementContextText" Text="-" Foreground="{DynamicResource CED.Brush.SecondaryText}" TextWrapping="Wrap" />
+                            <WrapPanel Margin="0,8,0,0">
+                                <Button x:Name="ShowElementButton" Style="{StaticResource PM.Button}" Content="Show in Model" Click="show_element_clicked" />
+                                <Button x:Name="SelectElementButton" Style="{StaticResource PM.Button}" Content="Select in Model" Click="select_element_clicked" />
                             </WrapPanel>
                         </StackPanel>
+                    </StackPanel>
+                    <Expander Grid.Row="1" x:Name="ParametersExpander" IsExpanded="True" Margin="0,8,0,0"
+                              Expanded="parameters_expander_expanded" Collapsed="parameters_expander_collapsed">
+                        <Expander.Header><TextBlock Text="PARAMETERS" FontWeight="Bold" /></Expander.Header>
+                        <Grid Margin="0,4,0,0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <DataGrid x:Name="PropertyGrid" Grid.Row="0" SelectionChanged="property_selection_changed"
+                                      RowStyle="{StaticResource PM.PropertyRow}"
+                                      ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Property" Binding="{Binding name}" Width="1.3*" MinWidth="105" />
+                                    <DataGridTextColumn Header="Scope" Binding="{Binding scope}" Width="0.65*" MinWidth="58" />
+                                    <DataGridTextColumn Header="Accepted" Binding="{Binding accepted}" Width="1.1*" MinWidth="90" />
+                                    <DataGridTextColumn Header="Current" Binding="{Binding current}" Width="1.1*" MinWidth="90" />
+                                    <DataGridTextColumn Header="State" Binding="{Binding state}" Width="0.8*" MinWidth="75" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <WrapPanel Grid.Row="1" Margin="0,8,0,0">
+                                <Button x:Name="ResolvePropertyButton" Style="{StaticResource PM.Button}" Content="Resolve Property" Click="resolve_property_clicked" />
+                                <Button x:Name="ResolveElementButton" Style="{StaticResource PM.PrimaryButton}" Content="Resolve Element" Click="resolve_element_clicked" />
+                                <Button x:Name="UntrackButton" Style="{StaticResource PM.DangerButton}" Content="Untrack" Click="untrack_clicked" />
+                                <Button x:Name="SyncElementLinkerButton" Style="{StaticResource PM.PrimaryButton}" Content="Sync Element Linker"
+                                        ToolTip="Scan the model for elements with a populated Element_Linker parameter, then register them (and their host or linked-model parents) for monitoring."
+                                        Click="sync_element_linker_clicked" />
+                                <Button x:Name="RestoreButton" Style="{StaticResource PM.Button}" Content="Restore Tracking" Click="restore_clicked" />
+                                <Button x:Name="RemoveRecordButton" Style="{StaticResource PM.DangerButton}" Content="Remove Record" Click="remove_record_clicked" />
+                            </WrapPanel>
+                        </Grid>
+                    </Expander>
+                    <Border Grid.Row="2" BorderBrush="{DynamicResource CED.Brush.InfoPanelBorder}" BorderThickness="1" CornerRadius="5" Background="{DynamicResource CED.Brush.InfoPanelBackground}" Padding="8" Margin="0,8,0,0">
+                        <Expander IsExpanded="True">
+                            <Expander.Header><TextBlock Text="LINKED CHILDREN" FontWeight="Bold" /></Expander.Header>
+                            <StackPanel Margin="0,4,0,0">
+                                <TextBlock x:Name="ChildrenSummaryText" Text="No linked children" Margin="0,0,0,3" TextWrapping="Wrap" />
+                                <DataGrid x:Name="ChildrenGrid" MaxHeight="160" Margin="0,0,0,6"
+                                          SelectionChanged="children_selection_changed"
+                                          AutoGenerateColumns="False" IsReadOnly="True"
+                                          HeadersVisibility="Column" SelectionMode="Single"
+                                          CanUserAddRows="False" CanUserDeleteRows="False"
+                                          RowStyle="{StaticResource PM.PropertyRow}"
+                                          ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                          ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Family" Binding="{Binding family}" Width="1.3*" MinWidth="110" />
+                                        <DataGridTextColumn Header="Type" Binding="{Binding type}" Width="1.3*" MinWidth="110" />
+                                        <DataGridTextColumn Header="Origin" Binding="{Binding origin}" Width="0.7*" MinWidth="60" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                                <WrapPanel>
+                                    <Button x:Name="MoveWithParentButton" Style="{StaticResource PM.PrimaryButton}" Content="Move Children with Parent"
+                                            ToolTip="Move every linked child of the selected parent by the same translation and rotation the parent moved since its accepted location."
+                                            IsEnabled="False" Click="move_with_parent_clicked" />
+                                </WrapPanel>
+                            </StackPanel>
+                        </Expander>
+                    </Border>
+                    <Border Grid.Row="3" BorderBrush="{DynamicResource CED.Brush.InfoPanelBorder}" BorderThickness="1" CornerRadius="5" Background="{DynamicResource CED.Brush.InfoPanelBackground}" Padding="8" Margin="0,8,0,0">
+                        <Expander IsExpanded="True">
+                            <Expander.Header><TextBlock Text="HOST DEVICE / CIRCUIT" FontWeight="Bold" /></Expander.Header>
+                            <StackPanel Margin="0,4,0,0">
+                                <TextBlock x:Name="RelationshipText" Text="No host device linked" Margin="0,0,0,3" TextWrapping="Wrap" />
+                                <WrapPanel>
+                                    <Button x:Name="LinkDeviceButton" Style="{StaticResource PM.Button}" Content="Add Device" ToolTip="Pick or change the linked host electrical device." Click="link_device_clicked" />
+                                    <Button x:Name="UnlinkDeviceButton" Style="{StaticResource PM.Button}" Content="Unlink" Click="unlink_device_clicked" />
+                                    <Button x:Name="SelectDeviceButton" Style="{StaticResource PM.Button}" Content="Select Device" Click="select_device_clicked" />
+                                    <Button x:Name="ShowDeviceButton" Style="{StaticResource PM.Button}" Content="Show Device" Click="show_device_clicked" />
+                                    <Button x:Name="SelectCircuitButton" Style="{StaticResource PM.Button}" Content="Select Circuit" Click="select_circuit_clicked" />
+                                </WrapPanel>
+                            </StackPanel>
+                        </Expander>
                     </Border>
                 </Grid>
+            </Border>
+
+            <Border x:Name="RightPanelCollapsedStrip" Grid.Column="4" Style="{StaticResource PM.Card}" Margin="0" Padding="2" Visibility="Collapsed">
+                <Button Style="{StaticResource PM.Button}" Content="◀" ToolTip="Expand the details panel"
+                        Padding="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                        Click="expand_right_panel_clicked" />
             </Border>
         </Grid>
 
             <Border Grid.Row="1" Background="{DynamicResource CED.Brush.SurfaceAlt}" BorderBrush="{DynamicResource CED.Brush.Border}" BorderThickness="0,1,0,0" Padding="8,5">
                 <DockPanel>
                     <TextBlock x:Name="StatusBarText" Text="Ready. Reload Saved Data reads storage; scans read the current model; scans never accept changes automatically." VerticalAlignment="Center" TextWrapping="Wrap" />
-                    <WrapPanel DockPanel.Dock="Right">
+                    <WrapPanel x:Name="StatusActionsPanel" DockPanel.Dock="Right">
                         <Button Style="{StaticResource PM.Button}" Content="Accept All Changes in Set" ToolTip="Accept the current values as the new baseline for this set." Click="resolve_set_clicked" />
                         <Button Style="{StaticResource PM.DangerButton}" Content="Delete Removed Records" ToolTip="Permanently remove records for elements no longer found in the model." Click="remove_all_removed_clicked" />
                     </WrapPanel>
@@ -421,16 +479,18 @@
                       ResizeDirection="Rows" ResizeBehavior="PreviousAndNext"
                       Background="{DynamicResource CED.Brush.Border}" />
 
-        <Border Grid.Row="3" Background="{DynamicResource CED.Brush.SurfaceAlt}"
+        <Border x:Name="ConsoleBorder" Grid.Row="3" Background="{DynamicResource CED.Brush.SurfaceAlt}"
                 BorderBrush="{DynamicResource CED.Brush.Border}" BorderThickness="0,1,0,0"
                 Padding="8,5">
-            <Grid>
+            <Expander x:Name="ConsoleExpander" IsExpanded="True"
+                      Expanded="console_expander_expanded" Collapsed="console_expander_collapsed">
+                <Expander.Header><TextBlock Text="OUTPUT CONSOLE" FontWeight="Bold" /></Expander.Header>
+            <Grid Margin="0,4,0,0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
-                <DockPanel Grid.Row="0" Margin="0,0,0,4">
-                    <TextBlock Text="OUTPUT CONSOLE" FontWeight="Bold" VerticalAlignment="Center" />
+                <DockPanel Grid.Row="0" Margin="0,0,0,4" LastChildFill="False">
                     <Button DockPanel.Dock="Right" Style="{StaticResource PM.Button}"
                             Content="Clear" Padding="8,2" Click="clear_console_clicked" />
                 </DockPanel>
@@ -443,6 +503,7 @@
                          VerticalScrollBarVisibility="Auto"
                          HorizontalScrollBarVisibility="Auto" />
             </Grid>
+            </Expander>
         </Border>
     </Grid>
 </Window>

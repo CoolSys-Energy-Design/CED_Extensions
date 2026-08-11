@@ -17,7 +17,7 @@ for _assembly in ("PresentationFramework", "PresentationCore", "WindowsBase", "S
 from System import Boolean, DateTime, Object, String
 from System.Collections.Generic import List
 from System.Data import DataTable
-from System.Windows import Application, GridLength, Thickness, VerticalAlignment, Visibility, WindowState
+from System.Windows import Application, GridLength, GridUnitType, Thickness, VerticalAlignment, Visibility, WindowState
 from System.Windows.Controls import Dock
 from System.Windows.Controls import Button, CheckBox, ContextMenu, DockPanel, MenuItem, Separator, TextBlock
 from System.Windows.Input import Key, Keyboard, ModifierKeys, MouseButtonState
@@ -90,6 +90,7 @@ class ParameterMonitorWindow(CEDWindowBase):
         self._viewmodel = viewmodel
         self._models = models
         self._forms = forms
+        self._revit = revit
         self._logger = LOGGER
         self._traceback = traceback
         self._title = TITLE
@@ -100,6 +101,7 @@ class ParameterMonitorWindow(CEDWindowBase):
         self._date_time_type = DateTime
         self._visibility = Visibility
         self._grid_length_type = GridLength
+        self._grid_unit_type = GridUnitType
         self._system_thickness = Thickness
         self._dock_right = Dock.Right
         self._vertical_alignment = VerticalAlignment
@@ -139,6 +141,10 @@ class ParameterMonitorWindow(CEDWindowBase):
             (11, "Circuit / Device", "circuit"),
         ]
         self._tracking_sets_expanded_width = 290.0
+        self._right_panel_expanded_width = 480.0
+        self._console_expanded_height = 130.0
+        self._selected_child_id = None
+        self._document_lockdown = False
         xaml_path = os.path.join(THIS_DIR, "ParameterMonitorWindow.xaml")
         CEDWindowBase.__init__(
             self,
@@ -402,6 +408,11 @@ class ParameterMonitorWindow(CEDWindowBase):
             self._set_status(message)
 
     def _run(self, operation, payload=None):
+        if self._document_lockdown and operation != "refresh_store":
+            self._set_status(
+                "The active document changed. Click 'Reload Project Data' first."
+            )
+            return
         if self._gateway.is_busy():
             self._set_status("Another Parameter Monitor operation is already running.")
             return
@@ -448,6 +459,9 @@ class ParameterMonitorWindow(CEDWindowBase):
     def _apply_external_complete(self, status, operation, result, error):
         self._set_busy(False)
         if status == "error":
+            if "active document changed" in str(error or "").lower():
+                self._engage_document_lockdown()
+                return
             self._set_status("{} failed.".format(str(operation).replace("_", " ").title()))
             self._forms.alert(
                 "Parameter Monitor operation failed:\n\n{}".format(error),
@@ -457,6 +471,14 @@ class ParameterMonitorWindow(CEDWindowBase):
         if status == "cancelled":
             self._set_status("Operation cancelled. No project monitor data changed.")
             return
+        if operation == "refresh_store" and self._document_lockdown:
+            self._set_document_lockdown(False)
+            self._selected_set_id = None
+            self._selected_persistent_id = None
+            self._selected_persistent_ids = []
+            self._log_console(
+                "INFO", "Parameter Monitor re-targeted to the active document."
+            )
         result = result or {}
         store = result.get("store")
         if store is not None:
@@ -466,6 +488,10 @@ class ParameterMonitorWindow(CEDWindowBase):
                     self._selected_set_id = str(added_sets[-1].get("set_id") or "")
                     self._selected_persistent_id = None
                     self._selected_persistent_ids = []
+            if operation == "sync_element_linker" and result.get("sync_set_id"):
+                self._selected_set_id = str(result.get("sync_set_id") or "")
+                self._selected_persistent_id = None
+                self._selected_persistent_ids = []
             self._apply_store(store)
         self._set_status(result.get("message") or "Operation complete.")
 
@@ -477,6 +503,70 @@ class ParameterMonitorWindow(CEDWindowBase):
         control.ItemsSource = None
         control.ItemsSource = source
         return source
+
+    def _replace_children_items(self, items):
+        """Bind the LINKED CHILDREN list through CLR DataRowView objects."""
+        table = self._data_table_type("ParameterMonitorLinkedChildren")
+        for name in ("family", "type", "origin", "persistent_id", "state"):
+            table.Columns.Add(name, self._string_type)
+        for item in list(items or []):
+            row = table.NewRow()
+            for name in ("family", "type", "origin", "persistent_id", "state"):
+                row[name] = str(getattr(item, name, "") or "")
+            table.Rows.Add(row)
+        self._selected_child_id = None
+        self.ChildrenGrid.ItemsSource = None
+        self.ChildrenGrid.ItemsSource = table.DefaultView
+        self._children_table = table
+        return table.DefaultView
+
+    def _selected_child_record(self):
+        if not self._selected_child_id:
+            return None
+        set_row = self._selected_set_row()
+        if set_row is None:
+            return None
+        return ((set_row.data or {}).get("elements") or {}).get(
+            self._selected_child_id
+        )
+
+    def _payload_for_child(self):
+        set_row = self._selected_set_row()
+        if set_row is None or not self._selected_child_id:
+            self._forms.alert(
+                "Select a linked child in the LINKED CHILDREN list first.",
+                title=self._title,
+            )
+            return None
+        return {
+            "set_id": set_row.set_id,
+            "persistent_id": self._selected_child_id,
+            "child_persistent_id": self._selected_child_id,
+        }
+
+    def children_selection_changed(self, sender, args):
+        if self._refreshing:
+            return
+        item = self.ChildrenGrid.SelectedItem
+        self._selected_child_id = (
+            str(self._property_field(item, "persistent_id") or "")
+            if item is not None else None
+        ) or None
+        record = self._selected_child_record()
+        if record is not None:
+            context = record.get("relationship_context") or {}
+            origin = "Profile" if record.get("linker_meta") else "Manual"
+            self.RelationshipText.Text = "{} child | {}".format(
+                origin,
+                context.get("status_text") or "No circuit information",
+            )
+        else:
+            self.RelationshipText.Text = (
+                "Select a linked child to manage its device / circuit"
+            )
+        self._set_action_state(
+            self._selected_element_rows(), self._selected_property_row()
+        )
 
     def _replace_property_items(self, items):
         """Bind inspector values through CLR DataRowView objects, not Python wrappers."""
@@ -636,6 +726,8 @@ class ParameterMonitorWindow(CEDWindowBase):
             self.ElementContextText.Text = "-"
             self._property_rows = self._replace_property_items([])
             self.RelationshipText.Text = "No host device linked"
+            self.ChildrenSummaryText.Text = "No linked children"
+            self._replace_children_items([])
             self._set_action_state([], None)
             return
         if len(element_rows) > 1:
@@ -647,6 +739,8 @@ class ParameterMonitorWindow(CEDWindowBase):
             )
             self._property_rows = self._replace_property_items([])
             self.RelationshipText.Text = "Multiple elements selected"
+            self.ChildrenSummaryText.Text = "Multiple elements selected"
+            self._replace_children_items([])
             self._set_action_state(element_rows, None)
             self._log_console(
                 "SELECT",
@@ -681,15 +775,25 @@ class ParameterMonitorWindow(CEDWindowBase):
             self.PropertyGrid.SelectedItem = selected_property
         finally:
             self._refreshing = False
-        context = (element_row.record or {}).get("relationship_context") or {}
-        relationship = (element_row.record or {}).get("relationship") or {}
-        if relationship:
-            self.RelationshipText.Text = "{} | {}".format(
-                context.get("device_name") or relationship.get("device_name") or "Linked Device",
-                context.get("status_text") or "Relationship retained",
+        self.RelationshipText.Text = (
+            "Select a linked child to manage its device / circuit"
+        )
+        children_info = self._viewmodel.linked_children_info(
+            tracking_set, element_row.record
+        )
+        self._replace_children_items(children_info.get("children") or [])
+        if not children_info.get("count"):
+            self.ChildrenSummaryText.Text = "No linked children"
+        elif children_info.get("parent_moved"):
+            self.ChildrenSummaryText.Text = (
+                "{} linked child(ren) | Parent MOVED - children can follow".format(
+                    children_info.get("count")
+                )
             )
         else:
-            self.RelationshipText.Text = "No host device linked"
+            self.ChildrenSummaryText.Text = "{} linked child(ren) | In sync".format(
+                children_info.get("count")
+            )
         self._set_action_state([element_row], self._selected_property_row())
         value_summary = "; ".join([
             "{}: {} -> {} ({})".format(row.name, row.accepted, row.current, row.state)
@@ -711,11 +815,6 @@ class ParameterMonitorWindow(CEDWindowBase):
         untrackable_rows = [row for row in element_rows if bool(row.can_untrack)]
         can_navigate = bool(navigable_rows)
         can_untrack = bool(untrackable_rows)
-        has_relationship = bool(
-            single_row is not None
-            and single_row.has_relationship
-            and single_row.can_navigate
-        )
         self.ShowElementButton.IsEnabled = can_navigate
         self.SelectElementButton.IsEnabled = can_navigate
         self.ShowElementButton.Content = (
@@ -750,12 +849,42 @@ class ParameterMonitorWindow(CEDWindowBase):
             and single_row.can_navigate
         )
         self.LinkDeviceButton.IsEnabled = bool(single_row is not None and single_row.can_navigate)
-        self.UnlinkDeviceButton.IsEnabled = has_relationship
-        self.SelectDeviceButton.IsEnabled = has_relationship
-        self.ShowDeviceButton.IsEnabled = has_relationship
-        selected_record = (single_row.record or {}) if single_row is not None else {}
-        circuits = list(((selected_record.get("relationship_context") or {}).get("circuits") or []))
-        self.SelectCircuitButton.IsEnabled = has_relationship and bool(circuits)
+        child_record = self._selected_child_record()
+        child_available = bool(
+            child_record is not None
+            and child_record.get("state") != self._models.ELEMENT_REMOVED
+        )
+        child_is_manual = bool(
+            child_record is not None and child_record.get("linker_meta") is None
+        )
+        self.UnlinkDeviceButton.IsEnabled = child_is_manual
+        self.SelectDeviceButton.IsEnabled = child_available
+        self.ShowDeviceButton.IsEnabled = child_available
+        child_circuits = list(
+            ((child_record or {}).get("relationship_context") or {}).get("circuits")
+            or []
+        )
+        self.SelectCircuitButton.IsEnabled = child_available and bool(child_circuits)
+        set_row = self._selected_set_row()
+        tracking_set = set_row.data if set_row is not None else None
+        children_infos = [
+            self._viewmodel.linked_children_info(tracking_set, row.record)
+            for row in element_rows
+            if row.record is not None
+        ]
+        has_any_children = any([info.get("count") for info in children_infos])
+        movable_count = sum([
+            len(info.get("movable_child_ids") or []) for info in children_infos
+        ])
+        self.MoveWithParentButton.Visibility = (
+            self._visibility.Visible if has_any_children else self._visibility.Collapsed
+        )
+        self.MoveWithParentButton.IsEnabled = movable_count > 0
+        self.MoveWithParentButton.Content = (
+            "Move {} Children with Parent".format(movable_count)
+            if movable_count
+            else "Move Children with Parent"
+        )
 
     def _payload_for_selection(self, require_element=False, allow_multiple=False):
         set_row = self._selected_set_row()
@@ -899,6 +1028,130 @@ class ParameterMonitorWindow(CEDWindowBase):
             self._log_console("UI", "Tracking Sets panel expanded.")
         except Exception:
             self._log_ui_exception("Parameter Monitor could not expand Tracking Sets")
+
+    def _same_document(self, left, right):
+        if left is None or right is None:
+            return False
+        try:
+            return bool(left.Equals(right))
+        except Exception:
+            return left is right
+
+    def _set_document_lockdown(self, locked):
+        self._document_lockdown = bool(locked)
+        enabled = not bool(locked)
+        for control_name in (
+            "HeaderActionsPanel",
+            "CollapseTrackingSetsButton",
+            "TrackingSetList",
+            "TrackingSetsFooterPanel",
+            "TrackingSetsCollapsedStrip",
+            "MiddleColumnGrid",
+            "RightPanelBorder",
+            "RightPanelCollapsedStrip",
+            "StatusActionsPanel",
+            "ConsoleBorder",
+        ):
+            try:
+                getattr(self, control_name).IsEnabled = enabled
+            except Exception:
+                pass
+
+    def _engage_document_lockdown(self):
+        if self._document_lockdown:
+            return
+        self._set_document_lockdown(True)
+        self._set_status(
+            "The active Revit document changed. Click 'Reload Project Data' "
+            "to continue."
+        )
+        self._log_console(
+            "WARNING",
+            "Active document changed; Parameter Monitor locked until Reload Project Data.",
+        )
+        self._forms.alert(
+            "The active Revit document changed while Parameter Monitor was "
+            "open.\n\nEverything is disabled until you click 'Reload Project "
+            "Data', which re-targets the window to the active project and "
+            "loads its monitor data.",
+            title=self._title,
+        )
+
+    def window_activated(self, sender, args):
+        if self._document_lockdown:
+            return
+        try:
+            active_document = getattr(self._revit, "doc", None)
+        except Exception:
+            active_document = None
+        if active_document is None:
+            return
+        if not self._same_document(active_document, self._gateway.document):
+            self._engage_document_lockdown()
+
+    def collapse_right_panel_clicked(self, sender, args):
+        try:
+            width = float(getattr(self.RightPanelColumn, "ActualWidth", 0.0) or 0.0)
+            if width > 100.0:
+                self._right_panel_expanded_width = width
+            self.RightPanelBorder.Visibility = self._visibility.Collapsed
+            self.RightPanelSplitter.Visibility = self._visibility.Collapsed
+            self.RightPanelCollapsedStrip.Visibility = self._visibility.Visible
+            self.RightPanelColumn.MinWidth = 0.0
+            self.RightPanelColumn.Width = self._grid_length_type(38.0)
+            self.RightPanelSplitterColumn.Width = self._grid_length_type(0.0)
+            self._log_console("UI", "Details panel collapsed.")
+        except Exception:
+            self._log_ui_exception("Parameter Monitor could not collapse the details panel")
+
+    def expand_right_panel_clicked(self, sender, args):
+        try:
+            self.RightPanelColumn.Width = self._grid_length_type(
+                max(420.0, float(self._right_panel_expanded_width or 480.0))
+            )
+            self.RightPanelColumn.MinWidth = 420.0
+            self.RightPanelSplitterColumn.Width = self._grid_length_type(6.0)
+            self.RightPanelBorder.Visibility = self._visibility.Visible
+            self.RightPanelSplitter.Visibility = self._visibility.Visible
+            self.RightPanelCollapsedStrip.Visibility = self._visibility.Collapsed
+            self._log_console("UI", "Details panel expanded.")
+        except Exception:
+            self._log_ui_exception("Parameter Monitor could not expand the details panel")
+
+    def parameters_expander_expanded(self, sender, args):
+        # Give the parameters section its stretching row back.
+        try:
+            self.ParametersRowDefinition.Height = self._grid_length_type(
+                1.0, self._grid_unit_type.Star
+            )
+        except Exception:
+            pass
+
+    def parameters_expander_collapsed(self, sender, args):
+        # Collapse the stretching row so lower sections reclaim the space.
+        try:
+            self.ParametersRowDefinition.Height = self._grid_length_type.Auto
+        except Exception:
+            pass
+
+    def console_expander_expanded(self, sender, args):
+        try:
+            self.ConsoleRowDefinition.MinHeight = 80.0
+            self.ConsoleRowDefinition.Height = self._grid_length_type(
+                max(80.0, float(getattr(self, "_console_expanded_height", 130.0) or 130.0))
+            )
+        except Exception:
+            pass
+
+    def console_expander_collapsed(self, sender, args):
+        try:
+            height = float(getattr(self.ConsoleRowDefinition, "ActualHeight", 0.0) or 0.0)
+            if height > 80.0:
+                self._console_expanded_height = height
+            self.ConsoleRowDefinition.MinHeight = 0.0
+            self.ConsoleRowDefinition.Height = self._grid_length_type.Auto
+        except Exception:
+            pass
 
     def window_preview_key_down(self, sender, args):
         if args.Key == self._key.Escape:
@@ -1055,27 +1308,56 @@ class ParameterMonitorWindow(CEDWindowBase):
     def link_device_clicked(self, sender, args):
         payload = self._payload_for_selection(require_element=True)
         if payload:
-            self._run("pick_device", payload)
+            self._run("add_device_child", payload)
 
     def unlink_device_clicked(self, sender, args):
-        payload = self._payload_for_selection(require_element=True)
+        payload = self._payload_for_child()
         if payload:
-            self._run("unlink_device", payload)
+            self._run("unlink_child", payload)
 
     def select_device_clicked(self, sender, args):
-        payload = self._payload_for_selection(require_element=True)
+        payload = self._payload_for_child()
         if payload:
-            self._run("select_device", payload)
+            payload["persistent_ids"] = [payload["persistent_id"]]
+            self._run("select_element", payload)
 
     def show_device_clicked(self, sender, args):
-        payload = self._payload_for_selection(require_element=True)
+        payload = self._payload_for_child()
         if payload:
-            self._run("show_device", payload)
+            payload["persistent_ids"] = [payload["persistent_id"]]
+            self._run("show_element", payload)
 
     def select_circuit_clicked(self, sender, args):
-        payload = self._payload_for_selection(require_element=True)
+        payload = self._payload_for_child()
         if payload:
             self._run("select_circuit", payload)
+
+    def sync_element_linker_clicked(self, sender, args):
+        self._run("sync_element_linker")
+
+    def move_with_parent_clicked(self, sender, args):
+        payload = self._payload_for_selection(require_element=True, allow_multiple=True)
+        if not payload:
+            return
+        set_row = self._selected_set_row()
+        tracking_set = set_row.data if set_row is not None else None
+        movable_ids = []
+        for row in self._selected_element_rows():
+            if row.record is None:
+                continue
+            info = self._viewmodel.linked_children_info(tracking_set, row.record)
+            for child_id in info.get("movable_child_ids") or []:
+                if child_id not in movable_ids:
+                    movable_ids.append(child_id)
+        if not movable_ids:
+            self._forms.alert(
+                "The selected parent has no pending move for its linked children. "
+                "Scan the set first if the parent was just moved.",
+                title=self._title,
+            )
+            return
+        payload["persistent_ids"] = movable_ids
+        self._run("move_with_parent", payload)
 
 
 def main():

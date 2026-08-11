@@ -26,6 +26,34 @@ def _host_element(document, record):
         return None
 
 
+def _link_record_parts(document, record):
+    """Resolve a ``link:{link_uid}:{elem_uid}`` record (e.g. a linked-model
+    Element Linker parent) to its link instance and linked element."""
+    persistent_id = str((record or {}).get("persistent_id") or "")
+    if not persistent_id.startswith("link:"):
+        return None, None
+    parts = persistent_id.split(":", 2)
+    if len(parts) != 3:
+        return None, None
+    try:
+        link_instance = document.GetElement(parts[1])
+    except Exception:
+        link_instance = None
+    link_document = None
+    if link_instance is not None:
+        try:
+            link_document = link_instance.GetLinkDocument()
+        except Exception:
+            link_document = None
+    element = None
+    if link_document is not None:
+        try:
+            element = link_document.GetElement(parts[2])
+        except Exception:
+            element = None
+    return link_instance, element
+
+
 def _linked_parts(host_document, tracking_set, record):
     resolved = source_service.resolve_source(host_document, tracking_set.get("source") or {})
     if not resolved.get("available"):
@@ -59,10 +87,39 @@ def select_tracked_many(uidocument, tracking_set, records):
         return False
     document = uidocument.Document
     if (tracking_set.get("source") or {}).get("source_type") == models.SOURCE_HOST:
-        ids = [
-            element.Id for element in [_host_element(document, record) for record in records]
+        host_records = [
+            record for record in records
+            if not str(record.get("persistent_id") or "").startswith("link:")
+        ]
+        link_records = [
+            record for record in records
+            if str(record.get("persistent_id") or "").startswith("link:")
+        ]
+        host_elements = [
+            element
+            for element in [_host_element(document, record) for record in host_records]
             if element is not None
         ]
+        link_pairs = []
+        for record in link_records:
+            link_instance, linked_element = _link_record_parts(document, record)
+            if link_instance is not None and linked_element is not None:
+                link_pairs.append((link_instance, linked_element))
+        if link_pairs:
+            try:
+                references = [DB.Reference(element) for element in host_elements]
+                references.extend([
+                    DB.Reference(linked_element).CreateLinkReference(link_instance)
+                    for link_instance, linked_element in link_pairs
+                ])
+                setter = getattr(uidocument.Selection, "SetReferences", None)
+                if setter is not None:
+                    setter(List[DB.Reference](references))
+                    return True
+            except Exception:
+                pass
+        ids = [element.Id for element in host_elements]
+        ids.extend([link_instance.Id for link_instance, _element in link_pairs])
         if not ids:
             return False
         uidocument.Selection.SetElementIds(List[DB.ElementId](ids))
@@ -109,10 +166,16 @@ def show_tracked_many(uidocument, tracking_set, records):
         return False
     document = uidocument.Document
     if (tracking_set.get("source") or {}).get("source_type") == models.SOURCE_HOST:
-        ids = [
-            element.Id for element in [_host_element(document, record) for record in records]
-            if element is not None
-        ]
+        ids = []
+        for record in records:
+            if str(record.get("persistent_id") or "").startswith("link:"):
+                link_instance, _linked_element = _link_record_parts(document, record)
+                if link_instance is not None:
+                    ids.append(link_instance.Id)
+                continue
+            element = _host_element(document, record)
+            if element is not None:
+                ids.append(element.Id)
         if not ids:
             return False
         uidocument.ShowElements(List[DB.ElementId](ids))

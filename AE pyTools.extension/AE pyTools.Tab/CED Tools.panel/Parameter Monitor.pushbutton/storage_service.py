@@ -61,8 +61,16 @@ except Exception:
     pass
 
 
-SCHEMA_GUID = "3C41541B-82C2-4CD9-8E52-6B89E9B8E6F2"
-SCHEMA_NAME = "CED_ParameterMonitor_v1"
+# v2 (current). v1 (3C41541B-...) declared Vendor-level write access with
+# VendorId "CEDT", which never matched the executing pyRevit add-in identity,
+# so every ES write was rejected ("Writing of Entities of this Schema is not
+# allowed to the current add-in") and data landed in the fallback global
+# parameter. Schemas are immutable per GUID once registered in a session, so
+# the fix is a new GUID with Public write access. v1 is still read for
+# migration in case an entity ever was written by a matching add-in.
+SCHEMA_GUID = "CBFFFBE2-5722-4544-905E-5CFA5F013E10"
+SCHEMA_NAME = "CED_ParameterMonitor_v2"
+LEGACY_SCHEMA_GUID = "3C41541B-82C2-4CD9-8E52-6B89E9B8E6F2"
 DATASTORAGE_NAME = "CED Parameter Monitor"
 FALLBACK_PARAMETER_NAME = "CED_Parameter_Monitor_Data"
 VENDOR_ID = "CEDT"
@@ -142,7 +150,9 @@ def _get_schema():
     try:
         builder.SetVendorId(VENDOR_ID)
         builder.SetReadAccessLevel(AccessLevel.Public)
-        builder.SetWriteAccessLevel(AccessLevel.Vendor)
+        # Public write: Vendor-level write requires the executing add-in's
+        # VendorId to match, and pyRevit's identity is not "CEDT".
+        builder.SetWriteAccessLevel(AccessLevel.Public)
     except Exception:
         pass
     builder.AddSimpleField(FIELD_SCHEMA_VERSION, Int32)
@@ -150,6 +160,16 @@ def _get_schema():
     builder.AddSimpleField(FIELD_PROJECT_IDENTITY, String)
     builder.AddSimpleField(FIELD_PAYLOAD_JSON, String)
     return builder.Finish()
+
+
+def _get_legacy_schema():
+    """Look up the retired v1 schema for read-only migration. Never builds it."""
+    if Schema is None or Guid is None:
+        return None
+    try:
+        return Schema.Lookup(Guid(LEGACY_SCHEMA_GUID))
+    except Exception:
+        return None
 
 
 def _resolve_datastorage_type():
@@ -434,6 +454,39 @@ def _write_fallback_payload(document, payload_text, transaction_name):
         raise
 
 
+def _delete_fallback_parameter(document, transaction_name):
+    """Remove the stale fallback global parameter after a successful ES write.
+
+    Returns True when a parameter was deleted. Best-effort: any failure is
+    reported by the caller as a warning, never as a save failure.
+    """
+    parameter = _find_fallback_global_parameter(document)
+    if parameter is None:
+        return False
+    transaction = None
+    transaction_type = _transaction_type()
+    try:
+        if not bool(getattr(document, "IsModifiable", False)):
+            if transaction_type is None:
+                return False
+            transaction = transaction_type(
+                document,
+                str(transaction_name or "Parameter Monitor - Remove Backup Parameter"),
+            )
+            transaction.Start()
+        document.Delete(parameter.Id)
+        if transaction is not None:
+            transaction.Commit()
+        return True
+    except Exception:
+        if transaction is not None:
+            try:
+                transaction.RollBack()
+            except Exception:
+                pass
+        raise
+
+
 def _log(logger, level, message, *args):
     if logger is None:
         return
@@ -454,6 +507,21 @@ def load(document, logger=None):
             if store is not None:
                 _log(logger, "info", "Parameter Monitor loaded Extensible Storage data.")
                 return store
+        legacy_schema = _get_legacy_schema()
+        if legacy_schema is not None:
+            legacy_storage = _find_data_storage(document, legacy_schema)
+            if legacy_storage is not None:
+                store = _entity_payload(
+                    legacy_storage.GetEntity(legacy_schema), legacy_schema, identity
+                )
+                if store is not None:
+                    _log(
+                        logger,
+                        "info",
+                        "Parameter Monitor loaded legacy v1 Extensible Storage data; "
+                        "the next save migrates it to the v2 schema.",
+                    )
+                    return store
     except StorageCorruptionError:
         raise
     except Exception as ex:
@@ -585,6 +653,26 @@ def save(document, store, transaction_name="Parameter Monitor - Save", logger=No
             payload_bytes,
             len(result.get("tracking_sets") or []),
         )
+        try:
+            if _delete_fallback_parameter(
+                document, "Parameter Monitor - Remove Backup Parameter"
+            ):
+                _log(
+                    logger,
+                    "info",
+                    "Parameter Monitor removed the stale fallback global parameter %s "
+                    "now that Extensible Storage writes succeed.",
+                    FALLBACK_PARAMETER_NAME,
+                )
+        except Exception as cleanup_error:
+            _log(
+                logger,
+                "warning",
+                "Parameter Monitor could not remove the stale fallback global "
+                "parameter %s: %s",
+                FALLBACK_PARAMETER_NAME,
+                cleanup_error,
+            )
         return result
     except Exception as ex:
         extensible_error = ex

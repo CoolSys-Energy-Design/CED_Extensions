@@ -3,6 +3,8 @@
 
 from __future__ import print_function
 
+import math
+
 import models
 
 try:
@@ -11,7 +13,14 @@ except Exception:
     DB = None
 
 
-def read_location(element):
+def read_location(element, transform=None):
+    """Location of an element as a JSON-safe dict.
+
+    ``transform`` (a Revit Transform, e.g. a link instance's total
+    transform) converts a linked element's local point/rotation into
+    host/world coordinates so deltas against host elements are valid and
+    a moved link instance registers as a moved element.
+    """
     if element is None:
         return {
             "state": models.VALUE_UNSUPPORTED,
@@ -28,13 +37,22 @@ def read_location(element):
         }
     try:
         point = location.Point
+        rotation = float(location.Rotation)
+        coordinate_system = "source_document_internal"
+        if transform is not None:
+            point = transform.OfPoint(point)
+            facing = transform.OfVector(
+                DB.XYZ(math.cos(rotation), math.sin(rotation), 0.0)
+            )
+            rotation = math.atan2(float(facing.Y), float(facing.X))
+            coordinate_system = "host_world"
         return {
             "state": models.VALUE_VALID,
             "x": float(point.X),
             "y": float(point.Y),
             "z": float(point.Z),
-            "rotation": float(location.Rotation),
-            "coordinate_system": "source_document_internal",
+            "rotation": rotation,
+            "coordinate_system": coordinate_system,
         }
     except Exception as ex:
         return {

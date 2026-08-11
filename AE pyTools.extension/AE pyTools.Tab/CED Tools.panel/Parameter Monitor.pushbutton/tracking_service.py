@@ -91,8 +91,12 @@ def _snapshot_element(
     type_cache,
     need_location,
     relationship=None,
+    persistent_id_override=None,
+    location_transform=None,
 ):
-    persistent_id = source_service.persistent_id(source_descriptor, element)
+    persistent_id = persistent_id_override or source_service.persistent_id(
+        source_descriptor, element
+    )
     relationship_context = None
     if relationship:
         _device, relationship_context = relationship_service.resolve_relationship(
@@ -105,7 +109,9 @@ def _snapshot_element(
         "properties": parameter_service.read_properties(
             element, source_document, descriptors, type_cache=type_cache
         ),
-        "location": location_service.read_location(element) if need_location else None,
+        "location": location_service.read_location(
+            element, transform=location_transform
+        ) if need_location else None,
         "relationship": copy.deepcopy(relationship),
         "relationship_context": relationship_context,
     }
@@ -119,7 +125,7 @@ def _collect_current_map(
     force_location=False,
 ):
     source_document = resolved_source.get("source_document")
-    elements = source_service.collect_elements(source_document, tracking_set.get("category") or {})
+    pairs = source_service.collect_set_member_pairs(source_document, tracking_set)
     descriptors = list(tracking_set.get("tracked_properties") or [])
     existing = tracking_set.get("elements") or {}
     untracked = set(tracking_set.get("untracked_ids") or [])
@@ -128,8 +134,7 @@ def _collect_current_map(
     )
     current_map = {}
     type_cache = {}
-    for element in elements:
-        persistent_id = source_service.persistent_id(tracking_set.get("source") or {}, element)
+    for persistent_id, element, element_document, transform in pairs:
         if persistent_id in untracked and not include_untracked:
             continue
         previous = existing.get(persistent_id) or {}
@@ -138,13 +143,15 @@ def _collect_current_map(
         )
         snapshot = _snapshot_element(
             host_document,
-            source_document,
+            element_document,
             tracking_set.get("source") or {},
             element,
             descriptors,
             type_cache,
             need_location,
             relationship=previous.get("relationship"),
+            persistent_id_override=persistent_id,
+            location_transform=transform,
         )
         current_map[persistent_id] = snapshot
     return current_map
@@ -366,20 +373,23 @@ def _current_snapshot_for_key(host_document, tracking_set, persistent_id, force_
     source_document = resolved.get("source_document")
     descriptors = list(tracking_set.get("tracked_properties") or [])
     type_cache = {}
-    for element in source_service.collect_elements(source_document, tracking_set.get("category") or {}):
-        key = source_service.persistent_id(tracking_set.get("source") or {}, element)
+    for key, element, element_document, transform in source_service.collect_set_member_pairs(
+        source_document, tracking_set
+    ):
         if key != str(persistent_id or ""):
             continue
         previous = (tracking_set.get("elements") or {}).get(key) or {}
         return _snapshot_element(
             host_document,
-            source_document,
+            element_document,
             tracking_set.get("source") or {},
             element,
             descriptors,
             type_cache,
             force_location or bool(previous.get("track_location", False)),
             relationship=previous.get("relationship"),
+            persistent_id_override=key,
+            location_transform=transform,
         )
     return None
 
@@ -473,14 +483,12 @@ def _current_locations_for_keys(host_document, tracking_set, persistent_ids):
         raise ValueError(resolved.get("message") or "Source model is unavailable.")
     source_document = resolved.get("source_document")
     locations = {}
-    for element in source_service.collect_elements(
-        source_document,
-        tracking_set.get("category") or {},
+    for key, element, _element_document, transform in source_service.collect_set_member_pairs(
+        source_document, tracking_set
     ):
-        key = source_service.persistent_id(tracking_set.get("source") or {}, element)
         if key not in targets:
             continue
-        locations[key] = location_service.read_location(element)
+        locations[key] = location_service.read_location(element, transform=transform)
         if len(locations) >= len(targets):
             break
     return locations, resolved
@@ -572,26 +580,84 @@ def set_elements_location_tracking(
     return _replace_set(store, updated), updated
 
 
-def link_device(store, set_id, persistent_id, device):
+def add_manual_child(host_document, store, set_id, parent_persistent_id, device):
+    """Register a picked device as a Manual-origin linked child of a
+    monitored element. The child carries its own device relationship so
+    circuit context resolves on every scan."""
     tracking_set = copy.deepcopy(_require_set(store, set_id))
-    record = (tracking_set.get("elements") or {}).get(str(persistent_id or ""))
-    if record is None or record.get("state") == models.ELEMENT_REMOVED:
-        raise ValueError("Select an available tracked element first.")
+    if (tracking_set.get("source") or {}).get("source_type") != models.SOURCE_HOST:
+        raise ValueError(
+            "Add Device is only supported on host-source Tracking Sets."
+        )
+    parent_key = str(parent_persistent_id or "")
+    parent_record = (tracking_set.get("elements") or {}).get(parent_key)
+    if parent_record is None or parent_record.get("state") == models.ELEMENT_REMOVED:
+        raise ValueError("Select an available monitored element first.")
+    unique_id = str(getattr(device, "UniqueId", "") or "")
+    if not unique_id:
+        raise ValueError("The picked device has no stable identity.")
+    child_key = "host:{}".format(unique_id)
+    if child_key == parent_key:
+        raise ValueError("An element cannot be its own linked child.")
     relationship = relationship_service.relationship_from_device(device)
-    _device, context = relationship_service.resolve_relationship(device.Document, relationship)
-    record["relationship"] = relationship
-    record["relationship_context"] = context
+    snapshot = _snapshot_element(
+        host_document,
+        host_document,
+        tracking_set.get("source") or {},
+        device,
+        list(tracking_set.get("tracked_properties") or []),
+        {},
+        True,
+        relationship=relationship,
+        persistent_id_override=child_key,
+    )
+    existing = (tracking_set.get("elements") or {}).get(child_key)
+    if existing is not None and existing.get("state") != models.ELEMENT_REMOVED:
+        record = existing
+        record["parent_persistent_id"] = parent_key
+        record["relationship"] = copy.deepcopy(relationship)
+        record["relationship_context"] = copy.deepcopy(
+            snapshot.get("relationship_context")
+        )
+        if not record.get("track_location"):
+            location = copy.deepcopy(snapshot.get("location"))
+            record["track_location"] = True
+            record["current_location"] = location
+            record["accepted_location"] = copy.deepcopy(location)
+    else:
+        record = models.new_tracked_element(
+            snapshot, baseline=True, track_location=True
+        )
+        record["parent_persistent_id"] = parent_key
+        tracking_set["elements"][child_key] = record
+    tracking_set["untracked_ids"] = [
+        item for item in list(tracking_set.get("untracked_ids") or [])
+        if item != child_key
+    ]
+    comparison_engine.recompute_record(record, tracking_set)
+    comparison_engine.refresh_set_status(tracking_set)
     tracking_set["updated_at"] = models.utc_now_text()
-    return _replace_set(store, tracking_set), tracking_set
+    return _replace_set(store, tracking_set), tracking_set, record
 
 
-def unlink_device(store, set_id, persistent_id):
+def remove_manual_child(store, set_id, child_persistent_id):
+    """Unlink a Manual-origin child: its record leaves the monitor entirely
+    (parentless elements are not tracked). Profile children are managed by
+    Sync Element Linker and cannot be unlinked here."""
     tracking_set = copy.deepcopy(_require_set(store, set_id))
-    record = (tracking_set.get("elements") or {}).get(str(persistent_id or ""))
+    key = str(child_persistent_id or "")
+    record = (tracking_set.get("elements") or {}).get(key)
     if record is None:
-        raise ValueError("Tracked element no longer exists in the monitor.")
-    record["relationship"] = None
-    record["relationship_context"] = None
+        raise ValueError("The linked child no longer exists in the monitor.")
+    if not str(record.get("parent_persistent_id") or ""):
+        raise ValueError("The selected element is not a linked child.")
+    if record.get("linker_meta") is not None:
+        raise ValueError(
+            "Profile children are managed by Sync Element Linker; re-run the "
+            "sync to update them."
+        )
+    del tracking_set["elements"][key]
+    comparison_engine.refresh_set_status(tracking_set)
     tracking_set["updated_at"] = models.utc_now_text()
     return _replace_set(store, tracking_set), tracking_set
 

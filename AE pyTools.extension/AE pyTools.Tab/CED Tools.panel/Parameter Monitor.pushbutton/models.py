@@ -40,6 +40,11 @@ LOCATION_PROPERTY_KEY = "__location__"
 FAMILY_PROPERTY_KEY = "__family__"
 TYPE_PROPERTY_KEY = "__type__"
 
+MEMBERSHIP_CATEGORY = "category"
+MEMBERSHIP_EXPLICIT = "explicit"
+SET_ORIGIN_ELEMENT_LINKER = "element_linker_sync"
+SYNC_SET_DEFAULT_NAME = "Element Linker Sync"
+
 
 class PayloadMigrationError(ValueError):
     pass
@@ -85,13 +90,16 @@ def new_project_store(project_identity=None):
     }
 
 
-def new_tracking_set(name, source, category, properties, location_defaults=None):
+def new_tracking_set(name, source, category, properties, location_defaults=None,
+                     membership=MEMBERSHIP_CATEGORY, origin=None):
     now = utc_now_text()
     return {
         "set_id": new_id(),
         "name": str(name or category.get("name") or "Tracking Set"),
         "source": copy_json_value(source or {}),
         "category": copy_json_value(category or {}),
+        "membership": str(membership or MEMBERSHIP_CATEGORY),
+        "origin": origin,
         "active": True,
         "scan_policy": "manual",
         "tracked_properties": copy_json_value(list(properties or [])),
@@ -133,6 +141,8 @@ def new_tracked_element(snapshot, baseline=True, track_location=False):
         "current_location": current_location if track_location else None,
         "relationship": copy_json_value(snapshot.get("relationship")),
         "relationship_context": copy_json_value(snapshot.get("relationship_context")),
+        "parent_persistent_id": None,
+        "linker_meta": None,
         "state": state,
         "changed_property_keys": [],
         "change_count": 0,
@@ -158,6 +168,8 @@ def _ensure_tracking_set_shape(tracking_set):
     tracking_set.setdefault("name", "Tracking Set")
     tracking_set.setdefault("source", {})
     tracking_set.setdefault("category", {})
+    tracking_set.setdefault("membership", MEMBERSHIP_CATEGORY)
+    tracking_set.setdefault("origin", None)
     tracking_set.setdefault("active", True)
     tracking_set.setdefault("scan_policy", "manual")
     tracking_set.setdefault("tracked_properties", [])
@@ -192,6 +204,8 @@ def _ensure_tracking_set_shape(tracking_set):
         record.setdefault("current_location", None)
         record.setdefault("relationship", None)
         record.setdefault("relationship_context", None)
+        record.setdefault("parent_persistent_id", None)
+        record.setdefault("linker_meta", None)
         record.setdefault("state", ELEMENT_TRACKED)
         record.setdefault("changed_property_keys", [])
         record.setdefault("change_count", 0)
