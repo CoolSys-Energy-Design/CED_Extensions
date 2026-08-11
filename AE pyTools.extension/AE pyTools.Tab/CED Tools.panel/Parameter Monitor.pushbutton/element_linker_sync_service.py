@@ -17,8 +17,8 @@ except Exception:
 
 from Snippets import revit_helpers
 
+import element_linker_codec
 import location_service
-import mep_linker_bridge
 import models
 import relationship_service
 import source_service
@@ -182,11 +182,10 @@ def collect_linked_children(document):
     """Every element with an Element_Linker payload — in the host document
     AND in every loaded linked document.
 
-    Children whose parent cannot be resolved are still returned (tracked
-    standalone). Returns ``(children, targets, counts, warnings)`` where
-    ``targets`` maps persistent_id -> {element, document, transform} for
-    snapshotting children and parents. Directive info comes from each
-    document's own MEPRFP profile storage.
+    Returns ``(children, targets, counts, warnings)`` where ``targets``
+    maps persistent_id -> {element, document, transform} for snapshotting
+    children and parents. Payloads are read straight off the elements'
+    Element_Linker parameter via the self-contained codec.
     """
     children = []
     targets = {}
@@ -196,12 +195,6 @@ def collect_linked_children(document):
     contexts = _document_contexts(document)
     seen_parent_pids = set()
     for context in contexts:
-        profile_data, profile_warning = mep_linker_bridge.load_profile_data(
-            context["document"]
-        )
-        if profile_warning and context["kind"] == "host":
-            warnings.append(profile_warning)
-        directive_index = sync_logic.led_directive_index(profile_data)
         collected = []
         for element_class in (DB.FamilyInstance, DB.Group):
             collector = DB.FilteredElementCollector(
@@ -212,9 +205,7 @@ def collect_linked_children(document):
             )
         for element in collected:
             try:
-                linker = mep_linker_bridge.read_linker(element)
-            except mep_linker_bridge.MepBridgeError:
-                raise
+                linker = element_linker_codec.read_linker(element)
             except Exception:
                 linker = None
             if linker is None:
@@ -253,7 +244,6 @@ def collect_linked_children(document):
                 "led_id": led_id,
                 "set_id": str(linker.get("set_id") or ""),
                 "space_profile_id": str(linker.get("space_profile_id") or ""),
-                "has_directives": bool(directive_index.get(led_id, False)),
             })
             targets[child_pid] = {
                 "element": element,
@@ -275,11 +265,6 @@ def run_sync(document, uidocument, store, logger=None):
     element, plus its parent when one resolves (host or linked document).
     Returns ``(store, set_id, message)`` or None when there is nothing to
     register."""
-    if not mep_linker_bridge.is_available():
-        raise ValueError(
-            "The MEPRFP Automation 2.0 lib folder was not found, so "
-            "Element_Linker payloads cannot be read."
-        )
     children, targets, counts, collect_warnings = collect_linked_children(document)
     if not children:
         forms.alert(
@@ -328,7 +313,6 @@ def run_sync(document, uidocument, store, logger=None):
                 "led_id": child.get("led_id"),
                 "set_id": child.get("set_id"),
                 "space_profile_id": child.get("space_profile_id"),
-                "has_directives": bool(child.get("has_directives")),
             },
         })
         if parent_pid and parent_pid not in parent_entry_pids:

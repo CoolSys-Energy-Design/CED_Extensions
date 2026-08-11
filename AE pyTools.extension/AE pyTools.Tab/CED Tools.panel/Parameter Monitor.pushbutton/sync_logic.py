@@ -13,53 +13,6 @@ import copy
 import comparison_engine
 import models
 
-PARENT_DIRECTIVE_KEY = "parent_parameter"
-SIBLING_DIRECTIVE_KEY = "sibling_parameter"
-
-
-def _is_directive(value):
-    return isinstance(value, dict) and (
-        PARENT_DIRECTIVE_KEY in value or SIBLING_DIRECTIVE_KEY in value
-    )
-
-
-def _led_has_directives(led):
-    parameters = (led or {}).get("parameters")
-    if not isinstance(parameters, dict):
-        return False
-    for value in parameters.values():
-        if _is_directive(value):
-            return True
-    return False
-
-
-def led_directive_index(profile_data):
-    """Map every LED id in the active profile payload to a has-directives flag.
-
-    Walks ``equipment_definitions`` and ``space_profiles`` (both share the
-    profile -> linked_sets -> linked_element_definitions shape).
-    """
-    index = {}
-    profile_data = profile_data if isinstance(profile_data, dict) else {}
-    for root_key in ("equipment_definitions", "space_profiles"):
-        for profile in list(profile_data.get(root_key) or []):
-            if not isinstance(profile, dict):
-                continue
-            for linked_set in list(profile.get("linked_sets") or []):
-                if not isinstance(linked_set, dict):
-                    continue
-                for led in list(linked_set.get("linked_element_definitions") or []):
-                    if not isinstance(led, dict):
-                        continue
-                    led_id = str(led.get("id") or "")
-                    if not led_id:
-                        continue
-                    index[led_id] = bool(
-                        index.get(led_id, False) or _led_has_directives(led)
-                    )
-    return index
-
-
 def group_children(children):
     """Group child-info dicts by their parent identity.
 

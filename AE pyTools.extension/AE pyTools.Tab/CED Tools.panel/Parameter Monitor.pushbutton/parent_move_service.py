@@ -18,8 +18,8 @@ except Exception:
     DB = None
 
 import comparison_engine
+import element_linker_codec
 import location_service
-import mep_linker_bridge
 import models
 import parent_move_math
 import tracking_service
@@ -138,7 +138,7 @@ def move_children_with_parent(document, store, set_id, persistent_ids, logger=No
                 continue
             new_location = location_service.read_location(element)
             try:
-                mep_linker_bridge.update_linker(
+                element_linker_codec.update_linker(
                     element,
                     parent_move_math.linker_pose_updates(
                         new_location, parent_record.get("current_location")

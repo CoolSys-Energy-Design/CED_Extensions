@@ -14,12 +14,11 @@ import models
 import sync_logic
 
 
-def _child(unique_id, parent_unique_id, led_id="LED-1", has_directives=False):
+def _child(unique_id, parent_unique_id, led_id="LED-1"):
     return {
         "unique_id": unique_id,
         "parent_unique_id": parent_unique_id,
         "led_id": led_id,
-        "has_directives": has_directives,
     }
 
 
@@ -53,70 +52,6 @@ def _entry(persistent_id, role="child", parent=None, led_id="LED-1"):
 
 
 SOURCE = {"source_type": "host", "display_name": "Host - Test", "document_title": "Test"}
-
-
-class LedDirectiveIndexTests(unittest.TestCase):
-    def test_walks_equipment_and_space_profiles(self):
-        data = {
-            "equipment_definitions": [{
-                "id": "EQ-1",
-                "linked_sets": [{
-                    "linked_element_definitions": [
-                        {"id": "LED-A", "parameters": {"Voltage": 120}},
-                        {"id": "LED-B", "parameters": {
-                            "Panel": {"parent_parameter": "PanelName"},
-                        }},
-                    ],
-                }],
-            }],
-            "space_profiles": [{
-                "id": "SP-1",
-                "linked_sets": [{
-                    "linked_element_definitions": [
-                        {"id": "LED-C", "parameters": {
-                            "Ckt": {"sibling_parameter": "S-1:Circuit"},
-                        }},
-                    ],
-                }],
-            }],
-        }
-        index = sync_logic.led_directive_index(data)
-        self.assertEqual(index, {"LED-A": False, "LED-B": True, "LED-C": True})
-
-    def test_handles_yamldotnet_ordereddicts(self):
-        # pyRevit's YamlDotNet fallback returns OrderedDicts with
-        # string-only scalars; directive detection must still work.
-        from collections import OrderedDict
-        data = OrderedDict([
-            ("equipment_definitions", [OrderedDict([
-                ("id", "EQ-1"),
-                ("linked_sets", [OrderedDict([
-                    ("linked_element_definitions", [OrderedDict([
-                        ("id", "LED-D"),
-                        ("parameters", OrderedDict([
-                            ("Voltage_CED", "120"),
-                            ("CKT_Panel_CEDT", OrderedDict([
-                                ("parent_parameter", "PanelName"),
-                            ])),
-                        ])),
-                    ])]),
-                ])]),
-            ])]),
-        ])
-        self.assertEqual(sync_logic.led_directive_index(data), {"LED-D": True})
-
-    def test_tolerates_malformed_entries(self):
-        data = {
-            "equipment_definitions": [
-                None,
-                "junk",
-                {"linked_sets": [None, {"linked_element_definitions": [
-                    None, {"parameters": "not-a-dict"}, {"id": "", "parameters": {}},
-                ]}]},
-            ],
-        }
-        self.assertEqual(sync_logic.led_directive_index(data), {})
-        self.assertEqual(sync_logic.led_directive_index(None), {})
 
 
 class GroupChildrenTests(unittest.TestCase):
