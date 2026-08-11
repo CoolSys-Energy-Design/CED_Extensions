@@ -17,8 +17,10 @@ except Exception:
 
 from Snippets import revit_helpers
 
+import location_service
 import mep_linker_bridge
 import models
+import relationship_service
 import source_service
 import sync_logic
 import tracking_service
@@ -45,9 +47,15 @@ def _element_family_name(element):
     return ""
 
 
-def _link_contexts(document):
-    """Loaded link instances with their documents and total transforms."""
-    contexts = []
+def _document_contexts(document):
+    """The host document plus every loaded link, with pid prefixes and
+    total transforms for host/world location conversion."""
+    contexts = [{
+        "kind": "host",
+        "link_uid": None,
+        "document": document,
+        "transform": None,
+    }]
     if DB is None:
         return contexts
     for link_instance in DB.FilteredElementCollector(document).OfClass(DB.RevitLinkInstance):
@@ -57,148 +65,209 @@ def _link_contexts(document):
             link_document = None
         if link_document is None:
             continue
+        link_uid = str(getattr(link_instance, "UniqueId", "") or "")
+        if not link_uid:
+            continue
         contexts.append({
-            "unique_id": str(getattr(link_instance, "UniqueId", "") or ""),
+            "kind": "link",
+            "link_uid": link_uid,
             "document": link_document,
             "transform": source_service.link_total_transform(link_instance),
         })
     return contexts
 
 
-def _resolve_parent(document, link_contexts, parent_element_id, host_name):
-    """Find the linker parent in the host doc or any loaded linked doc.
+def _context_pid(context, element):
+    unique_id = str(getattr(element, "UniqueId", "") or "")
+    if not unique_id:
+        return None
+    if context["kind"] == "link":
+        return "link:{}:{}".format(context["link_uid"], unique_id)
+    return "host:{}".format(unique_id)
 
-    ElementIds are not globally unique across documents; when the linker
-    carries the parent's family name (``host_name``) it validates which
-    candidate is the real parent. Without it, host wins, then first link.
-    Returns a dict {persistent_id, element, document, transform, where}
-    or None.
+
+def _world_point(element, transform):
+    location = location_service.read_location(element, transform=transform)
+    if location.get("state") != models.VALUE_VALID:
+        return None
+    return (
+        float(location.get("x", 0.0)),
+        float(location.get("y", 0.0)),
+        float(location.get("z", 0.0)),
+    )
+
+
+def _resolve_parent(child_context, contexts, linker):
+    """Find the linker parent for a child, validating against ElementId
+    collisions.
+
+    The linker's ``parent_element_id`` belongs to the id space of the
+    document the placement ran in — always the child's own document — so
+    that document is authoritative. Host children additionally search the
+    loaded links (legacy payloads written before linked equipment moved).
+    Cross-document candidates are validated: they must be a FamilyInstance
+    or Group, prefer a ``host_name`` family match, and prefer the candidate
+    closest to the linker's stored world parent location. Returns
+    {persistent_id, element, document, transform, where} or None.
     """
+    parent_element_id = linker.get("parent_element_id")
+    if parent_element_id is None:
+        return None
     try:
         element_id = revit_helpers.elementid_from_value(int(parent_element_id))
     except Exception:
         return None
-    candidates = []
-    try:
-        host_element = document.GetElement(element_id)
-    except Exception:
-        host_element = None
-    if host_element is not None:
-        unique_id = str(getattr(host_element, "UniqueId", "") or "")
-        if unique_id:
-            candidates.append({
-                "persistent_id": "host:{}".format(unique_id),
-                "element": host_element,
-                "document": document,
-                "transform": None,
-                "where": "host",
-            })
-    for context in link_contexts:
+
+    def _candidate(context):
         try:
-            link_element = context["document"].GetElement(element_id)
+            element = context["document"].GetElement(element_id)
         except Exception:
-            link_element = None
-        if link_element is None:
-            continue
-        unique_id = str(getattr(link_element, "UniqueId", "") or "")
-        if not unique_id or not context["unique_id"]:
-            continue
-        candidates.append({
-            "persistent_id": "link:{}:{}".format(context["unique_id"], unique_id),
-            "element": link_element,
+            element = None
+        if element is None:
+            return None
+        pid = _context_pid(context, element)
+        if pid is None:
+            return None
+        return {
+            "persistent_id": pid,
+            "element": element,
             "document": context["document"],
             "transform": context["transform"],
-            "where": "link",
-        })
+            "where": context["kind"],
+        }
+
+    # A link child's linker was written while its model was open, so its
+    # own id space is authoritative. A HOST child's parent id may belong
+    # to a linked document (linked equipment), so the host lookup gets no
+    # priority — every document is a candidate, validated below.
+    if child_context["kind"] == "link":
+        return _candidate(child_context)
+
+    candidates = []
+    for context in contexts:
+        candidate = _candidate(context)
+        if candidate is None:
+            continue
+        if DB is not None and not isinstance(
+            candidate["element"], (DB.FamilyInstance, DB.Group)
+        ):
+            continue
+        candidates.append(candidate)
     if not candidates:
         return None
-    target = str(host_name or "").strip().lower()
+    target = str(linker.get("host_name") or "").strip().lower()
     if target:
-        for candidate in candidates:
-            if _element_family_name(candidate["element"]).strip().lower() == target:
-                return candidate
+        matches = [
+            candidate for candidate in candidates
+            if _element_family_name(candidate["element"]).strip().lower() == target
+        ]
+        if matches:
+            candidates = matches
+    if len(candidates) > 1:
+        stored = linker.get("parent_location_ft")
+        if isinstance(stored, (list, tuple)) and len(stored) == 3:
+            def _distance(candidate):
+                point = _world_point(candidate["element"], candidate["transform"])
+                if point is None:
+                    return 1.0e12
+                dx = point[0] - float(stored[0])
+                dy = point[1] - float(stored[1])
+                dz = point[2] - float(stored[2])
+                return (dx * dx) + (dy * dy) + (dz * dz)
+            candidates.sort(key=_distance)
     return candidates[0]
 
 
-def collect_linked_children(document, directive_index):
-    """All host elements with an Element_Linker payload.
+def collect_linked_children(document):
+    """Every element with an Element_Linker payload — in the host document
+    AND in every loaded linked document.
 
-    Parents are resolved in the host document AND every loaded linked
-    document; children whose parent cannot be resolved are still returned
-    (tracked standalone). Returns ``(children, targets, counts)`` where
+    Children whose parent cannot be resolved are still returned (tracked
+    standalone). Returns ``(children, targets, counts, warnings)`` where
     ``targets`` maps persistent_id -> {element, document, transform} for
-    snapshotting children and parents.
+    snapshotting children and parents. Directive info comes from each
+    document's own MEPRFP profile storage.
     """
     children = []
     targets = {}
-    counts = {"with_linker": 0, "parents_host": 0, "parents_linked": 0,
-              "no_parent": 0}
-    link_contexts = _link_contexts(document)
+    counts = {"with_linker": 0, "children_host": 0, "children_linked": 0,
+              "parents_host": 0, "parents_linked": 0, "no_parent": 0}
+    warnings = []
+    contexts = _document_contexts(document)
     seen_parent_pids = set()
-    collected = []
-    for element_class in (DB.FamilyInstance, DB.Group):
-        collector = DB.FilteredElementCollector(document).OfClass(element_class)
-        collected.extend(list(collector.WhereElementIsNotElementType().ToElements()))
-    for element in collected:
-        try:
-            linker = mep_linker_bridge.read_linker(element)
-        except mep_linker_bridge.MepBridgeError:
-            raise
-        except Exception:
-            linker = None
-        if linker is None:
-            continue
-        unique_id = str(getattr(element, "UniqueId", "") or "")
-        if not unique_id:
-            continue
-        counts["with_linker"] += 1
-        parent = None
-        parent_element_id = linker.get("parent_element_id")
-        if parent_element_id is not None:
-            parent = _resolve_parent(
-                document,
-                link_contexts,
-                parent_element_id,
-                linker.get("host_name"),
+    for context in contexts:
+        profile_data, profile_warning = mep_linker_bridge.load_profile_data(
+            context["document"]
+        )
+        if profile_warning and context["kind"] == "host":
+            warnings.append(profile_warning)
+        directive_index = sync_logic.led_directive_index(profile_data)
+        collected = []
+        for element_class in (DB.FamilyInstance, DB.Group):
+            collector = DB.FilteredElementCollector(
+                context["document"]
+            ).OfClass(element_class)
+            collected.extend(
+                list(collector.WhereElementIsNotElementType().ToElements())
             )
-        if parent is None:
-            counts["no_parent"] += 1
-        elif parent["where"] == "link":
-            counts["parents_linked"] += 1
-        else:
-            counts["parents_host"] += 1
-        led_id = str(linker.get("led_id") or "")
-        children.append({
-            "unique_id": unique_id,
-            "element_id": _id_value(getattr(element, "Id", None)),
-            "name": str(getattr(element, "Name", "") or ""),
-            "parent_persistent_id": parent["persistent_id"] if parent else None,
-            "parent_unique_id": (
-                str(getattr(parent["element"], "UniqueId", "") or "")
-                if parent else ""
-            ),
-            "parent_name": (
-                str(getattr(parent["element"], "Name", "") or "Parent")
-                if parent else ""
-            ),
-            "led_id": led_id,
-            "set_id": str(linker.get("set_id") or ""),
-            "space_profile_id": str(linker.get("space_profile_id") or ""),
-            "has_directives": bool(directive_index.get(led_id, False)),
-        })
-        targets["host:{}".format(unique_id)] = {
-            "element": element,
-            "document": document,
-            "transform": None,
-        }
-        if parent is not None and parent["persistent_id"] not in seen_parent_pids:
-            seen_parent_pids.add(parent["persistent_id"])
-            targets[parent["persistent_id"]] = {
-                "element": parent["element"],
-                "document": parent["document"],
-                "transform": parent["transform"],
+        for element in collected:
+            try:
+                linker = mep_linker_bridge.read_linker(element)
+            except mep_linker_bridge.MepBridgeError:
+                raise
+            except Exception:
+                linker = None
+            if linker is None:
+                continue
+            child_pid = _context_pid(context, element)
+            if child_pid is None:
+                continue
+            counts["with_linker"] += 1
+            parent = _resolve_parent(context, contexts, linker)
+            if parent is None:
+                # No resolvable parent means no parent/child relationship to
+                # monitor — these elements are not tracked at all.
+                counts["no_parent"] += 1
+                continue
+            if context["kind"] == "link":
+                counts["children_linked"] += 1
+            else:
+                counts["children_host"] += 1
+            if parent["where"] == "link":
+                counts["parents_linked"] += 1
+            else:
+                counts["parents_host"] += 1
+            led_id = str(linker.get("led_id") or "")
+            children.append({
+                "persistent_id": child_pid,
+                "unique_id": str(getattr(element, "UniqueId", "") or ""),
+                "element_id": _id_value(getattr(element, "Id", None)),
+                "name": str(getattr(element, "Name", "") or ""),
+                "parent_persistent_id": parent["persistent_id"],
+                "parent_unique_id": str(
+                    getattr(parent["element"], "UniqueId", "") or ""
+                ),
+                "parent_name": str(
+                    getattr(parent["element"], "Name", "") or "Parent"
+                ),
+                "led_id": led_id,
+                "set_id": str(linker.get("set_id") or ""),
+                "space_profile_id": str(linker.get("space_profile_id") or ""),
+                "has_directives": bool(directive_index.get(led_id, False)),
+            })
+            targets[child_pid] = {
+                "element": element,
+                "document": context["document"],
+                "transform": context["transform"],
             }
-    return children, targets, counts
+            if parent is not None and parent["persistent_id"] not in seen_parent_pids:
+                seen_parent_pids.add(parent["persistent_id"])
+                targets[parent["persistent_id"]] = {
+                    "element": parent["element"],
+                    "document": parent["document"],
+                    "transform": parent["transform"],
+                }
+    return children, targets, counts, warnings
 
 
 def run_sync(document, uidocument, store, logger=None):
@@ -211,14 +280,11 @@ def run_sync(document, uidocument, store, logger=None):
             "The MEPRFP Automation 2.0 lib folder was not found, so "
             "Element_Linker payloads cannot be read."
         )
-    profile_data, profile_warning = mep_linker_bridge.load_profile_data(document)
-    directive_index = sync_logic.led_directive_index(profile_data)
-
-    children, targets, counts = collect_linked_children(document, directive_index)
+    children, targets, counts, collect_warnings = collect_linked_children(document)
     if not children:
         forms.alert(
-            "No host elements with a populated Element_Linker parameter "
-            "were found.",
+            "No elements with a populated Element_Linker parameter were "
+            "found in the host model or any loaded link.",
             title=TITLE,
         )
         return None
@@ -226,14 +292,14 @@ def run_sync(document, uidocument, store, logger=None):
     groups = sync_logic.group_children(children)
     report = {
         "children_found": len(children),
+        "children_host": counts.get("children_host", 0),
+        "children_linked": counts.get("children_linked", 0),
         "groups": len(groups),
         "parents_host": counts.get("parents_host", 0),
         "parents_linked": counts.get("parents_linked", 0),
         "no_parent": counts.get("no_parent", 0),
-        "warnings": [],
+        "warnings": list(collect_warnings or []),
     }
-    if profile_warning:
-        report["warnings"].append(profile_warning)
 
     host_descriptor = source_service.host_source_descriptor(document)
     # Snapshot with the union of parameters tracked across the category
@@ -252,7 +318,7 @@ def run_sync(document, uidocument, store, logger=None):
     parent_entry_pids = set()
     now = models.utc_now_text()
     for child in children:
-        child_pid = "host:{}".format(child["unique_id"])
+        child_pid = child["persistent_id"]
         parent_pid = child.get("parent_persistent_id")
         entries.append({
             "persistent_id": child_pid,
@@ -274,11 +340,22 @@ def run_sync(document, uidocument, store, logger=None):
                 "linker_meta": None,
             })
 
+    host_child_pids = set([
+        child["persistent_id"] for child in children
+        if str(child.get("persistent_id") or "").startswith("host:")
+    ])
     type_cache = {}
     for persistent_id, target in targets.items():
         element = (target or {}).get("element")
         if element is None:
             continue
+        # Host children carry a self-pointing device relationship so their
+        # circuit context resolves now and refreshes on every scan (this is
+        # what enables Select Circuit for Profile children). Linked-model
+        # children can't: their circuits live in the link document.
+        relationship = None
+        if persistent_id in host_child_pids:
+            relationship = relationship_service.relationship_from_device(element)
         snapshots[persistent_id] = tracking_service._snapshot_element(
             document,
             target.get("document") or document,
@@ -287,6 +364,7 @@ def run_sync(document, uidocument, store, logger=None):
             descriptors,
             type_cache,
             True,
+            relationship=relationship,
             persistent_id_override=persistent_id,
             location_transform=target.get("transform"),
         )

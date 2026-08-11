@@ -169,6 +169,15 @@ def _apply_entry(tracking_set, entry, snapshots, now, report, set_chosen):
             record["track_location"] = True
             record["current_location"] = location
             record["accepted_location"] = copy.deepcopy(location)
+        # Adopt the snapshot's self-pointing device relationship so circuit
+        # context (Select Circuit) works on records synced before it existed.
+        snapshot_relationship = snapshot.get("relationship")
+        if snapshot_relationship and not record.get("relationship"):
+            record["relationship"] = copy.deepcopy(snapshot_relationship)
+        if record.get("relationship"):
+            record["relationship_context"] = copy.deepcopy(
+                snapshot.get("relationship_context")
+            ) or record.get("relationship_context")
         report["refreshed"] += 1
     comparison_engine.recompute_record(record, tracking_set)
 
@@ -178,9 +187,11 @@ def apply_sync_membership(store, entries, snapshots, source_descriptor, now_text
 
     ``entries`` is a list of dicts: ``{"persistent_id", "role" (child/parent),
     "parent_persistent_id" (children only), "linker_meta"}``. Children are
-    bucketed by their snapshot's category into "Element Linker - {Category}"
-    sets; each parent is filed into every category set that holds one of its
-    children (so per-set children lists and follow-moves stay self-contained).
+    bucketed by their PARENT's category into "Element Linker - {Category}"
+    sets (the parent equipment defines the set; its category falls back to
+    the child's when the parent has no snapshot); each parent is filed into
+    every category set that holds one of its children (so per-set children
+    lists and follow-moves stay self-contained).
     Existing records keep their accepted baselines untouched. Stale sync
     records (linker_meta set but no longer chosen for that set) are removed
     when clean, kept + reported otherwise; sync sets left empty (e.g. the
@@ -221,7 +232,10 @@ def apply_sync_membership(store, entries, snapshots, source_descriptor, now_text
                 "No snapshot for {}; skipped.".format(persistent_id)
             )
             continue
-        buckets.setdefault(_category_of(snapshot), []).append(entry)
+        parent_pid = str(entry.get("parent_persistent_id") or "")
+        parent_snapshot = (snapshots or {}).get(parent_pid) if parent_pid else None
+        category_source = parent_snapshot if parent_snapshot is not None else snapshot
+        buckets.setdefault(_category_of(category_source), []).append(entry)
 
     chosen_per_set = {}
     primary_set_id = None
@@ -297,14 +311,17 @@ def format_sync_report(report):
     report = report or {}
     lines = ["Element Linker sync complete."]
     lines.append(
-        "All linker elements monitored: {} child(ren) under {} parent(s).".format(
+        "All linker elements monitored: {} child(ren) under {} parent(s) "
+        "({} host, {} from linked models).".format(
             int(report.get("children_found", 0) or 0),
             int(report.get("groups", 0) or 0),
+            int(report.get("children_host", 0) or 0),
+            int(report.get("children_linked", 0) or 0),
         )
     )
     lines.append(
-        "Parents resolved: {} host, {} linked-model; {} element(s) tracked "
-        "without a resolvable parent.".format(
+        "Parents resolved: {} host, {} linked-model; {} linker element(s) "
+        "skipped (no resolvable parent - not tracked).".format(
             int(report.get("parents_host", 0) or 0),
             int(report.get("parents_linked", 0) or 0),
             int(report.get("no_parent", 0) or 0),

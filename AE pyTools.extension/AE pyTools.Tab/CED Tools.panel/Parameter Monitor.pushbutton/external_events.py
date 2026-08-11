@@ -516,9 +516,17 @@ class _ParameterMonitorExternalEventHandler(IExternalEventHandler):
             uidocument = application.ActiveUIDocument
             document = uidocument.Document if uidocument is not None else None
             if not _same_document(document, self.gateway.document):
-                raise ValueError(
-                    "The active document changed. Close and reopen Parameter Monitor for the active project."
-                )
+                if operation == "refresh_store" and document is not None:
+                    # Reload Project Data is the recovery path after a
+                    # document switch: re-target the gateway to the active
+                    # document and load its monitor data.
+                    self.gateway.document = document
+                else:
+                    raise ValueError(
+                        "The active document changed. Click 'Reload Project "
+                        "Data' to re-target Parameter Monitor to the active "
+                        "project."
+                    )
             result = self._execute_operation(document, uidocument, operation, payload)
             if result is None:
                 status = "cancelled"
@@ -722,17 +730,41 @@ class _ParameterMonitorExternalEventHandler(IExternalEventHandler):
                 "Location tracking {}d for available elements.".format(verb),
                 "Parameter Monitor - Bulk Location Tracking",
             )
-        if operation == "pick_device":
+        if operation == "add_device_child":
             device = relationship_service.pick_device(uidocument)
             if device is None:
                 return None
-            updated, _tracking_set = tracking_service.link_device(
-                store, set_id, persistent_id, device
+            updated, _tracking_set, record = tracking_service.add_manual_child(
+                document, store, set_id, persistent_id, device
             )
-            return self._save_result(document, updated, "Host device linked.", "Parameter Monitor - Link Device")
-        if operation == "unlink_device":
-            updated, _tracking_set = tracking_service.unlink_device(store, set_id, persistent_id)
-            return self._save_result(document, updated, "Host device relationship removed.", "Parameter Monitor - Unlink Device")
+            label = ((record.get("metadata") or {}).get("friendly_name")
+                     or "Device")
+            return self._save_result(
+                document,
+                updated,
+                "{} added as a Manual linked child.".format(label),
+                "Parameter Monitor - Add Device Child",
+            )
+        if operation == "unlink_child":
+            child_key = str(payload.get("child_persistent_id") or "")
+            if not child_key:
+                raise ValueError("Select a linked child first.")
+            if not forms.alert(
+                "Unlink this Manual child? It will no longer be monitored.",
+                title=TITLE,
+                yes=True,
+                no=True,
+            ):
+                return None
+            updated, _tracking_set = tracking_service.remove_manual_child(
+                store, set_id, child_key
+            )
+            return self._save_result(
+                document,
+                updated,
+                "Linked child removed from the monitor.",
+                "Parameter Monitor - Unlink Child",
+            )
         if operation in ("select_element", "show_element"):
             tracking_set = models.find_set(store, set_id)
             records = [

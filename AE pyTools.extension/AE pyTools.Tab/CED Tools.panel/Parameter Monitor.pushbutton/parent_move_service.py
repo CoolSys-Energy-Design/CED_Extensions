@@ -60,6 +60,11 @@ def move_children_with_parent(document, store, set_id, persistent_ids, logger=No
     warnings = []
     for persistent_id in list(persistent_ids or []):
         key = str(persistent_id or "")
+        if key.startswith("link:"):
+            warnings.append(
+                "{}: lives in a linked model and cannot be moved.".format(key)
+            )
+            continue
         record = elements.get(key)
         if record is None or record.get("state") == models.ELEMENT_REMOVED:
             warnings.append("{}: record unavailable.".format(key))

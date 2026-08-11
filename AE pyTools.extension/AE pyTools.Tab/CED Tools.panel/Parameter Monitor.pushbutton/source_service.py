@@ -135,6 +135,29 @@ def resolve_source(host_document, descriptor):
     }
 
 
+# Categories users may build tracking sets from. Matched case-insensitively
+# against Revit's category names; "Fire Alarm Devices" covers the category
+# Revit actually names that way.
+ALLOWED_CATEGORY_NAMES = set([
+    "mechanical control devices",
+    "duct accessories",
+    "mechanical equipment",
+    "plumbing fixtures",
+    "plumbing equipment",
+    "pipe accessories",
+    "electrical equipment",
+    "electrical fixtures",
+    "lighting fixtures",
+    "lighting devices",
+    "data devices",
+    "security devices",
+    "fire alarm devices",
+    "fire alarm fixtures",
+    "specialty equipment",
+    "generic models",
+])
+
+
 def category_descriptor(category):
     value = _id_value(category.Id)
     return {
@@ -160,6 +183,8 @@ def list_categories(source_document):
             pass
         value = _id_value(category.Id)
         if value == 0:
+            continue
+        if str(category.Name or "").strip().lower() not in ALLOWED_CATEGORY_NAMES:
             continue
         categories[value] = category_descriptor(category)
     return sorted(categories.values(), key=lambda item: item.get("name", "").lower())
@@ -292,9 +317,26 @@ def collect_set_member_pairs(source_document, tracking_set):
     membership = str(tracking_set.get("membership") or models.MEMBERSHIP_CATEGORY)
     if membership != models.MEMBERSHIP_EXPLICIT:
         pairs = []
+        seen = set()
         for element in collect_elements(source_document, tracking_set.get("category") or {}):
             key = persistent_id(tracking_set.get("source") or {}, element)
             pairs.append((key, element, source_document, None))
+            seen.add(key)
+        # Manually linked children (Add Device) can be any category, so a
+        # category sweep alone would drop them on every scan — resolve
+        # parent-linked records explicitly.
+        for key, record in list((tracking_set.get("elements") or {}).items()):
+            key = str(key or "")
+            if not key or key in seen:
+                continue
+            if not str((record or {}).get("parent_persistent_id") or ""):
+                continue
+            element, element_document, transform = resolve_member(source_document, key)
+            if element is None:
+                continue
+            if DB is not None and isinstance(element, DB.ElementType):
+                continue
+            pairs.append((key, element, element_document, transform))
         return pairs
     if source_document is None:
         return []

@@ -259,10 +259,13 @@ def linked_children_info(tracking_set, record):
             defaults.get("angular_tolerance", 0.0017453292519943296),
         )
     if info["parent_moved"]:
+        # Linked-model children are monitor-only: Revit cannot edit link
+        # documents, so only host children can follow the parent.
         info["movable_child_ids"] = [
             persistent_id
             for persistent_id, candidate in children
             if (candidate or {}).get("state") != models.ELEMENT_REMOVED
+            and not str(persistent_id or "").startswith("link:")
         ]
     return info
 

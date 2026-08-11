@@ -222,32 +222,59 @@ class ApplySyncMembershipTests(unittest.TestCase):
         self.assertNotIn("host:c1", tracking_set2["untracked_ids"])
         self.assertEqual(report2["added"], 1)
 
-    def test_linked_parent_and_standalone_child(self):
+    def test_refresh_adopts_child_device_relationship(self):
+        # Children synced before self-pointing relationships existed gain
+        # one on the next sync, so Select Circuit lights up.
+        result, set_id, _report = self._run_once()
+        entries = [
+            _entry("host:c1", parent="host:p1"),
+            _entry("host:p1", role="parent"),
+        ]
+        relationship = {
+            "device_unique_id": "c1", "device_id": 11, "device_name": "Recep",
+        }
+        context = {
+            "status": "circuited", "status_text": "MDP - 12",
+            "circuits": [{"circuit_id": 5, "circuit_number": "12",
+                          "panel_name": "MDP", "circuit_name": "Recep"}],
+        }
+        child_snapshot = _snapshot("host:c1", x=1.0)
+        child_snapshot["relationship"] = relationship
+        child_snapshot["relationship_context"] = context
+        snapshots = {
+            "host:c1": child_snapshot,
+            "host:p1": _snapshot("host:p1", x=5.0),
+        }
+        result2, set_id2, _report2 = sync_logic.apply_sync_membership(
+            result, entries, snapshots, SOURCE
+        )
+        record = models.find_set(result2, set_id2)["elements"]["host:c1"]
+        self.assertEqual(record["relationship"], relationship)
+        self.assertEqual(
+            record["relationship_context"]["circuits"][0]["circuit_number"], "12"
+        )
+
+    def test_linked_parent_wiring(self):
         # A child whose parent lives in a linked document carries a
-        # "link:{link_uid}:{elem_uid}" parent pid; a child with no
-        # resolvable parent is tracked standalone.
+        # "link:{link_uid}:{elem_uid}" parent pid; both are tracked in
+        # the child's category set.
         entries = [
             _entry("host:c1", parent="link:L1:p9"),
             _entry("link:L1:p9", role="parent"),
-            _entry("host:c2", parent=None),
         ]
         snapshots = {
             "host:c1": _snapshot("host:c1"),
             "link:L1:p9": _snapshot("link:L1:p9", x=9.0),
-            "host:c2": _snapshot("host:c2"),
         }
         result, set_id, report = sync_logic.apply_sync_membership(
             models.new_project_store(), entries, snapshots, SOURCE
         )
         tracking_set = models.find_set(result, set_id)
-        self.assertEqual(report["added"], 3)
+        self.assertEqual(report["added"], 2)
         child = tracking_set["elements"]["host:c1"]
         parent = tracking_set["elements"]["link:L1:p9"]
-        standalone = tracking_set["elements"]["host:c2"]
         self.assertEqual(child["parent_persistent_id"], "link:L1:p9")
         self.assertEqual(parent["linker_meta"]["role"], "parent")
-        self.assertIsNone(standalone["parent_persistent_id"])
-        self.assertEqual(standalone["linker_meta"]["role"], "child")
 
     def test_group_children_prefers_parent_persistent_id(self):
         groups = sync_logic.group_children([
@@ -269,41 +296,49 @@ class ApplySyncMembershipTests(unittest.TestCase):
         self.assertEqual(result["tracking_sets"], [])
         self.assertEqual(len(report["warnings"]), 1)
 
-    def test_children_split_by_category_with_shared_parent(self):
+    def test_sets_split_by_parent_category(self):
+        # The set category comes from the PARENT equipment, not the
+        # children: two parents of different categories make two sets,
+        # each holding that parent and ALL its children regardless of
+        # the children's own categories.
         entries = [
             _entry("host:c1", parent="host:p1"),
             _entry("host:c2", parent="host:p1"),
+            _entry("host:c3", parent="host:p2"),
             _entry("host:p1", role="parent"),
+            _entry("host:p2", role="parent"),
         ]
         snapshots = {
             "host:c1": _snapshot("host:c1", category="Electrical Fixtures"),
             "host:c2": _snapshot("host:c2", category="Lighting Fixtures"),
+            "host:c3": _snapshot("host:c3", category="Electrical Fixtures"),
             "host:p1": _snapshot("host:p1", category="Electrical Equipment"),
+            "host:p2": _snapshot("host:p2", category="Mechanical Equipment"),
         }
         result, set_id, report = sync_logic.apply_sync_membership(
             models.new_project_store(), entries, snapshots, SOURCE
         )
         self.assertEqual(
             sorted(report["sets_created"]),
-            ["Element Linker - Electrical Fixtures",
-             "Element Linker - Lighting Fixtures"],
+            ["Element Linker - Electrical Equipment",
+             "Element Linker - Mechanical Equipment"],
         )
         self.assertEqual(len(result["tracking_sets"]), 2)
         by_name = dict([
             (tracking_set["name"], tracking_set)
             for tracking_set in result["tracking_sets"]
         ])
-        fixtures = by_name["Element Linker - Electrical Fixtures"]
-        lighting = by_name["Element Linker - Lighting Fixtures"]
-        # Each category set is self-contained: its children plus the parent.
+        electrical = by_name["Element Linker - Electrical Equipment"]
+        mechanical = by_name["Element Linker - Mechanical Equipment"]
         self.assertEqual(
-            sorted(fixtures["elements"].keys()), ["host:c1", "host:p1"]
+            sorted(electrical["elements"].keys()),
+            ["host:c1", "host:c2", "host:p1"],
         )
         self.assertEqual(
-            sorted(lighting["elements"].keys()), ["host:c2", "host:p1"]
+            sorted(mechanical["elements"].keys()), ["host:c3", "host:p2"]
         )
         # Primary set is the first category alphabetically.
-        self.assertEqual(set_id, fixtures["set_id"])
+        self.assertEqual(set_id, electrical["set_id"])
 
     def test_legacy_mixed_set_is_migrated_and_removed(self):
         legacy = models.new_tracking_set(

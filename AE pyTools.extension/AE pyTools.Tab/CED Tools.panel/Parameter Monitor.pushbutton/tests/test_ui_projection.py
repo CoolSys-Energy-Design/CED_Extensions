@@ -87,12 +87,17 @@ class UiProjectionTests(unittest.TestCase):
         child_removed["persistent_id"] = "host:c3"
         child_removed["parent_persistent_id"] = "host:p1"
         child_removed["state"] = models.ELEMENT_REMOVED
+        child_linked = _record("Child 4", "A", "A")
+        child_linked["persistent_id"] = "link:L1:c4"
+        child_linked["parent_persistent_id"] = "host:p1"
+        child_linked["linker_meta"] = {"role": "child"}
         tracking_set = {
             "elements": {
                 "host:p1": parent,
                 "host:c1": child_profile,
                 "host:c2": child_manual,
                 "host:c3": child_removed,
+                "link:L1:c4": child_linked,
             },
             "location_defaults": {
                 "translation_tolerance": 0.001,
@@ -104,13 +109,14 @@ class UiProjectionTests(unittest.TestCase):
         self.assertEqual([row.persistent_id for row in grid_rows], ["host:p1"])
 
         info = viewmodel.linked_children_info(tracking_set, parent)
-        self.assertEqual(info["count"], 3)
+        self.assertEqual(info["count"], 4)
         by_id = dict([(row.persistent_id, row) for row in info["children"]])
         self.assertEqual(by_id["host:c1"].origin, "Profile")
         self.assertEqual(by_id["host:c1"].family, "Recep Family")
         self.assertEqual(by_id["host:c1"].type, "Quad")
         self.assertEqual(by_id["host:c2"].origin, "Manual")
         self.assertTrue(info["parent_moved"])
+        # Removed children and linked-model children are not movable.
         self.assertEqual(
             sorted(info["movable_child_ids"]), ["host:c1", "host:c2"]
         )

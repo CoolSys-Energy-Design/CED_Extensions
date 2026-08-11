@@ -6,6 +6,7 @@
         MinWidth="1280"
         MinHeight="650"
         PreviewKeyDown="window_preview_key_down"
+        Activated="window_activated"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource CED.Brush.WindowBackground}">
     <Window.Resources>
@@ -175,7 +176,7 @@
                         <TextBlock Text="Accepted-baseline review for host and linked model data" Foreground="#CFD8E6" FontSize="11" />
                     </StackPanel>
                 </StackPanel>
-                <WrapPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
+                <WrapPanel x:Name="HeaderActionsPanel" DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
                     <Button Style="{StaticResource PM.PrimaryButton}" Content="+ Add Set" Click="add_set_clicked" />
                     <Button Style="{StaticResource PM.Button}" Content="Edit Set" Click="edit_set_clicked" />
                     <Button Style="{StaticResource PM.ScanButton}" Content="Scan Selected Set" ToolTip="Scan the selected set against the current Revit model. This does not accept changes." Click="check_set_clicked" />
@@ -197,14 +198,14 @@
                 <ColumnDefinition x:Name="TrackingSetsColumn" Width="290" MinWidth="0" />
                 <ColumnDefinition x:Name="TrackingSetsSplitterColumn" Width="6" />
                 <ColumnDefinition Width="*" MinWidth="460" />
-                <ColumnDefinition Width="6" />
-                <ColumnDefinition Width="480" MinWidth="420" />
+                <ColumnDefinition x:Name="RightPanelSplitterColumn" Width="6" />
+                <ColumnDefinition x:Name="RightPanelColumn" Width="480" MinWidth="420" />
             </Grid.ColumnDefinitions>
 
             <GridSplitter x:Name="TrackingSetsSplitter" Grid.Column="1" Width="6" HorizontalAlignment="Stretch"
                           ResizeDirection="Columns" ResizeBehavior="PreviousAndNext"
                           Background="Transparent" />
-            <GridSplitter Grid.Column="3" Width="6" HorizontalAlignment="Stretch"
+            <GridSplitter x:Name="RightPanelSplitter" Grid.Column="3" Width="6" HorizontalAlignment="Stretch"
                           ResizeDirection="Columns" ResizeBehavior="PreviousAndNext"
                           Background="Transparent" />
 
@@ -218,8 +219,8 @@
                     <DockPanel Grid.Row="0" Margin="0,0,0,8" LastChildFill="False">
                         <TextBlock Text="TRACKING SETS" FontWeight="Bold" VerticalAlignment="Center" />
                         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                            <Button Style="{StaticResource PM.Button}" Content="Reload Project Data" ToolTip="Re-read persisted monitor data if another command or session changed it. This does not scan the model." Padding="7,3" Click="refresh_store_clicked" />
-                            <Button Style="{StaticResource PM.Button}" Content="◀" ToolTip="Collapse Tracking Sets" Padding="7,3" Click="collapse_tracking_sets_clicked" />
+                            <Button x:Name="ReloadProjectDataButton" Style="{StaticResource PM.Button}" Content="Reload Project Data" ToolTip="Re-read persisted monitor data if another command or session changed it. This does not scan the model." Padding="7,3" Click="refresh_store_clicked" />
+                            <Button x:Name="CollapseTrackingSetsButton" Style="{StaticResource PM.Button}" Content="◀" ToolTip="Collapse Tracking Sets" Padding="7,3" Click="collapse_tracking_sets_clicked" />
                         </StackPanel>
                     </DockPanel>
                     <ListBox x:Name="TrackingSetList" Grid.Row="1" SelectionChanged="tracking_set_selection_changed"
@@ -248,7 +249,7 @@
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
-                    <StackPanel Grid.Row="2" Margin="0,8,0,0">
+                    <StackPanel x:Name="TrackingSetsFooterPanel" Grid.Row="2" Margin="0,8,0,0">
                         <Button Style="{StaticResource PM.Button}" Content="Toggle Set Active State" ToolTip="Inactive sets remain stored but are skipped by Scan All Active Sets." Click="toggle_active_clicked" />
                         <Button Style="{StaticResource PM.DangerButton}" Content="Delete Selected Set" Click="delete_set_clicked" />
                     </StackPanel>
@@ -261,7 +262,7 @@
                         Click="expand_tracking_sets_clicked" />
             </Border>
 
-            <Grid Grid.Column="2">
+            <Grid x:Name="MiddleColumnGrid" Grid.Column="2">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
@@ -356,7 +357,7 @@
                 </DataGrid>
             </Grid>
 
-            <Border Grid.Column="4" Style="{StaticResource PM.Card}" Margin="0">
+            <Border x:Name="RightPanelBorder" Grid.Column="4" Style="{StaticResource PM.Card}" Margin="0">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -364,8 +365,13 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <Expander Grid.Row="0" IsExpanded="True">
-                        <Expander.Header><TextBlock Text="ELEMENT DETAILS" FontWeight="Bold" /></Expander.Header>
+                    <StackPanel Grid.Row="0">
+                        <DockPanel LastChildFill="False">
+                            <TextBlock Text="ELEMENT DETAILS" FontWeight="Bold" VerticalAlignment="Center" />
+                            <Button DockPanel.Dock="Right" Style="{StaticResource PM.Button}" Content="▶"
+                                    ToolTip="Collapse the details panel" Padding="7,3"
+                                    Click="collapse_right_panel_clicked" />
+                        </DockPanel>
                         <StackPanel Margin="0,4,0,0">
                             <TextBlock x:Name="ElementTitleText" Text="Select an element" FontSize="18" FontWeight="Bold" Margin="0,4,0,0" />
                             <TextBlock x:Name="ElementContextText" Text="-" Foreground="{DynamicResource CED.Brush.SecondaryText}" TextWrapping="Wrap" />
@@ -374,7 +380,7 @@
                                 <Button x:Name="SelectElementButton" Style="{StaticResource PM.Button}" Content="Select in Model" Click="select_element_clicked" />
                             </WrapPanel>
                         </StackPanel>
-                    </Expander>
+                    </StackPanel>
                     <Expander Grid.Row="1" x:Name="ParametersExpander" IsExpanded="True" Margin="0,8,0,0"
                               Expanded="parameters_expander_expanded" Collapsed="parameters_expander_collapsed">
                         <Expander.Header><TextBlock Text="PARAMETERS" FontWeight="Bold" /></Expander.Header>
@@ -412,6 +418,7 @@
                             <StackPanel Margin="0,4,0,0">
                                 <TextBlock x:Name="ChildrenSummaryText" Text="No linked children" Margin="0,0,0,3" TextWrapping="Wrap" />
                                 <DataGrid x:Name="ChildrenGrid" MaxHeight="160" Margin="0,0,0,6"
+                                          SelectionChanged="children_selection_changed"
                                           AutoGenerateColumns="False" IsReadOnly="True"
                                           HeadersVisibility="Column" SelectionMode="Single"
                                           CanUserAddRows="False" CanUserDeleteRows="False"
@@ -449,12 +456,18 @@
                     </Border>
                 </Grid>
             </Border>
+
+            <Border x:Name="RightPanelCollapsedStrip" Grid.Column="4" Style="{StaticResource PM.Card}" Margin="0" Padding="2" Visibility="Collapsed">
+                <Button Style="{StaticResource PM.Button}" Content="◀" ToolTip="Expand the details panel"
+                        Padding="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                        Click="expand_right_panel_clicked" />
+            </Border>
         </Grid>
 
             <Border Grid.Row="1" Background="{DynamicResource CED.Brush.SurfaceAlt}" BorderBrush="{DynamicResource CED.Brush.Border}" BorderThickness="0,1,0,0" Padding="8,5">
                 <DockPanel>
                     <TextBlock x:Name="StatusBarText" Text="Ready. Reload Saved Data reads storage; scans read the current model; scans never accept changes automatically." VerticalAlignment="Center" TextWrapping="Wrap" />
-                    <WrapPanel DockPanel.Dock="Right">
+                    <WrapPanel x:Name="StatusActionsPanel" DockPanel.Dock="Right">
                         <Button Style="{StaticResource PM.Button}" Content="Accept All Changes in Set" ToolTip="Accept the current values as the new baseline for this set." Click="resolve_set_clicked" />
                         <Button Style="{StaticResource PM.DangerButton}" Content="Delete Removed Records" ToolTip="Permanently remove records for elements no longer found in the model." Click="remove_all_removed_clicked" />
                     </WrapPanel>
@@ -466,7 +479,7 @@
                       ResizeDirection="Rows" ResizeBehavior="PreviousAndNext"
                       Background="{DynamicResource CED.Brush.Border}" />
 
-        <Border Grid.Row="3" Background="{DynamicResource CED.Brush.SurfaceAlt}"
+        <Border x:Name="ConsoleBorder" Grid.Row="3" Background="{DynamicResource CED.Brush.SurfaceAlt}"
                 BorderBrush="{DynamicResource CED.Brush.Border}" BorderThickness="0,1,0,0"
                 Padding="8,5">
             <Expander x:Name="ConsoleExpander" IsExpanded="True"
