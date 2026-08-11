@@ -610,6 +610,8 @@
     <StackPanel Grid.Row="4" Orientation="Horizontal" Margin="{DynamicResource CED.Thickness.RowGap}">
       <Button Name="CheckAllButton" Style="{DynamicResource CED.Button.Base}" Content="Check All" Width="76" Height="22" Click="check_all_clicked"/>
       <Button Name="UncheckAllButton" Style="{DynamicResource CED.Button.Base}" Content="Check None" Width="84" Height="22" Margin="6,0,0,0" Click="uncheck_all_clicked"/>
+      <!-- Hidden while Show One Line is tested as a standalone ribbon button; set Visible to reconnect. -->
+      <Button Name="ShowOneLineButton" Visibility="Collapsed" Style="{DynamicResource CED.Button.Base}" Content="Show One Line" Width="104" Height="22" Margin="6,0,0,0" Click="show_one_line_clicked" ToolTip="Open an interactive one line diagram of the electrical distribution. Drag equipment cards to re-feed panels."/>
     </StackPanel>
 
     <Border Grid.Row="5"

@@ -136,8 +136,9 @@ Verify circuit numbers and quoted strings against the dumped JSON before citing 
    2026-08-07). Sweep every circuit load name AND every sheet text string in the Suspect project
    for receptacle references. The ONLY acceptable form is `RECS`. Flag EVERY instance of any
    other variant — `REC`, `RECEPT`, `RECEPTS`, `RCPT`, `RCPTS`, `RECPT`, `RECPTS`, `RECEPTACLE`,
-   `RECEPTACLES` — with panel/circuit number (for load names) or sheet number (for sheet text),
-   the full source string, and the suggested `RECS` replacement. Report as its own section with
-   a total count per variant. Regex guide: match word-boundary tokens
-   `\b(REC|RECEPTS?|RCPTS?|RECPTS?|RECEPTACLES?)\b` case-insensitive; exclude legitimate
+   `RECEPTACLES`, `RECEP`, `RECEPS` — with panel/circuit number (for load names) or sheet number
+   (for sheet text), the full source string, and the suggested `RECS` replacement. Report as its
+   own section with a total count per variant. Regex guide: match word-boundary tokens
+   `\b(REC|RECEPTS?|RECEPS?|RCPTS?|RECPTS?|RECEPTACLES?)\b` case-insensitive; exclude legitimate
    non-receptacle words (RECEIVING, RECESSED, RECORD, RECOVERY, RECIRCULATING, RECYCL*).
+   RECEP/RECEPS were found in the wild on Buda 2026-08-07 — do not narrow the pattern.
