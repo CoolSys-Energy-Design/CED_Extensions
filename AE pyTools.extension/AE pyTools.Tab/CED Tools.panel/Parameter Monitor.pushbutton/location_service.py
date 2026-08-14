@@ -6,6 +6,7 @@ from __future__ import print_function
 import math
 
 import models
+import text_service
 
 try:
     from pyrevit import DB
@@ -57,6 +58,6 @@ def read_location(element, transform=None):
     except Exception as ex:
         return {
             "state": models.VALUE_READ_ERROR,
-            "message": str(ex),
+            "message": text_service.diagnostic_text(ex, u"Location read failed."),
         }
 

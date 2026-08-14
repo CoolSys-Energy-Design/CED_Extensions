@@ -12,44 +12,40 @@ import models
 import parameter_service
 import relationship_service
 import source_service
+import text_service
 from Snippets import revit_helpers
 
 
 def _text(value, fallback=""):
-    try:
-        result = str(value)
-        return result if result else fallback
-    except Exception:
-        return fallback
+    return text_service.to_text(value, fallback=fallback)
+
+
+def _revit_parameter_text(element, name, source_document):
+    """Read a Revit parameter as Unicode without Snippets' ``str()`` helper."""
+    parameter = revit_helpers.get_parameter(
+        element,
+        name,
+        include_type=False,
+        case_insensitive=True,
+        doc=source_document,
+    )
+    value = revit_helpers.get_parameter_value(parameter, default=None)
+    return _text(value, "")
 
 
 def _element_metadata(element, source_document):
     element_id = revit_helpers.get_elementid_value(getattr(element, "Id", None))
-    mark = revit_helpers.get_parameter_text(
-        element,
-        "Mark",
-        include_type=False,
-        case_insensitive=True,
-        doc=source_document,
-        default="",
-    )
+    mark = _revit_parameter_text(element, "Mark", source_document)
     if not mark:
-        mark = revit_helpers.get_parameter_text(
-            element,
-            "Equipment ID",
-            include_type=False,
-            case_insensitive=True,
-            doc=source_document,
-            default="",
-        )
+        mark = _revit_parameter_text(element, "Equipment ID", source_document)
     name = _text(getattr(element, "Name", None), "")
-    type_name = revit_helpers.get_family_symbol_name(element, doc=source_document, fallback=name)
+    type_element = revit_helpers.get_type_element(element, doc=source_document)
+    type_name = _text(getattr(type_element, "Name", None), name)
     family_name = ""
     try:
         symbol = element.Symbol
         family_name = _text(symbol.Family.Name, "")
     except Exception:
-        type_element = revit_helpers.get_type_element(element, doc=source_document)
         try:
             family_name = _text(type_element.FamilyName, "")
         except Exception:
@@ -68,11 +64,11 @@ def _element_metadata(element, source_document):
         category_name = _text(element.Category.Name, "")
     except Exception:
         pass
-    return {
+    metadata = {
         "element_id": element_id,
         "unique_id": _text(getattr(element, "UniqueId", None), ""),
-        "friendly_name": mark or name or "Element {}".format(element_id),
-        "mark": mark,
+        "friendly_name": _text(mark, "") or name or "Element {}".format(element_id),
+        "mark": _text(mark, ""),
         "name": name,
         "family_type": family_type,
         "family_name": family_name or "-",
@@ -80,6 +76,14 @@ def _element_metadata(element, source_document):
         "level": level_name,
         "category": category_name,
     }
+    # Persist the source workset for link availability checks.  This field is
+    # informational for host sets and essential for accurately protecting a
+    # linked set from false removals when only some link worksets are closed.
+    workset = source_service.element_workset_details(source_document, element)
+    if workset:
+        metadata["workset_id"] = workset.get("id")
+        metadata["workset_name"] = workset.get("name")
+    return metadata
 
 
 def _snapshot_element(
@@ -159,10 +163,10 @@ def _collect_current_map(
 
 def _replace_set(store, updated_set):
     result = copy.deepcopy(store)
-    target = str(updated_set.get("set_id") or "")
+    target = _text(updated_set.get("set_id") or "")
     replaced = False
     for index, tracking_set in enumerate(list(result.get("tracking_sets") or [])):
-        if str(tracking_set.get("set_id") or "") == target:
+        if _text(tracking_set.get("set_id") or "") == target:
             result["tracking_sets"][index] = updated_set
             replaced = True
             break
@@ -187,7 +191,9 @@ def create_tracking_set(host_document, store, name, source, category, descriptor
         descriptors,
         location_defaults=location_defaults,
     )
-    resolved = source_service.resolve_source(host_document, source)
+    resolved = source_service.evaluate_source_for_scan(
+        host_document, tracking_set, require_complete=True
+    )
     if not resolved.get("available"):
         raise ValueError(resolved.get("message") or "Source model is unavailable.")
     started = time.time()
@@ -224,7 +230,7 @@ def create_tracking_set(host_document, store, name, source, category, descriptor
 def _failed_set(tracking_set, message):
     result = copy.deepcopy(tracking_set)
     result["status"] = models.SET_CHECK_FAILED
-    result["status_message"] = str(message or "Check failed.")
+    result["status_message"] = _text(message or "Check failed.")
     result["last_check"] = models.utc_now_text()
     result["updated_at"] = result["last_check"]
     return result
@@ -232,14 +238,25 @@ def _failed_set(tracking_set, message):
 
 def scan_tracking_set(host_document, store, set_id, logger=None):
     tracking_set = _require_set(store, set_id)
-    resolved = source_service.resolve_source(host_document, tracking_set.get("source") or {})
+    resolved = source_service.evaluate_source_for_scan(host_document, tracking_set)
     now = models.utc_now_text()
     if not resolved.get("available"):
         unavailable = copy.deepcopy(tracking_set)
-        unavailable["status"] = models.SET_SOURCE_UNAVAILABLE
+        unavailable["status"] = (
+            resolved.get("set_status") or models.SET_SOURCE_UNAVAILABLE
+        )
         unavailable["status_message"] = resolved.get("message") or "Source model unavailable."
         unavailable["last_check"] = now
         unavailable["updated_at"] = now
+        if logger is not None:
+            try:
+                logger.warning(
+                    "Parameter Monitor scan skipped for set %s: %s",
+                    set_id,
+                    unavailable["status_message"],
+                )
+            except Exception:
+                pass
         return _replace_set(store, unavailable), unavailable
     started = time.time()
     try:
@@ -267,7 +284,9 @@ def scan_tracking_set(host_document, store, set_id, logger=None):
                 logger.exception("Parameter Monitor scan failed for set %s", set_id)
             except Exception:
                 pass
-        failed = _failed_set(tracking_set, str(ex))
+        failed = _failed_set(
+            tracking_set, text_service.diagnostic_text(ex, u"Check failed.")
+        )
         return _replace_set(store, failed), failed
 
 
@@ -298,7 +317,7 @@ def edit_tracking_set(
     logger=None,
 ):
     tracking_set = copy.deepcopy(_require_set(store, set_id))
-    resolved = source_service.resolve_source(host_document, tracking_set.get("source") or {})
+    resolved = source_service.evaluate_source_for_scan(host_document, tracking_set)
     if not resolved.get("available"):
         raise ValueError(resolved.get("message") or "Source model is unavailable.")
     temporary = copy.deepcopy(tracking_set)
@@ -309,7 +328,9 @@ def edit_tracking_set(
         descriptors,
         current_map=current_map,
     )
-    updated["name"] = str(name or updated.get("name") or "Tracking Set")
+    updated["name"] = text_service.to_text(
+        name or updated.get("name") or "Tracking Set"
+    )
     if active is not None:
         updated["active"] = bool(active)
     if track_new_elements is not None:
@@ -322,10 +343,10 @@ def edit_tracking_set(
 
 def delete_tracking_set(store, set_id):
     result = copy.deepcopy(store)
-    target = str(set_id or "")
+    target = _text(set_id or "")
     result["tracking_sets"] = [
         item for item in list(result.get("tracking_sets") or [])
-        if str(item.get("set_id") or "") != target
+        if _text(item.get("set_id") or "") != target
     ]
     result["updated_at"] = models.utc_now_text()
     return result
@@ -376,7 +397,7 @@ def _current_snapshot_for_key(host_document, tracking_set, persistent_id, force_
     for key, element, element_document, transform in source_service.collect_set_member_pairs(
         source_document, tracking_set
     ):
-        if key != str(persistent_id or ""):
+        if key != _text(persistent_id or ""):
             continue
         previous = (tracking_set.get("elements") or {}).get(key) or {}
         return _snapshot_element(
@@ -477,7 +498,7 @@ def set_element_location_tracking(host_document, store, set_id, persistent_id, e
 
 
 def _current_locations_for_keys(host_document, tracking_set, persistent_ids):
-    targets = set([str(item or "") for item in list(persistent_ids or []) if item])
+    targets = set([_text(item or "") for item in list(persistent_ids or []) if item])
     resolved = source_service.resolve_source(host_document, tracking_set.get("source") or {})
     if not resolved.get("available"):
         raise ValueError(resolved.get("message") or "Source model is unavailable.")
@@ -505,7 +526,7 @@ def set_elements_location_tracking(
     keys = []
     seen = set()
     for item in list(persistent_ids or []):
-        key = str(item or "")
+        key = _text(item or "")
         if key and key not in seen:
             keys.append(key)
             seen.add(key)
@@ -589,11 +610,11 @@ def add_manual_child(host_document, store, set_id, parent_persistent_id, device)
         raise ValueError(
             "Add Device is only supported on host-source Tracking Sets."
         )
-    parent_key = str(parent_persistent_id or "")
+    parent_key = _text(parent_persistent_id or "")
     parent_record = (tracking_set.get("elements") or {}).get(parent_key)
     if parent_record is None or parent_record.get("state") == models.ELEMENT_REMOVED:
         raise ValueError("Select an available monitored element first.")
-    unique_id = str(getattr(device, "UniqueId", "") or "")
+    unique_id = _text(getattr(device, "UniqueId", "") or "")
     if not unique_id:
         raise ValueError("The picked device has no stable identity.")
     child_key = "host:{}".format(unique_id)
@@ -645,11 +666,11 @@ def remove_manual_child(store, set_id, child_persistent_id):
     (parentless elements are not tracked). Profile children are managed by
     Sync Element Linker and cannot be unlinked here."""
     tracking_set = copy.deepcopy(_require_set(store, set_id))
-    key = str(child_persistent_id or "")
+    key = _text(child_persistent_id or "")
     record = (tracking_set.get("elements") or {}).get(key)
     if record is None:
         raise ValueError("The linked child no longer exists in the monitor.")
-    if not str(record.get("parent_persistent_id") or ""):
+    if not _text(record.get("parent_persistent_id") or ""):
         raise ValueError("The selected element is not a linked child.")
     if record.get("linker_meta") is not None:
         raise ValueError(

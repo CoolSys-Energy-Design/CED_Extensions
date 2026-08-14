@@ -23,6 +23,7 @@ import models
 import relationship_service
 import source_service
 import sync_logic
+import text_service
 import tracking_service
 
 TITLE = "Parameter Monitor"
@@ -40,10 +41,14 @@ def _element_family_name(element):
     if isinstance(element, DB.FamilyInstance):
         symbol = getattr(element, "Symbol", None)
         family = getattr(symbol, "Family", None) if symbol is not None else None
-        return str(getattr(family, "Name", "") or "")
+        return text_service.to_text(
+            getattr(family, "Name", "") or "", context=u"Element Linker family name"
+        )
     if isinstance(element, DB.Group):
         group_type = getattr(element, "GroupType", None)
-        return str(getattr(group_type, "Name", "") or "")
+        return text_service.to_text(
+            getattr(group_type, "Name", "") or "", context=u"Element Linker group type name"
+        )
     return ""
 
 
@@ -65,7 +70,9 @@ def _document_contexts(document):
             link_document = None
         if link_document is None:
             continue
-        link_uid = str(getattr(link_instance, "UniqueId", "") or "")
+        link_uid = text_service.to_text(
+            getattr(link_instance, "UniqueId", ""), context=u"Element Linker link unique id"
+        )
         if not link_uid:
             continue
         contexts.append({
@@ -78,7 +85,9 @@ def _document_contexts(document):
 
 
 def _context_pid(context, element):
-    unique_id = str(getattr(element, "UniqueId", "") or "")
+    unique_id = text_service.to_text(
+        getattr(element, "UniqueId", "") or "", context=u"Element Linker element unique id"
+    )
     if not unique_id:
         return None
     if context["kind"] == "link":
@@ -155,7 +164,7 @@ def _resolve_parent(child_context, contexts, linker):
         candidates.append(candidate)
     if not candidates:
         return None
-    target = str(linker.get("host_name") or "").strip().lower()
+    target = text_service.to_text(linker.get("host_name") or "").strip().lower()
     if target:
         matches = [
             candidate for candidate in candidates
@@ -228,22 +237,28 @@ def collect_linked_children(document):
                 counts["parents_linked"] += 1
             else:
                 counts["parents_host"] += 1
-            led_id = str(linker.get("led_id") or "")
+            led_id = text_service.to_text(linker.get("led_id") or "")
             children.append({
                 "persistent_id": child_pid,
-                "unique_id": str(getattr(element, "UniqueId", "") or ""),
-                "element_id": _id_value(getattr(element, "Id", None)),
-                "name": str(getattr(element, "Name", "") or ""),
-                "parent_persistent_id": parent["persistent_id"],
-                "parent_unique_id": str(
-                    getattr(parent["element"], "UniqueId", "") or ""
+                "unique_id": text_service.to_text(
+                    getattr(element, "UniqueId", "") or "", context=u"Element Linker child unique id"
                 ),
-                "parent_name": str(
-                    getattr(parent["element"], "Name", "") or "Parent"
+                "element_id": _id_value(getattr(element, "Id", None)),
+                "name": text_service.to_text(
+                    getattr(element, "Name", "") or "", context=u"Element Linker child name"
+                ),
+                "parent_persistent_id": parent["persistent_id"],
+                "parent_unique_id": text_service.to_text(
+                    getattr(parent["element"], "UniqueId", "") or "",
+                    context=u"Element Linker parent unique id",
+                ),
+                "parent_name": text_service.to_text(
+                    getattr(parent["element"], "Name", "") or "Parent",
+                    context=u"Element Linker parent name",
                 ),
                 "led_id": led_id,
-                "set_id": str(linker.get("set_id") or ""),
-                "space_profile_id": str(linker.get("space_profile_id") or ""),
+                "set_id": text_service.to_text(linker.get("set_id") or ""),
+                "space_profile_id": text_service.to_text(linker.get("space_profile_id") or ""),
             })
             targets[child_pid] = {
                 "element": element,

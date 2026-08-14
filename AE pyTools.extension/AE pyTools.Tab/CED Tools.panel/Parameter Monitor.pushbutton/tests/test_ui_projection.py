@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
+import io
+import os
 import sys
 import types
 import unittest
@@ -42,6 +44,33 @@ def _record(name, accepted, current, changed=False):
 
 
 class UiProjectionTests(unittest.TestCase):
+    def test_modeless_window_pins_unicode_service_for_callback_lifetime(self):
+        bundle = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        with io.open(os.path.join(bundle, "script.py"), "r", encoding="utf-8") as stream:
+            source = stream.read()
+        class_source = source.split("class ParameterMonitorWindow", 1)[1].split(
+            "\ndef main():", 1
+        )[0]
+
+        self.assertIn("self._text_service = text_service", class_source)
+        global_uses = [
+            line for line in class_source.splitlines()
+            if "text_service." in line and "self._text_service." not in line
+        ]
+        self.assertEqual([], global_uses)
+
+    def test_checkbox_column_is_fixed_centered_and_frozen(self):
+        bundle = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        path = os.path.join(bundle, "ParameterMonitorWindow.xaml")
+        with io.open(path, "r", encoding="utf-8") as stream:
+            xaml = stream.read()
+
+        self.assertIn('FrozenColumnCount="1"', xaml)
+        self.assertIn('Width="38" MinWidth="38" MaxWidth="38"', xaml)
+        self.assertIn('CanUserResize="False" CanUserReorder="False"', xaml)
+        self.assertIn('HeaderStyle="{StaticResource PM.CheckboxColumnHeader}"', xaml)
+        self.assertIn('CellStyle="{StaticResource PM.CheckboxCell}"', xaml)
+
     def test_property_grid_values_follow_selected_element_record(self):
         key = "name:sample:instance"
         tracking_set = {
@@ -64,6 +93,16 @@ class UiProjectionTests(unittest.TestCase):
         self.assertEqual((second_property.accepted, second_property.current), ("A2", "C2"))
         self.assertFalse(first_property.changed)
         self.assertTrue(second_property.changed)
+
+    def test_missing_parameter_uses_its_cell_indicator_not_a_row_status(self):
+        record = _record("Element 1", "Accepted", "Accepted")
+        record["missing_count"] = 2
+
+        row = viewmodel.ElementRow("first", record)
+
+        self.assertEqual("Unchanged", row.status)
+        self.assertEqual("2", row.missing_text)
+        self.assertEqual("Missing", row.missing_state)
 
     def test_linker_children_hidden_from_grid_and_listed_under_parent(self):
         location = {

@@ -65,23 +65,155 @@
             <Setter Property="Padding" Value="8,6" />
             <Setter Property="FontWeight" Value="SemiBold" />
         </Style>
+        <Style x:Key="PM.GridHeaderFilterButton" TargetType="{x:Type Button}">
+            <Setter Property="Width" Value="18" />
+            <Setter Property="Height" Value="18" />
+            <Setter Property="MinWidth" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="3,0,0,0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="{DynamicResource CED.Brush.SecondaryText}" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="Root" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="9" SnapsToDevicePixels="True">
+                            <Viewbox Width="10" Height="10" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Path Data="{DynamicResource CED.Icon.Filter}"
+                                      Fill="{TemplateBinding Foreground}" Stretch="Uniform" />
+                            </Viewbox>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Root" Property="Background" Value="{DynamicResource CED.Brush.CircuitItemHoverBackground}" />
+                                <Setter TargetName="Root" Property="BorderBrush" Value="{DynamicResource CED.Brush.Accent}" />
+                                <Setter Property="Foreground" Value="{DynamicResource CED.Brush.Accent}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Root" Property="Background" Value="{DynamicResource CED.Brush.CircuitItemSelectedBackground}" />
+                            </Trigger>
+                            <Trigger Property="Tag" Value="True">
+                                <Setter TargetName="Root" Property="Background" Value="{DynamicResource CED.Brush.Accent}" />
+                                <Setter TargetName="Root" Property="BorderBrush" Value="{DynamicResource CED.Brush.Accent}" />
+                                <Setter Property="Foreground" Value="{DynamicResource CED.Brush.ButtonForegroundOnAccent}" />
+                            </Trigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="Tag" Value="True" />
+                                    <Condition Property="IsMouseOver" Value="True" />
+                                </MultiTrigger.Conditions>
+                                <Setter TargetName="Root" Property="Background" Value="{DynamicResource CED.Brush.CircuitItemSelectedBackground}" />
+                                <Setter Property="Foreground" Value="{DynamicResource CED.Brush.Accent}" />
+                            </MultiTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="PM.GridRowCheckBox" TargetType="{x:Type CheckBox}">
+            <Setter Property="Width" Value="16" />
+            <Setter Property="Height" Value="16" />
+            <Setter Property="MinWidth" Value="16" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type CheckBox}">
+                        <Border x:Name="Box" CornerRadius="3" Background="Transparent"
+                                BorderBrush="{DynamicResource CED.Brush.Border}" BorderThickness="1"
+                                SnapsToDevicePixels="True">
+                            <Path x:Name="Mark" Data="M 2,8 L 6.1,12 L 14,3"
+                                  Stroke="{DynamicResource CED.Brush.ButtonForegroundOnAccent}"
+                                  StrokeThickness="1.8" StrokeStartLineCap="Round"
+                                  StrokeEndLineCap="Round" Visibility="Collapsed" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Box" Property="Background" Value="{DynamicResource CED.Brush.Accent}" />
+                                <Setter TargetName="Box" Property="BorderBrush" Value="{DynamicResource CED.Brush.Accent}" />
+                                <Setter TargetName="Mark" Property="Visibility" Value="Visible" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Box" Property="BorderBrush" Value="{DynamicResource CED.Brush.Accent}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Box" Property="Opacity" Value="0.45" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="PM.GridSelectAllCheckBox" TargetType="{x:Type CheckBox}" BasedOn="{StaticResource PM.GridRowCheckBox}">
+            <Setter Property="ToolTip" Value="Select or clear all displayed rows" />
+        </Style>
         <Style TargetType="{x:Type DataGridCell}">
             <Setter Property="Padding" Value="7,5" />
             <Setter Property="BorderThickness" Value="0" />
         </Style>
+        <Style x:Key="PM.CheckboxColumnHeader" TargetType="{x:Type DataGridColumnHeader}">
+            <Setter Property="Background" Value="{DynamicResource CED.Brush.DataGridHeaderBackground}" />
+            <Setter Property="Foreground" Value="{DynamicResource CED.Brush.DataGridHeaderForeground}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CED.Brush.DataGridHeaderBorder}" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style x:Key="PM.CheckboxCell" TargetType="{x:Type DataGridCell}">
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
         <Style x:Key="PM.TrackingSetCard" TargetType="{x:Type Border}">
-            <Setter Property="Background" Value="{DynamicResource CED.Brush.ListItemBackground}" />
+            <Setter Property="Background" Value="{DynamicResource CED.Brush.SearchBackground}" />
             <Setter Property="BorderBrush" Value="{DynamicResource CED.Brush.CardBorder}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="5" />
-            <Setter Property="Padding" Value="9" />
-            <Setter Property="Margin" Value="0,0,0,7" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Padding" Value="8,7" />
+            <Setter Property="Margin" Value="0,0,0,5" />
             <Style.Triggers>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsMouseOver}" Value="True" />
+                        <Condition Binding="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected}" Value="False" />
+                    </MultiDataTrigger.Conditions>
+                    <Setter Property="Background" Value="{DynamicResource CED.Brush.CircuitItemHoverBackground}" />
+                </MultiDataTrigger>
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected}" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource CED.Brush.CircuitItemSelectedBackground}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource CED.Brush.Accent}" />
+                </DataTrigger>
                 <DataTrigger Binding="{Binding active}" Value="False">
                     <Setter Property="Opacity" Value="0.52" />
                     <Setter Property="Background" Value="{DynamicResource CED.Brush.SurfaceAlt}" />
                 </DataTrigger>
             </Style.Triggers>
+        </Style>
+        <Style x:Key="PM.TrackingSetItem" TargetType="{x:Type ListBoxItem}">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                        <Border Background="Transparent" SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              Margin="{TemplateBinding Padding}" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
         <Style x:Key="PM.SetActiveBadge" TargetType="{x:Type Border}">
             <Setter Property="Background" Value="#2D2EAF68" />
@@ -110,8 +242,18 @@
                 <DataTrigger Binding="{Binding status}" Value="Changed"><Setter Property="Background" Value="#3DD6A517" /></DataTrigger>
                 <DataTrigger Binding="{Binding status}" Value="Added"><Setter Property="Background" Value="#3D2EAF68" /></DataTrigger>
                 <DataTrigger Binding="{Binding status}" Value="Removed"><Setter Property="Background" Value="#3DD64545" /></DataTrigger>
-                <DataTrigger Binding="{Binding status}" Value="Missing Parameter"><Setter Property="Background" Value="#3DD58512" /></DataTrigger>
                 <DataTrigger Binding="{Binding status}" Value="Untracked"><Setter Property="Background" Value="#3D75808C" /></DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="PM.SetChangesBadge" TargetType="{x:Type Border}">
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Setter Property="Background" Value="#3DD6A517" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="6,1" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding has_changes}" Value="True">
+                    <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
             </Style.Triggers>
         </Style>
         <Style x:Key="PM.ChangeCell" TargetType="{x:Type DataGridCell}">
@@ -124,6 +266,16 @@
             <Setter Property="Padding" Value="7,5" />
             <Style.Triggers>
                 <DataTrigger Binding="{Binding location_change_state}" Value="Changed"><Setter Property="Background" Value="#3DD6A517" /></DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="PM.MissingCell" TargetType="{x:Type DataGridCell}">
+            <Setter Property="Padding" Value="7,5" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding missing_state}" Value="Missing">
+                    <Setter Property="Background" Value="#3DD58512" />
+                    <Setter Property="Foreground" Value="#B06E00" />
+                    <Setter Property="FontWeight" Value="SemiBold" />
+                </DataTrigger>
             </Style.Triggers>
         </Style>
         <Style x:Key="PM.FamilyChangeCell" TargetType="{x:Type DataGridCell}">
@@ -225,26 +377,37 @@
                     </DockPanel>
                     <ListBox x:Name="TrackingSetList" Grid.Row="1" SelectionChanged="tracking_set_selection_changed"
                              Background="Transparent" BorderThickness="0" HorizontalContentAlignment="Stretch"
+                             ItemContainerStyle="{StaticResource PM.TrackingSetItem}"
                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                              VirtualizingPanel.IsVirtualizing="True"
                              VirtualizingPanel.VirtualizationMode="Recycling">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <Border Style="{StaticResource PM.TrackingSetCard}">
-                                    <StackPanel>
-                                        <DockPanel>
-                                            <TextBlock Text="{Binding name}" FontWeight="Bold" FontSize="13" />
-                                            <Border DockPanel.Dock="Right" Style="{StaticResource PM.SetActiveBadge}">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <TextBlock Grid.Row="0" Text="{Binding name}" FontWeight="Bold" FontSize="13" TextTrimming="CharacterEllipsis" />
+                                        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,4,0,0">
+                                            <Border Style="{StaticResource PM.SetActiveBadge}">
                                                 <TextBlock Text="{Binding active_text}" Foreground="White" FontSize="10" FontWeight="SemiBold" />
                                             </Border>
+                                            <Border Style="{StaticResource PM.SetChangesBadge}" Margin="4,0,0,0">
+                                                <TextBlock Text="CHANGES DETECTED" Foreground="#14243A" FontSize="10" FontWeight="SemiBold" />
+                                            </Border>
+                                        </StackPanel>
+                                        <TextBlock Grid.Row="2" Text="{Binding model_text}" Foreground="{DynamicResource CED.Brush.SecondaryText}" FontSize="10" Margin="0,5,0,0" />
+                                        <DockPanel Grid.Row="3" Margin="0,5,0,0" LastChildFill="False">
+                                            <TextBlock Text="{Binding changed_text}" Foreground="#D58512" FontSize="10" Margin="0,0,8,0" />
+                                            <TextBlock Text="{Binding added_text}" Foreground="{DynamicResource CED.Brush.AccentGreen}" FontSize="10" Margin="0,0,8,0" />
+                                            <TextBlock Text="{Binding removed_text}" Foreground="{DynamicResource CED.Brush.AccentRed}" FontSize="10" Margin="0,0,8,0" />
+                                            <TextBlock DockPanel.Dock="Right" Text="{Binding element_count_text}" FontSize="10" Foreground="{DynamicResource CED.Brush.SecondaryText}" />
                                         </DockPanel>
-                                        <TextBlock Text="{Binding subtitle}" Foreground="{DynamicResource CED.Brush.SecondaryText}" FontSize="10" TextWrapping="Wrap" Margin="0,3,0,0" />
-                                        <TextBlock Text="{Binding counts_text}" FontSize="10" Margin="0,5,0,0" />
-                                        <DockPanel Margin="0,4,0,0">
-                                            <TextBlock Text="{Binding status_text}" FontWeight="SemiBold" />
-                                            <TextBlock DockPanel.Dock="Right" Text="{Binding last_check}" FontSize="9" Foreground="{DynamicResource CED.Brush.SecondaryText}" />
-                                        </DockPanel>
-                                    </StackPanel>
+                                    </Grid>
                                 </Border>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
@@ -257,9 +420,16 @@
             </Border>
 
             <Border x:Name="TrackingSetsCollapsedStrip" Grid.Column="0" Style="{StaticResource PM.Card}" Margin="0" Padding="2" Visibility="Collapsed">
-                <Button Style="{StaticResource PM.Button}" Content="▶" ToolTip="Expand Tracking Sets"
-                        Padding="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-                        Click="expand_tracking_sets_clicked" />
+                <Button Style="{StaticResource PM.Button}" ToolTip="Expand Tracking Sets"
+                        Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                        Click="expand_tracking_sets_clicked">
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="TRACKING SETS" FontWeight="Bold" FontSize="10" HorizontalAlignment="Center">
+                            <TextBlock.LayoutTransform><RotateTransform Angle="-90" /></TextBlock.LayoutTransform>
+                        </TextBlock>
+                        <TextBlock Text="▶" FontSize="11" HorizontalAlignment="Center" Margin="0,10,0,0" />
+                    </StackPanel>
+                </Button>
             </Border>
 
             <Grid x:Name="MiddleColumnGrid" Grid.Column="2">
@@ -289,9 +459,9 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        <Border Grid.Column="0" Style="{StaticResource PM.Card}"><StackPanel><TextBlock x:Name="ChangedCountText" Text="0" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource CED.Brush.AccentRed}" /><TextBlock Text="Changed" /></StackPanel></Border>
+                        <Border Grid.Column="0" Style="{StaticResource PM.Card}"><StackPanel><TextBlock x:Name="ChangedCountText" Text="0" FontSize="24" FontWeight="Bold" Foreground="#D58512" /><TextBlock Text="Changed" /></StackPanel></Border>
                         <Border Grid.Column="1" Style="{StaticResource PM.Card}"><StackPanel><TextBlock x:Name="AddedCountText" Text="0" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource CED.Brush.AccentGreen}" /><TextBlock Text="Added" /></StackPanel></Border>
-                        <Border Grid.Column="2" Style="{StaticResource PM.Card}"><StackPanel><TextBlock x:Name="RemovedCountText" Text="0" FontSize="24" FontWeight="Bold" Foreground="#D58512" /><TextBlock Text="Removed" /></StackPanel></Border>
+                        <Border Grid.Column="2" Style="{StaticResource PM.Card}"><StackPanel><TextBlock x:Name="RemovedCountText" Text="0" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource CED.Brush.AccentRed}" /><TextBlock Text="Removed" /></StackPanel></Border>
                         <Border Grid.Column="3" Style="{StaticResource PM.Card}"><StackPanel><TextBlock x:Name="UnchangedCountText" Text="0" FontSize="24" FontWeight="Bold" /><TextBlock Text="Unchanged" /></StackPanel></Border>
                     </Grid>
                 </Expander>
@@ -320,21 +490,27 @@
                           PreviewMouseMove="element_grid_preview_mouse_move"
                           RowStyle="{StaticResource PM.ElementRow}"
                           SelectionMode="Extended"
+                          CanUserReorderColumns="False"
                           EnableRowVirtualization="True"
                           EnableColumnVirtualization="True"
                           VirtualizingPanel.IsVirtualizing="True"
                           VirtualizingPanel.VirtualizationMode="Recycling"
+                          FrozenColumnCount="1"
                           ScrollViewer.HorizontalScrollBarVisibility="Auto">
                     <DataGrid.Columns>
-                        <DataGridTemplateColumn Header="" Width="34">
+                        <DataGridTemplateColumn Header="" Width="38" MinWidth="38" MaxWidth="38"
+                                                CanUserResize="False" CanUserReorder="False" CanUserSort="False"
+                                                HeaderStyle="{StaticResource PM.CheckboxColumnHeader}"
+                                                CellStyle="{StaticResource PM.CheckboxCell}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <CheckBox IsChecked="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}}, Path=IsSelected}"
+                                              Style="{StaticResource PM.GridRowCheckBox}"
                                               HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                        <DataGridTemplateColumn Header="Status" Width="125">
+                        <DataGridTemplateColumn Header="Status" Width="Auto" MinWidth="84">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border Style="{StaticResource PM.StatusBadge}">
@@ -343,29 +519,22 @@
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                        <DataGridTextColumn Header="Element" Binding="{Binding element}" Width="*" MinWidth="130" />
-                        <DataGridTextColumn Header="Family" Binding="{Binding family}" Width="1.1*" MinWidth="120" CellStyle="{StaticResource PM.FamilyChangeCell}" />
-                        <DataGridTextColumn Header="Type" Binding="{Binding type}" Width="1.1*" MinWidth="120" CellStyle="{StaticResource PM.TypeChangeCell}" />
-                        <DataGridTextColumn Header="ID" Binding="{Binding element_id}" Width="75" />
-                        <DataGridTextColumn Header="Level" Binding="{Binding level}" Width="100" />
-                        <DataGridTextColumn Header="Parameter Changes" Binding="{Binding parameter_change_text}" Width="105" CellStyle="{StaticResource PM.ChangeCell}" />
-                        <DataGridTextColumn Header="Missing" Binding="{Binding missing_count}" Width="65" />
-                        <DataGridTextColumn Header="Location Tracking" Binding="{Binding location_text}" Width="95" />
-                        <DataGridTextColumn Header="Location Change" Binding="{Binding location_change_text}" Width="95" CellStyle="{StaticResource PM.LocationChangeCell}" />
-                        <DataGridTextColumn Header="Circuit / Device" Binding="{Binding circuit}" Width="150" />
+                        <DataGridTextColumn Header="Family" Binding="{Binding family}" Width="180" MinWidth="120" CellStyle="{StaticResource PM.FamilyChangeCell}" />
+                        <DataGridTextColumn Header="Type" Binding="{Binding element}" Width="210" MinWidth="140" CellStyle="{StaticResource PM.TypeChangeCell}" />
+                        <DataGridTextColumn Header="ID" Binding="{Binding element_id}" Width="90" MinWidth="72" />
+                        <DataGridTextColumn Header="Level" Binding="{Binding level}" Width="105" MinWidth="80" />
+                        <DataGridTextColumn Header="Param Δ" Binding="{Binding parameter_change_text}" Width="84" MinWidth="72" CellStyle="{StaticResource PM.ChangeCell}" />
+                        <DataGridTextColumn Header="Param Missing" Binding="{Binding missing_text}" Width="98" MinWidth="84" CellStyle="{StaticResource PM.MissingCell}" />
+                        <DataGridTextColumn Header="Location Track" Binding="{Binding location_text}" Width="100" MinWidth="88" />
+                        <DataGridTextColumn Header="Location Δ" Binding="{Binding location_change_text}" Width="88" MinWidth="76" CellStyle="{StaticResource PM.LocationChangeCell}" />
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>
 
             <Border x:Name="RightPanelBorder" Grid.Column="4" Style="{StaticResource PM.Card}" Margin="0">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition x:Name="ParametersRowDefinition" Height="*" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <StackPanel Grid.Row="0">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" CanContentScroll="False">
+                    <StackPanel>
+                    <StackPanel>
                         <DockPanel LastChildFill="False">
                             <TextBlock Text="ELEMENT DETAILS" FontWeight="Bold" VerticalAlignment="Center" />
                             <Button DockPanel.Dock="Right" Style="{StaticResource PM.Button}" Content="▶"
@@ -381,16 +550,19 @@
                             </WrapPanel>
                         </StackPanel>
                     </StackPanel>
-                    <Expander Grid.Row="1" x:Name="ParametersExpander" IsExpanded="True" Margin="0,8,0,0"
+                    <Expander x:Name="ParametersExpander" IsExpanded="True" Margin="0,8,0,0"
                               Expanded="parameters_expander_expanded" Collapsed="parameters_expander_collapsed">
                         <Expander.Header><TextBlock Text="PARAMETERS" FontWeight="Bold" /></Expander.Header>
                         <Grid Margin="0,4,0,0">
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <DataGrid x:Name="PropertyGrid" Grid.Row="0" SelectionChanged="property_selection_changed"
                                       RowStyle="{StaticResource PM.PropertyRow}"
+                                      MinHeight="150"
+                                      EnableRowVirtualization="False"
+                                      ScrollViewer.VerticalScrollBarVisibility="Disabled"
                                       ScrollViewer.HorizontalScrollBarVisibility="Auto">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="Property" Binding="{Binding name}" Width="1.3*" MinWidth="105" />
@@ -412,18 +584,19 @@
                             </WrapPanel>
                         </Grid>
                     </Expander>
-                    <Border Grid.Row="2" BorderBrush="{DynamicResource CED.Brush.InfoPanelBorder}" BorderThickness="1" CornerRadius="5" Background="{DynamicResource CED.Brush.InfoPanelBackground}" Padding="8" Margin="0,8,0,0">
+                    <Border BorderBrush="{DynamicResource CED.Brush.InfoPanelBorder}" BorderThickness="1" CornerRadius="5" Background="{DynamicResource CED.Brush.InfoPanelBackground}" Padding="8" Margin="0,8,0,0">
                         <Expander IsExpanded="True">
                             <Expander.Header><TextBlock Text="LINKED CHILDREN" FontWeight="Bold" /></Expander.Header>
                             <StackPanel Margin="0,4,0,0">
                                 <TextBlock x:Name="ChildrenSummaryText" Text="No linked children" Margin="0,0,0,3" TextWrapping="Wrap" />
-                                <DataGrid x:Name="ChildrenGrid" MaxHeight="160" Margin="0,0,0,6"
+                                <DataGrid x:Name="ChildrenGrid" MinHeight="100" Margin="0,0,0,6"
                                           SelectionChanged="children_selection_changed"
                                           AutoGenerateColumns="False" IsReadOnly="True"
                                           HeadersVisibility="Column" SelectionMode="Single"
                                           CanUserAddRows="False" CanUserDeleteRows="False"
                                           RowStyle="{StaticResource PM.PropertyRow}"
-                                          ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                          EnableRowVirtualization="False"
+                                          ScrollViewer.VerticalScrollBarVisibility="Disabled"
                                           ScrollViewer.HorizontalScrollBarVisibility="Auto">
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Header="Family" Binding="{Binding family}" Width="1.3*" MinWidth="110" />
@@ -439,7 +612,7 @@
                             </StackPanel>
                         </Expander>
                     </Border>
-                    <Border Grid.Row="3" BorderBrush="{DynamicResource CED.Brush.InfoPanelBorder}" BorderThickness="1" CornerRadius="5" Background="{DynamicResource CED.Brush.InfoPanelBackground}" Padding="8" Margin="0,8,0,0">
+                    <Border BorderBrush="{DynamicResource CED.Brush.InfoPanelBorder}" BorderThickness="1" CornerRadius="5" Background="{DynamicResource CED.Brush.InfoPanelBackground}" Padding="8" Margin="0,8,0,0">
                         <Expander IsExpanded="True">
                             <Expander.Header><TextBlock Text="HOST DEVICE / CIRCUIT" FontWeight="Bold" /></Expander.Header>
                             <StackPanel Margin="0,4,0,0">
@@ -454,13 +627,21 @@
                             </StackPanel>
                         </Expander>
                     </Border>
-                </Grid>
+                    </StackPanel>
+                </ScrollViewer>
             </Border>
 
             <Border x:Name="RightPanelCollapsedStrip" Grid.Column="4" Style="{StaticResource PM.Card}" Margin="0" Padding="2" Visibility="Collapsed">
-                <Button Style="{StaticResource PM.Button}" Content="◀" ToolTip="Expand the details panel"
-                        Padding="4" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-                        Click="expand_right_panel_clicked" />
+                <Button Style="{StaticResource PM.Button}" ToolTip="Expand the details panel"
+                        Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                        Click="expand_right_panel_clicked">
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="ELEMENT DETAILS" FontWeight="Bold" FontSize="10" HorizontalAlignment="Center">
+                            <TextBlock.LayoutTransform><RotateTransform Angle="90" /></TextBlock.LayoutTransform>
+                        </TextBlock>
+                        <TextBlock Text="◀" FontSize="11" HorizontalAlignment="Center" Margin="0,10,0,0" />
+                    </StackPanel>
+                </Button>
             </Border>
         </Grid>
 

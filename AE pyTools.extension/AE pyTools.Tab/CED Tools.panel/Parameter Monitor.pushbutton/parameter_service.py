@@ -13,6 +13,7 @@ except Exception:
 from Snippets import revit_helpers
 
 import models
+import text_service
 
 
 def _id_value(value):
@@ -21,7 +22,7 @@ def _id_value(value):
 
 def _storage_type_name(storage_type):
     if DB is None:
-        return str(storage_type or "none").lower()
+        return text_service.to_text(storage_type or "none").lower()
     mapping = {
         DB.StorageType.String: "string",
         DB.StorageType.Integer: "integer",
@@ -33,7 +34,9 @@ def _storage_type_name(storage_type):
 
 def _definition_name(parameter):
     try:
-        return str(parameter.Definition.Name or "")
+        return text_service.to_text(
+            parameter.Definition.Name or "", context=u"Parameter definition name"
+        )
     except Exception:
         return ""
 
@@ -50,13 +53,13 @@ def _shared_guid(parameter):
 def _spec_type(parameter):
     try:
         data_type = parameter.Definition.GetDataType()
-        return str(data_type.TypeId or data_type)
+        return text_service.to_text(data_type.TypeId or data_type)
     except Exception:
         return ""
 
 
 def descriptor_from_parameter(parameter, scope):
-    scope = "type" if str(scope).lower() == "type" else "instance"
+    scope = "type" if text_service.to_text(scope).lower() == "type" else "instance"
     name = _definition_name(parameter)
     param_id = _id_value(getattr(parameter, "Id", None))
     shared_guid = _shared_guid(parameter)
@@ -126,9 +129,9 @@ def discover_parameters(elements, source_document):
     return sorted(
         result,
         key=lambda item: (
-            str(item.get("name") or "").lower(),
+            text_service.to_text(item.get("name") or "").lower(),
             0 if item.get("scope") == "instance" else 1,
-            str(item.get("key") or ""),
+            text_service.to_text(item.get("key") or ""),
         ),
     )
 
@@ -149,12 +152,12 @@ def _parameter_by_name(owner, name):
     if owner is None or not name:
         return None
     try:
-        parameter = owner.LookupParameter(str(name))
+        parameter = owner.LookupParameter(text_service.to_text(name))
         if parameter is not None:
             return parameter
     except Exception:
         pass
-    target = str(name).strip().lower()
+    target = text_service.to_text(name).strip().lower()
     for candidate in _iter_parameters(owner):
         if _definition_name(candidate).strip().lower() == target:
             return candidate
@@ -205,19 +208,34 @@ def normalize_parameter(parameter, source_document=None):
     if not has_value:
         return models.normalized_value(models.VALUE_BLANK, storage_name, None, "")
     try:
+        parameter_name = _definition_name(parameter) or u"Unnamed parameter"
+        text_context = u"Parameter '{}' value".format(parameter_name)
         if storage_name == "string":
             raw = parameter.AsString()
+            raw = text_service.to_text(raw, context=text_context) if raw is not None else None
             display = raw
             if display is None:
-                display = parameter.AsValueString()
-            if raw is None or str(raw) == "":
+                display_value = parameter.AsValueString()
+                display = (
+                    text_service.to_text(display_value, context=text_context)
+                    if display_value is not None else u""
+                )
+            if raw is None or raw == "":
                 return models.normalized_value(models.VALUE_BLANK, storage_name, raw, display or "")
         elif storage_name == "integer":
             raw = int(parameter.AsInteger())
-            display = parameter.AsValueString()
+            display_value = parameter.AsValueString()
+            display = (
+                text_service.to_text(display_value, context=text_context)
+                if display_value is not None else None
+            )
         elif storage_name == "double":
             raw = float(parameter.AsDouble())
-            display = parameter.AsValueString()
+            display_value = parameter.AsValueString()
+            display = (
+                text_service.to_text(display_value, context=text_context)
+                if display_value is not None else None
+            )
         elif storage_name == "element_id":
             element_id = parameter.AsElementId()
             raw = _id_value(element_id)
@@ -225,9 +243,12 @@ def normalize_parameter(parameter, source_document=None):
             if not display and source_document is not None:
                 try:
                     referenced = source_document.GetElement(element_id)
-                    display = str(getattr(referenced, "Name", "") or raw)
+                    display = text_service.to_text(
+                        getattr(referenced, "Name", "") or raw,
+                        context=u"Referenced element name for {}".format(parameter_name),
+                    )
                 except Exception:
-                    display = str(raw)
+                    display = text_service.to_text(raw, context=text_context)
         else:
             return models.normalized_value(
                 models.VALUE_UNSUPPORTED,
@@ -236,16 +257,16 @@ def normalize_parameter(parameter, source_document=None):
                 "Unsupported",
                 "Unsupported Revit StorageType.",
             )
-        if display is None or str(display) == "":
-            display = str(raw)
-        return models.normalized_value(models.VALUE_VALID, storage_name, raw, str(display))
+        if display is None or display == "":
+            display = text_service.to_text(raw, context=text_context)
+        return models.normalized_value(models.VALUE_VALID, storage_name, raw, display)
     except Exception as ex:
         return models.normalized_value(
             models.VALUE_READ_ERROR,
             storage_name,
             None,
             "Read Error",
-            str(ex),
+            text_service.diagnostic_text(ex, u"Revit parameter read failed."),
         )
 
 
@@ -272,7 +293,7 @@ def read_properties(element, source_document, descriptors, type_cache=None):
                 type_cache[type_key] = type_element
             owner = type_element
         parameter = resolve_parameter(owner, descriptor)
-        values[str(descriptor.get("key") or "")] = normalize_parameter(
+        values[text_service.to_text(descriptor.get("key") or "")] = normalize_parameter(
             parameter, source_document=source_document
         )
     return values
@@ -292,7 +313,7 @@ def descriptor_matches(left, right):
     if left.get("builtin_id") is not None and left.get("builtin_id") == right.get("builtin_id"):
         return left.get("scope") == right.get("scope")
     return (
-        str(left.get("name") or "").strip().lower()
-        == str(right.get("name") or "").strip().lower()
+        text_service.to_text(left.get("name") or "").strip().lower()
+        == text_service.to_text(right.get("name") or "").strip().lower()
         and left.get("scope") == right.get("scope")
     )

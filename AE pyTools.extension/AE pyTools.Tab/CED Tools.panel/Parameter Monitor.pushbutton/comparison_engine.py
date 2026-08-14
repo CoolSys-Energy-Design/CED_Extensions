@@ -7,6 +7,7 @@ import copy
 import math
 
 import models
+import text_service
 
 
 def _safe_float(value, default=None):
@@ -78,9 +79,9 @@ def metadata_value(metadata, key):
     """Read split family/type values while supporting older combined metadata."""
     metadata = metadata or {}
     direct = metadata.get(key)
-    if direct is not None and str(direct) != "":
-        return str(direct)
-    combined = str(metadata.get("family_type") or "")
+    if direct is not None and text_service.to_text(direct) != "":
+        return text_service.to_text(direct)
+    combined = text_service.to_text(metadata.get("family_type") or "")
     parts = [item.strip() for item in combined.split(" : ", 1)]
     if key == "family_name" and parts:
         return parts[0]
@@ -217,7 +218,9 @@ def apply_scan(tracking_set, current_map, checked_at, source_state=None):
         current_metadata = copy.deepcopy(snapshot.get("metadata") or {})
         record["metadata"] = copy.deepcopy(current_metadata)
         record["current_metadata"] = current_metadata
-        record["source_element_unique_id"] = str(snapshot.get("source_element_unique_id") or "")
+        record["source_element_unique_id"] = text_service.to_text(
+            snapshot.get("source_element_unique_id") or ""
+        )
         record["current_properties"] = copy.deepcopy(snapshot.get("properties") or {})
         if bool(record.get("track_location")):
             record["current_location"] = copy.deepcopy(snapshot.get("location"))
@@ -263,10 +266,12 @@ def apply_scan(tracking_set, current_map, checked_at, source_state=None):
 
 def resolve_property(tracking_set, persistent_id, property_key):
     result = copy.deepcopy(tracking_set)
-    record = (result.get("elements") or {}).get(str(persistent_id or ""))
+    record = (result.get("elements") or {}).get(
+        text_service.to_text(persistent_id or "")
+    )
     if record is None or record.get("state") == models.ELEMENT_REMOVED:
         return result
-    key = str(property_key or "")
+    key = text_service.to_text(property_key or "")
     if key == models.LOCATION_PROPERTY_KEY:
         if bool(record.get("track_location")):
             record["accepted_location"] = copy.deepcopy(record.get("current_location"))
@@ -287,7 +292,9 @@ def resolve_property(tracking_set, persistent_id, property_key):
 
 def resolve_element(tracking_set, persistent_id):
     result = copy.deepcopy(tracking_set)
-    record = (result.get("elements") or {}).get(str(persistent_id or ""))
+    record = (result.get("elements") or {}).get(
+        text_service.to_text(persistent_id or "")
+    )
     if record is None or record.get("state") == models.ELEMENT_REMOVED:
         return result
     record["accepted_properties"] = copy.deepcopy(record.get("current_properties") or {})
@@ -331,7 +338,9 @@ def untrack_element(tracking_set, persistent_id):
 def untrack_elements(tracking_set, persistent_ids):
     """Untrack many records with one copy/status pass."""
     result = copy.deepcopy(tracking_set)
-    keys = set([str(item or "") for item in list(persistent_ids or []) if item])
+    keys = set([
+        text_service.to_text(item or "") for item in list(persistent_ids or []) if item
+    ])
     elements = result.get("elements") or {}
     untracked = set(result.get("untracked_ids") or [])
     for key in keys:
@@ -348,7 +357,7 @@ def untrack_elements(tracking_set, persistent_ids):
 
 def restore_element(tracking_set, persistent_id, snapshot):
     result = copy.deepcopy(tracking_set)
-    key = str(persistent_id or "")
+    key = text_service.to_text(persistent_id or "")
     result["untracked_ids"] = [
         item for item in list(result.get("untracked_ids") or []) if item != key
     ]
@@ -364,7 +373,7 @@ def restore_element(tracking_set, persistent_id, snapshot):
 
 def remove_record(tracking_set, persistent_id):
     result = copy.deepcopy(tracking_set)
-    key = str(persistent_id or "")
+    key = text_service.to_text(persistent_id or "")
     record = (result.get("elements") or {}).get(key)
     if record is not None and record.get("state") == models.ELEMENT_REMOVED:
         result["elements"].pop(key, None)
@@ -385,7 +394,9 @@ def remove_all_removed(tracking_set):
 
 def set_location_tracking(tracking_set, persistent_id, enabled, current_location=None):
     result = copy.deepcopy(tracking_set)
-    record = (result.get("elements") or {}).get(str(persistent_id or ""))
+    record = (result.get("elements") or {}).get(
+        text_service.to_text(persistent_id or "")
+    )
     if record is None or record.get("state") == models.ELEMENT_REMOVED:
         return result
     record["track_location"] = bool(enabled)

@@ -14,6 +14,7 @@ from __future__ import print_function
 import json
 
 import models
+import text_service
 
 DB = None
 System = None
@@ -94,18 +95,92 @@ class StorageCorruptionError(StorageError):
     pass
 
 
+def _diagnostic_value(value, fallback=u"<unavailable>"):
+    return text_service.diagnostic_text(value, fallback=fallback)
+
+
+def _mapping_context(mapping, parent_context):
+    """Add usable set/element/parameter identity to persistence errors."""
+    if not isinstance(mapping, dict):
+        return parent_context
+    if mapping.get("set_id"):
+        return u"{} > tracking set '{}'".format(
+            parent_context, _diagnostic_value(mapping.get("name"), u"Unnamed")
+        )
+    if mapping.get("persistent_id"):
+        metadata = (
+            mapping.get("current_metadata") or mapping.get("metadata") or {}
+        )
+        return u"{} > element '{}' (id={}, family='{}', type='{}', persistent_id={})".format(
+            parent_context,
+            _diagnostic_value(metadata.get("friendly_name"), u"Unnamed"),
+            _diagnostic_value(metadata.get("element_id"), u"?"),
+            _diagnostic_value(metadata.get("family_name"), u"?"),
+            _diagnostic_value(metadata.get("type_name"), u"?"),
+            _diagnostic_value(mapping.get("persistent_id"), u"?"),
+        )
+    if mapping.get("key") and mapping.get("scope") and "name" in mapping:
+        return u"{} > tracked parameter '{}' ({})".format(
+            parent_context,
+            _diagnostic_value(mapping.get("name"), u"Unnamed"),
+            _diagnostic_value(mapping.get("scope"), u"unknown scope"),
+        )
+    return parent_context
+
+
+def _unicode_safe_json_value(value, context=u"Project monitor data"):
+    """Normalize text exactly once and reject unknown bytes with context.
+
+    There is intentionally no CP1252/Latin-1/UTF-8 retry list here.  Revit API
+    text is already Unicode; any raw byte string reaching persistence is a
+    programming error and is reported with its tracking-set/element context.
+    """
+    if text_service.is_text_value(value):
+        return text_service.to_text(value, context=context)
+    if isinstance(value, dict):
+        result = {}
+        mapping_context = _mapping_context(value, context)
+        for key, item in value.items():
+            key_context = u"{} > field name".format(mapping_context)
+            safe_key = (
+                text_service.to_text(key, context=key_context)
+                if text_service.is_text_value(key) else key
+            )
+            value_context = u"{} > field '{}'".format(
+                mapping_context, _diagnostic_value(safe_key, u"<invalid key>")
+            )
+            result[safe_key] = _unicode_safe_json_value(item, value_context)
+        return result
+    if isinstance(value, (list, tuple)):
+        return [
+            _unicode_safe_json_value(item, u"{} > item {}".format(context, index))
+            for index, item in enumerate(value)
+        ]
+    return value
+
+
+def _json_dumps(value, context=u"Project monitor data"):
+    normalized = _unicode_safe_json_value(value, context=context)
+    return json.dumps(
+        normalized,
+        separators=(",", ":"),
+        sort_keys=True,
+        ensure_ascii=True,
+    )
+
+
 def serialize_payload(store):
     migrated = models.migrate_project_store(store)
     migrated["tool_version"] = models.TOOL_VERSION
     migrated["updated_at"] = models.utc_now_text()
-    return json.dumps(migrated, separators=(",", ":"), sort_keys=True)
+    return _json_dumps(migrated, context=u"Serialized project store")
 
 
 def deserialize_payload(text, project_identity=None):
     if not text:
         return models.new_project_store(project_identity=project_identity)
     try:
-        raw = json.loads(text)
+        raw = json.loads(text_service.to_text(text, context=u"Stored project payload"))
     except Exception as ex:
         raise StorageCorruptionError("Parameter Monitor payload JSON is invalid: {}".format(ex))
     return models.migrate_project_store(raw, project_identity=project_identity)
@@ -118,8 +193,12 @@ def _require_revit():
 
 def project_identity(document):
     identity = {
-        "title": str(getattr(document, "Title", "") or ""),
-        "path": str(getattr(document, "PathName", "") or ""),
+        "title": text_service.to_text(
+            getattr(document, "Title", "") or "", context=u"Project title"
+        ),
+        "path": text_service.to_text(
+            getattr(document, "PathName", "") or "", context=u"Project path"
+        ),
         "is_workshared": bool(getattr(document, "IsWorkshared", False)),
     }
     try:
@@ -372,7 +451,9 @@ def _read_fallback_payload(document):
     if value is None:
         return ""
     try:
-        return str(value.Value or "")
+        return text_service.to_text(
+            value.Value or "", context=u"Fallback global parameter payload"
+        )
     except Exception as ex:
         raise StorageError(
             "Fallback global parameter {!r} has no readable text value: {}".format(
@@ -496,6 +577,37 @@ def _log(logger, level, message, *args):
         pass
 
 
+def _log_save_context(logger, transaction_name, store):
+    """Log concise Add Set/persistence context without dumping every element."""
+    if logger is None:
+        return
+    sets = list((store or {}).get("tracking_sets") or [])
+    _log(
+        logger,
+        "info",
+        "Parameter Monitor save context: operation=%s, tracking_sets=%s.",
+        transaction_name,
+        len(sets),
+    )
+    for tracking_set in sets:
+        properties = list(tracking_set.get("tracked_properties") or [])
+        labels = [
+            _diagnostic_value(item.get("name"), u"Unnamed parameter")
+            for item in properties[:20]
+        ]
+        if len(properties) > 20:
+            labels.append(u"… {} more".format(len(properties) - 20))
+        _log(
+            logger,
+            "info",
+            "Parameter Monitor set: name=%s, id=%s, elements=%s, properties=[%s].",
+            _diagnostic_value(tracking_set.get("name"), u"Unnamed set"),
+            _diagnostic_value(tracking_set.get("set_id"), u"?"),
+            len(tracking_set.get("elements") or {}),
+            u"; ".join(labels),
+        )
+
+
 def load(document, logger=None):
     identity = project_identity(document)
     extensible_error = None
@@ -574,7 +686,7 @@ def _build_entity(schema, identity, payload_text):
     entity.Set[String](schema.GetField(FIELD_TOOL_VERSION), String(models.TOOL_VERSION))
     entity.Set[String](
         schema.GetField(FIELD_PROJECT_IDENTITY),
-        String(json.dumps(identity, separators=(",", ":"), sort_keys=True)),
+        String(_json_dumps(identity)),
     )
     entity.Set[String](schema.GetField(FIELD_PAYLOAD_JSON), String(payload_text))
     return entity
@@ -626,7 +738,26 @@ def save(document, store, transaction_name="Parameter Monitor - Save", logger=No
     result["project_identity"] = identity
     result["tool_version"] = models.TOOL_VERSION
     result["updated_at"] = models.utc_now_text()
-    payload_text = json.dumps(result, separators=(",", ":"), sort_keys=True)
+    _log_save_context(logger, transaction_name, result)
+    try:
+        # This is validation, not a decoding fallback. Revit-originated text
+        # has already been converted at collection boundaries. If a raw byte
+        # string still reaches this point, fail with exact model context.
+        result = _unicode_safe_json_value(result, context=u"Project monitor save")
+        payload_text = _json_dumps(result, context=u"Project monitor save")
+    except Exception as ex:
+        _log(
+            logger,
+            "error",
+            "Parameter Monitor text serialization failed during %s: %s",
+            transaction_name,
+            ex,
+        )
+        raise StorageError(
+            "Parameter Monitor could not serialize text during {}: {}".format(
+                transaction_name, ex
+            )
+        )
     payload_bytes = len(payload_text.encode("utf-8"))
     if payload_bytes > MAX_PAYLOAD_BYTES:
         raise StorageError(

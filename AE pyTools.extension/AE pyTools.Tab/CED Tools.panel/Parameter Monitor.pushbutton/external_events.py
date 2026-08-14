@@ -19,6 +19,7 @@ import relationship_service
 import set_io
 import source_service
 import storage_service
+import text_service
 import tracking_service
 
 TITLE = "Parameter Monitor"
@@ -26,7 +27,7 @@ TITLE = "Parameter Monitor"
 
 class _Choice(forms.TemplateListItem):
     def __init__(self, item, label, checked=False):
-        self._label = str(label or "")
+        self._label = text_service.to_text(label or "")
         forms.TemplateListItem.__init__(self, item, checked=checked)
 
     @property
@@ -57,8 +58,8 @@ def _source_choices(document, source_hint=None):
     for source in sources:
         same_type = source.get("source_type") == hint.get("source_type")
         same_name = (
-            str(source.get("display_name") or "").strip().lower()
-            == str(hint.get("display_name") or "").strip().lower()
+            text_service.to_text(source.get("display_name") or "").strip().lower()
+            == text_service.to_text(hint.get("display_name") or "").strip().lower()
         )
         choice = _Choice(source, source.get("display_name") or "Source Model")
         if same_type and (same_name or not hint.get("display_name")):
@@ -133,14 +134,50 @@ def _choose_parameters(source_document, category, selected_keys=None, elements=N
 
 def _prompt_set_name(default_name):
     value = forms.ask_for_string(
-        default=str(default_name or "Tracking Set"),
+        default=text_service.to_text(default_name or "Tracking Set"),
         prompt="Tracking Set name:",
         title=TITLE,
     )
     if value is None:
         return None
-    value = str(value).strip()
-    return value or str(default_name or "Tracking Set")
+    value = text_service.to_text(value, context=u"Tracking Set name").strip()
+    return value or text_service.to_text(default_name or "Tracking Set")
+
+
+def _log_add_set_context(logger, tracking_set):
+    """Leave a compact, searchable baseline record in pyRevit's log."""
+    if logger is None or tracking_set is None:
+        return
+    properties = list(tracking_set.get("tracked_properties") or [])
+    labels = [
+        text_service.diagnostic_text(item.get("name"), u"Unnamed parameter")
+        for item in properties[:20]
+    ]
+    if len(properties) > 20:
+        labels.append(u"… {} more".format(len(properties) - 20))
+    metadata = []
+    for record in list((tracking_set.get("elements") or {}).values())[:3]:
+        item = (record.get("current_metadata") or record.get("metadata") or {})
+        metadata.append(
+            u"{} | family={} | type={} | id={}".format(
+                text_service.diagnostic_text(item.get("friendly_name"), u"Unnamed"),
+                text_service.diagnostic_text(item.get("family_name"), u"?"),
+                text_service.diagnostic_text(item.get("type_name"), u"?"),
+                text_service.diagnostic_text(item.get("element_id"), u"?"),
+            )
+        )
+    try:
+        logger.info(
+            "Parameter Monitor Add Set baseline ready: set=%s, id=%s, elements=%s, "
+            "properties=[%s], sample_elements=[%s].",
+            text_service.diagnostic_text(tracking_set.get("name"), u"Unnamed set"),
+            text_service.diagnostic_text(tracking_set.get("set_id"), u"?"),
+            len(tracking_set.get("elements") or {}),
+            u"; ".join(labels),
+            u"; ".join(metadata),
+        )
+    except Exception:
+        pass
 
 
 def _create_set_interactive(document, store, logger):
@@ -178,6 +215,7 @@ def _create_set_interactive(document, store, logger):
         location_defaults=defaults,
         logger=logger,
     )
+    _log_add_set_context(logger, tracking_set)
     return updated_store, "Created {} with {} baseline element(s).".format(
         tracking_set.get("name"), len(tracking_set.get("elements") or {})
     )
@@ -192,7 +230,7 @@ def _edit_set_interactive(document, store, set_id, logger):
         raise ValueError(resolved.get("message") or "Source model is unavailable.")
     selected_keys = [item.get("key") for item in tracking_set.get("tracked_properties") or []]
     explicit_elements = None
-    if str(tracking_set.get("membership") or "") == models.MEMBERSHIP_EXPLICIT:
+    if text_service.to_text(tracking_set.get("membership") or "") == models.MEMBERSHIP_EXPLICIT:
         explicit_elements = source_service.collect_set_elements(
             resolved.get("source_document"), tracking_set
         )
@@ -357,7 +395,7 @@ def _import_definitions(document, store, logger):
 
 
 def _csv_cell(value):
-    text = str(value if value is not None else "")
+    text = text_service.to_text(value if value is not None else "")
     if any(marker in text for marker in (",", "\"", "\n", "\r")):
         return "\"{}\"".format(text.replace("\"", "\"\""))
     return text
@@ -369,6 +407,8 @@ def _require_resolvable_set(store, set_id):
         raise ValueError("Select a Tracking Set first.")
     if tracking_set.get("status") in (
         models.SET_SOURCE_UNAVAILABLE,
+        models.SET_LINK_UNAVAILABLE,
+        models.SET_LINK_WORKSETS_UNAVAILABLE,
         models.SET_CHECK_FAILED,
     ):
         raise ValueError(
@@ -380,9 +420,11 @@ def _require_resolvable_set(store, set_id):
 def _metadata_report_value(metadata, field):
     metadata = metadata or {}
     direct = metadata.get(field)
-    if direct is not None and str(direct) != "":
+    if direct is not None and text_service.to_text(direct) != "":
         return direct
-    parts = [item.strip() for item in str(metadata.get("family_type") or "").split(" : ", 1)]
+    parts = [item.strip() for item in text_service.to_text(
+        metadata.get("family_type") or ""
+    ).split(" : ", 1)]
     if field == "family_name" and parts:
         return parts[0]
     if field == "type_name" and len(parts) > 1:
@@ -397,7 +439,7 @@ def _export_report(store, set_id):
     if tracking_set is None:
         raise ValueError("Select a Tracking Set first.")
     default_name = "{}_Parameter_Monitor_Report.csv".format(
-        str(tracking_set.get("name") or "Tracking_Set").replace(" ", "_")
+        text_service.to_text(tracking_set.get("name") or "Tracking_Set").replace(" ", "_")
     )
     path = forms.save_file(file_ext="csv", default_name=default_name, title="Export Review Report")
     if not path:
@@ -481,7 +523,7 @@ class ParameterMonitorExternalEventGateway(object):
         if self.is_busy():
             return False
         self._pending = {
-            "operation": str(operation or ""),
+            "operation": text_service.to_text(operation or ""),
             "payload": copy.deepcopy(payload or {}),
             "callback": callback,
         }
@@ -563,10 +605,11 @@ class _ParameterMonitorExternalEventHandler(IExternalEventHandler):
         set_id = payload.get("set_id")
         persistent_id = payload.get("persistent_id")
         persistent_ids = [
-            str(item or "") for item in list(payload.get("persistent_ids") or []) if item
+            text_service.to_text(item or "")
+            for item in list(payload.get("persistent_ids") or []) if item
         ]
         if not persistent_ids and persistent_id:
-            persistent_ids = [str(persistent_id)]
+            persistent_ids = [text_service.to_text(persistent_id)]
 
         if operation == "refresh_store":
             return {"store": store, "message": "Project monitor data refreshed."}
@@ -746,7 +789,7 @@ class _ParameterMonitorExternalEventHandler(IExternalEventHandler):
                 "Parameter Monitor - Add Device Child",
             )
         if operation == "unlink_child":
-            child_key = str(payload.get("child_persistent_id") or "")
+            child_key = text_service.to_text(payload.get("child_persistent_id") or "")
             if not child_key:
                 raise ValueError("Select a linked child first.")
             if not forms.alert(

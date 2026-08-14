@@ -15,6 +15,8 @@ except Exception:
 
 from Snippets import revit_helpers
 
+import text_service
+
 try:
     from Snippets import _elecutils
 except Exception:
@@ -61,10 +63,10 @@ def pick_device(uidocument):
         # (and some pyRevit engines surface it as a generic aborted-pick error).
         type_name = ""
         try:
-            type_name = str(ex.GetType().FullName or "")
+            type_name = text_service.diagnostic_text(ex.GetType().FullName or "")
         except Exception:
             type_name = ex.__class__.__name__
-        message = str(ex or "").lower()
+        message = text_service.diagnostic_text(ex or u"").lower()
         if "operationcanceled" in type_name.lower() or "aborted the pick" in message:
             return None
         raise
@@ -75,9 +77,14 @@ def relationship_from_device(device):
     if device is None:
         return None
     return {
-        "device_unique_id": str(getattr(device, "UniqueId", "") or ""),
+        "device_unique_id": text_service.to_text(
+            getattr(device, "UniqueId", "") or "", context=u"Electrical device unique id"
+        ),
         "device_id": _id_value(getattr(device, "Id", None)),
-        "device_name": str(getattr(device, "Name", "") or "Electrical Device"),
+        "device_name": text_service.to_text(
+            getattr(device, "Name", "") or "Electrical Device",
+            context=u"Electrical device name",
+        ),
     }
 
 
@@ -126,10 +133,18 @@ def circuit_context(device):
         panel = getattr(circuit, "BaseEquipment", None)
         circuits.append({
             "circuit_id": _id_value(getattr(circuit, "Id", None)),
-            "circuit_unique_id": str(getattr(circuit, "UniqueId", "") or ""),
-            "circuit_number": str(getattr(circuit, "CircuitNumber", "") or ""),
-            "circuit_name": str(getattr(circuit, "Name", "") or ""),
-            "panel_name": str(getattr(panel, "Name", "") or ""),
+            "circuit_unique_id": text_service.to_text(
+                getattr(circuit, "UniqueId", "") or "", context=u"Circuit unique id"
+            ),
+            "circuit_number": text_service.to_text(
+                getattr(circuit, "CircuitNumber", "") or "", context=u"Circuit number"
+            ),
+            "circuit_name": text_service.to_text(
+                getattr(circuit, "Name", "") or "", context=u"Circuit name"
+            ),
+            "panel_name": text_service.to_text(
+                getattr(panel, "Name", "") or "", context=u"Electrical panel name"
+            ),
         })
     if not circuits:
         status = "device_not_circuited"
@@ -149,7 +164,7 @@ def circuit_context(device):
 
 def resolve_relationship(host_document, relationship):
     relationship = relationship or {}
-    unique_id = str(relationship.get("device_unique_id") or "")
+    unique_id = text_service.to_text(relationship.get("device_unique_id") or "")
     device = None
     if host_document is not None and unique_id:
         try:
@@ -159,5 +174,8 @@ def resolve_relationship(host_document, relationship):
     context = circuit_context(device)
     context["device_unique_id"] = unique_id
     context["device_id"] = _id_value(getattr(device, "Id", None)) if device is not None else 0
-    context["device_name"] = str(getattr(device, "Name", "") or relationship.get("device_name") or "")
+    context["device_name"] = text_service.to_text(
+        getattr(device, "Name", "") or relationship.get("device_name") or "",
+        context=u"Electrical device name",
+    )
     return device, context

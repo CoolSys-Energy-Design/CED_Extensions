@@ -113,6 +113,65 @@ class StorageBackendTests(unittest.TestCase):
         self.assertIn('"tracking_sets":[]', calls[0][1])
         self.assertEqual(result.get("project_identity", {}).get("title"), "Test")
 
+    def test_clr_unicode_string_serializes_without_a_byte_decoder(self):
+        class _TypeInfo(object):
+            FullName = "System.String"
+
+        class DotNetUnicodeString(str):
+            def GetType(self):  # noqa: N802
+                return _TypeInfo()
+
+            def decode(self, encoding):
+                raise AssertionError("A CLR System.String must never be decoded as bytes.")
+
+        value = DotNetUnicodeString("Vendor \u2013 Series")
+        payload = storage_service._json_dumps({"name": value})
+        self.assertIn("\\u2013", payload.lower())
+
+    def test_raw_bytes_fail_with_precise_set_element_and_field_context(self):
+        tracking_set = models.new_tracking_set(
+            "Unicode Regression Set",
+            {"source_type": "host", "display_name": "Host"},
+            {"id": -1, "name": "Mechanical Equipment"},
+            [{"key": "project:1:instance", "name": "MCA \u2013 CED", "scope": "instance"}],
+        )
+        tracking_set["elements"] = {
+            "host:test": {
+                "persistent_id": "host:test",
+                "metadata": {
+                    "friendly_name": "Vendor Unit",
+                    "element_id": 42,
+                    "family_name": "Vendor \u00d8 Family",
+                    "type_name": "Vendor Type",
+                },
+                "current_metadata": {
+                    "friendly_name": "Vendor Unit",
+                    "element_id": 42,
+                    "family_name": "Vendor \u00d8 Family",
+                    "type_name": "Vendor Type",
+                },
+                "current_properties": {
+                    "project:1:instance": {"display": b"never guess this"},
+                },
+            },
+        }
+        store = models.new_project_store()
+        store["tracking_sets"] = [tracking_set]
+        document = type(
+            "Document", (object,),
+            {"Title": "Test", "PathName": "", "IsWorkshared": False},
+        )()
+
+        with self.assertRaises(storage_service.StorageError) as raised:
+            storage_service.save(document, store)
+
+        message = str(raised.exception)
+        self.assertIn("Unicode Regression Set", message)
+        self.assertIn("Vendor Unit", message)
+        self.assertIn("Vendor Ø Family", message)
+        self.assertIn("current_properties", message)
+        self.assertIn("Unexpected byte text", message)
+
     def test_fallback_writer_creates_multiline_global_parameter(self):
         multiline = object()
         calls = []

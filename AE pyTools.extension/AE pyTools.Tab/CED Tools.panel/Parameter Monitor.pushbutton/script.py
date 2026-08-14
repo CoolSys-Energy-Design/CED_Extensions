@@ -41,6 +41,7 @@ from UIClasses.ui_bases import CEDWindowBase
 import external_events
 import models
 import storage_service
+import text_service
 import viewmodel
 
 
@@ -58,7 +59,7 @@ def _find_existing_window():
             return None
         for window in application.Windows:
             try:
-                if str(getattr(window, "Tag", "") or "") == WINDOW_MARKER:
+                if text_service.to_text(getattr(window, "Tag", "") or "") == WINDOW_MARKER:
                     return window
             except Exception:
                 continue
@@ -89,6 +90,7 @@ class ParameterMonitorWindow(CEDWindowBase):
         # can release command-module globals after the launch command returns.
         self._viewmodel = viewmodel
         self._models = models
+        self._text_service = text_service
         self._forms = forms
         self._revit = revit
         self._logger = LOGGER
@@ -127,18 +129,17 @@ class ParameterMonitorWindow(CEDWindowBase):
         self._base_element_rows = []
         self._column_filters = {}
         self._column_filter_buttons = {}
+        self._select_all_checkbox = None
         self._element_column_definitions = [
-            (1, "Status", "status"),
-            (2, "Element", "element"),
-            (3, "Family", "family"),
-            (4, "Type", "type"),
-            (5, "ID", "element_id"),
-            (6, "Level", "level"),
-            (7, "Parameter Changes", "parameter_change_text"),
-            (8, "Missing", "missing_count"),
-            (9, "Location Tracking", "location_text"),
-            (10, "Location Change", "location_change_text"),
-            (11, "Circuit / Device", "circuit"),
+            (1, "", "Status", "status"),
+            (2, "", "Family", "family"),
+            (3, "", "Type", "element"),
+            (4, "", "ID", "element_id"),
+            (5, "", "Level", "level"),
+            (6, "", "Param Δ", "parameter_change_text"),
+            (7, "", "Param Missing", "missing_text"),
+            (8, "", "Location Track", "location_text"),
+            (9, "", "Location Δ", "location_change_text"),
         ]
         self._tracking_sets_expanded_width = 290.0
         self._right_panel_expanded_width = 480.0
@@ -215,19 +216,20 @@ class ParameterMonitorWindow(CEDWindowBase):
         """Give every data column a sort surface and an Excel-style filter menu."""
         if len(self.ElementGrid.Columns):
             select_all = self._check_box_type()
-            select_all.ToolTip = "Select or clear all displayed rows"
+            select_all.Style = self.FindResource("PM.GridSelectAllCheckBox")
+            select_all.IsThreeState = False
             select_all.Click += self.select_all_elements_clicked
             self.ElementGrid.Columns[0].Header = select_all
-        for index, label, field in self._element_column_definitions:
+            self._select_all_checkbox = select_all
+        for index, group, label, field in self._element_column_definitions:
             if index >= len(self.ElementGrid.Columns):
                 continue
             panel = self._dock_panel_type()
             panel.LastChildFill = True
             filter_button = self._button_type()
-            filter_button.Content = "▼"
-            filter_button.Tag = field
-            filter_button.Padding = self._system_thickness(3.0, 0.0, 3.0, 0.0)
-            filter_button.Margin = self._system_thickness(5.0, 0.0, 0.0, 0.0)
+            filter_button.Style = self.FindResource("PM.GridHeaderFilterButton")
+            filter_button.CommandParameter = field
+            filter_button.Tag = False
             filter_button.ToolTip = "Filter {}".format(label)
             filter_button.Click += self.column_filter_clicked
             self._dock_panel_type.SetDock(filter_button, self._dock_right)
@@ -241,17 +243,16 @@ class ParameterMonitorWindow(CEDWindowBase):
             column.SortMemberPath = field
             self._column_filter_buttons[field] = filter_button
 
-    @staticmethod
-    def _filter_value(row, field):
-        value = getattr(row, str(field or ""), "")
-        return str(value if value is not None else "")
+    def _filter_value(self, row, field):
+        value = getattr(row, self._text_service.to_text(field or ""), "")
+        return self._text_service.to_text(value if value is not None else "")
 
     def _update_filter_button(self, field):
         button = self._column_filter_buttons.get(field)
         if button is None:
             return
         filter_spec = self._column_filters.get(field)
-        button.Content = "●" if filter_spec else "▼"
+        button.Tag = bool(filter_spec)
         button.ToolTip = (
             "{} filter: {}".format(filter_spec.get("mode"), filter_spec.get("value"))
             if filter_spec else "Filter {}".format(field.replace("_", " ").title())
@@ -259,7 +260,9 @@ class ParameterMonitorWindow(CEDWindowBase):
 
     def column_filter_clicked(self, sender, args):
         try:
-            field = str(getattr(sender, "Tag", "") or "")
+            field = self._text_service.to_text(
+                getattr(sender, "CommandParameter", "") or ""
+            )
             values = sorted(set([
                 self._filter_value(row, field) for row in self._base_element_rows
             ]), key=lambda item: item.lower())
@@ -299,7 +302,9 @@ class ParameterMonitorWindow(CEDWindowBase):
 
     def column_filter_item_clicked(self, sender, args):
         try:
-            parts = str(getattr(sender, "Tag", "") or "").split("\x1f", 2)
+            parts = self._text_service.to_text(
+                getattr(sender, "Tag", "") or ""
+            ).split("\x1f", 2)
             field, mode = parts[0], parts[1]
             value = parts[2] if len(parts) > 2 else ""
             if mode == "clear":
@@ -313,10 +318,12 @@ class ParameterMonitorWindow(CEDWindowBase):
                 )
                 if value is None:
                     return
-                if str(value) == "":
+                if self._text_service.to_text(value) == "":
                     self._column_filters.pop(field, None)
                 else:
-                    self._column_filters[field] = {"mode": "contains", "value": str(value)}
+                    self._column_filters[field] = {
+                        "mode": "contains", "value": self._text_service.to_text(value)
+                    }
             else:
                 self._column_filters[field] = {"mode": "equals", "value": value}
             self._update_filter_button(field)
@@ -330,11 +337,11 @@ class ParameterMonitorWindow(CEDWindowBase):
     def columns_menu_clicked(self, sender, args):
         try:
             menu = self._context_menu_type()
-            for index, label, _field in self._element_column_definitions:
+            for index, group, label, _field in self._element_column_definitions:
                 if index >= len(self.ElementGrid.Columns):
                     continue
                 item = self._menu_item_type()
-                item.Header = label
+                item.Header = "{} — {}".format(group, label) if group else label
                 item.IsCheckable = True
                 item.IsChecked = self.ElementGrid.Columns[index].Visibility == self._visibility.Visible
                 item.Tag = str(index)
@@ -347,7 +354,7 @@ class ParameterMonitorWindow(CEDWindowBase):
 
     def column_visibility_clicked(self, sender, args):
         try:
-            index = int(str(sender.Tag))
+            index = int(self._text_service.to_text(sender.Tag))
             column = self.ElementGrid.Columns[index]
             column.Visibility = self._visibility.Visible if bool(sender.IsChecked) else self._visibility.Collapsed
             self._log_console("UI", "Column {} visibility={}.".format(index, bool(sender.IsChecked)))
@@ -360,17 +367,16 @@ class ParameterMonitorWindow(CEDWindowBase):
         except Exception:
             return None
 
-    @staticmethod
-    def _property_field(row, name, default=None):
+    def _property_field(self, row, name, default=None):
         if row is None:
             return default
         try:
-            value = row.Row[str(name)]
+            value = row.Row[self._text_service.to_text(name)]
             return default if value is None else value
         except Exception:
             pass
         try:
-            value = row[str(name)]
+            value = row[self._text_service.to_text(name)]
             return default if value is None else value
         except Exception:
             pass
@@ -380,9 +386,16 @@ class ParameterMonitorWindow(CEDWindowBase):
         """Append a timestamped, persistent diagnostic entry to the UI console."""
         try:
             stamp = self._date_time_type.Now.ToString("HH:mm:ss.fff")
-            lines = ["[{}] {:<5} {}".format(stamp, str(level or "INFO").upper(), str(message or ""))]
+            lines = ["[{}] {:<5} {}".format(
+                stamp,
+                self._text_service.to_text(level or "INFO").upper(),
+                self._text_service.diagnostic_text(message or ""),
+            )]
             if details:
-                lines.extend(["    {}".format(line) for line in str(details).splitlines()])
+                lines.extend([
+                    "    {}".format(line)
+                    for line in self._text_service.diagnostic_text(details).splitlines()
+                ])
             self._console_lines.extend(lines)
             if len(self._console_lines) > 1500:
                 self._console_lines = self._console_lines[-1200:]
@@ -395,7 +408,7 @@ class ParameterMonitorWindow(CEDWindowBase):
 
     def _set_status(self, message):
         try:
-            self.StatusBarText.Text = str(message or "")
+            self.StatusBarText.Text = self._text_service.diagnostic_text(message or "")
         except Exception:
             pass
 
@@ -485,11 +498,15 @@ class ParameterMonitorWindow(CEDWindowBase):
             if operation == "add_set":
                 added_sets = list(store.get("tracking_sets") or [])
                 if added_sets:
-                    self._selected_set_id = str(added_sets[-1].get("set_id") or "")
+                    self._selected_set_id = self._text_service.to_text(
+                        added_sets[-1].get("set_id") or ""
+                    )
                     self._selected_persistent_id = None
                     self._selected_persistent_ids = []
             if operation == "sync_element_linker" and result.get("sync_set_id"):
-                self._selected_set_id = str(result.get("sync_set_id") or "")
+                self._selected_set_id = self._text_service.to_text(
+                    result.get("sync_set_id") or ""
+                )
                 self._selected_persistent_id = None
                 self._selected_persistent_ids = []
             self._apply_store(store)
@@ -512,7 +529,9 @@ class ParameterMonitorWindow(CEDWindowBase):
         for item in list(items or []):
             row = table.NewRow()
             for name in ("family", "type", "origin", "persistent_id", "state"):
-                row[name] = str(getattr(item, name, "") or "")
+                row[name] = self._text_service.to_text(
+                    getattr(item, name, "") or ""
+                )
             table.Rows.Add(row)
         self._selected_child_id = None
         self.ChildrenGrid.ItemsSource = None
@@ -549,7 +568,9 @@ class ParameterMonitorWindow(CEDWindowBase):
             return
         item = self.ChildrenGrid.SelectedItem
         self._selected_child_id = (
-            str(self._property_field(item, "persistent_id") or "")
+            self._text_service.to_text(
+                self._property_field(item, "persistent_id") or ""
+            )
             if item is not None else None
         ) or None
         record = self._selected_child_record()
@@ -578,7 +599,9 @@ class ParameterMonitorWindow(CEDWindowBase):
         for item in list(items or []):
             row = table.NewRow()
             for name in ("name", "scope", "accepted", "current", "state", "key"):
-                row[name] = str(getattr(item, name, "") or "")
+                row[name] = self._text_service.to_text(
+                    getattr(item, name, "") or ""
+                )
             row["changed"] = bool(getattr(item, "changed", False))
             row["can_resolve"] = bool(getattr(item, "can_resolve", False))
             table.Rows.Add(row)
@@ -637,7 +660,14 @@ class ParameterMonitorWindow(CEDWindowBase):
         subtitle = "{} | {} | {} tracked properties".format(
             row.source, row.category, row.property_count
         )
-        detail = row.source_condition_text or row.status_message
+        unavailable_statuses = (
+            self._models.SET_SOURCE_UNAVAILABLE,
+            self._models.SET_LINK_UNAVAILABLE,
+            self._models.SET_LINK_WORKSETS_UNAVAILABLE,
+        )
+        detail = row.status_message if row.status in unavailable_statuses else (
+            row.source_condition_text or row.status_message
+        )
         self.SetSubtitleText.Text = "{} | {}".format(subtitle, detail) if detail else subtitle
         self.SetStatusText.Text = "{} | {}".format(row.status_text, row.active_text)
         self.SetLastCheckText.Text = "Last check: {}".format(row.last_check)
@@ -646,6 +676,18 @@ class ParameterMonitorWindow(CEDWindowBase):
         self.RemovedCountText.Text = str(row.summary.get("removed", 0))
         self.UnchangedCountText.Text = str(row.summary.get("unchanged", 0))
         self._refresh_elements(tracking_set)
+
+    def _update_select_all_checkbox(self):
+        try:
+            if self._select_all_checkbox is None:
+                return
+            displayed = list(self._element_rows or [])
+            selected = list(self.ElementGrid.SelectedItems or [])
+            self._select_all_checkbox.IsChecked = bool(displayed) and (
+                len(selected) == len(displayed)
+            )
+        except Exception:
+            self._log_ui_exception("Parameter Monitor select-all checkbox state failed")
 
     def _current_filter_key(self):
         try:
@@ -673,7 +715,9 @@ class ParameterMonitorWindow(CEDWindowBase):
             include = True
             for field, filter_spec in list(self._column_filters.items()):
                 actual = self._filter_value(row, field)
-                expected = str(filter_spec.get("value") or "")
+                expected = self._text_service.to_text(
+                    filter_spec.get("value") or ""
+                )
                 if filter_spec.get("mode") == "contains":
                     if expected.lower() not in actual.lower():
                         include = False
@@ -705,6 +749,7 @@ class ParameterMonitorWindow(CEDWindowBase):
             self._selected_persistent_id = (
                 selected_rows[0].persistent_id if len(selected_rows) == 1 else None
             )
+            self._update_select_all_checkbox()
             self.ElementCountText.Text = (
                 "{} of {} element(s) shown".format(len(rows), len(base_rows))
                 if self._column_filters else "{} element(s) shown".format(len(rows))
@@ -918,6 +963,7 @@ class ParameterMonitorWindow(CEDWindowBase):
         if self._refreshing:
             return
         rows = self._sync_selection_from_grid()
+        self._update_select_all_checkbox()
         self._log_console("SELECT", "Middle grid selection changed: {}".format(self._selected_persistent_ids))
         self._refresh_inspector()
 
@@ -937,6 +983,7 @@ class ParameterMonitorWindow(CEDWindowBase):
             finally:
                 self._refreshing = False
             self._sync_selection_from_grid()
+            self._update_select_all_checkbox()
             self._log_console("SELECT", "Checkbox selection changed: {}".format(self._selected_persistent_ids))
             self._refresh_inspector()
             args.Handled = True
@@ -972,6 +1019,7 @@ class ParameterMonitorWindow(CEDWindowBase):
             finally:
                 self._refreshing = False
             self._sync_selection_from_grid()
+            self._update_select_all_checkbox()
             self._log_console(
                 "SELECT",
                 "{} all displayed rows ({} selected).".format(
@@ -1119,20 +1167,12 @@ class ParameterMonitorWindow(CEDWindowBase):
             self._log_ui_exception("Parameter Monitor could not expand the details panel")
 
     def parameters_expander_expanded(self, sender, args):
-        # Give the parameters section its stretching row back.
-        try:
-            self.ParametersRowDefinition.Height = self._grid_length_type(
-                1.0, self._grid_unit_type.Star
-            )
-        except Exception:
-            pass
+        # The detail pane now owns vertical scrolling, so expanded tables use
+        # their natural height and the pane scrolls rather than clipping them.
+        return
 
     def parameters_expander_collapsed(self, sender, args):
-        # Collapse the stretching row so lower sections reclaim the space.
-        try:
-            self.ParametersRowDefinition.Height = self._grid_length_type.Auto
-        except Exception:
-            pass
+        return
 
     def console_expander_expanded(self, sender, args):
         try:

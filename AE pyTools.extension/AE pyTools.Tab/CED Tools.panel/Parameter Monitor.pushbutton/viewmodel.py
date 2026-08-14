@@ -5,6 +5,7 @@ from __future__ import print_function
 
 import comparison_engine
 import models
+import text_service
 import tracking_service
 
 FILTER_ALL = "all"
@@ -35,14 +36,16 @@ STATUS_LABELS = {
     models.SET_DIRTY: "Changes Detected",
     models.SET_CHECKING: "Checking",
     models.SET_SOURCE_UNAVAILABLE: "Source Unavailable",
+    models.SET_LINK_UNAVAILABLE: "Link Unavailable",
+    models.SET_LINK_WORKSETS_UNAVAILABLE: "Link Worksets Unavailable",
     models.SET_CHECK_FAILED: "Check Failed",
 }
 
 
 def _display(value, fallback="-"):
-    if value is None or str(value) == "":
+    if value is None or text_service.to_text(value) == "":
         return fallback
-    return str(value)
+    return text_service.to_text(value)
 
 
 def _value_display(value):
@@ -74,9 +77,9 @@ def _location_display(location):
 def _metadata_value(metadata, key):
     metadata = metadata or {}
     direct = metadata.get(key)
-    if direct is not None and str(direct) != "":
-        return str(direct)
-    combined = str(metadata.get("family_type") or "")
+    if direct is not None and text_service.to_text(direct) != "":
+        return text_service.to_text(direct)
+    combined = text_service.to_text(metadata.get("family_type") or "")
     parts = [item.strip() for item in combined.split(" : ", 1)]
     if key == "family_name" and parts:
         return parts[0]
@@ -90,17 +93,17 @@ def _metadata_value(metadata, key):
 class TrackingSetRow(object):
     def __init__(self, tracking_set):
         self.data = tracking_set
-        self.set_id = str(tracking_set.get("set_id") or "")
-        self.name = str(tracking_set.get("name") or "Tracking Set")
-        self.source = str((tracking_set.get("source") or {}).get("display_name") or "Host Model")
-        self.category = str((tracking_set.get("category") or {}).get("name") or "Category")
+        self.set_id = text_service.to_text(tracking_set.get("set_id") or "")
+        self.name = text_service.to_text(tracking_set.get("name") or "Tracking Set")
+        self.source = text_service.to_text((tracking_set.get("source") or {}).get("display_name") or "Host Model")
+        self.category = text_service.to_text((tracking_set.get("category") or {}).get("name") or "Category")
         self.active = bool(tracking_set.get("active", True))
         self.active_text = "ACTIVE" if self.active else "DEACTIVATED"
-        self.status = str(tracking_set.get("status") or models.SET_NEVER_CHECKED)
+        self.status = text_service.to_text(tracking_set.get("status") or models.SET_NEVER_CHECKED)
         self.status_text = STATUS_LABELS.get(self.status, self.status.replace("_", " ").title())
-        self.status_message = str(tracking_set.get("status_message") or "")
+        self.status_message = text_service.to_text(tracking_set.get("status_message") or "")
         self.source_condition_text = "; ".join([
-            str(item.get("message") or item.get("kind") or "Source condition")
+            text_service.to_text(item.get("message") or item.get("kind") or "Source condition")
             for item in list(tracking_set.get("source_conditions") or [])
         ])
         self.last_check = _display(tracking_set.get("last_check"), "Never")
@@ -108,6 +111,17 @@ class TrackingSetRow(object):
         self.summary = tracking_service.set_summary(tracking_set)
         self.element_count = len(tracking_set.get("elements") or {})
         self.unresolved_count = int(self.summary.get("unresolved", 0) or 0)
+        self.has_changes = self.unresolved_count > 0
+        source_type = text_service.to_text((tracking_set.get("source") or {}).get("source_type") or "")
+        self.model_text = "Model: {}".format(
+            "Link" if source_type == models.SOURCE_LINK else "Host"
+        )
+        self.changed_text = "{} changed".format(self.summary.get("changed", 0))
+        self.added_text = "{} added".format(self.summary.get("added", 0))
+        self.removed_text = "{} removed".format(self.summary.get("removed", 0))
+        self.element_count_text = "{} element{}".format(
+            self.element_count, "" if self.element_count == 1 else "s"
+        )
         self.subtitle = "Category: {} | Param Sets: {} | Model: {} | {} elements".format(
             self.category, self.property_count, self.source, self.element_count
         )
@@ -120,7 +134,7 @@ class TrackingSetRow(object):
 
 class ElementRow(object):
     def __init__(self, persistent_id, record=None, untracked=False):
-        self.persistent_id = str(persistent_id or "")
+        self.persistent_id = text_service.to_text(persistent_id or "")
         self.record = record
         self.is_untracked = bool(untracked)
         metadata = (
@@ -139,8 +153,6 @@ class ElementRow(object):
             self.status = "Added"
         elif changes > 0:
             self.status = "Changed"
-        elif missing > 0:
-            self.status = "Missing Parameter"
         else:
             self.status = "Unchanged"
         self.element = _display(metadata.get("friendly_name"), "Untracked Element" if untracked else "Element")
@@ -151,6 +163,8 @@ class ElementRow(object):
         self.level = _display(metadata.get("level"))
         self.change_count = changes
         self.missing_count = missing
+        self.missing_text = str(missing) if missing else "-"
+        self.missing_state = "Missing" if missing else "None"
         changed_keys = set((record or {}).get("changed_property_keys") or [])
         special_keys = set([
             models.LOCATION_PROPERTY_KEY,
@@ -181,18 +195,18 @@ class ElementRow(object):
         self.can_restore = untracked
         self.can_remove_record = state == models.ELEMENT_REMOVED
         self.has_relationship = bool((record or {}).get("relationship"))
-        self.parent_persistent_id = str((record or {}).get("parent_persistent_id") or "")
+        self.parent_persistent_id = text_service.to_text((record or {}).get("parent_persistent_id") or "")
 
 
 class PropertyRow(object):
     def __init__(self, key, name, accepted, current, changed, value_state, scope=""):
-        self.key = str(key or "")
-        self.name = str(name or "Property")
-        self.scope = str(scope or "")
-        self.accepted = str(accepted or "-")
-        self.current = str(current or "-")
+        self.key = text_service.to_text(key or "")
+        self.name = text_service.to_text(name or "Property")
+        self.scope = text_service.to_text(scope or "")
+        self.accepted = text_service.to_text(accepted or "-")
+        self.current = text_service.to_text(current or "-")
         self.changed = bool(changed)
-        self.state = "Changed" if changed else str(value_state or "Unchanged").replace("_", " ").title()
+        self.state = "Changed" if changed else text_service.to_text(value_state or "Unchanged").replace("_", " ").title()
         self.can_resolve = bool(changed)
 
 
@@ -206,13 +220,13 @@ class LinkedChildRow(object):
             or record.get("metadata")
             or {}
         )
-        self.persistent_id = str(persistent_id or "")
+        self.persistent_id = text_service.to_text(persistent_id or "")
         self.family = _display(_metadata_value(metadata, "family_name"))
         self.type = _display(_metadata_value(metadata, "type_name"))
         # Profile = registered by the Element Linker sync (profile-placed);
         # Manual = a monitored element linked by hand.
         self.origin = "Profile" if record.get("linker_meta") else "Manual"
-        self.state = str(record.get("state") or models.ELEMENT_TRACKED)
+        self.state = text_service.to_text(record.get("state") or models.ELEMENT_TRACKED)
 
 
 def linked_children_info(tracking_set, record):
@@ -231,14 +245,14 @@ def linked_children_info(tracking_set, record):
     }
     if tracking_set is None or record is None:
         return info
-    parent_key = str(record.get("persistent_id") or "")
+    parent_key = text_service.to_text(record.get("persistent_id") or "")
     if not parent_key:
         return info
     children = []
     for persistent_id, candidate in sorted(
         (tracking_set.get("elements") or {}).items()
     ):
-        if str((candidate or {}).get("parent_persistent_id") or "") != parent_key:
+        if text_service.to_text((candidate or {}).get("parent_persistent_id") or "") != parent_key:
             continue
         children.append((persistent_id, candidate))
     if not children:
@@ -265,7 +279,7 @@ def linked_children_info(tracking_set, record):
             persistent_id
             for persistent_id, candidate in children
             if (candidate or {}).get("state") != models.ELEMENT_REMOVED
-            and not str(persistent_id or "").startswith("link:")
+            and not text_service.to_text(persistent_id or "").startswith("link:")
         ]
     return info
 
@@ -285,11 +299,13 @@ def element_rows(tracking_set, filter_key=FILTER_ALL, search_text=""):
     for persistent_id, record in list((tracking_set.get("elements") or {}).items()):
         # Element Linker children are filed under their parent's LINKED
         # CHILDREN panel instead of cluttering the main grid.
-        if str((record or {}).get("parent_persistent_id") or ""):
+        if text_service.to_text((record or {}).get("parent_persistent_id") or ""):
             continue
         row = ElementRow(persistent_id, record=record)
         if tracking_set.get("status") in (
             models.SET_SOURCE_UNAVAILABLE,
+            models.SET_LINK_UNAVAILABLE,
+            models.SET_LINK_WORKSETS_UNAVAILABLE,
             models.SET_CHECK_FAILED,
         ):
             row.can_navigate = False
@@ -301,13 +317,13 @@ def element_rows(tracking_set, filter_key=FILTER_ALL, search_text=""):
         if filter_key == FILTER_MISSING and row.missing_count <= 0:
             continue
         rows.append(row)
-    search = str(search_text or "").strip().lower()
+    search = text_service.to_text(search_text or "").strip().lower()
     if search:
         rows = [row for row in rows if search in " ".join([
             row.element.lower(), row.family.lower(), row.type.lower(), row.element_id.lower(),
             row.level.lower(), row.persistent_id.lower(), row.circuit.lower(),
         ])]
-    priority = {"Changed": 0, "Added": 1, "Removed": 2, "Missing Parameter": 3, "Unchanged": 4}
+    priority = {"Changed": 0, "Added": 1, "Removed": 2, "Unchanged": 3}
     rows.sort(key=lambda row: (priority.get(row.status, 9), row.element.lower(), row.persistent_id))
     return rows
 
@@ -342,7 +358,7 @@ def property_rows(tracking_set, element_row):
         ),
     ]
     for descriptor in list(tracking_set.get("tracked_properties") or []):
-        key = str(descriptor.get("key") or "")
+        key = text_service.to_text(descriptor.get("key") or "")
         accepted_value = accepted.get(key) or {}
         current_value = current.get(key) or {}
         rows.append(PropertyRow(

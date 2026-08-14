@@ -12,6 +12,8 @@ import copy
 import datetime
 import uuid
 
+import text_service
+
 PAYLOAD_SCHEMA_VERSION = 1
 DEFINITION_SCHEMA_VERSION = 1
 TOOL_VERSION = "1.0.0"
@@ -24,6 +26,8 @@ SET_CLEAN = "clean"
 SET_DIRTY = "changes_detected"
 SET_CHECKING = "checking"
 SET_SOURCE_UNAVAILABLE = "source_unavailable"
+SET_LINK_UNAVAILABLE = "link_unavailable"
+SET_LINK_WORKSETS_UNAVAILABLE = "link_worksets_unavailable"
 SET_CHECK_FAILED = "check_failed"
 
 ELEMENT_TRACKED = "tracked"
@@ -64,13 +68,13 @@ def copy_json_value(value):
 
 def normalized_value(state, storage_type=None, raw=None, display=None, message=None):
     value = {
-        "state": str(state or VALUE_UNSUPPORTED),
-        "storage_type": str(storage_type or "none"),
+        "state": text_service.to_text(state or VALUE_UNSUPPORTED),
+        "storage_type": text_service.to_text(storage_type or "none"),
         "raw": raw,
         "display": display,
     }
     if message:
-        value["message"] = str(message)
+        value["message"] = text_service.to_text(message)
     return value
 
 
@@ -95,10 +99,10 @@ def new_tracking_set(name, source, category, properties, location_defaults=None,
     now = utc_now_text()
     return {
         "set_id": new_id(),
-        "name": str(name or category.get("name") or "Tracking Set"),
+        "name": text_service.to_text(name or category.get("name") or "Tracking Set"),
         "source": copy_json_value(source or {}),
         "category": copy_json_value(category or {}),
-        "membership": str(membership or MEMBERSHIP_CATEGORY),
+        "membership": text_service.to_text(membership or MEMBERSHIP_CATEGORY),
         "origin": origin,
         "active": True,
         "scan_policy": "manual",
@@ -128,8 +132,8 @@ def new_tracked_element(snapshot, baseline=True, track_location=False):
     current_location = copy_json_value(snapshot.get("location"))
     state = ELEMENT_TRACKED if baseline else ELEMENT_ADDED
     return {
-        "persistent_id": str(snapshot.get("persistent_id") or ""),
-        "source_element_unique_id": str(snapshot.get("source_element_unique_id") or ""),
+        "persistent_id": text_service.to_text(snapshot.get("persistent_id") or ""),
+        "source_element_unique_id": text_service.to_text(snapshot.get("source_element_unique_id") or ""),
         # metadata remains a compatibility alias for the current display state.
         "metadata": copy_json_value(current_metadata),
         "accepted_metadata": copy_json_value(current_metadata) if baseline else {},
@@ -152,15 +156,15 @@ def new_tracked_element(snapshot, baseline=True, track_location=False):
 
 
 def find_set(store, set_id):
-    target = str(set_id or "")
+    target = text_service.to_text(set_id or "")
     for tracking_set in list((store or {}).get("tracking_sets") or []):
-        if str(tracking_set.get("set_id") or "") == target:
+        if text_service.to_text(tracking_set.get("set_id") or "") == target:
             return tracking_set
     return None
 
 
 def property_key(descriptor):
-    return str((descriptor or {}).get("key") or "")
+    return text_service.to_text((descriptor or {}).get("key") or "")
 
 
 def _ensure_tracking_set_shape(tracking_set):
@@ -189,7 +193,7 @@ def _ensure_tracking_set_shape(tracking_set):
     tracking_set.setdefault("created_at", utc_now_text())
     tracking_set.setdefault("updated_at", utc_now_text())
     for persistent_id, record in list(tracking_set["elements"].items()):
-        record.setdefault("persistent_id", str(persistent_id))
+        record.setdefault("persistent_id", text_service.to_text(persistent_id))
         record.setdefault("source_element_unique_id", "")
         record.setdefault("metadata", {})
         # Existing payloads only stored the latest metadata. Treat that value as
