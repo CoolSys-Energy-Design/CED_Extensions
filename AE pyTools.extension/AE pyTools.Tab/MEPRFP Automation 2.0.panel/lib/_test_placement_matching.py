@@ -112,6 +112,30 @@ def profile_family_names_raw(profile):
     return out
 
 
+def profile_full_labels_raw(profile):
+    """Mirror of placement.profile_full_labels_raw — case-folded,
+    unsplit ``"Family : Type"`` labels for the size-exact tier."""
+    if not isinstance(profile, dict):
+        return set()
+    out = set()
+
+    def _add(value):
+        if not value:
+            return
+        key = value.strip().lower()
+        if key:
+            out.add(key)
+
+    pf = profile.get("parent_filter") or {}
+    if isinstance(pf, dict):
+        _add(pf.get("family_name_pattern"))
+    _add(profile.get("name") or "")
+    for alias in profile.get("merged_aliases") or []:
+        if isinstance(alias, str):
+            _add(alias)
+    return out
+
+
 def collect_profile_aliases_raw(profile):
     """Mirror of placement.collect_profile_aliases_raw — case-folded
     only, no suffix strip."""
@@ -138,16 +162,113 @@ def collect_profile_aliases_raw(profile):
     return out
 
 
-def match_one_linked_revit(target_name, profiles):
+def match_one_linked_revit(target_name, profiles, type_name=""):
     """Mirror of placement._match_one_linked_revit (exact, no suffix
-    fallback)."""
+    fallback; size-exact tier when ``type_name`` is provided)."""
     target_name_lower = (target_name or "").strip().lower()
     if not target_name_lower:
         return []
-    return [
+
+    family_matches = [
         p for p in profiles
         if target_name_lower in profile_family_names_raw(p)
     ]
+
+    type_name_lower = (type_name or "").strip().lower()
+    if type_name_lower:
+        full_label = "{} : {}".format(target_name_lower, type_name_lower)
+        size_exact = [
+            p for p in family_matches
+            if full_label in profile_full_labels_raw(p)
+        ]
+        if size_exact:
+            return size_exact
+
+    return family_matches
+
+
+class _Target(object):
+    """Minimal stand-in for placement.Target in dedupe tests."""
+
+    def __init__(self, name, type_name="", world_pt=(0.0, 0.0, 0.0)):
+        self.name = name
+        self.type_name = type_name
+        self.world_pt = world_pt
+
+
+class _Match(object):
+    """Minimal stand-in for placement.Match in dedupe tests."""
+
+    def __init__(self, target, profile):
+        self.target = target
+        self.profile = profile
+
+
+def dedupe_matches_per_target(matches):
+    """Mirror of placement.dedupe_matches_per_target."""
+    if not matches:
+        return []
+
+    def _target_key(target):
+        wp = target.world_pt or (0.0, 0.0, 0.0)
+        return (
+            round(float(wp[0]), 3),
+            round(float(wp[1]), 3),
+            round(float(wp[2]), 3),
+            (target.name or "").strip().lower(),
+        )
+
+    def _led_count(profile):
+        n = 0
+        for s in profile.get("linked_sets") or []:
+            if isinstance(s, dict):
+                n += len(s.get("linked_element_definitions") or [])
+        return n
+
+    bucketed = {}
+    order = []
+    for m in matches:
+        k = _target_key(m.target)
+        if k not in bucketed:
+            bucketed[k] = []
+            order.append(k)
+        bucketed[k].append(m)
+
+    out = []
+    for k in order:
+        group = bucketed[k]
+        if len(group) == 1:
+            out.append(group[0])
+            continue
+        target_name = group[0].target.name or ""
+        target_name_lower = target_name.strip().lower()
+
+        type_name_lower = (group[0].target.type_name or "").strip().lower()
+        if type_name_lower:
+            full_label = "{} : {}".format(target_name_lower, type_name_lower)
+            size_exact = [
+                m for m in group
+                if full_label in profile_full_labels_raw(m.profile)
+            ]
+            if size_exact:
+                group = size_exact
+
+        exact = [
+            m for m in group
+            if ((m.profile.get("parent_filter") or {}).get("family_name_pattern") or "")
+                .strip().lower() == target_name_lower
+        ]
+        candidates = exact if exact else group
+
+        candidates = sorted(
+            candidates,
+            key=lambda m: (
+                -_led_count(m.profile),
+                m.profile.get("id") or "",
+            ),
+        )
+        out.append(candidates[0])
+    return out
 
 
 def match_one_cad(target_name, profiles):
@@ -288,6 +409,126 @@ def test_match_linked_revit_logic():
            match_one_linked_revit("", profiles) == [])
 
 
+def _size_variant_profiles():
+    """Four profiles captured from the same family, one per size —
+    the WFM MAT refrigeration-case shape. Ids are in capture order,
+    which followed the alphabetical type sort (10' first)."""
+    fam = "1160, 1161, 1162, 1163 (HILLPHOENIX, OWZGG) COFFIN"
+    out = []
+    for i, size in enumerate(("10'", "12'", "6'", "8'")):
+        out.append({
+            "id": "EQ-{}".format(148 + i),
+            "name": "{} : {}".format(fam, size),
+            "parent_filter": {"family_name_pattern": fam},
+            "linked_sets": [
+                {"linked_element_definitions": [
+                    {"label": "{} : {}".format(fam, size)},
+                ]},
+            ],
+        })
+    return fam, out
+
+
+def test_match_linked_revit_size_exact():
+    """Target carrying the link element's type must resolve to the
+    same-size profile, not every size variant of the family."""
+    print("\n[placement] linked-revit match (size-exact tier)")
+    fam, profiles = _size_variant_profiles()
+
+    matched = match_one_linked_revit(fam, profiles, type_name="8'")
+    _check("8' target -> 8' profile only",
+           len(matched) == 1 and matched[0]["id"] == "EQ-151",
+           "got {}".format([m["id"] for m in matched]))
+
+    matched = match_one_linked_revit(fam, profiles, type_name="8'  ")
+    _check("type name whitespace-insensitive",
+           len(matched) == 1 and matched[0]["id"] == "EQ-151",
+           "got {}".format([m["id"] for m in matched]))
+
+    matched = match_one_linked_revit(fam.upper(), profiles, type_name="12'")
+    _check("size tier case-insensitive on family too",
+           len(matched) == 1 and matched[0]["id"] == "EQ-149",
+           "got {}".format([m["id"] for m in matched]))
+
+    matched = match_one_linked_revit(fam, profiles, type_name="4'")
+    _check("uncaptured size falls back to all family matches",
+           len(matched) == 4,
+           "got {}".format([m["id"] for m in matched]))
+
+    matched = match_one_linked_revit(fam, profiles)
+    _check("no type name -> family behavior unchanged",
+           len(matched) == 4,
+           "got {}".format([m["id"] for m in matched]))
+
+
+def test_full_label_alias_size_matching():
+    """The placement window stores per-pair aliases as full
+    ``"Family : Type"`` labels. Those must resolve size-exactly to the
+    owning profile, and their family half must still feed the family
+    fallback for sizes seen later."""
+    print("\n[placement] full-label alias (size-exact via merged_aliases)")
+    fam, profiles = _size_variant_profiles()
+
+    # Uncaptured 4' size aliased onto the 6' profile (EQ-150).
+    profiles[2]["merged_aliases"] = ["{} : 4'".format(fam)]
+    matched = match_one_linked_revit(fam, profiles, type_name="4'")
+    _check("aliased size -> alias owner only",
+           len(matched) == 1 and matched[0]["id"] == "EQ-150",
+           "got {}".format([m["id"] for m in matched]))
+
+    # Renamed source family, full-label alias on the 6' profile.
+    profiles[2]["merged_aliases"] = ["FAM_RENAMED : 4'"]
+    matched = match_one_linked_revit("FAM_RENAMED", profiles, type_name="4'")
+    _check("renamed family + aliased size -> alias owner only",
+           len(matched) == 1 and matched[0]["id"] == "EQ-150",
+           "got {}".format([m["id"] for m in matched]))
+
+    matched = match_one_linked_revit("FAM_RENAMED", profiles, type_name="12'")
+    _check("renamed family, other size -> family fallback via alias half",
+           len(matched) == 1 and matched[0]["id"] == "EQ-150",
+           "got {}".format([m["id"] for m in matched]))
+
+
+def test_dedupe_prefers_size_exact():
+    """When wrong-size profiles share a target's bucket, the size-exact
+    one must win over the LED-count / alphabetical-id tie-breaks."""
+    print("\n[placement] dedupe (size-exact tier)")
+    fam, profiles = _size_variant_profiles()
+
+    # Give the WRONG-size 10' profile more LEDs so the legacy
+    # tie-breaks would pick it; size-exact must still win.
+    profiles[0]["linked_sets"][0]["linked_element_definitions"].append(
+        {"label": "EF_Receptacle : Duplex"}
+    )
+
+    target = _Target(fam, type_name="8'")
+    deduped = dedupe_matches_per_target(
+        [_Match(target, p) for p in profiles]
+    )
+    _check("8' anchor -> 8' profile despite richer 10' profile",
+           len(deduped) == 1 and deduped[0].profile["id"] == "EQ-151",
+           "got {}".format([m.profile["id"] for m in deduped]))
+
+    # Uncaptured size: falls through to the legacy tie-breaks (most
+    # LEDs -> the 10' profile).
+    target = _Target(fam, type_name="4'")
+    deduped = dedupe_matches_per_target(
+        [_Match(target, p) for p in profiles]
+    )
+    _check("uncaptured size falls back to legacy tie-break",
+           len(deduped) == 1 and deduped[0].profile["id"] == "EQ-148",
+           "got {}".format([m.profile["id"] for m in deduped]))
+
+    # No type name at all: legacy behavior untouched.
+    target = _Target(fam)
+    deduped = dedupe_matches_per_target(
+        [_Match(target, p) for p in profiles]
+    )
+    _check("no type name -> legacy tie-break unchanged",
+           len(deduped) == 1 and deduped[0].profile["id"] == "EQ-148",
+           "got {}".format([m.profile["id"] for m in deduped]))
+
+
 def test_match_cad_alias_logic():
     """CAD/CSV matching is exact against aliases + implicit names —
     no suffix-stripped fallback."""
@@ -347,6 +588,9 @@ def run():
     test_collect_profile_aliases()
     test_profile_family_names()
     test_match_linked_revit_logic()
+    test_match_linked_revit_size_exact()
+    test_full_label_alias_size_matching()
+    test_dedupe_prefers_size_exact()
     test_match_cad_alias_logic()
     test_profile_flag()
     return list(_FAILS)

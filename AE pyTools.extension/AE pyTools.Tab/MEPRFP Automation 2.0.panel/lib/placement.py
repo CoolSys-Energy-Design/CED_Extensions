@@ -233,6 +233,39 @@ def profile_family_names_raw(profile):
     return out
 
 
+def profile_full_labels_raw(profile):
+    """Case-folded, *unsplit* name keys for a profile — its ``name``,
+    ``parent_filter.family_name_pattern``, and ``merged_aliases`` kept
+    whole, no ``" : "`` family/type split.
+
+    Used by the size-exact match tier: a linked-Revit target that
+    carries its element's type name is compared as ``"Family : Type"``
+    against these labels, so a family captured once per size (four
+    ``OWZGG COFFIN`` profiles differing only in the type half) resolves
+    to the profile of the *matching* size instead of whichever one a
+    size-blind tie-break happens to sort first.
+    """
+    if not isinstance(profile, dict):
+        return set()
+    out = set()
+
+    def _add(value):
+        if not value:
+            return
+        key = value.strip().lower()
+        if key:
+            out.add(key)
+
+    pf = profile.get("parent_filter") or {}
+    if isinstance(pf, dict):
+        _add(pf.get("family_name_pattern"))
+    _add(profile.get("name") or "")
+    for alias in profile.get("merged_aliases") or []:
+        if isinstance(alias, str):
+            _add(alias)
+    return out
+
+
 def collect_profile_aliases_raw(profile):
     """Like ``collect_profile_aliases`` but case-folded only, no suffix
     strip. Used by the strict match tier for CAD blocks."""
@@ -330,15 +363,37 @@ def _match_one_linked_revit(target, profiles):
     trailing ``_NNN`` included. The legacy suffix-stripped fallback
     (an HEB naming quirk) was removed 2026-07: it cross-matched
     ``FAMILY_2`` targets onto ``FAMILY`` profiles.
+
+    Size-exact tier (2026-08): when the target also carries the linked
+    element's type name, profiles whose full label equals
+    ``"Family : Type"`` (``profile_full_labels_raw``) win outright.
+    Without this, a family captured once per size matches every anchor
+    of that family and the size-blind dedupe tie-break places one fixed
+    type everywhere (2DR frozen cases at 5DR anchors, 10' coffins at 8'
+    anchors — the WFM MAT bug). Family-only matching remains the
+    fallback so a target whose exact size was never captured still
+    places, with the existing type-substitution warnings.
     """
     target_name_lower = (target.name or "").strip().lower()
     if not target_name_lower:
         return []
 
-    return [
+    family_matches = [
         p for p in profiles
         if target_name_lower in profile_family_names_raw(p)
     ]
+
+    type_name_lower = (target.type_name or "").strip().lower()
+    if type_name_lower:
+        full_label = "{} : {}".format(target_name_lower, type_name_lower)
+        size_exact = [
+            p for p in family_matches
+            if full_label in profile_full_labels_raw(p)
+        ]
+        if size_exact:
+            return size_exact
+
+    return family_matches
 
 
 def _match_one_cad(target, profiles):
@@ -387,6 +442,9 @@ def dedupe_matches_per_target(matches):
     placement engine stacks N fixtures on the same anchor. This filter
     keeps exactly one match per target, choosing by:
 
+        0. Profile whose full label exactly equals the target's
+           ``"Family : Type"`` (case-insensitive) — only when the
+           target carries a type name. Size-correct beats everything.
         1. Profile whose ``parent_filter.family_name_pattern`` exactly
            equals the target name (case-insensitive). Most specific.
         2. Profile that has the most LEDs (richest data).
@@ -430,6 +488,21 @@ def dedupe_matches_per_target(matches):
             continue
         target_name = group[0].target.name or ""
         target_name_lower = target_name.strip().lower()
+
+        # Tier 0 — size-exact. The matcher already prefers these, but
+        # cross-product matches arriving via aliases (or a mixed group
+        # from overlapping family-name keys) can still put wrong-size
+        # profiles in the same bucket; drop them before the size-blind
+        # tie-breaks below get a chance to pick one.
+        type_name_lower = (group[0].target.type_name or "").strip().lower()
+        if type_name_lower:
+            full_label = "{} : {}".format(target_name_lower, type_name_lower)
+            size_exact = [
+                m for m in group
+                if full_label in profile_full_labels_raw(m.profile)
+            ]
+            if size_exact:
+                group = size_exact
 
         exact = [
             m for m in group

@@ -142,3 +142,62 @@ Verify circuit numbers and quoted strings against the dumped JSON before citing 
    `\b(REC|RECEPTS?|RECEPS?|RCPTS?|RECPTS?|RECEPTACLES?)\b` case-insensitive; exclude legitimate
    non-receptacle words (RECEIVING, RECESSED, RECORD, RECOVERY, RECIRCULATING, RECYCL*).
    RECEP/RECEPS were found in the wild on Buda 2026-08-07 — do not narrow the pattern.
+
+2. **Fire Protection set — spelling & consistency** (added by Reed 2026-08-14). The FP-* sheets
+   get their own dedicated spelling/inconsistency pass in addition to the all-sheets sweep:
+   collect every text string on FP-* sheets (notes, view titles, schedules, legends), review the
+   word list, and report FP findings as their own section.
+
+3. **FP pipe schedule — ONLY Schedule 30 or Schedule 40 (HARD RULE)** (Reed 2026-08-14). Sweep
+   all FP sheet text (general notes especially) for pipe schedule references: `SCH`, `SCHED`,
+   `SCHEDULE` followed by a number, and bare `SCH.XX` forms. The ONLY acceptable schedules are
+   **30 and 40**. FLAG EVERY instance of any other schedule number (10, 5, 80, etc.) with sheet
+   and full source string. Also flag Sch 30/40 statements that contradict each other (e.g. one
+   note assigning Sch 30 to a size range another note assigns Sch 40). Scope: fire protection
+   sheets/notes — plumbing sheets legitimately use other schedules (e.g. Sch 80 PVC), so limit
+   the hard rule to FP-* sheets and FP general notes.
+
+4. **FP sprinkler schedule — types & K-factors** (Reed 2026-08-14). Extract the sprinkler
+   schedule (FP legend/schedule sheets): every head listed with its type, orientation, response,
+   temperature, and K-factor. Verify each K-factor is consistent between schedule, notes, and
+   design criteria table. Report the schedule as a table with any mismatches flagged.
+
+5. **FP design criteria table — NFPA references & code year** (Reed 2026-08-14). Locate the
+   design criteria table; verify the NFPA 13 chapter/section references exist and match the
+   cited NFPA edition year, and that the code year is consistent everywhere it appears in the FP
+   set (criteria table, general notes, cover sheet code summary). Flag chapter/section numbers
+   that don't exist in the cited edition (NFPA 13 renumbered heavily in 2019+ editions — a 2016
+   section number cited against a 2019+ edition is a classic miss).
+
+6. **FP sprinkler applications by area** (Reed 2026-08-14). Verify via sheet text + plan
+   symbols/tags: **Wareroom/Receiving areas use EC-25.2** extended-coverage heads;
+   **Water/Paper Gondola areas use K-16.8** heads. Flag any other head type tagged in those
+   areas, and flag if the schedule lists EC-25.2 / K-16.8 but the plans tag something else.
+
+7. **FP sprinkler elevations vs RCP** (Reed 2026-08-14). Verify sprinkler elevations are shown
+   where required and coordinated with reflected-ceiling-plan areas: extract elevation callouts
+   from FP plans and compare against ceiling heights in the RCP/architectural data where
+   readable; screenshot any area where heads have no elevation note or the elevation conflicts
+   with the ceiling. This check is part-visual: export the FP plan sheets and review.
+
+8. **FP freezer/cooler areas** (Reed 2026-08-14). For every freezer/cooler footprint: verify
+   sprinkler elevations AND locations are shown (heads below insulated ceiling, correct
+   clearances). Dry-type or listed heads expected — flag wet heads inside freezers. Screenshot
+   each freezer/cooler FP area for the report.
+
+9. **FP dry system — TXBY & curbside canopy** (Reed 2026-08-14). Verify the dry-pipe system
+   scope covers the TXBY (Texas BBQ) and curbside canopy areas: dry compressor identified
+   (location + circuit — cross-check an electrical circuit exists for it), dry valve shown, and
+   the dry-system boundary matches the unheated areas. Flag wet pipe shown in unheated space.
+
+10. **Fire pump verification** (Reed 2026-08-14). From FP-2.x (fire pump sheets) + one-line +
+    schedules, extract and report: pump rating (GPM @ PSI), motor horsepower, **starter type —
+    must be SOFT START**, and ATS requirements/usage (is the fire pump on an ATS, is it shown on
+    the electrical one-line, does the controller listing match). Cross-check HP against the
+    electrical circuit/feeder serving the pump controller. Flag any mismatch between FP sheets
+    and electrical sheets.
+
+11. **FP dry valve detail** (Reed 2026-08-14). Locate the dry valve detail; verify it is
+    present, complete (trim, air supply, priming, drain, alarm connections labeled), and
+    consistent with the system design (valve size/model matches riser diagram and schedule).
+    Screenshot the detail for the report; flag missing components or model mismatches.

@@ -581,38 +581,73 @@ class PlacementController(object):
     # ---- fuzzy alias proposals -------------------------------------
 
     def _offer_fuzzy_aliases(self, targets, raw_matches, profiles, mode):
-        """Prompt to alias unmatched target names onto their closest
-        profile (>= 80% similar). Returns True when at least one alias
-        was added (caller re-runs the match once)."""
-        matched_names = set()
+        """Prompt to alias unmatched source ``Family : Type`` pairs onto
+        a profile.
+
+        Every unmatched pair gets its own row — a family no profile
+        answers to at all, AND a known family whose specific type has
+        no size-exact profile (that pair would otherwise fall back to
+        the family tie-break and place a wrong size). Rows with a close
+        fuzzy match (>= 80% similar) come first, pre-checked with that
+        profile pre-picked; the rest start unchecked. Each row's
+        profile button opens the searchable profile picker, so the
+        reviewer can accept the suggestion, redirect it, or map a pair
+        the fuzzy pass found nothing for.
+
+        Checked rows are stored in ``merged_aliases`` as the full
+        ``"Family : Type"`` label (bare family when the source has no
+        type axis, e.g. CAD blocks). ``profile_full_labels_raw`` keeps
+        aliases unsplit, so a full-label alias participates in the
+        size-exact match tier; its family half still feeds the family
+        fallback for sizes seen later. Returns True when at least one
+        alias was added (caller re-runs the match once)."""
+        matched_family_names = set()
         for m in raw_matches:
             name = (getattr(m.target, "name", "") or "").strip().lower()
             if name:
-                matched_names.add(name)
-        unmatched = []
+                matched_family_names.add(name)
+
+        # Full "family : type" labels some profile already answers to
+        # size-exactly (profile name, pattern, or an existing alias).
+        size_labels = set()
+        for p in profiles:
+            size_labels |= placement.profile_full_labels_raw(p)
+
+        rows = []  # alias labels, one per unmatched (family, type) pair
+        family_known = {}  # alias label lower -> bool (family matched?)
         seen = set()
-        # Every type seen per unmatched family name — shown in the
-        # proposal label so the reviewer can judge whether the linked
-        # element's TYPE (not just its family) fits the profile.
-        types_by_name = {}
         for t in targets:
             name = (getattr(t, "name", "") or "").strip()
-            key = name.lower()
-            if not name or key in matched_names:
+            if not name:
                 continue
             type_name = (getattr(t, "type_name", "") or "").strip()
-            if type_name:
-                types_by_name.setdefault(key, set()).add(type_name)
+            fam_matched = name.lower() in matched_family_names
+            if fam_matched:
+                if not type_name:
+                    continue  # family matched, no type axis — nothing to map
+                if "{} : {}".format(name, type_name).lower() in size_labels:
+                    continue  # size-exact profile exists — fully matched
+            label = "{} : {}".format(name, type_name) if type_name else name
+            key = label.lower()
             if key in seen:
                 continue
             seen.add(key)
-            unmatched.append(name)
-        if not unmatched:
+            rows.append(label)
+            family_known[key] = fam_matched
+
+        # Pairs some profile already answers to as an alias must not be
+        # re-proposed onto a different profile.
+        rows = [
+            label for label in rows
+            if merge_workflow.find_alias_owner(self.profile_data, label) is None
+        ]
+        if not rows:
             return False
 
         profile_keys = []
         for idx, p in enumerate(profiles):
             keys = set(placement.profile_family_names_raw(p))
+            keys |= placement.profile_full_labels_raw(p)
             if mode == placement.MATCH_CAD_ALIASES:
                 keys |= placement.collect_profile_aliases_raw(p)
             if keys:
@@ -620,47 +655,68 @@ class PlacementController(object):
         if not profile_keys:
             return False
 
-        proposals = fuzzy_match.propose_aliases(unmatched, profile_keys)
-        # A name some profile already answers to as an alias must not be
-        # re-proposed onto a different profile.
-        proposals = [
-            prop for prop in proposals
-            if merge_workflow.find_alias_owner(self.profile_data, prop[0]) is None
-        ]
-        if not proposals:
-            return False
+        proposals = fuzzy_match.propose_aliases(rows, profile_keys)
+        best_by_name = {}  # lower label -> (profile_index, score)
+        for name, idx, _key, score in proposals:
+            best_by_name[name.lower()] = (idx, score)
 
-        def _label(prop):
-            name, idx, _key, score = prop
-            profile = profiles[idx]
-            profile_name = profile.get("name") or "(unnamed)"
-            types = sorted(types_by_name.get(name.lower()) or ())
-            left = "{} : {}".format(name, " | ".join(types)) if types else name
+        # Suggested rows first (pre-checked), no-suggestion rows after —
+        # the reviewer can still map those by picking a profile manually.
+        rows = sorted(
+            rows,
+            key=lambda n: (n.lower() not in best_by_name, n.lower()),
+        )
+        preselected = {}
+        for i, name in enumerate(rows):
+            hit = best_by_name.get(name.lower())
+            if hit is not None:
+                preselected[i] = hit[0]
+
+        def _row_label(name):
+            label = name
+            if family_known.get(name.lower()):
+                label += "  [family known, no profile for this type]"
+            hit = best_by_name.get(name.lower())
+            if hit is not None:
+                label += "  ({:.0f}% match)".format(hit[1])
+            return label
+
+        def _profile_label(profile):
+            label = profile.get("name") or "(unnamed)"
             pf = profile.get("parent_filter") or {}
             prof_fam = (pf.get("family_name_pattern") or "").strip()
             prof_type = (pf.get("type_name_pattern") or "").strip()
-            right = profile_name
             if prof_fam or prof_type:
-                right += "  [{} : {}]".format(prof_fam or "*", prof_type or "*")
-            return "{}  ->  {}  ({:.0f}%)".format(left, right, score)
+                label += "  [{} : {}]".format(prof_fam or "*", prof_type or "*")
+            return label
 
-        chosen = wpf_dialogs.multi_select_from_list(
-            proposals,
-            title="Close matches found",
+        chosen = wpf_dialogs.assign_choices(
+            rows,
+            profiles,
+            title="Unmatched source Family : Type pairs",
             prompt=(
-                "These source families didn't match any profile but are "
-                "close to one. Check the ones to add as aliases:\n"
-                "Format:  Family : Type  ->  Profile  "
-                "[family pattern : type pattern]  (similarity)"
+                "These source Family : Type pairs have no exact profile "
+                "— unknown families, and known families whose specific "
+                "type was never captured. Rows with a close match "
+                "(>= 80% similar) are pre-checked with the suggested "
+                "profile; click a row's profile button to pick a "
+                "different one, or to map a pair that has no "
+                "suggestion. Checked rows are saved as aliases on the "
+                "picked profile and will resolve to it size-exactly "
+                "from now on."
             ),
-            display_func=_label,
+            row_display_func=_row_label,
+            choice_display_func=_profile_label,
+            preselected=preselected,
+            picker_title="Pick a profile",
+            picker_prompt="Alias the source Family : Type onto this profile:",
         )
         if not chosen:
             return False
 
         added = 0
-        for name, idx, _key, _score in chosen:
-            if merge_workflow.add_alias(profiles[idx], name):
+        for name, profile in chosen:
+            if merge_workflow.add_alias(profile, name):
                 added += 1
         if not added:
             return False
