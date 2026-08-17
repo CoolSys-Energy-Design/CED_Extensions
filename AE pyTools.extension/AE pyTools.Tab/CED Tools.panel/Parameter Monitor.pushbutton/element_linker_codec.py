@@ -167,7 +167,11 @@ def serialize_payload(linker):
     payload = {"v": CODEC_VERSION}
     for name in FIELDS:
         payload[name] = (linker or {}).get(name)
-    return json.dumps(payload, separators=(",", ":"), sort_keys=False)
+    # ensure_ascii=False: IronPython's ascii escaper crashes on U+0080-U+00FF
+    # characters (0xD8 Oslash, 0xB0 degree) in linked element names.
+    return json.dumps(
+        payload, separators=(",", ":"), sort_keys=False, ensure_ascii=False
+    )
 
 
 def apply_updates(linker, updates):

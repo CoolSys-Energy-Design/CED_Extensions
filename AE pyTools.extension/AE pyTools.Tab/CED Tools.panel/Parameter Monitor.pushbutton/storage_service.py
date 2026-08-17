@@ -174,11 +174,13 @@ def _json_dumps(value, context=u"Project monitor data", already_normalized=False
         value if already_normalized
         else _unicode_safe_json_value(value, context=context)
     )
+    # ensure_ascii=False: IronPython's ascii escaper crashes on U+0080-U+00FF
+    # characters (0xD8 Oslash, 0xB0 degree) in Revit type/parameter names.
     return json.dumps(
         normalized,
         separators=(",", ":"),
         sort_keys=True,
-        ensure_ascii=True,
+        ensure_ascii=False,
     )
 
 

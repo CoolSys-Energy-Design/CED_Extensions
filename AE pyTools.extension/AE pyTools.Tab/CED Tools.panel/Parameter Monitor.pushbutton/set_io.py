@@ -40,7 +40,14 @@ def build_export_document(tracking_sets):
 
 
 def dumps(tracking_sets):
-    return json.dumps(build_export_document(tracking_sets), indent=2, sort_keys=True)
+    # ensure_ascii=False: IronPython's ascii escaper crashes on U+0080-U+00FF
+    # characters; dump_file already writes UTF-8.
+    return json.dumps(
+        build_export_document(tracking_sets),
+        indent=2,
+        sort_keys=True,
+        ensure_ascii=False,
+    )
 
 
 def dump_file(path, tracking_sets):

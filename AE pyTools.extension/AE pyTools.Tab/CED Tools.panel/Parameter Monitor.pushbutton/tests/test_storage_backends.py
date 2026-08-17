@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
+import json
 import unittest
 
 import models
@@ -184,7 +185,10 @@ class StorageBackendTests(unittest.TestCase):
 
         value = DotNetUnicodeString("Vendor \u2013 Series")
         payload = storage_service._json_dumps({"name": value})
-        self.assertIn("\\u2013", payload.lower())
+        # ensure_ascii=False keeps the character literal instead of escaping
+        # it (IronPython's ascii escaper crashes on U+0080-U+00FF input).
+        self.assertIn(u"\u2013", payload)
+        self.assertEqual(u"Vendor \u2013 Series", json.loads(payload)["name"])
 
     def test_raw_bytes_fail_with_precise_set_element_and_field_context(self):
         tracking_set = models.new_tracking_set(
