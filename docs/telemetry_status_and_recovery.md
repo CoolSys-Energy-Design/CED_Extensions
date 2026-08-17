@@ -221,6 +221,18 @@ When telemetry work resumes:
 - Never transfer or delete a file unless its current-session identity and destination are both verified.
 - Keep route status updates independent from telemetry session-file creation.
 
+## Future installer configuration direction
+
+Do not return telemetry to distributed builds until the relevant pyRevit telemetry issues are resolved upstream.
+
+When telemetry work resumes, prefer having the installer invoke supported pyRevit CLI configuration commands once during installation rather than directly editing `pyRevit_config.ini` or reconfiguring telemetry from the CED startup hook. The intended model is:
+
+1. The installer uses the pyRevit CLI to apply the telemetry settings once.
+2. CED startup does not set the telemetry directory, rewrite telemetry configuration, or call `setup_telemetry()`.
+3. Native pyRevit startup remains responsible for loading the persisted settings and creating the current session file.
+
+This should avoid CED competing with pyRevit's startup initialization and should prevent the duplicate-session-file and stale-active-file behavior previously observed. Before enabling it for users, verify the supported CLI command and behavior against the target pyRevit versions, confirm the CLI is available in the installer's per-user context, and test first on a controlled machine with a backed-up configuration.
+
 ## Local re-enable switches
 
 For a controlled test only:
