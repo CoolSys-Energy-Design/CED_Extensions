@@ -85,6 +85,12 @@ MAX_PAYLOAD_BYTES = 15 * 1024 * 1024
 _DATASTORAGE_TYPE_NAMES = (
     "Autodesk.Revit.DB.ExtensibleStorage.DataStorage, RevitAPI",
 )
+# Once a document has loaded its fallback payload, keep using that backend for
+# the lifetime of this modeless session. This avoids retrying a known-failing
+# Extensible Storage transaction on every button click; projects that load
+# from the fallback remain on the fallback until a future migration policy is
+# implemented deliberately.
+_FALLBACK_ONLY_DOCUMENTS = set()
 
 
 class StorageError(RuntimeError):
@@ -159,8 +165,15 @@ def _unicode_safe_json_value(value, context=u"Project monitor data"):
     return value
 
 
-def _json_dumps(value, context=u"Project monitor data"):
-    normalized = _unicode_safe_json_value(value, context=context)
+def _document_session_key(document):
+    return id(document) if document is not None else None
+
+
+def _json_dumps(value, context=u"Project monitor data", already_normalized=False):
+    normalized = (
+        value if already_normalized
+        else _unicode_safe_json_value(value, context=context)
+    )
     return json.dumps(
         normalized,
         separators=(",", ":"),
@@ -618,6 +631,7 @@ def load(document, logger=None):
             store = _entity_payload(storage.GetEntity(schema), schema, identity)
             if store is not None:
                 _log(logger, "info", "Parameter Monitor loaded Extensible Storage data.")
+                _FALLBACK_ONLY_DOCUMENTS.discard(_document_session_key(document))
                 return store
         legacy_schema = _get_legacy_schema()
         if legacy_schema is not None:
@@ -632,6 +646,9 @@ def load(document, logger=None):
                         "info",
                         "Parameter Monitor loaded legacy v1 Extensible Storage data; "
                         "the next save migrates it to the v2 schema.",
+                    )
+                    _FALLBACK_ONLY_DOCUMENTS.discard(
+                        _document_session_key(document)
                     )
                     return store
     except StorageCorruptionError:
@@ -649,6 +666,7 @@ def load(document, logger=None):
         fallback_text = _read_fallback_payload(document)
         if fallback_text is not None:
             store = deserialize_payload(fallback_text, project_identity=identity)
+            _FALLBACK_ONLY_DOCUMENTS.add(_document_session_key(document))
             _log(
                 logger,
                 "warning",
@@ -744,7 +762,11 @@ def save(document, store, transaction_name="Parameter Monitor - Save", logger=No
         # has already been converted at collection boundaries. If a raw byte
         # string still reaches this point, fail with exact model context.
         result = _unicode_safe_json_value(result, context=u"Project monitor save")
-        payload_text = _json_dumps(result, context=u"Project monitor save")
+        payload_text = _json_dumps(
+            result,
+            context=u"Project monitor save",
+            already_normalized=True,
+        )
     except Exception as ex:
         _log(
             logger,
@@ -775,8 +797,16 @@ def save(document, store, transaction_name="Parameter Monitor - Save", logger=No
             pass
 
     extensible_error = None
+    session_key = _document_session_key(document)
+    fallback_only = session_key in _FALLBACK_ONLY_DOCUMENTS
     try:
+        if fallback_only:
+            raise StorageError(
+                "Extensible Storage skipped because this document loaded the "
+                "fallback backend for the current session."
+            )
         _write_extensible_storage(document, identity, payload_text, transaction_name)
+        _FALLBACK_ONLY_DOCUMENTS.discard(session_key)
         _log(
             logger,
             "info",
@@ -807,10 +837,12 @@ def save(document, store, transaction_name="Parameter Monitor - Save", logger=No
         return result
     except Exception as ex:
         extensible_error = ex
+        _FALLBACK_ONLY_DOCUMENTS.add(session_key)
         _log(
             logger,
-            "warning",
-            "Parameter Monitor Extensible Storage write failed; using global parameter backup: %s",
+            "info" if fallback_only else "warning",
+            "Parameter Monitor Extensible Storage %s; using global parameter backup: %s",
+            "was skipped" if fallback_only else "write failed",
             ex,
         )
 
@@ -822,7 +854,7 @@ def save(document, store, transaction_name="Parameter Monitor - Save", logger=No
         )
         _log(
             logger,
-            "warning",
+            "info" if fallback_only else "warning",
             "Parameter Monitor backup write: %s bytes in global multiline-text parameter %s.",
             payload_bytes,
             FALLBACK_PARAMETER_NAME,

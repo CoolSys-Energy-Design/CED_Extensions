@@ -133,7 +133,7 @@ class ParameterMonitorWindow(CEDWindowBase):
         self._element_column_definitions = [
             (1, "", "Status", "status"),
             (2, "", "Family", "family"),
-            (3, "", "Type", "element"),
+            (3, "", "Type", "type"),
             (4, "", "ID", "element_id"),
             (5, "", "Level", "level"),
             (6, "", "Param Δ", "parameter_change_text"),
@@ -229,7 +229,7 @@ class ParameterMonitorWindow(CEDWindowBase):
             filter_button = self._button_type()
             filter_button.Style = self.FindResource("PM.GridHeaderFilterButton")
             filter_button.CommandParameter = field
-            filter_button.Tag = False
+            filter_button.Tag = None
             filter_button.ToolTip = "Filter {}".format(label)
             filter_button.Click += self.column_filter_clicked
             self._dock_panel_type.SetDock(filter_button, self._dock_right)
@@ -252,11 +252,59 @@ class ParameterMonitorWindow(CEDWindowBase):
         if button is None:
             return
         filter_spec = self._column_filters.get(field)
-        button.Tag = bool(filter_spec)
+        button.Tag = "Active" if filter_spec else None
         button.ToolTip = (
             "{} filter: {}".format(filter_spec.get("mode"), filter_spec.get("value"))
             if filter_spec else "Filter {}".format(field.replace("_", " ").title())
         )
+
+    def _filters_active(self):
+        search_active = False
+        try:
+            search_active = bool(
+                self._text_service.to_text(self.SearchTextBox.Text or "").strip()
+            )
+        except Exception:
+            pass
+        return bool(
+            self._column_filters
+            or search_active
+            or self._current_filter_key() != self._viewmodel.FILTER_ALL
+        )
+
+    def _update_reset_filters_button(self):
+        try:
+            active_count = len(self._column_filters)
+            if self._text_service.to_text(self.SearchTextBox.Text or "").strip():
+                active_count += 1
+            if self._current_filter_key() != self._viewmodel.FILTER_ALL:
+                active_count += 1
+            self.ResetFiltersButton.IsEnabled = active_count > 0
+            self.ResetFiltersButton.Content = (
+                "Reset Filters ({})".format(active_count)
+                if active_count else "Reset Filters"
+            )
+        except Exception:
+            pass
+
+    def reset_filters_clicked(self, sender, args):
+        try:
+            self._refreshing = True
+            self._column_filters.clear()
+            for field in list(self._column_filter_buttons.keys()):
+                self._update_filter_button(field)
+            self.SearchTextBox.Text = ""
+            self.FilterCombo.SelectedIndex = 0
+        except Exception:
+            self._log_ui_exception("Parameter Monitor could not reset grid filters")
+            return
+        finally:
+            self._refreshing = False
+        self._selected_persistent_id = None
+        self._selected_persistent_ids = []
+        self._update_reset_filters_button()
+        self._refresh_elements()
+        self._log_console("FILTER", "All main-grid filters were reset.")
 
     def column_filter_clicked(self, sender, args):
         try:
@@ -327,6 +375,7 @@ class ParameterMonitorWindow(CEDWindowBase):
             else:
                 self._column_filters[field] = {"mode": "equals", "value": value}
             self._update_filter_button(field)
+            self._update_reset_filters_button()
             self._selected_persistent_id = None
             self._selected_persistent_ids = []
             self._refresh_elements()
@@ -452,7 +501,26 @@ class ParameterMonitorWindow(CEDWindowBase):
             getattr(error, "_parameter_monitor_traceback", None) or repr(error)
             if error is not None else ""
         )
+        if error is not None and hasattr(error, "_parameter_monitor_elapsed"):
+            error_details = "Elapsed: {:.3f}s\n{}".format(
+                float(error._parameter_monitor_elapsed), error_details
+            )
         self._log_console(str(status).upper(), "{} completed with status {}.".format(operation, status), error_details)
+        timing = (result or {}).get("timing") if isinstance(result, dict) else None
+        if timing:
+            operation_seconds = float(
+                timing.get("operation_seconds", 0.0) or 0.0
+            )
+            save_seconds = float(timing.get("save_seconds", 0.0) or 0.0)
+            self._log_console(
+                "PERF",
+                "{} total {:.3f}s | model/action {:.3f}s | persistence {:.3f}s".format(
+                    operation,
+                    operation_seconds,
+                    max(0.0, operation_seconds - save_seconds),
+                    save_seconds,
+                ),
+            )
         try:
             self._apply_external_complete(status, operation, result, error)
         except Exception as ex:
@@ -611,6 +679,7 @@ class ParameterMonitorWindow(CEDWindowBase):
         return table.DefaultView
 
     def _apply_store(self, store):
+        started = self._date_time_type.UtcNow
         self._refreshing = True
         try:
             self._store = store or self._models.new_project_store()
@@ -635,6 +704,10 @@ class ParameterMonitorWindow(CEDWindowBase):
         finally:
             self._refreshing = False
         self._refresh_selected_set()
+        elapsed = (self._date_time_type.UtcNow - started).TotalSeconds
+        self._log_console(
+            "PERF", "UI store projection completed in {:.3f}s.".format(elapsed)
+        )
 
     def _refresh_selected_set(self):
         row = self._selected_set_row()
@@ -676,6 +749,13 @@ class ParameterMonitorWindow(CEDWindowBase):
         self.RemovedCountText.Text = str(row.summary.get("removed", 0))
         self.UnchangedCountText.Text = str(row.summary.get("unchanged", 0))
         self._refresh_elements(tracking_set)
+
+    def _update_visible_summary(self, rows):
+        summary = self._viewmodel.summarize_element_rows(rows)
+        self.ChangedCountText.Text = str(summary.get("changed", 0))
+        self.AddedCountText.Text = str(summary.get("added", 0))
+        self.RemovedCountText.Text = str(summary.get("removed", 0))
+        self.UnchangedCountText.Text = str(summary.get("unchanged", 0))
 
     def _update_select_all_checkbox(self):
         try:
@@ -750,10 +830,15 @@ class ParameterMonitorWindow(CEDWindowBase):
                 selected_rows[0].persistent_id if len(selected_rows) == 1 else None
             )
             self._update_select_all_checkbox()
+            total_count = set_row.element_count if set_row is not None else len(base_rows)
+            filters_active = self._filters_active()
             self.ElementCountText.Text = (
-                "{} of {} element(s) shown".format(len(rows), len(base_rows))
-                if self._column_filters else "{} element(s) shown".format(len(rows))
+                "{} of {} element(s) shown — filters active".format(
+                    len(rows), total_count
+                ) if filters_active else "{} element(s) shown".format(len(rows))
             )
+            self._update_visible_summary(rows)
+            self._update_reset_filters_button()
         finally:
             self._refreshing = False
         self._refresh_inspector()
@@ -1210,11 +1295,16 @@ class ParameterMonitorWindow(CEDWindowBase):
         if self._refreshing or not hasattr(self, "ElementGrid"):
             return
         self._selected_persistent_id = None
+        self._selected_persistent_ids = []
+        self._update_reset_filters_button()
         self._refresh_elements()
 
     def search_text_changed(self, sender, args):
         if self._refreshing or not hasattr(self, "ElementGrid"):
             return
+        self._selected_persistent_id = None
+        self._selected_persistent_ids = []
+        self._update_reset_filters_button()
         self._refresh_elements()
 
     def add_set_clicked(self, sender, args):
@@ -1424,7 +1514,9 @@ def main():
         default_theme="light",
         default_accent="blue",
     )
-    gateway = external_events.ParameterMonitorExternalEventGateway(document, logger=LOGGER)
+    gateway = external_events.ParameterMonitorExternalEventGateway(
+        document, logger=LOGGER, store=store
+    )
     window = ParameterMonitorWindow(store, gateway, theme_mode, accent_mode)
     window.Show()
 

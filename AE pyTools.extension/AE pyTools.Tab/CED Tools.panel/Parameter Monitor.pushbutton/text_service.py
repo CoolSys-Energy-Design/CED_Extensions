@@ -39,11 +39,17 @@ def is_text_value(value):
     """Return whether ``value`` must be normalized before JSON storage."""
     if value is None:
         return False
-    if _is_system_string(value) or isinstance(value, _UNICODE_TYPE):
+    if isinstance(value, _UNICODE_TYPE):
         return True
     if isinstance(value, (bytes, bytearray)):
         return True
-    return bool(_IS_PYTHON_2 and isinstance(value, _BYTE_STRING_TYPE))
+    if _IS_PYTHON_2 and isinstance(value, _BYTE_STRING_TYPE):
+        return True
+    # Avoid an exception-producing CLR probe for every dict/list/number in a
+    # large store. Only non-Python values need the System.String check.
+    if isinstance(value, (dict, list, tuple, bool, int, float)):
+        return False
+    return _is_system_string(value)
 
 
 def _failure(context, detail):

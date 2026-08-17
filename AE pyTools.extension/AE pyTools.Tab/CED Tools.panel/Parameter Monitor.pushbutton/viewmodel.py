@@ -108,9 +108,18 @@ class TrackingSetRow(object):
         ])
         self.last_check = _display(tracking_set.get("last_check"), "Never")
         self.property_count = len(tracking_set.get("tracked_properties") or [])
-        self.summary = tracking_service.set_summary(tracking_set)
-        self.element_count = len(tracking_set.get("elements") or {})
-        self.unresolved_count = int(self.summary.get("unresolved", 0) or 0)
+        # The cards and main-grid summary describe the records that can appear
+        # in the main grid. Element Linker children live in the inspector and
+        # must not inflate these element counts. The set-level unresolved flag
+        # still uses the complete persisted summary so child changes are not
+        # silently ignored.
+        self.full_summary = tracking_service.set_summary(tracking_set)
+        self.summary = main_grid_summary(tracking_set)
+        self.element_count = sum([
+            int(self.summary.get(key, 0) or 0)
+            for key in ("changed", "added", "removed", "unchanged")
+        ])
+        self.unresolved_count = int(self.full_summary.get("unresolved", 0) or 0)
         self.has_changes = self.unresolved_count > 0
         source_type = text_service.to_text((tracking_set.get("source") or {}).get("source_type") or "")
         self.model_text = "Model: {}".format(
@@ -326,6 +335,28 @@ def element_rows(tracking_set, filter_key=FILTER_ALL, search_text=""):
     priority = {"Changed": 0, "Added": 1, "Removed": 2, "Unchanged": 3}
     rows.sort(key=lambda row: (priority.get(row.status, 9), row.element.lower(), row.persistent_id))
     return rows
+
+
+def summarize_element_rows(rows):
+    """Count the statuses represented by a main-grid row collection."""
+    summary = {"changed": 0, "added": 0, "removed": 0, "unchanged": 0}
+    for row in list(rows or []):
+        key = text_service.to_text(getattr(row, "status", "") or "").lower()
+        if key in summary:
+            summary[key] += 1
+    return summary
+
+
+def main_grid_summary(tracking_set):
+    """Return unfiltered counts for root records shown by the main grid."""
+    if tracking_set is None:
+        return summarize_element_rows([])
+    rows = []
+    for persistent_id, record in list((tracking_set.get("elements") or {}).items()):
+        if text_service.to_text((record or {}).get("parent_persistent_id") or ""):
+            continue
+        rows.append(ElementRow(persistent_id, record=record))
+    return summarize_element_rows(rows)
 
 
 def property_rows(tracking_set, element_row):

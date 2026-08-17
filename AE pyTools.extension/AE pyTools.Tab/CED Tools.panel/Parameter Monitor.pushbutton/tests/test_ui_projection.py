@@ -71,6 +71,35 @@ class UiProjectionTests(unittest.TestCase):
         self.assertIn('HeaderStyle="{StaticResource PM.CheckboxColumnHeader}"', xaml)
         self.assertIn('CellStyle="{StaticResource PM.CheckboxCell}"', xaml)
 
+    def test_type_column_uses_type_name_not_friendly_element_label(self):
+        bundle = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        path = os.path.join(bundle, "ParameterMonitorWindow.xaml")
+        with io.open(path, "r", encoding="utf-8") as stream:
+            xaml = stream.read()
+
+        self.assertIn(
+            'Header="Type" Binding="{Binding type}"',
+            xaml,
+        )
+        self.assertNotIn(
+            'Header="Type" Binding="{Binding element}"',
+            xaml,
+        )
+
+    def test_grid_has_reset_all_filters_and_active_column_style(self):
+        bundle = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        xaml_path = os.path.join(bundle, "ParameterMonitorWindow.xaml")
+        script_path = os.path.join(bundle, "script.py")
+        with io.open(xaml_path, "r", encoding="utf-8") as stream:
+            xaml = stream.read()
+        with io.open(script_path, "r", encoding="utf-8") as stream:
+            source = stream.read()
+
+        self.assertIn('x:Name="ResetFiltersButton"', xaml)
+        self.assertIn('Click="reset_filters_clicked"', xaml)
+        self.assertIn('<Trigger Property="Tag" Value="Active">', xaml)
+        self.assertIn('def reset_filters_clicked(', source)
+
     def test_property_grid_values_follow_selected_element_record(self):
         key = "name:sample:instance"
         tracking_set = {
@@ -159,6 +188,19 @@ class UiProjectionTests(unittest.TestCase):
         self.assertEqual(
             sorted(info["movable_child_ids"]), ["host:c1", "host:c2"]
         )
+
+    def test_main_grid_summary_excludes_inspector_only_children(self):
+        parent = _record("Parent 1", "A", "B", changed=True)
+        child = _record("Child 1", "A", "B", changed=True)
+        child["parent_persistent_id"] = "host:p1"
+        tracking_set = {
+            "elements": {"host:p1": parent, "host:c1": child},
+        }
+
+        summary = viewmodel.main_grid_summary(tracking_set)
+
+        self.assertEqual(1, summary["changed"])
+        self.assertEqual(0, summary["unchanged"])
 
     def test_linked_children_info_in_sync_parent(self):
         parent = _record("Parent 1", "A", "A")

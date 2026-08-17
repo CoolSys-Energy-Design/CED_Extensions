@@ -5,6 +5,7 @@ from __future__ import print_function
 
 import copy
 import io
+import time
 import traceback
 
 from Autodesk.Revit.UI import ExternalEvent, IExternalEventHandler
@@ -504,9 +505,10 @@ def _export_report(store, set_id):
 
 
 class ParameterMonitorExternalEventGateway(object):
-    def __init__(self, document, logger=None):
+    def __init__(self, document, logger=None, store=None):
         self.document = document
         self.logger = logger or script.get_logger()
+        self.store = store
         self._pending = None
         self._handler = _ParameterMonitorExternalEventHandler(self)
         self._event = ExternalEvent.Create(self._handler)
@@ -554,6 +556,7 @@ class _ParameterMonitorExternalEventHandler(IExternalEventHandler):
         status = "ok"
         result = None
         error = None
+        started = time.time()
         try:
             uidocument = application.ActiveUIDocument
             document = uidocument.Document if uidocument is not None else None
@@ -572,6 +575,10 @@ class _ParameterMonitorExternalEventHandler(IExternalEventHandler):
             result = self._execute_operation(document, uidocument, operation, payload)
             if result is None:
                 status = "cancelled"
+            elif isinstance(result, dict):
+                result_store = result.get("store")
+                if result_store is not None:
+                    self.gateway.store = result_store
         except Exception as ex:
             status = "error"
             error = ex
@@ -585,6 +592,25 @@ class _ParameterMonitorExternalEventHandler(IExternalEventHandler):
                 )
             except Exception:
                 pass
+        elapsed = time.time() - started
+        if isinstance(result, dict):
+            timing = dict(result.get("timing") or {})
+            timing["operation_seconds"] = elapsed
+            result["timing"] = timing
+        elif error is not None:
+            try:
+                error._parameter_monitor_elapsed = elapsed
+            except Exception:
+                pass
+        try:
+            self.gateway.logger.info(
+                "Parameter Monitor operation=%s status=%s elapsed=%.3fs",
+                operation,
+                status,
+                elapsed,
+            )
+        except Exception:
+            pass
         if callback is not None:
             try:
                 callback(status, operation, result, error)
@@ -592,16 +618,29 @@ class _ParameterMonitorExternalEventHandler(IExternalEventHandler):
                 pass
 
     def _save_result(self, document, store, message, transaction_name):
+        started = time.time()
         saved = storage_service.save(
             document,
             store,
             transaction_name=transaction_name,
             logger=self.gateway.logger,
         )
-        return {"store": saved, "message": message}
+        return {
+            "store": saved,
+            "message": message,
+            "timing": {"save_seconds": time.time() - started},
+        }
 
     def _execute_operation(self, document, uidocument, operation, payload):
-        store = storage_service.load(document, logger=self.gateway.logger)
+        # The open modeless window owns the authoritative in-session store.
+        # Reload Project Data is the explicit path for external/manual changes.
+        # Avoid re-reading and re-migrating the full Global Parameter payload
+        # before every resolve, selection, and scan operation.
+        if operation == "refresh_store" or self.gateway.store is None:
+            store = storage_service.load(document, logger=self.gateway.logger)
+            self.gateway.store = store
+        else:
+            store = self.gateway.store
         set_id = payload.get("set_id")
         persistent_id = payload.get("persistent_id")
         persistent_ids = [

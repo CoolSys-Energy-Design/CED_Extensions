@@ -98,14 +98,14 @@
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="Root" Property="Background" Value="{DynamicResource CED.Brush.CircuitItemSelectedBackground}" />
                             </Trigger>
-                            <Trigger Property="Tag" Value="True">
+                            <Trigger Property="Tag" Value="Active">
                                 <Setter TargetName="Root" Property="Background" Value="{DynamicResource CED.Brush.Accent}" />
                                 <Setter TargetName="Root" Property="BorderBrush" Value="{DynamicResource CED.Brush.Accent}" />
                                 <Setter Property="Foreground" Value="{DynamicResource CED.Brush.ButtonForegroundOnAccent}" />
                             </Trigger>
                             <MultiTrigger>
                                 <MultiTrigger.Conditions>
-                                    <Condition Property="Tag" Value="True" />
+                                    <Condition Property="Tag" Value="Active" />
                                     <Condition Property="IsMouseOver" Value="True" />
                                 </MultiTrigger.Conditions>
                                 <Setter TargetName="Root" Property="Background" Value="{DynamicResource CED.Brush.CircuitItemSelectedBackground}" />
@@ -475,6 +475,9 @@
                         <WrapPanel Grid.Column="0">
                             <TextBox x:Name="SearchTextBox" Width="225" Margin="3" Padding="7,4" TextChanged="search_text_changed" />
                             <ComboBox x:Name="FilterCombo" Width="155" Margin="3" DisplayMemberPath="label" SelectionChanged="filter_selection_changed" />
+                            <Button x:Name="ResetFiltersButton" Style="{StaticResource PM.Button}" Content="Reset Filters"
+                                    IsEnabled="False" ToolTip="Clear search, row-status, and all column filters."
+                                    Click="reset_filters_clicked" />
                             <Button x:Name="ColumnsButton" Style="{StaticResource PM.Button}" Content="Columns ▾" ToolTip="Show or hide main-grid columns." Click="columns_menu_clicked" />
                         </WrapPanel>
                         <WrapPanel Grid.Column="1" HorizontalAlignment="Right">
@@ -520,7 +523,7 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
                         <DataGridTextColumn Header="Family" Binding="{Binding family}" Width="180" MinWidth="120" CellStyle="{StaticResource PM.FamilyChangeCell}" />
-                        <DataGridTextColumn Header="Type" Binding="{Binding element}" Width="210" MinWidth="140" CellStyle="{StaticResource PM.TypeChangeCell}" />
+                        <DataGridTextColumn Header="Type" Binding="{Binding type}" Width="210" MinWidth="140" CellStyle="{StaticResource PM.TypeChangeCell}" />
                         <DataGridTextColumn Header="ID" Binding="{Binding element_id}" Width="90" MinWidth="72" />
                         <DataGridTextColumn Header="Level" Binding="{Binding level}" Width="105" MinWidth="80" />
                         <DataGridTextColumn Header="Param Δ" Binding="{Binding parameter_change_text}" Width="84" MinWidth="72" CellStyle="{StaticResource PM.ChangeCell}" />

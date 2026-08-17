@@ -23,6 +23,7 @@ class _Storage(object):
 class StorageBackendTests(unittest.TestCase):
     def setUp(self):
         self._saved = {}
+        storage_service._FALLBACK_ONLY_DOCUMENTS.clear()
 
     def _replace(self, name, value):
         if name not in self._saved:
@@ -32,6 +33,7 @@ class StorageBackendTests(unittest.TestCase):
     def tearDown(self):
         for name, value in self._saved.items():
             setattr(storage_service, name, value)
+        storage_service._FALLBACK_ONLY_DOCUMENTS.clear()
 
     def test_datastorage_contract_uses_extensible_storage_namespace(self):
         self.assertEqual(
@@ -112,6 +114,62 @@ class StorageBackendTests(unittest.TestCase):
         self.assertEqual(calls[0][0], document)
         self.assertIn('"tracking_sets":[]', calls[0][1])
         self.assertEqual(result.get("project_identity", {}).get("title"), "Test")
+
+    def test_loaded_fallback_skips_repeated_extensible_storage_write(self):
+        original = models.new_project_store()
+        payload = storage_service.serialize_payload(original)
+        calls = []
+
+        def fail_schema():
+            raise RuntimeError("primary unavailable")
+
+        self._replace("_get_schema", fail_schema)
+        self._replace("_read_fallback_payload", lambda document: payload)
+
+        def fail_if_primary_called(document, identity, payload_text, transaction_name):
+            raise AssertionError("Known fallback documents must not retry primary storage.")
+
+        def save_backup(document, payload_text, transaction_name):
+            calls.append(payload_text)
+
+        self._replace("_write_extensible_storage", fail_if_primary_called)
+        self._replace("_write_fallback_payload", save_backup)
+        document = type(
+            "Document",
+            (object,),
+            {"Title": "Test", "PathName": "", "IsWorkshared": False},
+        )()
+
+        loaded = storage_service.load(document)
+        saved = storage_service.save(document, loaded)
+
+        self.assertEqual(1, len(calls))
+        self.assertEqual("Test", saved["project_identity"]["title"])
+
+    def test_save_normalizes_payload_only_once(self):
+        calls = []
+        original_normalizer = storage_service._unicode_safe_json_value
+
+        def count_root_normalization(value, context=u"Project monitor data"):
+            if context == u"Project monitor save":
+                calls.append(context)
+            return original_normalizer(value, context=context)
+
+        self._replace("_unicode_safe_json_value", count_root_normalization)
+        self._replace(
+            "_write_extensible_storage",
+            lambda document, identity, payload_text, transaction_name: object(),
+        )
+        self._replace("_delete_fallback_parameter", lambda document, name: False)
+        document = type(
+            "Document",
+            (object,),
+            {"Title": "Test", "PathName": "", "IsWorkshared": False},
+        )()
+
+        storage_service.save(document, models.new_project_store())
+
+        self.assertEqual([u"Project monitor save"], calls)
 
     def test_clr_unicode_string_serializes_without_a_byte_decoder(self):
         class _TypeInfo(object):

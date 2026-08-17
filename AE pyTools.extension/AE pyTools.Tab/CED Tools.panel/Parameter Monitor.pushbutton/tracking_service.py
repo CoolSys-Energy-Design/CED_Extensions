@@ -26,20 +26,43 @@ def _revit_parameter_text(element, name, source_document):
         element,
         name,
         include_type=False,
-        case_insensitive=True,
+        # These are exact built-in/company parameter names. Avoid enumerating
+        # every parameter on every element when either label is absent.
+        case_insensitive=False,
         doc=source_document,
     )
     value = revit_helpers.get_parameter_value(parameter, default=None)
     return _text(value, "")
 
 
-def _element_metadata(element, source_document):
+def _cached_type_element(element, source_document, type_cache):
+    type_cache = type_cache if type_cache is not None else {}
+    type_id = None
+    try:
+        type_id = element.GetTypeId()
+    except Exception:
+        pass
+    type_key = revit_helpers.get_elementid_value(type_id)
+    if type_key in type_cache:
+        return type_cache[type_key]
+    type_element = revit_helpers.get_type_element(element, doc=source_document)
+    type_cache[type_key] = type_element
+    return type_element
+
+
+def _element_metadata(
+    element,
+    source_document,
+    type_cache=None,
+    include_workset=False,
+    workset_cache=None,
+):
     element_id = revit_helpers.get_elementid_value(getattr(element, "Id", None))
     mark = _revit_parameter_text(element, "Mark", source_document)
     if not mark:
         mark = _revit_parameter_text(element, "Equipment ID", source_document)
     name = _text(getattr(element, "Name", None), "")
-    type_element = revit_helpers.get_type_element(element, doc=source_document)
+    type_element = _cached_type_element(element, source_document, type_cache)
     type_name = _text(getattr(type_element, "Name", None), name)
     family_name = ""
     try:
@@ -79,7 +102,17 @@ def _element_metadata(element, source_document):
     # Persist the source workset for link availability checks.  This field is
     # informational for host sets and essential for accurately protecting a
     # linked set from false removals when only some link worksets are closed.
-    workset = source_service.element_workset_details(source_document, element)
+    workset = {}
+    if include_workset:
+        workset_cache = workset_cache if workset_cache is not None else {}
+        workset_id = revit_helpers.get_elementid_value(
+            getattr(element, "WorksetId", None)
+        )
+        if workset_id not in workset_cache:
+            workset_cache[workset_id] = source_service.element_workset_details(
+                source_document, element
+            )
+        workset = workset_cache.get(workset_id) or {}
     if workset:
         metadata["workset_id"] = workset.get("id")
         metadata["workset_name"] = workset.get("name")
@@ -97,6 +130,7 @@ def _snapshot_element(
     relationship=None,
     persistent_id_override=None,
     location_transform=None,
+    workset_cache=None,
 ):
     persistent_id = persistent_id_override or source_service.persistent_id(
         source_descriptor, element
@@ -109,7 +143,14 @@ def _snapshot_element(
     return {
         "persistent_id": persistent_id,
         "source_element_unique_id": _text(getattr(element, "UniqueId", None), ""),
-        "metadata": _element_metadata(element, source_document),
+        "metadata": _element_metadata(
+            element,
+            source_document,
+            type_cache=type_cache,
+            include_workset=(source_descriptor or {}).get("source_type")
+            == models.SOURCE_LINK,
+            workset_cache=workset_cache,
+        ),
         "properties": parameter_service.read_properties(
             element, source_document, descriptors, type_cache=type_cache
         ),
@@ -137,7 +178,8 @@ def _collect_current_map(
         (tracking_set.get("location_defaults") or {}).get("track_new_elements", False)
     )
     current_map = {}
-    type_cache = {}
+    type_caches = {}
+    workset_caches = {}
     for persistent_id, element, element_document, transform in pairs:
         if persistent_id in untracked and not include_untracked:
             continue
@@ -145,6 +187,9 @@ def _collect_current_map(
         need_location = bool(
             force_location or previous.get("track_location", default_location)
         )
+        document_key = id(element_document)
+        type_cache = type_caches.setdefault(document_key, {})
+        workset_cache = workset_caches.setdefault(document_key, {})
         snapshot = _snapshot_element(
             host_document,
             element_document,
@@ -156,6 +201,7 @@ def _collect_current_map(
             relationship=previous.get("relationship"),
             persistent_id_override=persistent_id,
             location_transform=transform,
+            workset_cache=workset_cache,
         )
         current_map[persistent_id] = snapshot
     return current_map
