@@ -7,6 +7,7 @@ layout:
   - MergeCircuits
   - RenameCircuitsByDeviceParameter
   - ----
+  - CreateCircuitsByDeviceParameter
   - CreateDedicatedCircuits
   - Add Spares and Spaces
   - -----

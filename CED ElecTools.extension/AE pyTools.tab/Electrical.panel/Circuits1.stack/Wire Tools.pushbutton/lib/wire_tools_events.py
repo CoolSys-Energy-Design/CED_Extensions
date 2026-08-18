@@ -575,7 +575,7 @@ class _WireToolsHandler(UI.IExternalEventHandler):
                     picked_references = ui_document.Selection.PickObjects(
                         ObjectType.Element,
                         selection_filter,
-                        "Select electrical devices, then finish.",
+                        "Select main-model MEP devices or circuits, then finish.",
                         preselected_references,
                     )
                 except OperationCanceledException:

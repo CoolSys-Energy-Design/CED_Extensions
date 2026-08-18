@@ -1,0 +1,11 @@
+title: Create Circuits by Device Parameter
+
+tooltip: >-
+  Collect circuitable devices and group them by a selected device parameter,
+  such as CKT_Circuit Number_CEDT. Review and regroup the results, choose panel,
+  breaker rating, and load values, then create one native Revit circuit per
+  group. Select devices first for a focused workflow; with no selection, the
+  tool can scan the model after confirmation.
+
+author: >-
+  CED

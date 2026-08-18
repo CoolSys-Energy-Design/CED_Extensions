@@ -2554,10 +2554,15 @@ class CircuitBrowserPanel(forms.WPFPanel):
     panel_title = TITLE
     panel_source = os.path.abspath(os.path.join(_THIS_DIR, "CircuitBrowserPanel.xaml"))
 
+    # Keep the action toolbar readable before the select-in-model card starts
+    # to crowd the panel at narrow dock widths.
+    _COMPACT_TOOLBAR_BREAKPOINT = 330.0
+
     _instance = None
     _operation_gateway = None
 
     def __init__(self):
+        self._compact_toolbar_mode = False
         forms.WPFPanel.__init__(self)
         self._theme_mode = CURRENT_THEME_MODE
         self._accent_mode = CURRENT_ACCENT_MODE
@@ -2636,6 +2641,11 @@ class CircuitBrowserPanel(forms.WPFPanel):
         self._toggle_list_icon = self.FindName("ToggleListIcon")
         self._toggle_card_icon = self.FindName("ToggleCardIcon")
         self._dock_frame_host = self.FindName("DockFrameHost")
+        self._actions_label = self.FindName("ActionsLabel")
+        self._actions_bolt_icon = self.FindName("ActionsBoltIcon")
+        self._select_equipment_button = self.FindName("SelectEquipmentButton")
+        self._select_circuits_button = self.FindName("SelectCircuitsButton")
+        self._select_downstream_button = self.FindName("SelectDownstreamButton")
         self._apply_revit_frame_background(is_dark=False)
         self._surface_item_style = _try_find_resource(self, "CED.ListViewItem.SurfaceBehavior")
         self._apply_list_interaction_mode()
@@ -2688,6 +2698,57 @@ class CircuitBrowserPanel(forms.WPFPanel):
                 self._dock_frame_host.Background = brush
         except Exception:
             pass
+
+    def dock_frame_size_changed(self, sender, args):
+        """Switch toolbar/card labels to compact variants when the pane narrows."""
+        try:
+            width = float(getattr(sender, "ActualWidth", 0.0) or 0.0)
+        except Exception:
+            width = 0.0
+        if width <= 0.0:
+            return
+        self._apply_compact_toolbar_mode(width < self._COMPACT_TOOLBAR_BREAKPOINT)
+
+    def _apply_compact_toolbar_mode(self, compact):
+        compact = bool(compact)
+        if not all(hasattr(self, name) for name in (
+            "_actions_label",
+            "_actions_bolt_icon",
+            "_select_equipment_button",
+            "_select_circuits_button",
+            "_select_downstream_button",
+        )):
+            return
+        if compact == bool(self._compact_toolbar_mode):
+            return
+        controls = (
+            self._actions_label,
+            self._actions_bolt_icon,
+            self._select_equipment_button,
+            self._select_circuits_button,
+            self._select_downstream_button,
+        )
+        if any(control is None for control in controls):
+            return
+
+        self._compact_toolbar_mode = compact
+        self._actions_label.Visibility = Visibility.Collapsed if compact else Visibility.Visible
+        self._actions_bolt_icon.Visibility = Visibility.Visible
+
+        if compact:
+            self._select_equipment_button.Content = "Pnl"
+            self._select_circuits_button.Content = "Ckt"
+            self._select_downstream_button.Content = "Dev"
+            self._select_equipment_button.Width = 42
+            self._select_circuits_button.Width = 42
+            self._select_downstream_button.Width = 42
+        else:
+            self._select_equipment_button.Content = "Panel"
+            self._select_circuits_button.Content = "Circuit"
+            self._select_downstream_button.Content = "Device"
+            self._select_equipment_button.Width = 52
+            self._select_circuits_button.Width = 56
+            self._select_downstream_button.Width = 54
 
     def _ensure_theme_bridge(self):
         if self._theme_bridge is None:
@@ -3063,8 +3124,9 @@ class CircuitBrowserPanel(forms.WPFPanel):
             or self._checked_only
             or (default_active != set(self._active_type_filters))
         )
-        primary = _try_find_resource(self, "CED.Brush.Accent")
+        primary = _try_find_resource(self, "CED.Brush.InputControlChecked")
         button_bg = _try_find_resource(self, "CED.Brush.ButtonDefaultBackground")
+        button_border = _try_find_resource(self, "CED.Brush.Border")
         foreground_on_accent = _try_find_resource(self, "CED.Brush.ButtonForegroundOnAccent")
         if is_filtered:
             if primary is not None:
@@ -3077,9 +3139,11 @@ class CircuitBrowserPanel(forms.WPFPanel):
         else:
             if button_bg is not None:
                 self._filter_button.Background = button_bg
-            if primary is not None:
-                self._filter_button.BorderBrush = primary
-                self._filter_button.Foreground = primary
+            if button_border is not None:
+                self._filter_button.BorderBrush = button_border
+            accent = _try_find_resource(self, "CED.Brush.Accent")
+            if accent is not None:
+                self._filter_button.Foreground = accent
             if self._filter_active_mark is not None:
                 self._filter_active_mark.Visibility = Visibility.Collapsed
 
@@ -3997,6 +4061,8 @@ class CircuitBrowserPanel(forms.WPFPanel):
             self._checked_only = False
 
     def panel_loaded(self, sender, args):
+        if self._dock_frame_host is not None:
+            self.dock_frame_size_changed(self._dock_frame_host, None)
         if not self._is_pane_visible():
             return
         self._sync_theme_from_config(apply_if_changed=True)

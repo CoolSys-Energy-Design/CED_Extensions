@@ -6,6 +6,12 @@ import sys
 from pyrevit import revit, DB, UI, forms, script
 
 from Snippets import revit_helpers
+from UIClasses import load_theme_state_from_config
+from UIClasses import pathing as ui_pathing
+
+
+# Set to True when the detailed pyRevit output report is needed for debugging.
+SHOW_OUTPUT_REPORT = False
 
 
 def _load_command_modules(command_directory):
@@ -56,6 +62,12 @@ def main():
         return
 
     command_directory = os.path.abspath(os.path.dirname(__file__))
+    library_root = ui_pathing.ensure_lib_root_on_syspath(command_directory)
+    resources_root = ui_pathing.resolve_ui_resources_root(library_root)
+    theme_mode, accent_mode = load_theme_state_from_config(
+        default_theme="light",
+        default_accent="blue",
+    )
     gateway_class, window_class = _load_command_modules(command_directory)
     config = _get_config()
     initial_tag_ids = _initial_tag_ids(document, uidoc)
@@ -67,6 +79,9 @@ def main():
         os.path.join(command_directory, "TagByExample.xaml"),
         None,
         config,
+        resources_root,
+        theme_mode,
+        accent_mode,
     )
     gateway = gateway_class(
         window,
@@ -74,6 +89,7 @@ def main():
         active_view,
         initial_tag_ids,
         ui_application,
+        SHOW_OUTPUT_REPORT,
     )
     window.gateway = gateway
     window.Show()

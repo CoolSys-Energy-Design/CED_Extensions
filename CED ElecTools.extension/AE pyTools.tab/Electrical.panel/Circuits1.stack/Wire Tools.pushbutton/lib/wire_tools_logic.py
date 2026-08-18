@@ -48,10 +48,10 @@ SCHEME_LABELS = {
 
 SELECTION_RULES = {
     SCHEME_WIRE_BY_CIRCUIT: (
-        "Main-model, non-type elements are accepted initially. A selected "
-        "element is valid only when the shared electrical-system resolver "
-        "finds at least one eligible power circuit. FamilyInstance and "
-        "connector checks are not required."
+        "Main-model, non-annotation MEP elements and electrical-system "
+        "objects are accepted initially. A selected element is valid only "
+        "when the shared electrical-system resolver finds at least one "
+        "eligible power circuit."
     ),
     SCHEME_INTERCONNECT: (
         "Main-model FamilyInstance elements are accepted only when they have "
@@ -437,6 +437,69 @@ def common_connector_key(elements, requested_key=None):
 
 def main_model_element(element):
     return design_options.is_main_model_element(element)
+
+
+def is_annotation_element(element):
+    """Return True when an element belongs to an annotation category."""
+    if element is None:
+        return False
+    category = getattr(element, "Category", None)
+    if category is None:
+        return False
+    category_type = getattr(category, "CategoryType", None)
+    category_type_enum = getattr(DB, "CategoryType", None)
+    annotation_type = getattr(category_type_enum, "Annotation", None)
+    if annotation_type is not None and category_type == annotation_type:
+        return True
+    return False
+
+
+def is_linked_element(element):
+    """Return True for link instances or elements owned by a linked document."""
+    if element is None:
+        return False
+    link_instance_class = getattr(DB, "RevitLinkInstance", None)
+    if link_instance_class is not None and isinstance(element, link_instance_class):
+        return True
+    try:
+        return bool(element.Document.IsLinked)
+    except Exception:
+        return False
+
+
+def is_electrical_system_element(element):
+    electrical_system_class = getattr(DB.Electrical, "ElectricalSystem", None)
+    return (
+        electrical_system_class is not None
+        and element is not None
+        and isinstance(element, electrical_system_class)
+    )
+
+
+def has_mep_model(element):
+    """Return True when Revit exposes an MEP model for the element."""
+    if element is None:
+        return False
+    try:
+        return getattr(element, "MEPModel", None) is not None
+    except Exception:
+        return False
+
+
+def is_allowed_device_pick(element, allow_circuit=False):
+    """Apply the lightweight restrictions used while picking device elements."""
+    if element is None:
+        return False
+    if is_annotation_element(element) or is_linked_element(element):
+        return False
+    if not main_model_element(element):
+        return False
+    element_type_class = getattr(DB, "ElementType", None)
+    if element_type_class is not None and isinstance(element, element_type_class):
+        return False
+    if allow_circuit and not is_electrical_system_element(element):
+        return has_mep_model(element)
+    return True
 
 
 def is_valid_device(element, allow_circuit=False):
@@ -2653,6 +2716,11 @@ class DeviceSelectionFilter(ISelectionFilter):
                     return False
             except Exception:
                 pass
+        if not is_allowed_device_pick(
+            element,
+            allow_circuit=self.scheme == SCHEME_WIRE_BY_CIRCUIT,
+        ):
+            return False
         return is_valid_device(
             element,
             allow_circuit=self.scheme == SCHEME_WIRE_BY_CIRCUIT,
