@@ -11,9 +11,10 @@ CKT_Load Name_CEDT is deliberately left untouched.
 from System.Collections.Generic import List
 from pyrevit import DB
 
-import cg_core
 import cg_collect
+import cg_core
 from Snippets import revit_helpers
+
 
 # ---------------------------------------------------------------------------
 # Connector / circuit helpers
@@ -167,7 +168,7 @@ def run(doc, plans, name_to_id, logger=None):
     if not plans:
         return report
 
-        with _CircuitTransaction(doc, "Create Circuits by Device Parameter - Create Circuits"):
+    with _CircuitTransaction(doc, "Create Circuits by Device Parameter - Create Circuits"):
         for plan in plans:
             key = plan.get("group_key", "")
             panel_name = plan.get("panel", "")
