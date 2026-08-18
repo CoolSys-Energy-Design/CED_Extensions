@@ -61,11 +61,150 @@
   <Style x:Key="CED.Input.CheckBox" TargetType="CheckBox">
     <Setter Property="Foreground" Value="{DynamicResource CED.Brush.PrimaryText}"/>
     <Setter Property="VerticalAlignment" Value="Center"/>
+    <Setter Property="HorizontalContentAlignment" Value="Left"/>
+    <Setter Property="VerticalContentAlignment" Value="Center"/>
+    <Setter Property="MinHeight" Value="18"/>
+    <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="CheckBox">
+          <Grid x:Name="CheckRoot" SnapsToDevicePixels="True">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="16"/>
+              <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Border x:Name="CheckSurface"
+                    Grid.Column="0"
+                    Width="14"
+                    Height="14"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Background="{DynamicResource CED.Brush.InputControlBackground}"
+                    BorderBrush="{DynamicResource CED.Brush.InputControlBorder}"
+                    BorderThickness="1"
+                    CornerRadius="3"/>
+            <Path x:Name="CheckMark"
+                  Grid.Column="0"
+                  Width="9"
+                  Height="8"
+                  HorizontalAlignment="Left"
+                  VerticalAlignment="Center"
+                  Margin="2,0,0,0"
+                  Data="M1,4 L3.5,6.5 L8,1.5"
+                  Stroke="{DynamicResource CED.Brush.InputControlCheckmark}"
+                  StrokeThickness="1.5"
+                  StrokeStartLineCap="Round"
+                  StrokeEndLineCap="Round"
+                  Visibility="Collapsed"/>
+            <ContentPresenter Grid.Column="1"
+                              Margin="6,0,0,0"
+                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalAlignment="Center"
+                              Content="{TemplateBinding Content}"
+                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                              RecognizesAccessKey="True"/>
+            <Border x:Name="CheckStateOverlay"
+                    Grid.Column="0"
+                    Width="14"
+                    Height="14"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Background="Transparent"
+                    CornerRadius="3"
+                    IsHitTestVisible="False"/>
+          </Grid>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsChecked" Value="True">
+              <Setter TargetName="CheckSurface" Property="Background" Value="{DynamicResource CED.Brush.InputControlChecked}"/>
+              <Setter TargetName="CheckSurface" Property="BorderBrush" Value="{DynamicResource CED.Brush.InputControlChecked}"/>
+              <Setter TargetName="CheckMark" Property="Visibility" Value="Visible"/>
+            </Trigger>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="CheckSurface" Property="BorderBrush" Value="{DynamicResource CED.Brush.InputControlChecked}"/>
+              <Setter TargetName="CheckStateOverlay" Property="Background" Value="{DynamicResource CED.Brush.ButtonStateOverlayHover}"/>
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+              <Setter TargetName="CheckStateOverlay" Property="Background" Value="{DynamicResource CED.Brush.ButtonStateOverlayPressed}"/>
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter TargetName="CheckRoot" Property="Opacity" Value="0.55"/>
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
   </Style>
 
   <Style x:Key="CED.Input.RadioButton" TargetType="RadioButton">
     <Setter Property="Foreground" Value="{DynamicResource CED.Brush.PrimaryText}"/>
     <Setter Property="VerticalAlignment" Value="Center"/>
+    <Setter Property="HorizontalContentAlignment" Value="Left"/>
+    <Setter Property="VerticalContentAlignment" Value="Center"/>
+    <Setter Property="MinHeight" Value="18"/>
+    <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="RadioButton">
+          <Grid x:Name="RadioRoot" SnapsToDevicePixels="True">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="16"/>
+              <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Border x:Name="RadioSurface"
+                    Grid.Column="0"
+                    Width="14"
+                    Height="14"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Background="{DynamicResource CED.Brush.InputControlBackground}"
+                    BorderBrush="{DynamicResource CED.Brush.InputControlBorder}"
+                    BorderThickness="1"
+                    CornerRadius="7"/>
+            <Ellipse x:Name="RadioDot"
+                     Grid.Column="0"
+                     Width="6"
+                     Height="6"
+                     HorizontalAlignment="Left"
+                     VerticalAlignment="Center"
+                     Margin="4,0,0,0"
+                     Fill="{DynamicResource CED.Brush.InputControlChecked}"
+                     Visibility="Collapsed"/>
+            <ContentPresenter Grid.Column="1"
+                              Margin="6,0,0,0"
+                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalAlignment="Center"
+                              Content="{TemplateBinding Content}"
+                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                              RecognizesAccessKey="True"/>
+            <Border x:Name="RadioStateOverlay"
+                    Grid.Column="0"
+                    Width="14"
+                    Height="14"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Background="Transparent"
+                    CornerRadius="7"
+                    IsHitTestVisible="False"/>
+          </Grid>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsChecked" Value="True">
+              <Setter TargetName="RadioSurface" Property="BorderBrush" Value="{DynamicResource CED.Brush.InputControlChecked}"/>
+              <Setter TargetName="RadioDot" Property="Visibility" Value="Visible"/>
+            </Trigger>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="RadioSurface" Property="BorderBrush" Value="{DynamicResource CED.Brush.InputControlChecked}"/>
+              <Setter TargetName="RadioStateOverlay" Property="Background" Value="{DynamicResource CED.Brush.ButtonStateOverlayHover}"/>
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+              <Setter TargetName="RadioStateOverlay" Property="Background" Value="{DynamicResource CED.Brush.ButtonStateOverlayPressed}"/>
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter TargetName="RadioRoot" Property="Opacity" Value="0.55"/>
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
   </Style>
 
   <Style x:Key="CED.Input.ComboBoxItem" TargetType="ComboBoxItem">

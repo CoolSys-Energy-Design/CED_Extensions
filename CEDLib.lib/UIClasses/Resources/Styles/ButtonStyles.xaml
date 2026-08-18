@@ -3,7 +3,7 @@
   <Style x:Key="CED.Button.Base" TargetType="Button">
     <Setter Property="Foreground" Value="{DynamicResource CED.Brush.Accent}"/>
     <Setter Property="Background" Value="{DynamicResource CED.Brush.ButtonDefaultBackground}"/>
-    <Setter Property="BorderBrush" Value="{DynamicResource CED.Brush.Accent}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource CED.Brush.Border}"/>
     <Setter Property="BorderThickness" Value="1"/>
     <Setter Property="Padding" Value="{DynamicResource CED.Thickness.ButtonPadding}"/>
     <Setter Property="FontWeight" Value="SemiBold"/>
@@ -31,12 +31,12 @@
             </Grid>
           </Border>
           <ControlTemplate.Triggers>
-            <Trigger Property="IsMouseOver" Value="True">
-              <Setter TargetName="StateOverlay" Property="Background" Value="{DynamicResource CED.Brush.ButtonStateOverlayHover}"/>
-            </Trigger>
-            <Trigger Property="IsPressed" Value="True">
-              <Setter TargetName="StateOverlay" Property="Background" Value="{DynamicResource CED.Brush.ButtonStateOverlayPressed}"/>
-            </Trigger>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="StateOverlay" Property="Background" Value="{DynamicResource CED.Brush.ButtonStateOverlayHover}"/>
+              </Trigger>
+              <Trigger Property="IsPressed" Value="True">
+                <Setter TargetName="StateOverlay" Property="Background" Value="{DynamicResource CED.Brush.ButtonStateOverlayPressed}"/>
+              </Trigger>
             <Trigger Property="IsEnabled" Value="False">
               <Setter TargetName="Root" Property="Opacity" Value="0.55"/>
             </Trigger>
@@ -44,24 +44,56 @@
         </ControlTemplate>
       </Setter.Value>
     </Setter>
+    <Style.Triggers>
+      <Trigger Property="IsMouseOver" Value="True">
+        <Setter Property="BorderBrush" Value="{DynamicResource CED.Brush.Accent}"/>
+      </Trigger>
+      <Trigger Property="IsPressed" Value="True">
+        <Setter Property="BorderBrush" Value="{DynamicResource CED.Brush.Accent}"/>
+      </Trigger>
+    </Style.Triggers>
   </Style>
 
   <Style x:Key="CED.Button.Primary" TargetType="Button" BasedOn="{StaticResource CED.Button.Base}">
     <Setter Property="Background" Value="{DynamicResource CED.Brush.AccentBlue}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource CED.Brush.AccentBlue}"/>
     <Setter Property="Foreground" Value="{DynamicResource CED.Brush.ButtonForegroundOnAccent}"/>
+    <Style.Triggers>
+      <Trigger Property="IsMouseOver" Value="True">
+        <Setter Property="BorderBrush" Value="{DynamicResource CED.Brush.AccentBlue}"/>
+      </Trigger>
+      <Trigger Property="IsPressed" Value="True">
+        <Setter Property="BorderBrush" Value="{DynamicResource CED.Brush.AccentBlue}"/>
+      </Trigger>
+    </Style.Triggers>
   </Style>
 
   <Style x:Key="CED.Button.AccentRed" TargetType="Button" BasedOn="{StaticResource CED.Button.Base}">
     <Setter Property="Background" Value="{DynamicResource CED.Brush.AccentRed}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource CED.Brush.AccentRed}"/>
     <Setter Property="Foreground" Value="{DynamicResource CED.Brush.ButtonForegroundOnAccent}"/>
+    <Style.Triggers>
+      <Trigger Property="IsMouseOver" Value="True">
+        <Setter Property="BorderBrush" Value="{DynamicResource CED.Brush.AccentRed}"/>
+      </Trigger>
+      <Trigger Property="IsPressed" Value="True">
+        <Setter Property="BorderBrush" Value="{DynamicResource CED.Brush.AccentRed}"/>
+      </Trigger>
+    </Style.Triggers>
   </Style>
 
   <Style x:Key="CED.Button.Apply" TargetType="Button" BasedOn="{StaticResource CED.Button.Base}">
     <Setter Property="Background" Value="{DynamicResource CED.Brush.AccentGreen}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource CED.Brush.AccentGreen}"/>
     <Setter Property="Foreground" Value="{DynamicResource CED.Brush.ButtonForegroundOnAccent}"/>
+    <Style.Triggers>
+      <Trigger Property="IsMouseOver" Value="True">
+        <Setter Property="BorderBrush" Value="{DynamicResource CED.Brush.AccentGreen}"/>
+      </Trigger>
+      <Trigger Property="IsPressed" Value="True">
+        <Setter Property="BorderBrush" Value="{DynamicResource CED.Brush.AccentGreen}"/>
+      </Trigger>
+    </Style.Triggers>
   </Style>
 
   <Style x:Key="CED.Button.Icon" TargetType="Button" BasedOn="{StaticResource CED.Button.Base}">

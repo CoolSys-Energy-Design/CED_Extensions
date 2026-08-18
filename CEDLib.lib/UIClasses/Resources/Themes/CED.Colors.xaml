@@ -32,6 +32,10 @@
   <Color x:Key="CED.Color.ButtonForegroundOnAccent">#FFFFFF</Color>
   <Color x:Key="CED.Color.ButtonStateOverlayHover">#0A000000</Color>
   <Color x:Key="CED.Color.ButtonStateOverlayPressed">#1F000000</Color>
+  <Color x:Key="CED.Color.InputControlBackground">#FFFFFF</Color>
+  <Color x:Key="CED.Color.InputControlBorder">#B8C8DB</Color>
+  <Color x:Key="CED.Color.InputControlChecked">#0459A4</Color>
+  <Color x:Key="CED.Color.InputControlCheckmark">#FFFFFF</Color>
 
   <Color x:Key="CED.Color.BadgeInfoBackground">#E8F1FF</Color>
   <Color x:Key="CED.Color.BadgeInfoBorder">#2B62A8</Color>
