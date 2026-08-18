@@ -6,6 +6,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: stable-release
+  cancel-in-progress: false
+
 jobs:
   # 1. Read toolbar_version from about.yaml, create the v{version} tag if missing.
   prepare:
@@ -19,8 +23,18 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
+          ref: main
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
+
+      - name: Require a main-branch dispatch
+        env:
+          DISPATCH_REF: ${{ github.ref }}
+        run: |
+          if [[ "${DISPATCH_REF}" != "refs/heads/main" ]]; then
+            echo "::error::Stable releases must be dispatched from main. Selected ref: ${DISPATCH_REF}"
+            exit 1
+          fi
 
       - name: Configure git
         run: |
@@ -32,8 +46,12 @@ jobs:
         run: |
           FILE="AE pyTools.extension/AE pyTools.Tab/CED Tools.panel/About.pushbutton/about.yaml"
           VERSION=$(grep 'toolbar_version:' "$FILE" | awk '{print $2}')
-          # MSI ProductVersion needs 4 fields. 4th field = workflow run number for uniqueness.
-          MSI_VERSION="${VERSION}.${{ github.run_number }}"
+          if [[ ! "${VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Stable releases require an X.Y.Z toolbar_version. Found '${VERSION}'."
+            exit 1
+          fi
+          # Windows Installer compares only the first three ProductVersion fields.
+          MSI_VERSION="${VERSION}"
           echo "version=$VERSION"      >> $GITHUB_OUTPUT
           echo "msi_version=$MSI_VERSION" >> $GITHUB_OUTPUT
           echo "::notice::Toolbar version: $VERSION | MSI version: $MSI_VERSION"
@@ -48,7 +66,7 @@ jobs:
           echo "tag=$TAG" >> $GITHUB_OUTPUT
           if git rev-parse "$TAG" >/dev/null 2>&1; then
             echo "exists=true" >> $GITHUB_OUTPUT
-            echo "::warning::Tag already exists: $TAG (release will be updated, MSI asset overwritten)"
+            echo "::warning::Tag already exists: $TAG (the tagged source will be rebuilt)"
           else
             echo "exists=false" >> $GITHUB_OUTPUT
             echo "::notice::Tag does not exist. Will create."
@@ -69,6 +87,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.tag }}
 
       - name: Add WiX 3.14 to PATH
         shell: pwsh
