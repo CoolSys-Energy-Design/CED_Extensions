@@ -7,8 +7,9 @@ on:
       - main
 
 concurrency:
-  group: sync-main-back-to-develop
-  cancel-in-progress: true
+  # Serialize every workflow that can push the develop branch.
+  group: release-metadata-develop
+  cancel-in-progress: false
 
 jobs:
   sync-main-back:

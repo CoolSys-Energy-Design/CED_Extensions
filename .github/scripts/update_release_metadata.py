@@ -8,6 +8,9 @@ import re
 import sys
 
 
+WIP_VERSION_RE = re.compile(r"^(\d+\.\d+\.\d+)(?:-WIP)?$")
+
+
 def _read_lines(path):
     with io.open(path, "r", encoding="utf-8") as handle:
         return handle.read().splitlines()
@@ -25,6 +28,16 @@ def _find_key_index(lines, key_name):
         if pattern.match(line):
             return idx
     return -1
+
+
+def _get_key_value(lines, key_name):
+    idx = _find_key_index(lines, key_name)
+    if idx < 0:
+        return ""
+    value = lines[idx].split(":", 1)[1].split("#", 1)[0].strip()
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in ("'", '"'):
+        value = value[1:-1].strip()
+    return value
 
 
 def _set_or_insert_key(lines, key_name, value, insert_after_key=None):
@@ -52,6 +65,11 @@ def main():
     parser.add_argument("--file", required=True)
     parser.add_argument("--build", required=True)
     parser.add_argument("--toolbar-version", default="")
+    parser.add_argument(
+        "--mark-wip",
+        action="store_true",
+        help="Preserve the numeric version and append the -WIP prerelease marker.",
+    )
     args = parser.parse_args()
 
     file_path = args.file
@@ -64,6 +82,26 @@ def main():
 
     lines = _read_lines(file_path)
     changed = False
+
+    if args.mark_wip and toolbar_version:
+        print(
+            "--mark-wip and --toolbar-version cannot be used together.",
+            file=sys.stderr,
+        )
+        return 1
+
+    if args.mark_wip:
+        current_version = _get_key_value(lines, "toolbar_version")
+        version_match = WIP_VERSION_RE.match(current_version)
+        if not version_match:
+            print(
+                "Cannot mark invalid toolbar_version as WIP: {}".format(
+                    current_version or "<missing>"
+                ),
+                file=sys.stderr,
+            )
+            return 1
+        toolbar_version = "{}-WIP".format(version_match.group(1))
 
     if toolbar_version:
         changed = _set_or_insert_key(lines, "toolbar_version", toolbar_version) or changed
