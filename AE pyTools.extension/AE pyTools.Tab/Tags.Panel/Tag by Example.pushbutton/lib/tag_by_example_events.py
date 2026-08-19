@@ -420,12 +420,11 @@ def _prepare_existing_tag_actions(document, tag_index, proposals, examples, beha
     }
 
 
-def _apply_tag_properties(document, created_tag, item, options):
+def _apply_tag_base_properties(created_tag, item, options):
+    """Apply tag properties that do not depend on regenerated leader state."""
     warnings = []
     example_data = item["example"]
-    geometry = example_data["geometry"]
     points = item["points"]
-    reference = item["reference"]
 
     target_angle = points.get("rotation_angle")
     if target_angle is None:
@@ -444,15 +443,24 @@ def _apply_tag_properties(document, created_tag, item, options):
     except Exception as error:
         raise RuntimeError("Tag head position could not be applied: {}".format(error))
 
-    if options.get("copy_leader", True) and geometry.has_leader:
-        if not set_leader_end_condition(created_tag, geometry.leader_end_condition):
-            warnings.append("Leader end condition is unsupported for this tag.")
-        if geometry.elbow_local is not None:
-            if not set_leader_elbow(created_tag, reference, points.get("elbow")):
-                warnings.append("Leader elbow is unsupported for this tag.")
-        if geometry.end_local is not None:
-            if not set_leader_end(created_tag, reference, points.get("end")):
-                warnings.append("Leader end is unsupported for this tag.")
+    return warnings
+
+
+def _apply_tag_leader_properties(created_tag, item):
+    """Apply leader geometry after the batch has been regenerated once."""
+    warnings = []
+    geometry = item["example"]["geometry"]
+    points = item["points"]
+    reference = item["reference"]
+
+    if not set_leader_end_condition(created_tag, geometry.leader_end_condition):
+        warnings.append("Leader end condition is unsupported for this tag.")
+    if geometry.elbow_local is not None:
+        if not set_leader_elbow(created_tag, reference, points.get("elbow")):
+            warnings.append("Leader elbow is unsupported for this tag.")
+    if geometry.end_local is not None:
+        if not set_leader_end(created_tag, reference, points.get("end")):
+            warnings.append("Leader end is unsupported for this tag.")
     return warnings
 
 
@@ -463,6 +471,7 @@ def _create_tags(document, view, proposals, options, actions):
     failures = []
     warnings = []
     attempted_pairs = set()
+    leader_jobs = []
     transaction = DB.Transaction(document, "Create tags")
     transaction.Start()
     try:
@@ -501,14 +510,15 @@ def _create_tags(document, view, proposals, options, actions):
                         orientation,
                         item["points"].get("head"),
                     )
-                    document.Regenerate()
-                    target_warnings = _apply_tag_properties(
-                        document, created_tag, item, options
+                    target_warnings = _apply_tag_base_properties(
+                        created_tag, item, options
                     )
                     warnings.extend([(target_id, warning)
                                      for warning in target_warnings])
                     subtransaction.Commit()
                     created += 1
+                    if has_leader:
+                        leader_jobs.append((target_id, created_tag, item))
                 except Exception as error:
                     subtransaction.RollBack()
                     failures.append({
@@ -516,6 +526,17 @@ def _create_tags(document, view, proposals, options, actions):
                         "element": proposal["target"],
                         "reason": "Tag creation failed: {}".format(error),
                     })
+        if leader_jobs:
+            # Leader APIs can require the just-created tag's derived leader
+            # state. Regenerate once for the whole leader batch instead of
+            # once per tag; no-leader batches need no explicit regeneration.
+            document.Regenerate()
+            for target_id, created_tag, item in leader_jobs:
+                target_warnings = _apply_tag_leader_properties(
+                    created_tag, item
+                )
+                warnings.extend([(target_id, warning)
+                                 for warning in target_warnings])
         transaction.Commit()
     except Exception:
         if transaction.GetStatus() == DB.TransactionStatus.Started:
