@@ -3,6 +3,7 @@
   <Color x:Key="CED.Color.Accent">#0459A4</Color>
   <Color x:Key="CED.Color.AccentBlue">#0459A4</Color>
   <Color x:Key="CED.Color.AccentRed">#BE202F</Color>
+  <Color x:Key="CED.Color.AlertErrorText">#BE202F</Color>
   <Color x:Key="CED.Color.AccentGreen">#43A047</Color>
   <Color x:Key="CED.Color.AccentNeutral">#4D596A</Color>
   <Color x:Key="CED.Color.NeutralDark">#323130</Color>

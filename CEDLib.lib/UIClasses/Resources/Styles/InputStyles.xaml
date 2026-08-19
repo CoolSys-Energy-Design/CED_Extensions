@@ -602,6 +602,7 @@
                    BorderThickness="0"
                    VerticalAlignment="Center"
                    Foreground="{TemplateBinding Foreground}"
+                   CaretBrush="{TemplateBinding Foreground}"
                    IsReadOnly="{TemplateBinding IsReadOnly}"
                    Text="{Binding Path=Text, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
           <Path Grid.Column="1"
@@ -687,5 +688,129 @@
     <Setter Property="IsTextSearchEnabled" Value="False"/>
     <Setter Property="StaysOpenOnEdit" Value="True"/>
     <Setter Property="Template" Value="{StaticResource CED.Input.ComboBox.Template.Flat.Compact.Editable}"/>
+  </Style>
+
+  <!-- Reusable horizontal slider for CED-themed previews and tool UIs. -->
+  <Style x:Key="CED.Input.Slider.DecreaseButton" TargetType="RepeatButton">
+    <Setter Property="Focusable" Value="False"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="RepeatButton">
+          <Border Background="{DynamicResource CED.Brush.AccentBlue}"
+                  CornerRadius="3,0,0,3"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <Style x:Key="CED.Input.Slider.IncreaseButton" TargetType="RepeatButton">
+    <Setter Property="Focusable" Value="False"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="RepeatButton">
+          <Border Background="{DynamicResource CED.Brush.InputControlBackground}"
+                  BorderBrush="{DynamicResource CED.Brush.InputControlBorder}"
+                  BorderThickness="0,1,1,1"
+                  CornerRadius="0,3,3,0"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <Style x:Key="CED.Input.Slider.Thumb" TargetType="Thumb">
+    <Setter Property="Width" Value="12"/>
+    <Setter Property="Height" Value="16"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Thumb">
+          <Border x:Name="ThumbRoot"
+                  Background="{DynamicResource CED.Brush.SearchBackground}"
+                  BorderBrush="{DynamicResource CED.Brush.InputControlBorder}"
+                  BorderThickness="1"
+                  CornerRadius="3"/>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="ThumbRoot" Property="BorderBrush" Value="{DynamicResource CED.Brush.Accent}"/>
+            </Trigger>
+            <Trigger Property="IsDragging" Value="True">
+              <Setter TargetName="ThumbRoot" Property="Background" Value="{DynamicResource CED.Brush.CircuitItemHoverBackground}"/>
+              <Setter TargetName="ThumbRoot" Property="BorderBrush" Value="{DynamicResource CED.Brush.Accent}"/>
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <Style x:Key="CED.Input.Slider" TargetType="Slider">
+    <Setter Property="Height" Value="20"/>
+    <Setter Property="MinWidth" Value="90"/>
+    <Setter Property="Focusable" Value="False"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Slider">
+          <Grid Margin="0,2">
+            <Track x:Name="PART_Track" Height="8" VerticalAlignment="Center">
+              <Track.DecreaseRepeatButton>
+                <RepeatButton Style="{StaticResource CED.Input.Slider.DecreaseButton}"
+                              Command="Slider.DecreaseLarge"/>
+              </Track.DecreaseRepeatButton>
+              <Track.Thumb>
+                <Thumb Style="{StaticResource CED.Input.Slider.Thumb}"/>
+              </Track.Thumb>
+              <Track.IncreaseRepeatButton>
+                <RepeatButton Style="{StaticResource CED.Input.Slider.IncreaseButton}"
+                              Command="Slider.IncreaseLarge"/>
+              </Track.IncreaseRepeatButton>
+            </Track>
+          </Grid>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- CheckBox variant used where a compact on/off toggle is clearer than a check mark. -->
+  <Style x:Key="CED.Input.ToggleSwitch" TargetType="CheckBox">
+    <Setter Property="Width" Value="40"/>
+    <Setter Property="Height" Value="22"/>
+    <Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="CheckBox">
+          <Grid Width="{TemplateBinding Width}" Height="{TemplateBinding Height}">
+            <Border x:Name="Track"
+                    Background="{DynamicResource CED.Brush.InputControlBackground}"
+                    BorderBrush="{DynamicResource CED.Brush.InputControlBorder}"
+                    BorderThickness="1"
+                    CornerRadius="11"/>
+            <Border x:Name="Thumb"
+                    Width="16"
+                    Height="16"
+                    Margin="3,0,0,0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Background="{DynamicResource CED.Brush.SearchBackground}"
+                    BorderBrush="{DynamicResource CED.Brush.InputControlBorder}"
+                    BorderThickness="1"
+                    CornerRadius="8"/>
+          </Grid>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsChecked" Value="True">
+              <Setter TargetName="Track" Property="Background" Value="{DynamicResource CED.Brush.AccentGreen}"/>
+              <Setter TargetName="Track" Property="BorderBrush" Value="{DynamicResource CED.Brush.AccentGreen}"/>
+              <Setter TargetName="Thumb" Property="Margin" Value="0,0,3,0"/>
+              <Setter TargetName="Thumb" Property="HorizontalAlignment" Value="Right"/>
+            </Trigger>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="Thumb" Property="BorderBrush" Value="{DynamicResource CED.Brush.Accent}"/>
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter Property="Opacity" Value="0.55"/>
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
   </Style>
 </ResourceDictionary>

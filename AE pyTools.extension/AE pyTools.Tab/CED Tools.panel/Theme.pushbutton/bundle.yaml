@@ -1,0 +1,7 @@
+title: Theme
+tooltip: |
+  Choose the CED tool color theme.
+
+  The selection is saved immediately and is used by CED tools when they open.
+context: zero-doc
+author: CED Tools Team

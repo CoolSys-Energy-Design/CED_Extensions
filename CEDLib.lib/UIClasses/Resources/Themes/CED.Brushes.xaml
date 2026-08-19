@@ -105,7 +105,7 @@
   <SolidColorBrush x:Key="CED.Brush.AlertWarningText" Color="{DynamicResource CED.Color.BadgeWarningText}"/>
   <SolidColorBrush x:Key="CED.Brush.AlertErrorBackground" Color="{DynamicResource CED.Color.StatusErrorBackground}"/>
   <SolidColorBrush x:Key="CED.Brush.AlertErrorBorder" Color="{DynamicResource CED.Color.AccentRed}"/>
-  <SolidColorBrush x:Key="CED.Brush.AlertErrorText" Color="{DynamicResource CED.Color.AccentRed}"/>
+  <SolidColorBrush x:Key="CED.Brush.AlertErrorText" Color="{DynamicResource CED.Color.AlertErrorText}"/>
   <SolidColorBrush x:Key="CED.Brush.AlertSuccessBackground" Color="{DynamicResource CED.Color.StatusSuccessBackground}"/>
   <SolidColorBrush x:Key="CED.Brush.AlertSuccessBorder" Color="{DynamicResource CED.Color.ApplyBorder}"/>
   <SolidColorBrush x:Key="CED.Brush.AlertSuccessText" Color="{DynamicResource CED.Color.BadgeStd02Text}"/>

@@ -3,6 +3,7 @@
   <Color x:Key="CED.Color.Accent">#3B8ED8</Color>
   <Color x:Key="CED.Color.AccentBlue">#3B8ED8</Color>
   <Color x:Key="CED.Color.AccentRed">#D15762</Color>
+  <Color x:Key="CED.Color.AlertErrorText">#FFB4AB</Color>
   <Color x:Key="CED.Color.AccentGreen">#58B95E</Color>
   <Color x:Key="CED.Color.AccentNeutral">#EDEFF1</Color>
   <Color x:Key="CED.Color.NeutralDark">#ECEDEE</Color>
@@ -34,7 +35,7 @@
   <Color x:Key="CED.Color.ButtonStateOverlayPressed">#1FFFFFFF</Color>
   <Color x:Key="CED.Color.InputControlBackground">#57616C</Color>
   <Color x:Key="CED.Color.InputControlBorder">#96A2AF</Color>
-  <Color x:Key="CED.Color.InputControlChecked">#5EA8E5</Color>
+  <Color x:Key="CED.Color.InputControlChecked">#3B8ED8</Color>
   <Color x:Key="CED.Color.InputControlCheckmark">#1E2A36</Color>
 
   <Color x:Key="CED.Color.BadgeInfoBackground">#2A3C55</Color>
@@ -67,7 +68,7 @@
   <Color x:Key="CED.Color.DataGridErrorBackground">#654448</Color>
   <Color x:Key="CED.Color.StatusSuccessBackground">#2E5632</Color>
   <Color x:Key="CED.Color.StatusWarningBackground">#66533F</Color>
-  <Color x:Key="CED.Color.StatusErrorBackground">#654448</Color>
+  <Color x:Key="CED.Color.StatusErrorBackground">#5A2A30</Color>
   <Color x:Key="CED.Color.StatusStagedBackground">#605A3E</Color>
 
   <Color x:Key="CED.Color.InfoPanelBorder">#616A75</Color>
