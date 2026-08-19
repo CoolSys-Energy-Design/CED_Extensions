@@ -459,7 +459,7 @@
                 </StackPanel>
                 <Grid Grid.Row="0" Grid.Column="2" HorizontalAlignment="Stretch">
                   <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="90"/>
+                    <ColumnDefinition Width="118"/>
                     <ColumnDefinition Width="*"/>
                   </Grid.ColumnDefinitions>
                   <RadioButton Name="HomerunPanelDirectionRadio"
@@ -469,6 +469,7 @@
                                IsChecked="True"
                                Style="{DynamicResource CED.Input.RadioButton}"
                                Margin="0"
+                               HorizontalAlignment="Left"
                                Checked="option_changed"/>
                   <RadioButton Name="HomerunDeviceFacingRadio"
                                Grid.Column="1"
@@ -476,6 +477,7 @@
                                GroupName="HomerunDirection"
                                Style="{DynamicResource CED.Input.RadioButton}"
                                Margin="8,0,0,0"
+                               HorizontalAlignment="Left"
                                Checked="option_changed"/>
                 </Grid>
                 <TextBlock Grid.Row="2" Grid.Column="0" Text="Homerun Length" Style="{StaticResource WireTools.Label}"/>

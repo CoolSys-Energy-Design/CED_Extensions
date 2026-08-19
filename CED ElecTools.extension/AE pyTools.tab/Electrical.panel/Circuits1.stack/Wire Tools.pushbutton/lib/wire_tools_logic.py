@@ -1249,11 +1249,13 @@ def _homerun_points(start, end_point, shape, bend_offset,
         requested_offset = None
 
     # A zero offset is the straight-path setting.  Keep accepting the shape
-    # argument for compatibility with older payloads, but the UI now uses the
-    # offset itself to select straight versus bent geometry.
-    if (shape == HOMERUN_SHAPE_STRAIGHT
-            or (requested_offset is not None
-                and abs(requested_offset) <= GEOMETRY_TOLERANCE)):
+    # argument for compatibility with older payloads, but let a non-zero
+    # offset select a bend even when a stale legacy shape says "straight".
+    if (requested_offset is not None
+            and abs(requested_offset) <= GEOMETRY_TOLERANCE) or (
+                requested_offset is None
+                and shape == HOMERUN_SHAPE_STRAIGHT
+            ):
         midpoint = start.Add(end_point.Subtract(start).Multiply(0.5))
         return [start, midpoint, end_point]
 
@@ -1448,10 +1450,19 @@ def run_wire_by_circuit(document, view, elements, settings):
                 _apply_wire_type(wire_set, wire_type_id)
                 generated_homerun = _homerun_from_wire_set(wire_set)
                 if generated_homerun is not None:
+                    bend_offset = settings.get("bend_offset")
+                    try:
+                        has_bend_offset = (
+                            bend_offset is not None
+                            and abs(float(bend_offset)) > GEOMETRY_TOLERANCE
+                        )
+                    except Exception:
+                        has_bend_offset = False
                     if (settings.get("homerun_direction", HOMERUN_DIRECTION_PANEL)
                             != HOMERUN_DIRECTION_PANEL
                             or settings.get("homerun_shape", HOMERUN_SHAPE_STRAIGHT)
-                            != HOMERUN_SHAPE_STRAIGHT):
+                            != HOMERUN_SHAPE_STRAIGHT
+                            or has_bend_offset):
                         generated_homerun = _replace_homerun_custom(
                             document,
                             view,
@@ -1467,7 +1478,7 @@ def run_wire_by_circuit(document, view, elements, settings):
                                 "homerun_shape",
                                 HOMERUN_SHAPE_STRAIGHT,
                             ),
-                            settings.get("bend_offset", 1.0),
+                            settings.get("bend_offset", 0.0),
                         )
                     homerun_ids.append(element_id_value(generated_homerun.Id))
                 created_count += len(list(wire_set))
@@ -1650,7 +1661,7 @@ def _run_direct_wires(document, view, device_elements, settings,
                             "homerun_shape",
                             HOMERUN_SHAPE_STRAIGHT,
                         ),
-                        settings.get("bend_offset", 1.0),
+                        settings.get("bend_offset", 0.0),
                     )
                     created_wire = _create_wire_from_points(
                         document,
@@ -1910,7 +1921,7 @@ def _run_spatial_interconnect(document, view, device_elements, settings):
                     first_connector.Origin,
                     second_connector.Origin,
                     branch_type,
-                    settings.get("bend_offset", 1.0),
+                    settings.get("bend_offset", 0.0),
                 )
                 _create_wire_from_points(
                     document,
@@ -2076,7 +2087,7 @@ def _custom_interconnect_homerun(document, view, wire_type_id,
         connector.Origin,
         end_point,
         settings.get("homerun_shape", HOMERUN_SHAPE_STRAIGHT),
-        settings.get("bend_offset", 1.0),
+        settings.get("bend_offset", 0.0),
     )
     homerun_type = wiring_type_from_name(
         settings.get("homerun_wiring_type"),
