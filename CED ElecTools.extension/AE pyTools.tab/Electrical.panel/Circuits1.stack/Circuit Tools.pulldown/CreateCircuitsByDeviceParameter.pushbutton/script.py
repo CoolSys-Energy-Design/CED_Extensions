@@ -11,6 +11,7 @@ import os
 import sys
 
 from pyrevit import revit, forms, script, DB
+from Snippets import revit_helpers
 
 # make the sibling cg_* modules importable
 THIS_DIR = os.path.dirname(__file__)
@@ -75,10 +76,17 @@ def main():
             )
         return
 
-    group_param_options = cg_core.common_group_params(rows_data)
+    parameter_options = cg_core.common_group_params(rows_data)
+    # Keep the two display/location groupings at the top of the Group By
+    # picker. The raw Identity Mark parameter remains available to Name By,
+    # while Group By uses the same concatenated identity shown in the grid.
+    group_param_options = [
+        cg_core.SPACE_GROUP_OPTION,
+        cg_core.IDENTITY_GROUP_OPTION,
+    ] + [p for p in parameter_options if p != "Identity Mark"]
     default_group_param = cg_core.default_group_param(group_param_options)
     # name-by offers the same common-parameter list, with its own default
-    default_name_param = cg_core.default_name_param(group_param_options)
+    default_name_param = cg_core.default_name_param(parameter_options)
 
     logger.debug("Create Circuits by Device Parameter scope=%s, %d circuitable element(s)",
                  scope_label, len(rows_data))
@@ -89,7 +97,7 @@ def main():
         rows_data, panel_names, name_to_id, cg_core.RATING_OPTIONS,
         group_param_options, default_group_param,
         panel_info=panel_info,
-        name_param_options=group_param_options,
+        name_param_options=parameter_options,
         default_name_param=default_name_param,
     )
 
@@ -132,21 +140,32 @@ def main():
     output.print_md("## Create Circuits by Device Parameter - Results")
     output.print_md("**Circuits created:** {}  |  **Members circuited:** {}".format(
         report["created"], report["members_circuited"]))
-    if report["removed_from_existing"]:
-        output.print_md("Removed {} member(s) from prior circuits.".format(
-            report["removed_from_existing"]))
     if assignment.get("moved"):
         output.print_md("Assigned {} created circuit(s) to their selected panels.".format(
             assignment["moved"]))
     if assignment.get("fallback_used"):
         output.print_md(
             "Move Selected Circuits used its default SPARE/SPACE replacement workflow.")
-    if assignment.get("failed"):
-        output.print_md("### Circuits that remain unassigned")
-        for row in assignment["failed"]:
-            output.print_md("- {}".format(" | ".join(str(x) for x in list(row or []))))
     status_rows = list(assignment.get("circuit_status") or [])
     if status_rows:
+        def _linkify_created_circuit(row):
+            label = row.get("circuit", "Created circuit")
+            try:
+                element_id = revit_helpers.elementid_from_value(
+                    int(row.get("element_id")))
+                return output.linkify(element_id, label)
+            except Exception:
+                return label
+
+        def _assignment_row_values(row):
+            return [
+                _linkify_created_circuit(row),
+                row.get("element_id", "-"),
+                row.get("target_panel", "-"),
+                row.get("actual_panel", "-"),
+                row.get("status", "-"),
+            ]
+
         verified_count = sum(
             1 for row in status_rows if row.get("status") == "ASSIGNED")
         output.print_md("### Actual circuit assignment")
@@ -154,18 +173,19 @@ def main():
             "Verified on selected panel: {} of {}.".format(
                 verified_count, len(status_rows)))
         output.print_table(
-            [
-                [
-                    row.get("circuit", "-"),
-                    row.get("element_id", "-"),
-                    row.get("target_panel", "-"),
-                    row.get("actual_panel", "-"),
-                    row.get("status", "-"),
-                ]
-                for row in status_rows
-            ],
+            [_assignment_row_values(row) for row in status_rows],
             ["Circuit", "Element ID", "Target panel", "Actual panel", "Result"],
         )
+        unresolved_rows = [
+            row for row in status_rows if row.get("status") != "ASSIGNED"]
+        if unresolved_rows:
+            output.print_md("### Created circuits requiring manual resolution")
+            output.print_md(
+                "Select a linked circuit below to resolve its panel assignment manually.")
+            output.print_table(
+                [_assignment_row_values(row) for row in unresolved_rows],
+                ["Circuit", "Element ID", "Target panel", "Actual panel", "Result"],
+            )
     if assignment.get("errors"):
         output.print_md("### Panel assignment issues")
         for panel, message in assignment["errors"]:
@@ -199,12 +219,19 @@ def main():
         output.print_md("- {}".format(line))
 
     if report["skipped_no_connector"]:
-        output.print_md("### Skipped (no power connector)")
-        output.print_md("These element ids had no power connector, so no native "
-                        "circuit could include them (their CKT_ Panel/Rating "
-                        "params were still set):")
+        output.print_md("### Skipped (no primary power connector)")
+        output.print_md("These element ids had no primary power connector, so "
+                        "the tool left them unchanged:")
         output.print_md("`{}`".format(
             ", ".join(str(i) for i in report["skipped_no_connector"])))
+
+    if report["skipped_unavailable_primary"]:
+        output.print_md("### Skipped (primary power connector already in use)")
+        output.print_md("These element ids already had a system on their primary "
+                        "power connector, so the tool left them unchanged:")
+        output.print_md("`{}`".format(
+            ", ".join(
+                str(i) for i in report["skipped_unavailable_primary"])))
 
     if report["errors"]:
         output.print_md("### Errors")

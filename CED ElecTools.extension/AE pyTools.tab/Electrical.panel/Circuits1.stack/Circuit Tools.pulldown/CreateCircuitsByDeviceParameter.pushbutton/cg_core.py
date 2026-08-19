@@ -27,14 +27,16 @@ DEVICE_SPECS = {
 DEFAULT_SPEC_KEY = "case_controllers"
 
 # ---------------------------------------------------------------------------
-# Group-by Space (a location property, not a parameter)
+# Synthetic Group-by options
 # ---------------------------------------------------------------------------
 # Space is not a LookupParameter - it is the Space the element physically sits
 # in. cg_collect stores a per-element Space label under this synthetic key so
-# the same grouping machinery can group on it, but the window offers it through
-# a SEPARATE control (checkbox) rather than the parameter combo, so it is
-# excluded from the parameter option list.
+# the same grouping machinery can group on it. Identity is likewise a
+# display-only concatenation assembled by the collector.
 SPACE_GROUP_KEY = "Space"
+SPACE_GROUP_OPTION = "<Space>"
+IDENTITY_GROUP_KEY = "Identity"
+IDENTITY_GROUP_OPTION = "<Identity>"
 
 # A group name containing this token is a deliberate instruction to create
 # one native circuit per effective member instead of one circuit for the whole
@@ -74,8 +76,9 @@ def common_group_params(rows):
     common = name_sets[0]
     for s in name_sets[1:]:
         common = common & s
-    # Space is offered through its own control, never the parameter combo.
-    common = common - set([SPACE_GROUP_KEY])
+    # Synthetic options are offered through the Group By picker, not as raw
+    # parameter names.
+    common = common - set([SPACE_GROUP_KEY, IDENTITY_GROUP_KEY])
     # Family / Type is a display label, not a project parameter users should
     # be able to group on (including if a custom parameter uses that name).
     common.discard("Family:Type")
@@ -86,8 +89,8 @@ def common_group_params(rows):
 
 def default_group_param(options):
     """Pick the initial group-by parameter: prefer circuit number, then
-    identity mark, otherwise the first available option."""
-    for p in ("CKT_Circuit Number_CEDT", "Identity Mark"):
+    concatenated identity, otherwise the first available option."""
+    for p in ("CKT_Circuit Number_CEDT", IDENTITY_GROUP_OPTION, "Identity Mark"):
         if p in options:
             return p
     return options[0] if options else ""

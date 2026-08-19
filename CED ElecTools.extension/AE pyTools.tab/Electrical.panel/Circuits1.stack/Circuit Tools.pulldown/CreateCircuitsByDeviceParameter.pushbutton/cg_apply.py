@@ -8,7 +8,6 @@ stays in sync. The load name is set on the circuit ONLY - each member's
 CKT_Load Name_CEDT is deliberately left untouched.
 """
 
-from System.Collections.Generic import List
 from pyrevit import DB
 
 import cg_collect
@@ -70,40 +69,6 @@ class _CircuitTransaction(object):
         return False
 
 
-def _has_power_connector(elem):
-    # single definition lives in cg_collect (used by both collection + apply)
-    return cg_collect.has_power_connector(elem)
-
-
-def _existing_systems(elem):
-    mep = getattr(elem, "MEPModel", None)
-    if mep is None:
-        return []
-    for attr in ("GetElectricalSystems", "GetAssignedElectricalSystems"):
-        fn = getattr(mep, attr, None)
-        if callable(fn):
-            try:
-                res = fn()
-                if res:
-                    return list(res)
-            except Exception:
-                pass
-    return []
-
-
-def _remove_from_existing(elem):
-    removed = 0
-    for system in _existing_systems(elem):
-        try:
-            ids = List[DB.ElementId]()
-            ids.Add(elem.Id)
-            system.RemoveFromCircuit(ids)
-            removed += 1
-        except Exception:
-            pass
-    return removed
-
-
 def _set_text(elem, name, value):
     if value is None:
         return
@@ -158,8 +123,8 @@ def run(doc, plans, name_to_id, logger=None):
     report = {
         "created": 0,
         "members_circuited": 0,
-        "removed_from_existing": 0,
-        "skipped_no_connector": [],   # element ids
+        "skipped_no_connector": [],       # element ids
+        "skipped_unavailable_primary": [], # element ids
         "errors": [],                 # (group_key, message)
         "lines": [],                  # human-readable per-group summary
         "created_circuit_ids_by_panel": {},
@@ -184,43 +149,92 @@ def run(doc, plans, name_to_id, logger=None):
 
             circuitable = []
             for el in elems:
-                if _has_power_connector(el):
-                    circuitable.append(el)
-                else:
+                connector = cg_collect.primary_power_connector(el)
+                if connector is None:
                     report["skipped_no_connector"].append(
                         cg_collect.element_id_value(el.Id)
                     )
-
-            # mirror panel + rating CKT_* onto every member regardless of
-            # connector status. The load name is NOT mirrored - members'
-            # CKT_Load Name_CEDT stays whatever it already was; the chosen
-            # name goes on the native circuit below.
-            for el in elems:
-                _set_text(el, cg_collect.PARAM_PANEL, panel_name)
-                if amps is not None:
-                    _set_double(el, cg_collect.PARAM_RATING, amps)
+                    continue
+                if not cg_collect.primary_power_connector_is_unused(connector):
+                    report["skipped_unavailable_primary"].append(
+                        cg_collect.element_id_value(el.Id)
+                    )
+                    continue
+                circuitable.append((el, connector))
 
             if not circuitable:
-                report["errors"].append((key, "no members have a power connector"))
+                report["errors"].append((
+                    key, "no members have an unused primary power connector"))
                 report["lines"].append(
-                    "[{}] skipped - no power connectors on any member".format(key)
+                    "[{}] skipped - no unused primary power connectors on any member".format(
+                        key)
                 )
                 continue
 
-            for el in circuitable:
-                report["removed_from_existing"] += _remove_from_existing(el)
-
-            ids = List[DB.ElementId]()
-            for el in circuitable:
-                ids.Add(el.Id)
-
+            system = None
             try:
                 system = DB.Electrical.ElectricalSystem.Create(
-                    doc, ids, DB.Electrical.ElectricalSystemType.PowerCircuit
+                    circuitable[0][1],
+                    DB.Electrical.ElectricalSystemType.PowerCircuit,
                 )
+                if system is None:
+                    raise Exception("Revit did not create a circuit from the primary connector.")
+                if len(circuitable) > 1:
+                    connectors = DB.ConnectorSet()
+                    for _, connector in circuitable[1:]:
+                        connectors.Insert(connector)
+                    system.Add(connectors)
+
+                # Mirror panel + rating only after every selected primary
+                # connector has been added successfully. The load name stays
+                # on the native circuit; member CKT_Load Name_CEDT values are
+                # deliberately preserved.
+                for el, _ in circuitable:
+                    _set_text(el, cg_collect.PARAM_PANEL, panel_name)
+                    if amps is not None:
+                        _set_double(el, cg_collect.PARAM_RATING, amps)
+
+                # rating + load name on the native circuit
+                try:
+                    if amps is not None:
+                        rp = system.get_Parameter(DB.BuiltInParameter.RBS_ELEC_CIRCUIT_RATING_PARAM)
+                        if rp and not rp.IsReadOnly:
+                            rp.Set(float(amps))
+                except Exception:
+                    pass
+                try:
+                    np = system.get_Parameter(DB.BuiltInParameter.RBS_ELEC_CIRCUIT_NAME)
+                    if np and not np.IsReadOnly and load_name:
+                        np.Set(str(load_name))
+                except Exception:
+                    pass
+                try:
+                    notes_param = system.get_Parameter(
+                        DB.BuiltInParameter.RBS_ELEC_CIRCUIT_NOTES_PARAM)
+                    if notes_param and not notes_param.IsReadOnly and schedule_notes:
+                        notes_param.Set(str(schedule_notes))
+                except Exception:
+                    pass
             except Exception as ex:
-                report["errors"].append((key, "circuit creation failed: {}".format(ex)))
-                report["lines"].append("[{}] ERROR creating circuit: {}".format(key, ex))
+                # Connector-based creation can succeed before adding the
+                # remaining connectors fails. Delete only that brand-new
+                # circuit so the surrounding creation transaction can keep
+                # processing the other groups without touching any existing
+                # circuit or using a subtransaction per group.
+                if system is not None:
+                    try:
+                        doc.Delete(system.Id)
+                    except Exception as delete_ex:
+                        # Do not commit a partial new circuit. A failure to
+                        # delete the just-created system is exceptional enough
+                        # to roll back the single creation transaction.
+                        raise Exception(
+                            "Could not clean up the partial new circuit: {}"
+                            .format(delete_ex))
+                message = "circuit creation failed: {}".format(ex)
+                report["errors"].append((key, message))
+                report["lines"].append("[{}] ERROR creating circuit: {}".format(
+                    key, message))
                 continue
 
             report["created"] += 1
@@ -231,28 +245,6 @@ def run(doc, plans, name_to_id, logger=None):
             # Preserve the original API object for the later Move Selected
             # Circuits assignment step.
             panel_bucket.append(system.Id)
-
-            # rating + load name on the native circuit
-            try:
-                if amps is not None:
-                    rp = system.get_Parameter(DB.BuiltInParameter.RBS_ELEC_CIRCUIT_RATING_PARAM)
-                    if rp and not rp.IsReadOnly:
-                        rp.Set(float(amps))
-            except Exception:
-                pass
-            try:
-                np = system.get_Parameter(DB.BuiltInParameter.RBS_ELEC_CIRCUIT_NAME)
-                if np and not np.IsReadOnly and load_name:
-                    np.Set(str(load_name))
-            except Exception:
-                pass
-            try:
-                notes_param = system.get_Parameter(
-                    DB.BuiltInParameter.RBS_ELEC_CIRCUIT_NOTES_PARAM)
-                if notes_param and not notes_param.IsReadOnly and schedule_notes:
-                    notes_param.Set(str(schedule_notes))
-            except Exception:
-                pass
 
             report["lines"].append(
                 "[{}] circuit created: {} member(s), target panel '{}', {}".format(

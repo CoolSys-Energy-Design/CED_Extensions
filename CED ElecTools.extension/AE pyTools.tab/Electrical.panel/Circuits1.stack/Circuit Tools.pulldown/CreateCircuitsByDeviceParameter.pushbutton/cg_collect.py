@@ -29,6 +29,16 @@ PARAM_RATING = "CKT_Rating_CED"
 PARAM_LOAD_NAME = "CKT_Load Name_CEDT"
 PARAM_SCHEDULE_NOTES = "CKT_Schedule Notes_CEDT"
 
+# The display-only Identity Mark column is assembled from these three values.
+# The separator name intentionally supports the project's historic
+# "Seperator" spelling as well as the conventional spelling.
+PARAM_IDENTITY_TYPE_MARK = "Identity Type Mark"
+PARAM_IDENTITY_LABEL_SEPARATOR_NAMES = (
+    "Identity Label Seperator",
+    "Identity Label Separator",
+)
+PARAM_IDENTITY_MARK = "Identity Mark"
+
 # >>> CONFIRM THESE TWO <<<  read-only Voltage / Poles columns + mismatch check.
 # You picked "specific named params"; defaulting to the generic shared params.
 # If the RCD case-controller family stores them under different names, change
@@ -293,59 +303,164 @@ def _read_rating(elem):
     return cg_core.format_amps_number(amps) if valid else ""
 
 
-def _is_already_circuited(elem):
-    """True if the element already belongs to a power circuit.
+def _connector_is_primary(connector):
+    """Return whether Revit marks this connector as the family's primary one.
 
-    Checks BOTH GetAssignedElectricalSystems and GetElectricalSystems: a load
-    reports its circuit through the former, but panelboards / distribution
-    equipment report theirs only through the latter. Either way the element is
-    not a valid new load and must not be re-circuited."""
+    ``None`` means the runtime/family cannot expose the primary metadata; the
+    caller can then use a conservative compatibility fallback.
+    """
+    try:
+        info = connector.GetMEPConnectorInfo()
+        if info is None:
+            return None
+        return bool(info.IsPrimary)
+    except Exception:
+        return None
+
+
+def _is_power_connector(connector):
+    try:
+        return (
+            connector.Domain == DB.Domain.DomainElectrical and
+            connector.ElectricalSystemType ==
+            DB.Electrical.ElectricalSystemType.PowerCircuit
+        )
+    except Exception:
+        return False
+
+
+def primary_power_connector(elem):
+    """Return this element's primary power connector, if it has one.
+
+    Circuit Grouper intentionally never falls back to a secondary connector.
+    That keeps multi-connector families from being re-circuited through a
+    connector the user did not intend this tool to touch.
+    """
     mep = getattr(elem, "MEPModel", None)
     if mep is None:
-        return False
-    for method in ("GetAssignedElectricalSystems", "GetElectricalSystems"):
-        fn = getattr(mep, method, None)
-        if not callable(fn):
-            continue
-        try:
-            systems = fn()
-        except Exception:
-            continue
-        if not systems:
-            continue
-        for s in systems:
-            try:
-                if s.SystemType == DB.Electrical.ElectricalSystemType.PowerCircuit:
-                    return True
-            except Exception:
-                return True
-    return False
-
-
-def has_power_connector(elem):
-    """True if the element has an electrical power connector (i.e. it can be
-    placed on a power circuit). This is the single definition of "circuitable"
-    used both to gather candidates here and to filter members in cg_apply."""
-    mep = getattr(elem, "MEPModel", None)
-    if mep is None:
-        return False
+        return None
     try:
         cm = mep.ConnectorManager
     except Exception:
         cm = None
     if cm is None:
-        return False
+        return None
+    fallback = None
     try:
         for conn in cm.Connectors:
-            try:
-                if conn.Domain == DB.Domain.DomainElectrical:
-                    if conn.ElectricalSystemType == DB.Electrical.ElectricalSystemType.PowerCircuit:
-                        return True
-            except Exception:
+            if not _is_power_connector(conn):
                 continue
+            if fallback is None:
+                fallback = conn
+            if _connector_is_primary(conn) is True:
+                return conn
+    except Exception:
+        pass
+    # Older Revit runtimes and some family connector implementations do not
+    # expose GetMEPConnectorInfo/IsPrimary. Keep those circuitable elements in
+    # the list rather than silently dropping them; the assigned-system check
+    # still prevents re-circuiting an occupied connector.
+    return fallback
+
+
+def _type_element(doc, elem):
+    """Return an element's type/symbol, or None when it cannot be resolved."""
+    try:
+        type_id = elem.GetTypeId()
+        if type_id is not None and type_id != DB.ElementId.InvalidElementId:
+            return doc.GetElement(type_id)
+    except Exception:
+        pass
+    try:
+        return elem.Symbol
+    except Exception:
+        return None
+
+
+def _named_value(doc, elem, names, prefer_type=False):
+    """Read the first non-blank named value from an instance/type pair.
+
+    The type mark and label separator are normally type parameters but can be
+    instance parameters in individual families. Identity Mark is read from
+    the instance only.
+    """
+    type_elem = _type_element(doc, elem)
+    sources = [type_elem, elem] if prefer_type else [elem]
+    for source in sources:
+        if source is None:
+            continue
+        for name in names:
+            value = _as_text(_lookup(source, name)).strip()
+            if value:
+                return value
+    return ""
+
+
+def _identity_mark_label(doc, elem):
+    """Concatenate identity components without inserting any extra spaces."""
+    return "".join((
+        _named_value(doc, elem, (PARAM_IDENTITY_TYPE_MARK,), prefer_type=True),
+        _named_value(doc, elem, PARAM_IDENTITY_LABEL_SEPARATOR_NAMES, prefer_type=True),
+        _named_value(doc, elem, (PARAM_IDENTITY_MARK,), prefer_type=False),
+    ))
+
+
+def primary_power_connector_is_unused(connector):
+    """Return True only when the specified primary connector has no system.
+
+    The status check is deliberately connector-specific: a system on a
+    secondary or non-power connector does not make the primary power connector
+    unavailable.  If Revit cannot report the connector's system, skip it
+    rather than risk adding it to a second circuit.
+    """
+    if connector is None:
+        return False
+    try:
+        return connector.MEPSystem is None
     except Exception:
         return False
-    return False
+
+
+def _is_already_circuited(elem):
+    """True when Revit reports the element as belonging to a power circuit.
+
+    Loads commonly expose their circuit through ``GetAssignedElectricalSystems``;
+    panel/distribution equipment can expose it through ``GetElectricalSystems``.
+    Check both APIs first, then use the primary connector as a compatibility
+    fallback for families that do not expose either MEPModel method.
+    """
+    mep = getattr(elem, "MEPModel", None)
+    if mep is not None:
+        for method in ("GetAssignedElectricalSystems", "GetElectricalSystems"):
+            fn = getattr(mep, method, None)
+            if not callable(fn):
+                continue
+            try:
+                systems = fn() or []
+            except Exception:
+                continue
+            for system in systems:
+                try:
+                    if system.SystemType == DB.Electrical.ElectricalSystemType.PowerCircuit:
+                        return True
+                except Exception:
+                    # A returned electrical system without a readable type is
+                    # safer to treat as assigned than to duplicate.
+                    return True
+
+    connector = primary_power_connector(elem)
+    return connector is not None and not primary_power_connector_is_unused(
+        connector)
+
+
+def has_power_connector(elem):
+    """True when the element has a primary electrical power connector.
+
+    When Revit cannot expose primary metadata, ``primary_power_connector``
+    returns the first power connector as a compatibility fallback. This is the
+    single definition of "circuitable" used during collection and apply.
+    """
+    return primary_power_connector(elem) is not None
 
 
 def _level_name_and_elevation(doc, elem):
@@ -524,7 +639,7 @@ def _read_space_label(doc, elem):
             except Exception:
                 sp = None
     if sp is None:
-        return "(No Space)"
+        return "-"
     number = ""
     name = ""
     try:
@@ -539,7 +654,7 @@ def _read_space_label(doc, elem):
         name = ""
     if number and name:
         return "{} - {}".format(number, name)
-    return number or name or "(No Space)"
+    return number or name or "-"
 
 
 def _family_type_label(doc, elem):
@@ -633,6 +748,8 @@ def collect_devices(doc, element_ids=None):
 
         family_type = _family_type_label(doc, elem)
         level_name, level_elev = _level_name_and_elevation(doc, elem)
+        space_label = _read_space_label(doc, elem)
+        identity_label = _identity_mark_label(doc, elem)
         # Shared parameters are the primary source. Only invoke the formatted
         # Electrical Data parser when one of those primary values is absent or
         # unusable; this keeps the fallback from adding a regex/unit scan to
@@ -653,14 +770,17 @@ def collect_devices(doc, element_ids=None):
         group_values = _collect_group_values(elem)
         group_values.pop("Family:Type", None)
         group_values["Level"] = level_name
-        # Space is a location property, offered via its own control (see
-        # cg_core.SPACE_GROUP_KEY); stored here so grouping can key on it.
-        group_values[cg_core.SPACE_GROUP_KEY] = _read_space_label(doc, elem)
+        # Space is a location property exposed as a synthetic Group By option;
+        # store it here so the regular grouping machinery can key on it.
+        group_values[cg_core.SPACE_GROUP_KEY] = space_label
+        # Identity is a display-only concatenation, stored under its synthetic
+        # grouping key so the Group By picker can use the same value.
+        group_values[cg_core.IDENTITY_GROUP_KEY] = identity_label
 
         rows.append({
             "element_id": eid,
             "family_type": family_type,
-            "identity_mark": _as_text(_lookup(elem, "Identity Mark")).strip(),
+            "identity_mark": identity_label,
             "panel": _as_text(_lookup(elem, PARAM_PANEL)).strip(),
             "circuit_number": _as_text(_lookup(elem, PARAM_CIRCUIT_NUMBER)).strip(),
             "rating": _read_rating(elem),
@@ -670,6 +790,8 @@ def collect_devices(doc, element_ids=None):
             "voltage_key": voltage_key,
             "poles_text": poles_text,
             "poles_value": poles_value,
+            "space": space_label,
+            "level": level_name,
             "elevation_text": _read_elevation(doc, elem, level_elev),
             "location": _element_xyz(elem),
             "group_values": group_values,

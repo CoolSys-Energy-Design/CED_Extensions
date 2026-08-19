@@ -9,6 +9,17 @@
   <Window.Resources>
     <BooleanToVisibilityConverter x:Key="BoolToVis"/>
 
+    <Style TargetType="{x:Type ToolTip}">
+      <Setter Property="MaxWidth" Value="420"/>
+      <Setter Property="ContentTemplate">
+        <Setter.Value>
+          <DataTemplate>
+            <TextBlock Text="{Binding}" TextWrapping="Wrap" MaxWidth="400"/>
+          </DataTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
     <!-- GroupItem is not a DataGridRow, so its hover/selection overlay must be
          supplied locally while still using the shared CED theme brushes. -->
     <Style x:Key="CircuitGroupHeaderBorder" TargetType="Border">
@@ -117,7 +128,7 @@
       <TextBlock Style="{DynamicResource CED.Text.Title}"
                  Text="Create Circuits by Device Parameter"/>
       <TextBlock Style="{DynamicResource CED.Text.Secondary}"
-                 Text="One row per circuit sets the load name (left), panel and breaker. Drag member rows onto another group to move them, or use 'New Group from Selected'. One native Revit circuit is created per group on Run."/>
+                 Text="One row per circuit sets the load name (left), panel and breaker. Drag member rows onto another group to move them, or use the selection commands. Dedicated selections create one native Revit circuit per member on Run."/>
     </StackPanel>
 
     <!-- Toolbar -->
@@ -126,29 +137,32 @@
               Name="NewGroupButton"
               Content="New Group from Selected" MinWidth="170" Margin="0,0,4,0"
               Click="new_group_clicked"/>
-      <CheckBox Style="{DynamicResource CED.Input.CheckBox}"
-                Name="GroupBySpaceCheck" Content="Group by Space"
-                VerticalAlignment="Center" Margin="12,0,0,0"
-                Checked="group_by_space_changed" Unchecked="group_by_space_changed"
-                ToolTip="Group elements by the Space they occupy (a location property) instead of by a parameter"/>
+      <Button Style="{DynamicResource CED.Button.Base}"
+              Name="DedicatedGroupButton"
+              Content="Create Dedicated" MinWidth="125" Margin="0,0,4,0"
+              ToolTip="Create one dedicated circuit row for each selected element row, preserving the source group's panel, breaker, load name, and notes."
+              Click="create_dedicated_clicked"/>
+      <Button Style="{DynamicResource CED.Button.Base}"
+              Name="BulkSetButton"
+              Content="Bulk Set Selected" MinWidth="125" Margin="0,0,4,0"
+              ToolTip="Set non-blank load name, panel, breaker, and circuit notes values for the selected circuit rows (group headers)."
+              Click="bulk_set_selected_clicked"/>
       <TextBlock Style="{DynamicResource CED.Text.Secondary}"
-                 Text="Group by:" Margin="16,0,4,0"/>
+                 Text="Group by:" Margin="16,0,4,0"
+                 VerticalAlignment="Center"/>
       <ComboBox Style="{DynamicResource CED.Input.ComboBox.Flat}"
                 Name="GroupByCombo" Width="220" VerticalAlignment="Center"
                 ItemsSource="{Binding GroupParamOptions}"
                 SelectionChanged="group_param_changed"
-                ToolTip="Parameter used to group elements into circuits"/>
+                ToolTip="Group by a parameter, Space, or the concatenated Identity value"/>
       <TextBlock Style="{DynamicResource CED.Text.Secondary}"
-                 Text="Name by:" Margin="16,0,4,0"/>
+                 Text="Name by:" Margin="16,0,4,0"
+                 VerticalAlignment="Center"/>
       <ComboBox Style="{DynamicResource CED.Input.ComboBox.Flat}"
                 Name="NameByCombo" Width="220" VerticalAlignment="Center"
                 ItemsSource="{Binding NameParamOptions}"
                 SelectionChanged="name_param_changed"
                 ToolTip="Parameter used to seed each circuit's Load Name (the name set on the created Revit circuit). Switching it re-seeds every name; you can still edit any name by hand."/>
-      <TextBlock Name="SummaryText" Style="{DynamicResource CED.Text.Secondary}"
-                 Margin="16,0,0,0" Text="Ready"/>
-      <TextBlock Name="GroupSelectionText" Style="{DynamicResource CED.Text.Secondary}"
-                 Margin="12,0,0,0" Text="No groups selected"/>
     </StackPanel>
 
     <!-- Grid -->
@@ -164,6 +178,7 @@
               SelectionChanged="grid_selection_changed"
               GridLinesVisibility="Horizontal"
               RowHeaderWidth="0"
+              CanUserResizeColumns="True"
               Style="{DynamicResource CED.DataGrid.Base}"
               RowStyle="{DynamicResource CED.DataGrid.Row.Display.NeutralSelection}"
               CellStyle="{DynamicResource CED.DataGrid.Cell.DisplayReadonly.NeutralSelection}"
@@ -177,6 +192,7 @@
               VirtualizingPanel.CacheLength="2"
               VirtualizingPanel.CacheLengthUnit="Page"
               ScrollViewer.CanContentScroll="True"
+              ScrollViewer.HorizontalScrollBarVisibility="Auto"
               AllowDrop="True"
               PreviewMouseLeftButtonDown="grid_mouse_down"
               PreviewMouseLeftButtonUp="grid_mouse_up"
@@ -188,9 +204,8 @@
              header and validation pane, not a second visual grouping level.
              Custom GroupItem template
              (a stretching header + ItemsPresenter) instead of an Expander, so
-             the header fills the full width and the '*' status column can push
-             the status text to the right (under the Status column) rather than
-             colliding with the 'A' amps label. GroupItem DataContext is the
+             the header fills the full width and the status text remains
+             left-aligned in its available area. GroupItem DataContext is the
              CollectionViewGroup; Name = the GroupVM. -->
         <GroupStyle>
           <GroupStyle.ContainerStyle>
@@ -208,14 +223,14 @@
                           <Grid.ColumnDefinitions>
                           <ColumnDefinition Width="26"/>
                             <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="180"/>
+                            <ColumnDefinition Width="210"/>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="145"/>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="72"/>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="190"/>
+                            <ColumnDefinition Width="65"/>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                           </Grid.ColumnDefinitions>
@@ -239,7 +254,7 @@
                           <TextBox Grid.Column="2"
                                    Style="{DynamicResource CED.Input.TextBox}"
                                    Text="{Binding load_name, Mode=OneWay}"
-                                   ToolTip="Load name for this circuit (set on the created Revit circuit only; the members' CKT_Load Name_CEDT is never modified)"
+                                   ToolTip="Load name for this circuit (set on the created Revit circuit only; the members' load-name parameter is never modified)"
                                    FontWeight="Bold"
                                    VerticalAlignment="Center"
                                    LostFocus="group_load_name_changed"/>
@@ -295,7 +310,7 @@
                                       ToolTip="{Binding rating_tooltip}"/>
 
                           <TextBlock Grid.Column="11"
-                                     HorizontalAlignment="Right"
+                                     HorizontalAlignment="Left"
                                      Margin="12,0,4,0"
                                      TextWrapping="Wrap"
                                      VerticalAlignment="Center"
@@ -341,16 +356,22 @@
           </DataGridTemplateColumn.CellTemplate>
         </DataGridTemplateColumn>
 
-        <DataGridTextColumn Header="Family / Type" Binding="{Binding family_type}" Width="*"/>
-        <DataGridTextColumn Header="Identity Mark" Binding="{Binding identity_mark}" Width="140"/>
-        <DataGridTextColumn Header="Voltage" Binding="{Binding voltage_text}" Width="80"/>
-        <DataGridTextColumn Header="Poles" Binding="{Binding poles_text}" Width="60"/>
-        <DataGridTextColumn Header="Elev. from Level" Binding="{Binding elevation_text}" Width="110"/>
+        <DataGridTextColumn Header="Family / Type" Binding="{Binding family_type}" Width="270" MinWidth="270"/>
+        <DataGridTextColumn Header="Identity Mark" Binding="{Binding identity_mark}" Width="150" MinWidth="150"/>
+        <DataGridTextColumn Header="Voltage" Binding="{Binding voltage_text}" Width="85" MinWidth="85"/>
+        <DataGridTextColumn Header="Poles" Binding="{Binding poles_text}" Width="65" MinWidth="65"/>
+        <DataGridTextColumn Header="Space" Binding="{Binding space}" Width="140" MinWidth="140"/>
+        <DataGridTextColumn Header="Level" Binding="{Binding level}" Width="85" MinWidth="85"/>
+        <DataGridTextColumn Header="Elev. from Level" Binding="{Binding elevation_text}" Width="125" MinWidth="125"/>
 
-        <DataGridTemplateColumn Header="Status" Width="170">
+        <DataGridTemplateColumn Header="Status" Width="*" MinWidth="180">
           <DataGridTemplateColumn.CellTemplate>
             <DataTemplate>
-              <TextBlock Text="{Binding status}" Foreground="{Binding status_color}" TextWrapping="Wrap"/>
+              <TextBlock Text="{Binding status}"
+                         Foreground="{Binding status_color}"
+                         TextWrapping="Wrap"
+                         TextAlignment="Left"
+                         HorizontalAlignment="Left"/>
             </DataTemplate>
           </DataGridTemplateColumn.CellTemplate>
         </DataGridTemplateColumn>
@@ -370,12 +391,36 @@
 
     <!-- Footer -->
     <Grid Grid.Row="4" Margin="0,10,0,0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto"/>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="Auto"/>
+      </Grid.ColumnDefinitions>
       <TextBlock Name="GridSelectionText"
                  Style="{DynamicResource CED.Text.Secondary}"
+                 Grid.Column="0"
                  HorizontalAlignment="Left"
                  VerticalAlignment="Center"
-                 Text="0 row(s) selected"/>
-      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                 Text="0 element row(s) selected"/>
+      <Border Grid.Column="1"
+              Margin="24,0,0,0"
+              Padding="16,0,0,0"
+              BorderBrush="{DynamicResource CED.Brush.Border}"
+              BorderThickness="1,0,0,0"
+              VerticalAlignment="Stretch">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+          <TextBlock Name="SummaryText"
+                     Style="{DynamicResource CED.Text.Secondary}"
+                     VerticalAlignment="Center"
+                     Text="Ready"/>
+          <TextBlock Name="GroupSelectionText"
+                     Style="{DynamicResource CED.Text.Secondary}"
+                     Margin="12,0,0,0"
+                     VerticalAlignment="Center"
+                     Text="No circuit rows selected"/>
+        </StackPanel>
+      </Border>
+      <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
         <Button Content="Cancel" Style="{DynamicResource CED.Button.Base}"
                 Click="cancel_clicked"/>
         <Button Content="Run Circuiting" MinWidth="130"

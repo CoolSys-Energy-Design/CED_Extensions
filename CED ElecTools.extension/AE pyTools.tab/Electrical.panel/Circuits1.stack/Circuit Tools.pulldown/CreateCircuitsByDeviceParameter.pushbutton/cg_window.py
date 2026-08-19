@@ -55,6 +55,7 @@ import cg_core
 
 THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 _XAML = os.path.join(THIS_DIR, "CircuitGrouperWindow.xaml")
+_BULK_XAML = os.path.join(THIS_DIR, "BulkCircuitValuesWindow.xaml")
 
 LIB_ROOT = ui_pathing.ensure_lib_root_on_syspath(THIS_DIR)
 if not LIB_ROOT or not os.path.isdir(LIB_ROOT):
@@ -189,6 +190,8 @@ class RowVM(_Notifier):
         self.voltage_key = data.get("voltage_key", None)
         self.poles_text = data.get("poles_text", "") or ""
         self.poles_value = data.get("poles_value", None)
+        self.space = data.get("space", "") or ""
+        self.level = data.get("level", "") or ""
         self.elevation_text = data.get("elevation_text", "") or ""
         self.location = data.get("location", None)
         self.group_values = data.get("group_values", {}) or {}
@@ -225,6 +228,69 @@ class RowVM(_Notifier):
         self.group_key = group.key
         self.notify("group")
         self.notify("group_key")
+
+
+class BulkCircuitValuesWindow(CEDWindowBase):
+    """Small modal editor used to apply optional values to selected groups."""
+
+    def __init__(self, panel_options, rating_options, owner=None):
+        CEDWindowBase.__init__(self, xaml_source=_BULK_XAML, theme_aware=True)
+        self.PanelOptions = List[str]()
+        self.PanelOptions.Add("")
+        for value in panel_options or []:
+            value = str(value)
+            if value and value not in list(self.PanelOptions):
+                self.PanelOptions.Add(value)
+        self.RatingOptions = List[str]()
+        for value in rating_options or []:
+            value = str(value)
+            if value and value not in list(self.RatingOptions):
+                self.RatingOptions.Add(value)
+        self.DataContext = self
+        self.BulkLoadNameTextBox = self.FindName("BulkLoadNameTextBox")
+        self.BulkPanelCombo = self.FindName("BulkPanelCombo")
+        self.BulkRatingCombo = self.FindName("BulkRatingCombo")
+        self.BulkNotesTextBox = self.FindName("BulkNotesTextBox")
+        self.BulkIncrementCheck = self.FindName("BulkIncrementCheck")
+        self.result_values = None
+        self.reset_clicked(None, None)
+        if owner is not None:
+            try:
+                self.Owner = owner
+            except Exception:
+                pass
+
+    @staticmethod
+    def _text(control):
+        try:
+            return str(control.Text or "").strip()
+        except Exception:
+            return ""
+
+    def reset_clicked(self, sender, args):
+        self.BulkLoadNameTextBox.Text = ""
+        self.BulkPanelCombo.SelectedIndex = -1
+        self.BulkPanelCombo.Text = ""
+        self.BulkRatingCombo.SelectedIndex = -1
+        self.BulkRatingCombo.Text = ""
+        self.BulkNotesTextBox.Text = ""
+        self.BulkIncrementCheck.IsChecked = False
+
+    def apply_clicked(self, sender, args):
+        self.result_values = {
+            "load_name": self._text(self.BulkLoadNameTextBox),
+            "panel": self._text(self.BulkPanelCombo),
+            "rating": self._text(self.BulkRatingCombo),
+            "schedule_notes": self._text(self.BulkNotesTextBox),
+            "increment_load_name": bool(self.BulkIncrementCheck.IsChecked),
+        }
+        self.DialogResult = True
+        self.Close()
+
+    def cancel_clicked(self, sender, args):
+        self.result_values = None
+        self.DialogResult = False
+        self.Close()
 
 
 # ---------------------------------------------------------------------------
@@ -291,10 +357,9 @@ class CircuitGrouperWindow(CEDWindowBase):
                       else (group_param_options or []))
         self._name_param = default_name_param or (
             _name_opts[0] if _name_opts else "")
-        # when True, group on the Space property instead of the parameter combo
-        self._group_by_space = False
-        # the key currently driving grouping (a parameter name, or SPACE_GROUP_KEY)
-        self._active_key = self._group_param
+        # The picker stores its visible option text; synthetic options map to
+        # the collector's per-row grouping keys before grouping is rebuilt.
+        self._active_key = self._group_key_for_option(self._group_param)
 
         # build the row VMs, then group them by the chosen parameter
         self._rows = []
@@ -305,7 +370,7 @@ class CircuitGrouperWindow(CEDWindowBase):
             vm.row_order = row_order
             self._rows.append(vm)
         self._groups = []
-        self._rebuild_groups(self._group_param)
+        self._rebuild_groups(self._active_key)
 
         self.DataContext = self
 
@@ -313,7 +378,6 @@ class CircuitGrouperWindow(CEDWindowBase):
         self.SummaryText = self.FindName("SummaryText")
         self.ValidationText = self.FindName("ValidationText")
         self.GroupByCombo = self.FindName("GroupByCombo")
-        self.GroupBySpaceCheck = self.FindName("GroupBySpaceCheck")
         self.NameByCombo = self.FindName("NameByCombo")
         self.GroupSelectionText = self.FindName("GroupSelectionText")
         self.GridSelectionText = self.FindName("GridSelectionText")
@@ -353,6 +417,15 @@ class CircuitGrouperWindow(CEDWindowBase):
         value = self.FindResource(key)
         return value if value is not None else fallback
 
+    @staticmethod
+    def _group_key_for_option(option):
+        """Translate a visible Group By option into a row-data key."""
+        if option == cg_core.SPACE_GROUP_OPTION:
+            return cg_core.SPACE_GROUP_KEY
+        if option == cg_core.IDENTITY_GROUP_OPTION:
+            return cg_core.IDENTITY_GROUP_KEY
+        return option
+
     def _reindex_members(self):
         """Build the group-to-member index once for validation and commands."""
         members_by_group = {}
@@ -363,8 +436,8 @@ class CircuitGrouperWindow(CEDWindowBase):
 
     def _rebuild_groups(self, param_name):
         """(Re)build the GroupVMs by grouping every row on ``param_name`` (a
-        parameter name or cg_core.SPACE_GROUP_KEY). Pure model work - does not
-        touch the view (callers refresh)."""
+        parameter name or a synthetic Space/Identity key). Pure model work -
+        does not touch the view (callers refresh)."""
         self._active_key = param_name
         old_expansion = {}
         for old_group in self._groups:
@@ -531,25 +604,14 @@ class CircuitGrouperWindow(CEDWindowBase):
             self._end_view_batch()
 
     def group_param_changed(self, sender, args):
-        if self._suppress_regroup or self._group_by_space:
+        if self._suppress_regroup:
             return
         item = sender.SelectedItem
         value = str(item) if item is not None else ""
         if not value or value == self._group_param:
             return
         self._group_param = value
-        self._apply_grouping(value)
-
-    def group_by_space_changed(self, sender, args):
-        """Toggle grouping between the Space property and the parameter combo.
-        Space is a location property, not a parameter, so it is driven from
-        this separate control; the parameter combo is disabled while it is on."""
-        if self._suppress_regroup:
-            return
-        self._group_by_space = bool(sender.IsChecked)
-        if self.GroupByCombo is not None:
-            self.GroupByCombo.IsEnabled = not self._group_by_space
-        key = cg_core.SPACE_GROUP_KEY if self._group_by_space else self._group_param
+        key = self._group_key_for_option(value)
         if key and key != self._active_key:
             self._apply_grouping(key)
 
@@ -655,6 +717,7 @@ class CircuitGrouperWindow(CEDWindowBase):
             self._perform_view_refresh()
 
     def _selected_groups(self):
+        """Return selected circuit rows represented by GroupVM headers."""
         return [group for group in self._groups if group.is_selected]
 
     def _clear_grid_selection(self):
@@ -681,7 +744,7 @@ class CircuitGrouperWindow(CEDWindowBase):
             count = len(list(self.Grid.SelectedItems or []))
         except Exception:
             pass
-        self.GridSelectionText.Text = "{} row(s) selected".format(count)
+        self.GridSelectionText.Text = "{} element row(s) selected".format(count)
 
     def grid_selection_changed(self, sender, args):
         """Keep the visible member-row selection count synchronized."""
@@ -715,9 +778,9 @@ class CircuitGrouperWindow(CEDWindowBase):
             return
         count = len(self._selected_groups())
         if count:
-            self.GroupSelectionText.Text = "{} group(s) selected".format(count)
+            self.GroupSelectionText.Text = "{} circuit row(s) selected".format(count)
         else:
-            self.GroupSelectionText.Text = "No groups selected"
+            self.GroupSelectionText.Text = "No circuit rows selected"
 
     def _group_header_interactive_source(self, source):
         """Return True when a header click originated in an input/control."""
@@ -786,7 +849,9 @@ class CircuitGrouperWindow(CEDWindowBase):
         node = source
         while node is not None:
             if isinstance(node, Button):
-                return getattr(node, "Name", "") == "NewGroupButton"
+                return getattr(node, "Name", "") in (
+                    "NewGroupButton", "DedicatedGroupButton", "BulkSetButton",
+                )
             try:
                 node = VisualTreeHelper.GetParent(node)
             except Exception:
@@ -839,7 +904,7 @@ class CircuitGrouperWindow(CEDWindowBase):
             # per-row status
             for r in members:
                 if r.already_circuited:
-                    r.set_status("Already circuited", self._status_brushes["info"])
+                    r.set_status("Element already circuited", self._status_brushes["info"])
                 elif not r.include:
                     r.set_status("Excluded", self._status_brushes["off"])
                 else:
@@ -848,7 +913,7 @@ class CircuitGrouperWindow(CEDWindowBase):
             eff = cg_core.effective_rows(members)
             if not eff:
                 if members and all(r.already_circuited for r in members):
-                    g.set_status("Already circuited", self._status_brushes["info"])
+                    g.set_status("Element already circuited", self._status_brushes["info"])
                 else:
                     g.set_status("No items selected", self._status_brushes["off"])
                 g.set_warning(False)
@@ -1003,8 +1068,117 @@ class CircuitGrouperWindow(CEDWindowBase):
             self._end_view_batch()
 
     # -- toolbar ----------------------------------------------------------
+    def _selected_rows(self):
+        """Return selected element/member rows from the DataGrid."""
+        try:
+            selected = list(self.Grid.SelectedItems or [])
+        except Exception:
+            selected = []
+        return [item for item in selected if isinstance(item, RowVM)]
+
+    def bulk_set_selected_clicked(self, sender, args):
+        # Circuit rows are represented by selected GroupVM headers, not by
+        # DataGrid.SelectedItems (which contains element/member rows).
+        groups = self._selected_groups()
+        if not groups:
+            forms.alert("Select one or more circuit rows (group headers) first.",
+                        title="Bulk Set Selected")
+            return
+
+        dialog = BulkCircuitValuesWindow(self.PanelOptions, self.RatingOptions,
+                                         owner=self)
+        dialog.show_dialog()
+        values = dialog.result_values
+        if values is None:
+            return
+
+        load_name = values.get("load_name", "")
+        panel = values.get("panel", "")
+        rating = values.get("rating", "")
+        notes = values.get("schedule_notes", "")
+        increment = bool(values.get("increment_load_name", False))
+        members_by_group = self._members_map()
+
+        self._begin_view_batch()
+        try:
+            for index, group in enumerate(groups, 1):
+                if load_name:
+                    group.load_name = (
+                        "{} {}".format(load_name, index)
+                        if increment else load_name
+                    )
+                    group.notify("load_name")
+                if panel:
+                    compatible = self._compatible_panel_names(
+                        members_by_group.get(group, []))
+                    if panel in compatible:
+                        group.panel = panel
+                        group.panel_note = ""
+                    else:
+                        group.panel = ""
+                        group.panel_note = (
+                            "Bulk panel '{}' is incompatible with the group's "
+                            "voltage/poles and was cleared."
+                        ).format(panel)
+                    group.notify("panel")
+                    group.notify("panel_note")
+                if rating:
+                    group.rating = rating
+                    group.notify("rating")
+                if notes:
+                    group.schedule_notes = notes
+                    group.notify("schedule_notes")
+            self._refresh_group_panel_options(members_by_group)
+            self._revalidate()
+        finally:
+            self._end_view_batch()
+
+    def create_dedicated_clicked(self, sender, args):
+        selected = self._selected_rows()
+        if not selected:
+            forms.alert("Select one or more member rows first.",
+                        title="Create Dedicated")
+            return
+
+        existing_keys = self._all_group_keys()
+        self._begin_view_batch()
+        try:
+            # Each selected element gets its own GroupVM/circuit row. Capture
+            # the source group before moving the row so all circuit inputs are
+            # copied exactly, even when several selected members share a group.
+            for row in selected:
+                source = row.group
+                if source is None:
+                    continue
+                stem = str(source.key or "Group").strip() or "Group"
+                key = "{} - DEDICATED".format(stem)
+                suffix = 2
+                while key in existing_keys:
+                    key = "{} - DEDICATED {}".format(stem, suffix)
+                    suffix += 1
+                existing_keys.add(key)
+
+                dedicated = GroupVM(key, status_brushes=self._status_brushes)
+                # Preserve every circuit input from the source group. The key
+                # contains DEDICATED, so _build_plans will make one native
+                # circuit per selected member while retaining these inputs.
+                dedicated.load_name = source.load_name
+                dedicated.panel = source.panel
+                dedicated.rating = source.rating
+                dedicated.schedule_notes = source.schedule_notes
+                dedicated.panel_note = source.panel_note
+                dedicated.set_panel_options(list(source.panel_options or []))
+                self._groups.append(dedicated)
+                row.move_to(dedicated)
+
+            self._reindex_members()
+            self._refresh_view()
+            self._revalidate()
+        finally:
+            self._end_view_batch()
+
     def new_group_clicked(self, sender, args):
-        selected = list(self.Grid.SelectedItems or [])
+        selected = self._selected_rows()
         if not selected:
             forms.alert("Select one or more rows first.", title="Create Circuits by Device Parameter")
             return

@@ -117,7 +117,7 @@ def run():
     check("name fallback on no stem", cg_core.name_from_values(["AAA", "BBB"], fallback="R9") == "R9")
     check("name empty no fallback", cg_core.name_from_values([]) == "")
 
-    # --- Space is offered via its own control, never the parameter combo ---
+    # --- Synthetic Space/Identity values are not raw parameter options ---
     space_rows = [
         {"group_values": {"Identity Mark": "RA-1", "Space": "101 - Office"}},
         {"group_values": {"Identity Mark": "RA-2", "Space": "102 - Lab"}},
@@ -125,6 +125,27 @@ def run():
     space_opts = cg_core.common_group_params(space_rows)
     check("space excluded from param combo", cg_core.SPACE_GROUP_KEY not in space_opts)
     check("space rows keep real params", "Identity Mark" in space_opts)
+    synthetic_rows = [
+        {"group_values": {
+            cg_core.SPACE_GROUP_KEY: "101 - Office",
+            cg_core.IDENTITY_GROUP_KEY: "RA-1",
+            "Level": "L1",
+        }},
+        {"group_values": {
+            cg_core.SPACE_GROUP_KEY: "102 - Lab",
+            cg_core.IDENTITY_GROUP_KEY: "RA-2",
+            "Level": "L1",
+        }},
+    ]
+    synthetic_opts = cg_core.common_group_params(synthetic_rows)
+    check("identity synthetic key excluded from params",
+          cg_core.IDENTITY_GROUP_KEY not in synthetic_opts)
+    check("identity special option is preferred",
+          cg_core.default_group_param([
+              cg_core.SPACE_GROUP_OPTION,
+              cg_core.IDENTITY_GROUP_OPTION,
+              "Level",
+          ]) == cg_core.IDENTITY_GROUP_OPTION)
 
     # --- voltage snapping: standard-or-reject (input already volt-converted) ---
     check("snap 119.98 -> 120", cg_core.snap_voltage(119.98) == 120)
