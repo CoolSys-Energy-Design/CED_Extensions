@@ -16,9 +16,16 @@ Everything is READ-ONLY: never start transactions, never save, never sync either
    - Skip comparison (Part 1 audit only)
 2. **Prompt for the SUSPECT project** (the one being audited). Same options. The Suspect is
    usually the active document.
-3. **Prompt for the report save location**: ask the user where to save the PDF report(s) and ask
-   them to paste the full folder path in chat. Verify the folder exists before Phase 1; if they
-   don't provide one, fall back to the Desktop (check for OneDrive redirect).
+3. **Prompt for the report save location.** The DEFAULT (recommended option) is the shared Teams
+   library folder, built portably from the current user's profile — never hardcode a username:
+   `%USERPROFILE%\CoolSys Inc\Teams-Coolsys - Tool Development - Documents\MEP AUTOMATION\HEB Project Audits`
+   (resolve `%USERPROFILE%` / `$env:USERPROFILE` at runtime). Offer it as the default; the user
+   may override by pasting a different full folder path in chat. Before Phase 1:
+   - Verify the parent library (`...\MEP AUTOMATION`) exists — it only exists if this user has
+     synced the Teams-Coolsys Tool Development library. Create the `HEB Project Audits` leaf if
+     missing.
+   - If the library is NOT synced on this machine, say so and fall back to a pasted path or the
+     Desktop (check for OneDrive redirect: `%USERPROFILE%\OneDrive - CoolSys Inc\Desktop`).
 4. **Prompt for extra QC checks**: ask "Any additional QC checks to add for this run?" (free-text
    via Other). If the user adds any:
    - Run them this session as additional audit steps, AND
@@ -99,8 +106,8 @@ For each headline finding, export the sheet from BOTH models and present side-by
 
 ## Phase 4 — Deliverables
 
-Two PDFs saved to the folder the user provided in Phase 0 step 3 (fallback: Desktop — check for
-OneDrive redirect: `C:\Users\<user>\OneDrive - CoolSys Inc\Desktop`):
+PDFs saved to the folder resolved in Phase 0 step 3 (default: the shared Teams library
+`%USERPROFILE%\CoolSys Inc\Teams-Coolsys - Tool Development - Documents\MEP AUTOMATION\HEB Project Audits`):
 - **"<Suspect> Audit Part 1.pdf"** — suspect-project audit with full ID/sheet tables.
 - **"<Suspect> Audit Part 2.pdf"** — standards comparison with side-by-side screenshots and a
   separate expected-building-differences table.
