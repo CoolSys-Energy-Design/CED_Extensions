@@ -1,0 +1,15 @@
+title: >-
+  Tag by
+   Example
+
+tooltip: >-
+  Select tags on an existing component and create matching tags
+  compatible family instances while preserving host-relative placement.
+
+author: CoolSys
+
+engine:
+  persistent: true
+  full_frame: false
+
+context: doc-project

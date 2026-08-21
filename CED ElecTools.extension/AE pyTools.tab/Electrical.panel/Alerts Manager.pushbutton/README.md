@@ -9,6 +9,9 @@ It lets users inspect alert records by circuit, select related model elements, a
 ### Header
 - Title and active document label
 - Count of circuits currently carrying alert payload
+- `Grid Display` toggle for switching between the all-alerts grid and by-circuit display
+- `Show Hidden` controls whether hidden rows appear in the all-alerts display
+- Header summary shows total `Alerts` and `Hidden` counts independently of `Show Hidden`
 
 ### Left Pane: Circuit List
 - Single-selection list of circuits with alerts
@@ -25,6 +28,12 @@ It lets users inspect alert records by circuit, select related model elements, a
   - Group
   - Alert ID
   - Message
+
+### All Alerts Display
+- Replaces the left circuit picker and right alert tabs with one flat, single-select grid.
+- Columns include Panel, Circuit, Load Name, Severity, Group, Alert ID, and Message.
+- Click any column header to sort the grid.
+- Hidden rows remain available for review in a subdued/italic style when shown.
 
 ## Bottom Command Area
 

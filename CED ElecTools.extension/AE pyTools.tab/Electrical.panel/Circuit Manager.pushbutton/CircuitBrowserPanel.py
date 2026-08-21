@@ -23,15 +23,18 @@ from System import EventHandler, Action
 from System.Collections.Generic import List
 from System.Collections.ObjectModel import ObservableCollection
 
-from System.Windows import GridLength, GridUnitType, Visibility
+from System.Windows import GridLength, GridUnitType, HorizontalAlignment, Thickness, Visibility
 from System.Windows.Controls import (
     ContextMenu,
+    ColumnDefinition,
+    Grid,
     MenuItem,
     Separator,
     DataGridRow,
     ListViewItem,
     Button,
     DataGridTextColumn,
+    RowDefinition,
     ScrollViewer,
     ScrollBarVisibility,
 )
@@ -783,6 +786,7 @@ class CircuitListItem(object):
                 device_count = int(count_param.AsInteger() or 0)
         except Exception:
             device_count = 0
+        self.sort_device_count = device_count
         self.device_line = "# Devices: {}".format(device_count)
 
         load_current = _lookup_param_value(circuit, "Circuit Load Current_CED")
@@ -2553,10 +2557,20 @@ class CircuitBrowserPanel(forms.WPFPanel):
     panel_title = TITLE
     panel_source = os.path.abspath(os.path.join(_THIS_DIR, "CircuitBrowserPanel.xaml"))
 
+    # Responsive dock-width thresholds.  The card stacks its labels before the
+    # toolbar needs to give up space, then the mini toolbar removes low-priority
+    # controls so the Actions button remains usable at the smallest widths.
+    _COMPACT_TOOLBAR_BREAKPOINT = 330.0
+    _ACTION_CARD_STACK_BREAKPOINT = 300.0
+    _MINI_TOOLBAR_BREAKPOINT = 270.0
+
     _instance = None
     _operation_gateway = None
 
     def __init__(self):
+        self._compact_toolbar_mode = False
+        self._action_card_stacked = False
+        self._mini_toolbar_mode = False
         forms.WPFPanel.__init__(self)
         self._theme_mode = CURRENT_THEME_MODE
         self._accent_mode = CURRENT_ACCENT_MODE
@@ -2627,6 +2641,7 @@ class CircuitBrowserPanel(forms.WPFPanel):
         self._status = self.FindName("StatusText")
         self._doc_name_text = self.FindName("DocumentNameText")
         self._toggle = self.FindName("ToggleViewButton")
+        self._check_all_button = self.FindName("CheckAllButton")
         self._calc_preview_toggle = self.FindName("CalcPreviewToggle")
         self._calc_preview_state_text = self.FindName("CalcPreviewStateText")
         self._filter_button = self.FindName("FilterButton")
@@ -2635,6 +2650,21 @@ class CircuitBrowserPanel(forms.WPFPanel):
         self._toggle_list_icon = self.FindName("ToggleListIcon")
         self._toggle_card_icon = self.FindName("ToggleCardIcon")
         self._dock_frame_host = self.FindName("DockFrameHost")
+        self._actions_label = self.FindName("ActionsLabel")
+        self._actions_bolt_icon = self.FindName("ActionsBoltIcon")
+        self._select_equipment_button = self.FindName("SelectEquipmentButton")
+        self._select_circuits_button = self.FindName("SelectCircuitsButton")
+        self._select_downstream_button = self.FindName("SelectDownstreamButton")
+        self._action_card_border = self.FindName("ActionCardBorder")
+        self._select_in_model_row = self.FindName("SelectInModelRow")
+        self._select_in_model_label = self.FindName("SelectInModelLabel")
+        self._select_in_model_controls = self.FindName("SelectInModelControls")
+        self._calc_preview_row = self.FindName("CalcPreviewRow")
+        self._calc_preview_label = self.FindName("CalcPreviewLabel")
+        self._calc_preview_controls = self.FindName("CalcPreviewControls")
+        self._calculate_row = self.FindName("CalculateRow")
+        self._calculate_label = self.FindName("CalculateLabel")
+        self._calculate_controls = self.FindName("CalculateControls")
         self._apply_revit_frame_background(is_dark=False)
         self._surface_item_style = _try_find_resource(self, "CED.ListViewItem.SurfaceBehavior")
         self._apply_list_interaction_mode()
@@ -2687,6 +2717,135 @@ class CircuitBrowserPanel(forms.WPFPanel):
                 self._dock_frame_host.Background = brush
         except Exception:
             pass
+
+    def dock_frame_size_changed(self, sender, args):
+        """Switch toolbar/card labels to compact variants when the pane narrows."""
+        try:
+            width = float(getattr(sender, "ActualWidth", 0.0) or 0.0)
+        except Exception:
+            width = 0.0
+        if width <= 0.0:
+            return
+        self._apply_compact_toolbar_mode(width < self._COMPACT_TOOLBAR_BREAKPOINT)
+        self._apply_action_card_layout(width < self._ACTION_CARD_STACK_BREAKPOINT)
+        self._apply_mini_toolbar_mode(width < self._MINI_TOOLBAR_BREAKPOINT)
+
+    def _apply_action_card_layout(self, stacked):
+        """Put action labels above their controls when the dock is narrow."""
+        stacked = bool(stacked)
+        rows = (
+            (
+                getattr(self, "_select_in_model_row", None),
+                getattr(self, "_select_in_model_label", None),
+                getattr(self, "_select_in_model_controls", None),
+            ),
+            (
+                getattr(self, "_calc_preview_row", None),
+                getattr(self, "_calc_preview_label", None),
+                getattr(self, "_calc_preview_controls", None),
+            ),
+            (
+                getattr(self, "_calculate_row", None),
+                getattr(self, "_calculate_label", None),
+                getattr(self, "_calculate_controls", None),
+            ),
+        )
+        if any(item is None for row in rows for item in row):
+            return
+        if stacked == bool(self._action_card_stacked):
+            return
+
+        self._action_card_stacked = stacked
+        for row, label, controls in rows:
+            row.RowDefinitions.Clear()
+            row.ColumnDefinitions.Clear()
+            if stacked:
+                column = ColumnDefinition()
+                column.Width = GridLength(1, GridUnitType.Star)
+                row.ColumnDefinitions.Add(column)
+                for _index in range(2):
+                    row_definition = RowDefinition()
+                    row_definition.Height = GridLength(1, GridUnitType.Auto)
+                    row.RowDefinitions.Add(row_definition)
+                Grid.SetRow(label, 0)
+                Grid.SetColumn(label, 0)
+                Grid.SetRow(controls, 1)
+                Grid.SetColumn(controls, 0)
+                controls.Margin = Thickness(0, 2, 0, 0)
+            else:
+                label_column = ColumnDefinition()
+                label_column.Width = GridLength(1, GridUnitType.Auto)
+                label_column.SharedSizeGroup = "ActionLabelCol"
+                controls_column = ColumnDefinition()
+                controls_column.Width = GridLength(1, GridUnitType.Auto)
+                row.ColumnDefinitions.Add(label_column)
+                row.ColumnDefinitions.Add(controls_column)
+                Grid.SetRow(label, 0)
+                Grid.SetColumn(label, 0)
+                Grid.SetRow(controls, 0)
+                Grid.SetColumn(controls, 1)
+                controls.Margin = Thickness(6, 0, 0, 0)
+
+        if self._action_card_border is not None:
+            self._action_card_border.HorizontalAlignment = (
+                HorizontalAlignment.Stretch if stacked else HorizontalAlignment.Left
+            )
+
+    def _apply_mini_toolbar_mode(self, mini):
+        """Hide secondary toolbar controls below the smallest dock threshold."""
+        mini = bool(mini)
+        check_all = getattr(self, "_check_all_button", None)
+        toggle = getattr(self, "_toggle", None)
+        if check_all is None or toggle is None:
+            return
+        if mini == bool(self._mini_toolbar_mode):
+            return
+
+        self._mini_toolbar_mode = mini
+        visibility = Visibility.Collapsed if mini else Visibility.Visible
+        check_all.Visibility = visibility
+        toggle.Visibility = visibility
+
+    def _apply_compact_toolbar_mode(self, compact):
+        compact = bool(compact)
+        if not all(hasattr(self, name) for name in (
+            "_actions_label",
+            "_actions_bolt_icon",
+            "_select_equipment_button",
+            "_select_circuits_button",
+            "_select_downstream_button",
+        )):
+            return
+        if compact == bool(self._compact_toolbar_mode):
+            return
+        controls = (
+            self._actions_label,
+            self._actions_bolt_icon,
+            self._select_equipment_button,
+            self._select_circuits_button,
+            self._select_downstream_button,
+        )
+        if any(control is None for control in controls):
+            return
+
+        self._compact_toolbar_mode = compact
+        self._actions_label.Visibility = Visibility.Collapsed if compact else Visibility.Visible
+        self._actions_bolt_icon.Visibility = Visibility.Visible
+
+        if compact:
+            self._select_equipment_button.Content = "Pnl"
+            self._select_circuits_button.Content = "Ckt"
+            self._select_downstream_button.Content = "Dev"
+            self._select_equipment_button.Width = 42
+            self._select_circuits_button.Width = 42
+            self._select_downstream_button.Width = 42
+        else:
+            self._select_equipment_button.Content = "Panel"
+            self._select_circuits_button.Content = "Circuit"
+            self._select_downstream_button.Content = "Device"
+            self._select_equipment_button.Width = 52
+            self._select_circuits_button.Width = 56
+            self._select_downstream_button.Width = 54
 
     def _ensure_theme_bridge(self):
         if self._theme_bridge is None:
@@ -3062,8 +3221,9 @@ class CircuitBrowserPanel(forms.WPFPanel):
             or self._checked_only
             or (default_active != set(self._active_type_filters))
         )
-        primary = _try_find_resource(self, "CED.Brush.Accent")
+        primary = _try_find_resource(self, "CED.Brush.InputControlChecked")
         button_bg = _try_find_resource(self, "CED.Brush.ButtonDefaultBackground")
+        button_border = _try_find_resource(self, "CED.Brush.Border")
         foreground_on_accent = _try_find_resource(self, "CED.Brush.ButtonForegroundOnAccent")
         if is_filtered:
             if primary is not None:
@@ -3076,9 +3236,11 @@ class CircuitBrowserPanel(forms.WPFPanel):
         else:
             if button_bg is not None:
                 self._filter_button.Background = button_bg
-            if primary is not None:
-                self._filter_button.BorderBrush = primary
-                self._filter_button.Foreground = primary
+            if button_border is not None:
+                self._filter_button.BorderBrush = button_border
+            accent = _try_find_resource(self, "CED.Brush.Accent")
+            if accent is not None:
+                self._filter_button.Foreground = accent
             if self._filter_active_mark is not None:
                 self._filter_active_mark.Visibility = Visibility.Collapsed
 
@@ -3570,6 +3732,15 @@ class CircuitBrowserPanel(forms.WPFPanel):
                 str(getattr(x, "sort_load_name", "") or ""),
             ))
             return sorted_items
+        if mode == "device_count":
+            sorted_items.sort(key=lambda x: (
+                -int(getattr(x, "sort_device_count", 0) or 0),
+                str(getattr(x, "sort_panel", "") or ""),
+                int(getattr(x, "sort_circuit_slot", 0) or 0),
+                str(getattr(x, "sort_load_name", "") or ""),
+                str(getattr(x, "circuit_number", "") or "").lower(),
+            ))
+            return sorted_items
         sorted_items.sort(key=lambda x: (
             str(getattr(x, "sort_panel", "") or ""),
             int(getattr(x, "sort_circuit_slot", 0) or 0),
@@ -3987,6 +4158,8 @@ class CircuitBrowserPanel(forms.WPFPanel):
             self._checked_only = False
 
     def panel_loaded(self, sender, args):
+        if self._dock_frame_host is not None:
+            self.dock_frame_size_changed(self._dock_frame_host, None)
         if not self._is_pane_visible():
             return
         self._sync_theme_from_config(apply_if_changed=True)
@@ -4195,6 +4368,7 @@ class CircuitBrowserPanel(forms.WPFPanel):
             ("circuit", "Circuit"),
             ("load_name", "Load Name"),
             ("rating", "Rating"),
+            ("device_count", "Device Count"),
         ):
             item = MenuItem()
             _set_if_resource(self, item, "Style", "CED.MenuItem.Base")
@@ -4330,7 +4504,7 @@ class CircuitBrowserPanel(forms.WPFPanel):
 
     def browser_sort_clicked(self, sender, args):
         mode = str(getattr(sender, "Tag", "circuit")).lower()
-        if mode not in ("circuit", "load_name", "rating"):
+        if mode not in ("circuit", "load_name", "rating", "device_count"):
             mode = "circuit"
         if self._sort_mode == mode:
             self._sync_browser_options_menu_state()

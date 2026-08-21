@@ -3,6 +3,7 @@
   <Color x:Key="CED.Color.Accent">#0459A4</Color>
   <Color x:Key="CED.Color.AccentBlue">#0459A4</Color>
   <Color x:Key="CED.Color.AccentRed">#BE202F</Color>
+  <Color x:Key="CED.Color.AlertErrorText">#BE202F</Color>
   <Color x:Key="CED.Color.AccentGreen">#43A047</Color>
   <Color x:Key="CED.Color.AccentNeutral">#4D596A</Color>
   <Color x:Key="CED.Color.NeutralDark">#323130</Color>
@@ -32,6 +33,10 @@
   <Color x:Key="CED.Color.ButtonForegroundOnAccent">#FFFFFF</Color>
   <Color x:Key="CED.Color.ButtonStateOverlayHover">#0A000000</Color>
   <Color x:Key="CED.Color.ButtonStateOverlayPressed">#1F000000</Color>
+  <Color x:Key="CED.Color.InputControlBackground">#FFFFFF</Color>
+  <Color x:Key="CED.Color.InputControlBorder">#B8C8DB</Color>
+  <Color x:Key="CED.Color.InputControlChecked">#0459A4</Color>
+  <Color x:Key="CED.Color.InputControlCheckmark">#FFFFFF</Color>
 
   <Color x:Key="CED.Color.BadgeInfoBackground">#E8F1FF</Color>
   <Color x:Key="CED.Color.BadgeInfoBorder">#2B62A8</Color>
@@ -40,22 +45,23 @@
   <Color x:Key="CED.Color.BadgeWarningBorder">#9A5D2E</Color>
   <Color x:Key="CED.Color.BadgeWarningText">#7A451D</Color>
 
-  <Color x:Key="CED.Color.DataGridBorder">#AAB4C0</Color>
+  <Color x:Key="CED.Color.DataGridBorder">#9AA7B5</Color>
   <Color x:Key="CED.Color.DataGridBackground">#EEF1F4</Color>
+  <Color x:Key="CED.Color.DataGridRowBackground">#FFFFFF</Color>
   <Color x:Key="CED.Color.DataGridHeaderBackground">#E7EDF5</Color>
   <Color x:Key="CED.Color.DataGridHeaderForeground">#1E2A37</Color>
   <Color x:Key="CED.Color.DataGridHeaderBorder">#AAB4C0</Color>
   <Color x:Key="CED.Color.DataGridHeaderHoverBackground">#DCE6F2</Color>
   <Color x:Key="CED.Color.DataGridHeaderPressedBackground">#CEDCEC</Color>
-  <Color x:Key="CED.Color.DataGridAltRow">#F9FBFD</Color>
+  <Color x:Key="CED.Color.DataGridAltRow">#F3F6F9</Color>
   <Color x:Key="CED.Color.DataGridRowForeground">#1F2A36</Color>
-  <Color x:Key="CED.Color.DataGridReadOnlyBackground">#E2E8EF</Color>
-  <Color x:Key="CED.Color.DataGridReadOnlyForeground">#33414F</Color>
+  <Color x:Key="CED.Color.DataGridReadOnlyBackground">#E7EDF3</Color>
+  <Color x:Key="CED.Color.DataGridReadOnlyForeground">#243647</Color>
   <Color x:Key="CED.Color.DataGridEditableBackground">#FFFFFF</Color>
-  <Color x:Key="CED.Color.DataGridCellBorder">#D7DEE8</Color>
+  <Color x:Key="CED.Color.DataGridCellBorder">#C5CED8</Color>
   <Color x:Key="CED.Color.DataGridDividerStrong">#8E9AA8</Color>
-  <Color x:Key="CED.Color.DataGridSelectionBackground">#DCEBFA</Color>
-  <Color x:Key="CED.Color.DataGridSelectionForeground">#1F2A36</Color>
+  <Color x:Key="CED.Color.DataGridSelectionBackground">#B8D6F3</Color>
+  <Color x:Key="CED.Color.DataGridSelectionForeground">#16324A</Color>
   <Color x:Key="CED.Color.DataGridDisabledForeground">#8994A0</Color>
   <Color x:Key="CED.Color.DataGridDisabledBackground">#F0F2F4</Color>
   <Color x:Key="CED.Color.DataGridChangedBackground">#FFF8D6</Color>

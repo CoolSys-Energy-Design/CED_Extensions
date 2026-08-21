@@ -19,8 +19,20 @@ def _elid_value(item):
 def _elid_from(value):
     return revit_helpers.elementid_from_value(value)
 
-def move_circuits_to_panel(circuits, target_panel, doc, output):
-    """Move selected circuits and optionally replace default spares/spaces when target is full."""
+def move_circuits_to_panel(
+        circuits,
+        target_panel,
+        doc,
+        output,
+        allow_unassigned_partial=False,
+        consolidate_fallback_transaction=False):
+    """Move circuits using the established workflow.
+
+    The optional flags are intentionally opt-in. Existing callers retain the
+    original behavior; Circuit Grouper uses them because it creates circuits
+    that do not have an original panel and owns a surrounding transaction
+    group.
+    """
     if not design_options.is_main_model_element(target_panel):
         raise Exception("Target panel must be in the main model.")
     circuits = eu.filter_circuits(circuits)
@@ -125,7 +137,15 @@ def move_circuits_to_panel(circuits, target_panel, doc, output):
             try:
                 old_panel = snap.get("old_panel_element")
                 if old_panel is None:
-                    return False
+                    if not bool(allow_unassigned_partial):
+                        return False
+                    # Circuit Grouper creates circuits without an original
+                    # panel. If planning fails before SelectPanel changes
+                    # anything, leaving the circuit unassigned is the valid
+                    # partial-move result; requiring a panel to revert to
+                    # would incorrectly abort and roll back all successes.
+                    base_after = getattr(snap["circuit"], "BaseEquipment", None)
+                    return base_after is None
                 result = snap["circuit"].SelectPanel(old_panel)
                 if isinstance(result, bool) and not result:
                     return False
@@ -1000,9 +1020,7 @@ def move_circuits_to_panel(circuits, target_panel, doc, output):
         _log_default_snapshot(default_entries)
         baseline_empty_slots = _collect_empty_slots(target_option)
 
-        remove_tx = Transaction(doc, "Remove Default SPARE/SPACE Rows")
-        remove_tx.Start()
-        try:
+        def _fallback_remove_defaults():
             try:
                 logger.info(
                     "[MoveSelectedCircuits] Fallback remove defaults start entries=%s regenerate=%s",
@@ -1012,62 +1030,106 @@ def move_circuits_to_panel(circuits, target_panel, doc, output):
             except Exception:
                 pass
             _remove_default_special_rows(default_entries)
-            remove_tx.Commit()
-            try:
-                logger.info("[MoveSelectedCircuits] Fallback remove defaults committed.")
-            except Exception:
-                pass
-        except Exception:
-            try:
-                remove_tx.RollBack()
-            except Exception:
-                pass
-            raise
 
-        move_tx = Transaction(doc, "Move Circuits to New Panel")
-        move_tx.Start()
-        try:
-            try:
-                logger.info("[MoveSelectedCircuits] Fallback move batch start regenerate=%s", False)
-            except Exception:
-                pass
-            data, failed = _run_select_panel_moves(allow_partial=True, sort_by_poles=True, phase="fallback")
-            move_tx.Commit()
+        def _fallback_move_batch():
             try:
                 logger.info(
-                    "[MoveSelectedCircuits] Fallback move batch committed moved=%s failed=%s.",
-                    int(len(data or [])),
-                    int(len(failed or [])),
+                    "[MoveSelectedCircuits] Fallback move batch start regenerate=%s",
+                    False,
                 )
             except Exception:
                 pass
-        except Exception:
-            try:
-                move_tx.RollBack()
-            except Exception:
-                pass
-            raise
+            return _run_select_panel_moves(
+                allow_partial=True,
+                sort_by_poles=True,
+                phase="fallback",
+            )
 
-        restore_tx = Transaction(doc, "Restore Default SPARE/SPACE Rows")
-        restore_tx.Start()
-        try:
+        def _fallback_restore_defaults():
             try:
-                logger.info("[MoveSelectedCircuits] Fallback restore defaults start regenerate=%s", False)
+                logger.info(
+                    "[MoveSelectedCircuits] Fallback restore defaults start regenerate=%s",
+                    False,
+                )
             except Exception:
                 pass
             _restore_default_special_rows(schedule_view, default_entries)
-            _backfill_new_empty_with_default_spaces(schedule_view, target_option, baseline_empty_slots)
-            restore_tx.Commit()
+            _backfill_new_empty_with_default_spaces(
+                schedule_view, target_option, baseline_empty_slots)
+
+        if bool(consolidate_fallback_transaction):
+            fallback_tx = Transaction(
+                doc, "Move Circuits with SPARE/SPACE Replacement")
+            fallback_tx.Start()
             try:
-                logger.info("[MoveSelectedCircuits] Fallback restore defaults committed.")
+                _fallback_remove_defaults()
+                data, failed = _fallback_move_batch()
+                _fallback_restore_defaults()
+                fallback_tx.Commit()
+                try:
+                    logger.info(
+                        "[MoveSelectedCircuits] Fallback replacement committed as one transaction.")
+                except Exception:
+                    pass
             except Exception:
-                pass
-        except Exception:
+                try:
+                    fallback_tx.RollBack()
+                except Exception:
+                    pass
+                raise
+        else:
+            # Preserve the original phase boundaries for existing callers.
+            remove_tx = Transaction(doc, "Remove Default SPARE/SPACE Rows")
+            remove_tx.Start()
             try:
-                restore_tx.RollBack()
+                _fallback_remove_defaults()
+                remove_tx.Commit()
+                try:
+                    logger.info("[MoveSelectedCircuits] Fallback remove defaults committed.")
+                except Exception:
+                    pass
             except Exception:
-                pass
-            raise
+                try:
+                    remove_tx.RollBack()
+                except Exception:
+                    pass
+                raise
+
+            move_tx = Transaction(doc, "Move Circuits to New Panel")
+            move_tx.Start()
+            try:
+                data, failed = _fallback_move_batch()
+                move_tx.Commit()
+                try:
+                    logger.info(
+                        "[MoveSelectedCircuits] Fallback move batch committed moved=%s failed=%s.",
+                        int(len(data or [])),
+                        int(len(failed or [])),
+                    )
+                except Exception:
+                    pass
+            except Exception:
+                try:
+                    move_tx.RollBack()
+                except Exception:
+                    pass
+                raise
+
+            restore_tx = Transaction(doc, "Restore Default SPARE/SPACE Rows")
+            restore_tx.Start()
+            try:
+                _fallback_restore_defaults()
+                restore_tx.Commit()
+                try:
+                    logger.info("[MoveSelectedCircuits] Fallback restore defaults committed.")
+                except Exception:
+                    pass
+            except Exception:
+                try:
+                    restore_tx.RollBack()
+                except Exception:
+                    pass
+                raise
 
         if failed:
             moved_count = int(len(data or []))

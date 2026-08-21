@@ -35,6 +35,10 @@
   <SolidColorBrush x:Key="CED.Brush.ButtonForegroundOnAccent" Color="{DynamicResource CED.Color.ButtonForegroundOnAccent}"/>
   <SolidColorBrush x:Key="CED.Brush.ButtonStateOverlayHover" Color="{DynamicResource CED.Color.ButtonStateOverlayHover}"/>
   <SolidColorBrush x:Key="CED.Brush.ButtonStateOverlayPressed" Color="{DynamicResource CED.Color.ButtonStateOverlayPressed}"/>
+  <SolidColorBrush x:Key="CED.Brush.InputControlBackground" Color="{DynamicResource CED.Color.InputControlBackground}"/>
+  <SolidColorBrush x:Key="CED.Brush.InputControlBorder" Color="{DynamicResource CED.Color.InputControlBorder}"/>
+  <SolidColorBrush x:Key="CED.Brush.InputControlChecked" Color="{DynamicResource CED.Color.InputControlChecked}"/>
+  <SolidColorBrush x:Key="CED.Brush.InputControlCheckmark" Color="{DynamicResource CED.Color.InputControlCheckmark}"/>
 
   <SolidColorBrush x:Key="CED.Brush.BadgeInfoBackground" Color="{DynamicResource CED.Color.BadgeInfoBackground}"/>
   <SolidColorBrush x:Key="CED.Brush.BadgeInfoBorder" Color="{DynamicResource CED.Color.BadgeInfoBorder}"/>
@@ -69,6 +73,7 @@
 
   <SolidColorBrush x:Key="CED.Brush.DataGridBorder" Color="{DynamicResource CED.Color.DataGridBorder}"/>
   <SolidColorBrush x:Key="CED.Brush.DataGridBackground" Color="{DynamicResource CED.Color.DataGridBackground}"/>
+  <SolidColorBrush x:Key="CED.Brush.DataGridRowBackground" Color="{DynamicResource CED.Color.DataGridRowBackground}"/>
   <SolidColorBrush x:Key="CED.Brush.DataGridHeaderBackground" Color="{DynamicResource CED.Color.DataGridHeaderBackground}"/>
   <SolidColorBrush x:Key="CED.Brush.DataGridHeaderForeground" Color="{DynamicResource CED.Color.DataGridHeaderForeground}"/>
   <SolidColorBrush x:Key="CED.Brush.DataGridHeaderBorder" Color="{DynamicResource CED.Color.DataGridHeaderBorder}"/>
@@ -82,7 +87,7 @@
   <SolidColorBrush x:Key="CED.Brush.DataGridCellBorder" Color="{DynamicResource CED.Color.DataGridCellBorder}"/>
   <SolidColorBrush x:Key="CED.Brush.DataGridDividerStrong" Color="{DynamicResource CED.Color.DataGridDividerStrong}"/>
   <SolidColorBrush x:Key="CED.Brush.DataGridSelectionBackground" Color="{DynamicResource CED.Color.DataGridSelectionBackground}"/>
-  <SolidColorBrush x:Key="CED.Brush.DataGridSelectionForeground" Color="{DynamicResource CED.Color.PrimaryText}"/>
+  <SolidColorBrush x:Key="CED.Brush.DataGridSelectionForeground" Color="{DynamicResource CED.Color.DataGridSelectionForeground}"/>
   <SolidColorBrush x:Key="CED.Brush.DataGridDisabledForeground" Color="{DynamicResource CED.Color.DataGridDisabledForeground}"/>
   <SolidColorBrush x:Key="CED.Brush.DataGridDisabledBackground" Color="{DynamicResource CED.Color.DataGridDisabledBackground}"/>
   <SolidColorBrush x:Key="CED.Brush.DataGridChangedBackground" Color="{DynamicResource CED.Color.DataGridChangedBackground}"/>
@@ -92,6 +97,19 @@
   <SolidColorBrush x:Key="CED.Brush.StatusWarningBackground" Color="{DynamicResource CED.Color.StatusWarningBackground}"/>
   <SolidColorBrush x:Key="CED.Brush.StatusErrorBackground" Color="{DynamicResource CED.Color.StatusErrorBackground}"/>
   <SolidColorBrush x:Key="CED.Brush.StatusStagedBackground" Color="{DynamicResource CED.Color.StatusStagedBackground}"/>
+
+  <SolidColorBrush x:Key="CED.Brush.AlertInfoBackground" Color="{DynamicResource CED.Color.InfoAccentBackground}"/>
+  <SolidColorBrush x:Key="CED.Brush.AlertInfoBorder" Color="{DynamicResource CED.Color.InfoAccentBorder}"/>
+  <SolidColorBrush x:Key="CED.Brush.AlertInfoText" Color="{DynamicResource CED.Color.BadgeInfoText}"/>
+  <SolidColorBrush x:Key="CED.Brush.AlertWarningBackground" Color="{DynamicResource CED.Color.StatusWarningBackground}"/>
+  <SolidColorBrush x:Key="CED.Brush.AlertWarningBorder" Color="{DynamicResource CED.Color.BadgeWarningBorder}"/>
+  <SolidColorBrush x:Key="CED.Brush.AlertWarningText" Color="{DynamicResource CED.Color.BadgeWarningText}"/>
+  <SolidColorBrush x:Key="CED.Brush.AlertErrorBackground" Color="{DynamicResource CED.Color.StatusErrorBackground}"/>
+  <SolidColorBrush x:Key="CED.Brush.AlertErrorBorder" Color="{DynamicResource CED.Color.AccentRed}"/>
+  <SolidColorBrush x:Key="CED.Brush.AlertErrorText" Color="{DynamicResource CED.Color.AlertErrorText}"/>
+  <SolidColorBrush x:Key="CED.Brush.AlertSuccessBackground" Color="{DynamicResource CED.Color.StatusSuccessBackground}"/>
+  <SolidColorBrush x:Key="CED.Brush.AlertSuccessBorder" Color="{DynamicResource CED.Color.ApplyBorder}"/>
+  <SolidColorBrush x:Key="CED.Brush.AlertSuccessText" Color="{DynamicResource CED.Color.BadgeStd02Text}"/>
 
   <SolidColorBrush x:Key="CED.Brush.InfoPanelBorder" Color="{DynamicResource CED.Color.InfoPanelBorder}"/>
   <SolidColorBrush x:Key="CED.Brush.InfoPanelBackground" Color="{DynamicResource CED.Color.InfoPanelBackground}"/>
