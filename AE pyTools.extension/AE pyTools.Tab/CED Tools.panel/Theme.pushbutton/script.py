@@ -20,7 +20,7 @@ for _assembly in (
     except Exception:
         pass
 
-from System import Action
+from System import Action, Boolean, Int32
 from System.Data import DataTable
 
 from pyrevit import forms, script
@@ -96,7 +96,7 @@ def _refresh_circuit_manager_theme():
 
 
 class ThemePickerWindow(CEDWindowBase):
-    """Displays one live swatch and applies a newly selected theme immediately."""
+    """Preview themes locally and persist the selected theme only on Apply."""
 
     theme_aware = True
     default_theme_mode = "light"
@@ -104,21 +104,27 @@ class ThemePickerWindow(CEDWindowBase):
 
     def __init__(self):
         CEDWindowBase.__init__(self, xaml_source=XAML_PATH, theme_aware=True)
+        self._saved_theme_mode = self._theme_mode
+        self._saved_accent_mode = self._accent_mode
         self._is_loading = True
         self.theme_picker = self.FindName("ThemePicker")
         self.preview_title = self.FindName("PreviewTitle")
         self.preview_slider = self.FindName("PreviewSlider")
         self.preview_data_grid = self.FindName("PreviewDataGrid")
+        self.preview_alternating_toggle = self.FindName("PreviewAlternatingToggle")
         self.current_theme_text = self.FindName("CurrentThemeText")
-        self.close_button = self.FindName("CloseButton")
+        self.apply_button = self.FindName("ApplyButton")
 
         self._load_preview_grid()
+        self._apply_preview_grid_mode()
         self._select_current_theme()
         self._refresh_labels()
 
         self.theme_picker.SelectionChanged += self._on_theme_changed
+        self.preview_alternating_toggle.Checked += self._on_alternating_rows_changed
+        self.preview_alternating_toggle.Unchecked += self._on_alternating_rows_changed
         self.preview_slider.PreviewMouseLeftButtonDown += self._on_preview_slider_mouse_down
-        self.close_button.Click += self._close_window
+        self.apply_button.Click += self._apply_theme_clicked
         self._is_loading = False
 
     def _select_current_theme(self):
@@ -142,24 +148,60 @@ class ThemePickerWindow(CEDWindowBase):
         )
 
     def _load_preview_grid(self):
-        """Supply a compact, read-only data-grid sample for the live swatch."""
+        """Supply representative shared cell and row states for the live swatch."""
         table = DataTable()
-        table.Columns.Add("Name")
-        table.Columns.Add("Status")
-        table.Columns.Add("Value")
+        table.Columns.Add("sample")
+        table.Columns.Add("value")
+        table.Columns.Add("new_qty")
+        table.Columns.Add("state")
+        table.Columns.Add("is_enabled", Boolean)
+        table.Columns.Add("new_qty_changed", Boolean)
+        table.Columns.Add("new_rating_changed", Boolean)
+        table.Columns.Add("rating_warning_level", Int32)
         for values in (
-            ("Panel A", "Ready", "120 A"),
-            ("Circuit 1", "Connected", "20 A"),
-            ("Device 1", "Checked", "120 V"),
-            ("Circuit 2", "Pending", "15 A"),
+            ("Normal", "Ready", "120 A", "Normal", True, False, False, 0),
+            ("Hidden / disabled", "Suppressed", "20 A", "Hidden", False, False, False, 0),
+            ("Changed", "Pending", "15 A", "Changed", True, True, False, 0),
+            ("Warning", "Review", "80 A", "Warning", True, False, True, 1),
+            ("Error", "Blocked", "0 A", "Error", True, False, True, 2),
         ):
             row = table.NewRow()
-            row["Name"] = values[0]
-            row["Status"] = values[1]
-            row["Value"] = values[2]
+            row["sample"] = values[0]
+            row["value"] = values[1]
+            row["new_qty"] = values[2]
+            row["state"] = values[3]
+            row["is_enabled"] = values[4]
+            row["new_qty_changed"] = values[5]
+            row["new_rating_changed"] = values[6]
+            row["rating_warning_level"] = values[7]
             table.Rows.Add(row)
         self._preview_grid_source = table
         self.preview_data_grid.ItemsSource = table.DefaultView
+
+    def _apply_preview_grid_mode(self):
+        """Switch the preview between shared flat and alternating resource variants."""
+        alternating = bool(self.preview_alternating_toggle.IsChecked)
+        grid_key = "CED.DataGrid.Display.Alternating" if alternating else "CED.DataGrid.Display.Flat"
+        row_key = "CED.DataGrid.RowDisabledAware.Alternating" if alternating else "CED.DataGrid.RowDisabledAware"
+        self.preview_data_grid.Style = resource_loader.try_find_resource(self, grid_key)
+        self.preview_data_grid.RowStyle = resource_loader.try_find_resource(self, row_key)
+
+        cell_style_pairs = (
+            ("CED.DataGrid.Cell.DisplayReadonly", "CED.DataGrid.Cell.DisplayReadonly.Alternating"),
+            ("CED.DataGrid.Cell.DisplayReadonly", "CED.DataGrid.Cell.DisplayReadonly.Alternating"),
+            ("ReadonlyCell.NeutralSelection", "ReadonlyCell.NeutralSelection.Alternating"),
+            ("CED.DataGrid.Cell.DisplayEditable", "CED.DataGrid.Cell.DisplayEditable.Alternating"),
+            ("NewQtyCell", "NewQtyCell.Alternating"),
+            ("NewValueCell", "NewValueCell.Alternating"),
+        )
+        for index, (flat_key, alternating_key) in enumerate(cell_style_pairs):
+            key = alternating_key if alternating else flat_key
+            self.preview_data_grid.Columns[index].CellStyle = resource_loader.try_find_resource(self, key)
+
+    def _on_alternating_rows_changed(self, sender, args):
+        if self._is_loading:
+            return
+        self._apply_preview_grid_mode()
 
     def _on_preview_slider_mouse_down(self, sender, args):
         """Move the slider directly to a clicked track position."""
@@ -179,7 +221,13 @@ class ThemePickerWindow(CEDWindowBase):
     def _refresh_labels(self):
         label = THEME_LABELS.get(self._theme_mode, self._theme_mode)
         self.preview_title.Text = "{} theme preview".format(label)
-        self.current_theme_text.Text = "{} is active and saved for CED tools.".format(label)
+        if (
+            self._theme_mode == self._saved_theme_mode
+            and self._accent_mode == self._saved_accent_mode
+        ):
+            self.current_theme_text.Text = "{} is active and saved for CED tools.".format(label)
+        else:
+            self.current_theme_text.Text = "{} is previewing. Click Apply to save for CED tools.".format(label)
 
     def _on_theme_changed(self, sender, args):
         if self._is_loading:
@@ -189,17 +237,35 @@ class ThemePickerWindow(CEDWindowBase):
             return
 
         self._theme_mode = selected_mode
-        saved = _save_theme_state(self._theme_mode, self._accent_mode)
         self.apply_ced_theme(
             theme_mode=self._theme_mode,
             accent_mode=self._accent_mode,
         )
-        if saved:
-            _refresh_circuit_manager_theme()
+        self._apply_preview_grid_mode()
         self._refresh_labels()
 
-    def _close_window(self, sender, args):
-        self.Close()
+    def _apply_theme_clicked(self, sender, args):
+        """Persist the previewed theme and refresh any live theme-aware pane."""
+        if (
+            self._theme_mode == self._saved_theme_mode
+            and self._accent_mode == self._saved_accent_mode
+        ):
+            self._refresh_labels()
+            return
+
+        saved = _save_theme_state(self._theme_mode, self._accent_mode)
+        if not saved:
+            forms.alert(
+                "The theme could not be saved to the pyRevit configuration.",
+                title="CED Tool Theme",
+                warn_icon=True,
+            )
+            return
+
+        self._saved_theme_mode = self._theme_mode
+        self._saved_accent_mode = self._accent_mode
+        _refresh_circuit_manager_theme()
+        self._refresh_labels()
 
 
 def main():

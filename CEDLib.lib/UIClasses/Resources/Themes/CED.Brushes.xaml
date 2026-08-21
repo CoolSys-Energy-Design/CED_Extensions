@@ -73,6 +73,7 @@
 
   <SolidColorBrush x:Key="CED.Brush.DataGridBorder" Color="{DynamicResource CED.Color.DataGridBorder}"/>
   <SolidColorBrush x:Key="CED.Brush.DataGridBackground" Color="{DynamicResource CED.Color.DataGridBackground}"/>
+  <SolidColorBrush x:Key="CED.Brush.DataGridRowBackground" Color="{DynamicResource CED.Color.DataGridRowBackground}"/>
   <SolidColorBrush x:Key="CED.Brush.DataGridHeaderBackground" Color="{DynamicResource CED.Color.DataGridHeaderBackground}"/>
   <SolidColorBrush x:Key="CED.Brush.DataGridHeaderForeground" Color="{DynamicResource CED.Color.DataGridHeaderForeground}"/>
   <SolidColorBrush x:Key="CED.Brush.DataGridHeaderBorder" Color="{DynamicResource CED.Color.DataGridHeaderBorder}"/>
@@ -86,7 +87,7 @@
   <SolidColorBrush x:Key="CED.Brush.DataGridCellBorder" Color="{DynamicResource CED.Color.DataGridCellBorder}"/>
   <SolidColorBrush x:Key="CED.Brush.DataGridDividerStrong" Color="{DynamicResource CED.Color.DataGridDividerStrong}"/>
   <SolidColorBrush x:Key="CED.Brush.DataGridSelectionBackground" Color="{DynamicResource CED.Color.DataGridSelectionBackground}"/>
-  <SolidColorBrush x:Key="CED.Brush.DataGridSelectionForeground" Color="{DynamicResource CED.Color.PrimaryText}"/>
+  <SolidColorBrush x:Key="CED.Brush.DataGridSelectionForeground" Color="{DynamicResource CED.Color.DataGridSelectionForeground}"/>
   <SolidColorBrush x:Key="CED.Brush.DataGridDisabledForeground" Color="{DynamicResource CED.Color.DataGridDisabledForeground}"/>
   <SolidColorBrush x:Key="CED.Brush.DataGridDisabledBackground" Color="{DynamicResource CED.Color.DataGridDisabledBackground}"/>
   <SolidColorBrush x:Key="CED.Brush.DataGridChangedBackground" Color="{DynamicResource CED.Color.DataGridChangedBackground}"/>

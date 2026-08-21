@@ -23,15 +23,18 @@ from System import EventHandler, Action
 from System.Collections.Generic import List
 from System.Collections.ObjectModel import ObservableCollection
 
-from System.Windows import GridLength, GridUnitType, Visibility
+from System.Windows import GridLength, GridUnitType, HorizontalAlignment, Thickness, Visibility
 from System.Windows.Controls import (
     ContextMenu,
+    ColumnDefinition,
+    Grid,
     MenuItem,
     Separator,
     DataGridRow,
     ListViewItem,
     Button,
     DataGridTextColumn,
+    RowDefinition,
     ScrollViewer,
     ScrollBarVisibility,
 )
@@ -2554,15 +2557,20 @@ class CircuitBrowserPanel(forms.WPFPanel):
     panel_title = TITLE
     panel_source = os.path.abspath(os.path.join(_THIS_DIR, "CircuitBrowserPanel.xaml"))
 
-    # Keep the action toolbar readable before the select-in-model card starts
-    # to crowd the panel at narrow dock widths.
+    # Responsive dock-width thresholds.  The card stacks its labels before the
+    # toolbar needs to give up space, then the mini toolbar removes low-priority
+    # controls so the Actions button remains usable at the smallest widths.
     _COMPACT_TOOLBAR_BREAKPOINT = 330.0
+    _ACTION_CARD_STACK_BREAKPOINT = 300.0
+    _MINI_TOOLBAR_BREAKPOINT = 270.0
 
     _instance = None
     _operation_gateway = None
 
     def __init__(self):
         self._compact_toolbar_mode = False
+        self._action_card_stacked = False
+        self._mini_toolbar_mode = False
         forms.WPFPanel.__init__(self)
         self._theme_mode = CURRENT_THEME_MODE
         self._accent_mode = CURRENT_ACCENT_MODE
@@ -2633,6 +2641,7 @@ class CircuitBrowserPanel(forms.WPFPanel):
         self._status = self.FindName("StatusText")
         self._doc_name_text = self.FindName("DocumentNameText")
         self._toggle = self.FindName("ToggleViewButton")
+        self._check_all_button = self.FindName("CheckAllButton")
         self._calc_preview_toggle = self.FindName("CalcPreviewToggle")
         self._calc_preview_state_text = self.FindName("CalcPreviewStateText")
         self._filter_button = self.FindName("FilterButton")
@@ -2646,6 +2655,16 @@ class CircuitBrowserPanel(forms.WPFPanel):
         self._select_equipment_button = self.FindName("SelectEquipmentButton")
         self._select_circuits_button = self.FindName("SelectCircuitsButton")
         self._select_downstream_button = self.FindName("SelectDownstreamButton")
+        self._action_card_border = self.FindName("ActionCardBorder")
+        self._select_in_model_row = self.FindName("SelectInModelRow")
+        self._select_in_model_label = self.FindName("SelectInModelLabel")
+        self._select_in_model_controls = self.FindName("SelectInModelControls")
+        self._calc_preview_row = self.FindName("CalcPreviewRow")
+        self._calc_preview_label = self.FindName("CalcPreviewLabel")
+        self._calc_preview_controls = self.FindName("CalcPreviewControls")
+        self._calculate_row = self.FindName("CalculateRow")
+        self._calculate_label = self.FindName("CalculateLabel")
+        self._calculate_controls = self.FindName("CalculateControls")
         self._apply_revit_frame_background(is_dark=False)
         self._surface_item_style = _try_find_resource(self, "CED.ListViewItem.SurfaceBehavior")
         self._apply_list_interaction_mode()
@@ -2708,6 +2727,84 @@ class CircuitBrowserPanel(forms.WPFPanel):
         if width <= 0.0:
             return
         self._apply_compact_toolbar_mode(width < self._COMPACT_TOOLBAR_BREAKPOINT)
+        self._apply_action_card_layout(width < self._ACTION_CARD_STACK_BREAKPOINT)
+        self._apply_mini_toolbar_mode(width < self._MINI_TOOLBAR_BREAKPOINT)
+
+    def _apply_action_card_layout(self, stacked):
+        """Put action labels above their controls when the dock is narrow."""
+        stacked = bool(stacked)
+        rows = (
+            (
+                getattr(self, "_select_in_model_row", None),
+                getattr(self, "_select_in_model_label", None),
+                getattr(self, "_select_in_model_controls", None),
+            ),
+            (
+                getattr(self, "_calc_preview_row", None),
+                getattr(self, "_calc_preview_label", None),
+                getattr(self, "_calc_preview_controls", None),
+            ),
+            (
+                getattr(self, "_calculate_row", None),
+                getattr(self, "_calculate_label", None),
+                getattr(self, "_calculate_controls", None),
+            ),
+        )
+        if any(item is None for row in rows for item in row):
+            return
+        if stacked == bool(self._action_card_stacked):
+            return
+
+        self._action_card_stacked = stacked
+        for row, label, controls in rows:
+            row.RowDefinitions.Clear()
+            row.ColumnDefinitions.Clear()
+            if stacked:
+                column = ColumnDefinition()
+                column.Width = GridLength(1, GridUnitType.Star)
+                row.ColumnDefinitions.Add(column)
+                for _index in range(2):
+                    row_definition = RowDefinition()
+                    row_definition.Height = GridLength(1, GridUnitType.Auto)
+                    row.RowDefinitions.Add(row_definition)
+                Grid.SetRow(label, 0)
+                Grid.SetColumn(label, 0)
+                Grid.SetRow(controls, 1)
+                Grid.SetColumn(controls, 0)
+                controls.Margin = Thickness(0, 2, 0, 0)
+            else:
+                label_column = ColumnDefinition()
+                label_column.Width = GridLength(1, GridUnitType.Auto)
+                label_column.SharedSizeGroup = "ActionLabelCol"
+                controls_column = ColumnDefinition()
+                controls_column.Width = GridLength(1, GridUnitType.Auto)
+                row.ColumnDefinitions.Add(label_column)
+                row.ColumnDefinitions.Add(controls_column)
+                Grid.SetRow(label, 0)
+                Grid.SetColumn(label, 0)
+                Grid.SetRow(controls, 0)
+                Grid.SetColumn(controls, 1)
+                controls.Margin = Thickness(6, 0, 0, 0)
+
+        if self._action_card_border is not None:
+            self._action_card_border.HorizontalAlignment = (
+                HorizontalAlignment.Stretch if stacked else HorizontalAlignment.Left
+            )
+
+    def _apply_mini_toolbar_mode(self, mini):
+        """Hide secondary toolbar controls below the smallest dock threshold."""
+        mini = bool(mini)
+        check_all = getattr(self, "_check_all_button", None)
+        toggle = getattr(self, "_toggle", None)
+        if check_all is None or toggle is None:
+            return
+        if mini == bool(self._mini_toolbar_mode):
+            return
+
+        self._mini_toolbar_mode = mini
+        visibility = Visibility.Collapsed if mini else Visibility.Visible
+        check_all.Visibility = visibility
+        toggle.Visibility = visibility
 
     def _apply_compact_toolbar_mode(self, compact):
         compact = bool(compact)

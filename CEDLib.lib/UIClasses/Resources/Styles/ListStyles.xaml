@@ -481,11 +481,21 @@
     <Setter Property="Background" Value="{DynamicResource CED.Brush.DataGridBackground}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource CED.Brush.DataGridBorder}"/>
     <Setter Property="Foreground" Value="{DynamicResource CED.Brush.DataGridRowForeground}"/>
-    <Setter Property="RowBackground" Value="{DynamicResource CED.Brush.ListItemBackground}"/>
+    <Setter Property="RowBackground" Value="{DynamicResource CED.Brush.DataGridRowBackground}"/>
     <Setter Property="AlternatingRowBackground" Value="{DynamicResource CED.Brush.DataGridAltRow}"/>
+    <Setter Property="AlternationCount" Value="0"/>
     <Setter Property="GridLinesVisibility" Value="Horizontal"/>
     <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource CED.Brush.DataGridCellBorder}"/>
     <Setter Property="VerticalGridLinesBrush" Value="{DynamicResource CED.Brush.DataGridCellBorder}"/>
+  </Style>
+
+  <Style x:Key="CED.DataGrid.Base.Alternating" TargetType="DataGrid" BasedOn="{StaticResource CED.DataGrid.Base}">
+    <Setter Property="AlternationCount" Value="2"/>
+  </Style>
+
+  <Style x:Key="CED.DataGrid.Base.Flat" TargetType="DataGrid" BasedOn="{StaticResource CED.DataGrid.Base}">
+    <Setter Property="AlternationCount" Value="0"/>
+    <Setter Property="AlternatingRowBackground" Value="{DynamicResource CED.Brush.DataGridRowBackground}"/>
   </Style>
 
   <Style x:Key="CED.GridView.Header" TargetType="GridViewColumnHeader">

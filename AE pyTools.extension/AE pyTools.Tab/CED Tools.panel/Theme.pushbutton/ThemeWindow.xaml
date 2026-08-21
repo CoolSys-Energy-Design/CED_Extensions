@@ -2,9 +2,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="CED Tool Theme"
         Width="700"
-        Height="505"
+        Height="610"
         MinWidth="700"
-        MinHeight="505"
+        MinHeight="610"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource CED.Brush.WindowBackground}"
@@ -80,11 +80,22 @@
 
           <Border Height="1" Background="{DynamicResource CED.Brush.SectionDivider}" Margin="0,0,0,12"/>
 
-          <TextBlock Text="Data grid" Style="{DynamicResource CED.Text.Body}" FontWeight="SemiBold"/>
+          <Grid Margin="0,0,0,1">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Data grid" Style="{DynamicResource CED.Text.Body}" FontWeight="SemiBold"/>
+            <CheckBox x:Name="PreviewAlternatingToggle"
+                      Grid.Column="1"
+                      Content="Alternating rows"
+                      IsChecked="True"
+                      Style="{DynamicResource CED.Input.CheckBox}"/>
+          </Grid>
           <DataGrid x:Name="PreviewDataGrid"
-                    Height="108"
+                    Height="188"
                     Margin="0,6,0,13"
-                    AutoGenerateColumns="True"
+                    AutoGenerateColumns="False"
                     HeadersVisibility="Column"
                     IsReadOnly="True"
                     CanUserAddRows="False"
@@ -94,11 +105,42 @@
                     CanUserReorderColumns="False"
                     CanUserSortColumns="False"
                     ColumnWidth="*"
-                    MinColumnWidth="70"
-                    Style="{DynamicResource CED.DataGrid.Display}"
+                    MinColumnWidth="58"
+                    HorizontalScrollBarVisibility="Auto"
+                    Style="{DynamicResource CED.DataGrid.Display.Flat}"
                     ColumnHeaderStyle="{DynamicResource CED.DataGrid.Header.Wrap}"
-                    RowStyle="{DynamicResource CED.DataGrid.Row.Display}"
-                    CellStyle="{DynamicResource CED.DataGrid.Cell.DisplayReadonly}"/>
+                    RowStyle="{DynamicResource CED.DataGrid.RowDisabledAware}">
+            <DataGrid.Columns>
+              <DataGridTextColumn Header="Sample"
+                                  Width="1.25*"
+                                  Binding="{Binding sample}"
+                                  CellStyle="{DynamicResource CED.DataGrid.Cell.Alternating}"/>
+              <DataGridTextColumn Header="Read-only"
+                                  Width="1.1*"
+                                  Binding="{Binding value}"
+                                  CellStyle="{DynamicResource CED.DataGrid.Cell.DisplayReadonly}"/>
+              <DataGridTextColumn Header="Neutral"
+                                  Width="1.1*"
+                                  Binding="{Binding value}"
+                                  CellStyle="{DynamicResource ReadonlyCell.NeutralSelection}"/>
+              <DataGridTextColumn Header="Editable"
+                                  Width="1.1*"
+                                  Binding="{Binding value}"
+                                  CellStyle="{DynamicResource CED.DataGrid.Cell.DisplayEditable}"/>
+              <DataGridTextColumn Header="Changed"
+                                  Width="1.1*"
+                                  Binding="{Binding new_qty}"
+                                  CellStyle="{DynamicResource NewQtyCell}"/>
+              <DataGridTextColumn Header="State"
+                                  Width="1.1*"
+                                  Binding="{Binding state}"
+                                  CellStyle="{DynamicResource NewValueCell}"/>
+            </DataGrid.Columns>
+          </DataGrid>
+          <TextBlock Text="Rows exercise normal, disabled/hidden, changed, warning, and error states."
+                     Style="{DynamicResource CED.Text.Caption}"
+                     TextWrapping="Wrap"
+                     Margin="0,-7,0,12"/>
 
           <TextBlock Text="Other controls" Style="{DynamicResource CED.Text.Body}" FontWeight="SemiBold"/>
           <Grid Margin="0,7,0,13">
@@ -156,7 +198,7 @@
       </Grid.RowDefinitions>
       <StackPanel>
         <TextBlock Text="Select theme" Style="{DynamicResource CED.Text.SectionHeader}"/>
-        <TextBlock Text="Changes save and preview immediately."
+          <TextBlock Text="Preview changes here, then click Apply to save them for CED tools."
                    Style="{DynamicResource CED.Text.Secondary}"
                    TextWrapping="Wrap"
                    Margin="0,3,0,12"/>
@@ -189,9 +231,9 @@
         <TextBlock x:Name="CurrentThemeText"
                    Style="{DynamicResource CED.Text.Caption}"
                    TextWrapping="Wrap"/>
-        <Button x:Name="CloseButton"
-                Content="Close"
-                Style="{DynamicResource CED.Button.Base}"
+        <Button x:Name="ApplyButton"
+                Content="Apply"
+                Style="{DynamicResource CED.Button.Apply}"
                 Margin="0,10,0,0"/>
       </StackPanel>
     </Grid>
