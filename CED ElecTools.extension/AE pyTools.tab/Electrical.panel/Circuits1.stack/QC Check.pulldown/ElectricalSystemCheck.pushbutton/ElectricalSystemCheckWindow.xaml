@@ -99,6 +99,18 @@
     <Style x:Key="QC.DetailCell" TargetType="DataGridCell" BasedOn="{StaticResource QC.GridCell}">
       <Setter Property="Background" Value="{DynamicResource CED.Brush.DataGridAltRow}"/>
     </Style>
+    <Style x:Key="QC.DetailCell.Alternating" TargetType="DataGridCell" BasedOn="{StaticResource QC.GridCell}">
+      <Setter Property="Background" Value="{DynamicResource CED.Brush.DataGridRowBackground}"/>
+      <Style.Triggers>
+        <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=(ItemsControl.AlternationIndex)}" Value="1">
+          <Setter Property="Background" Value="{DynamicResource CED.Brush.DataGridAltRow}"/>
+        </DataTrigger>
+        <Trigger Property="IsSelected" Value="True">
+          <Setter Property="Background" Value="{DynamicResource CED.Brush.DataGridSelectionBackground}"/>
+          <Setter Property="Foreground" Value="{DynamicResource CED.Brush.DataGridSelectionForeground}"/>
+        </Trigger>
+      </Style.Triggers>
+    </Style>
     <Style x:Key="QC.SeverityCell" TargetType="DataGridCell" BasedOn="{StaticResource QC.MergedCell}">
       <Style.Triggers>
         <DataTrigger Binding="{Binding severity}" Value="INFO">
@@ -151,7 +163,7 @@
               BorderThickness="1"
               Background="{DynamicResource CED.Brush.ListBackground}">
         <DataGrid Name="QCGrid"
-                  Style="{DynamicResource CED.DataGrid.Display}"
+                  Style="{DynamicResource CED.DataGrid.Display.Alternating}"
                   ColumnHeaderStyle="{DynamicResource CED.DataGrid.Header.WrapTall}"
                   RowStyle="{DynamicResource CED.DataGrid.Row.Display.NeutralSelection}"
                   HorizontalAlignment="Stretch"
@@ -197,21 +209,21 @@
                 </DataTemplate>
               </DataGridTemplateColumn.CellTemplate>
             </DataGridTemplateColumn>
-            <DataGridTemplateColumn Header="Observed" Width="13*" MinWidth="95" SortMemberPath="observed" CellStyle="{StaticResource QC.DetailCell}">
+            <DataGridTemplateColumn Header="Observed" Width="13*" MinWidth="95" SortMemberPath="observed" CellStyle="{StaticResource QC.DetailCell.Alternating}">
               <DataGridTemplateColumn.CellTemplate>
                 <DataTemplate>
                   <TextBlock Text="{Binding observed}" Style="{StaticResource QC.TextCell.Wrap}"/>
                 </DataTemplate>
               </DataGridTemplateColumn.CellTemplate>
             </DataGridTemplateColumn>
-            <DataGridTemplateColumn Header="Primary Element" Width="13*" MinWidth="110" SortMemberPath="primary_element" CellStyle="{StaticResource QC.DetailCell}">
+            <DataGridTemplateColumn Header="Primary Element" Width="13*" MinWidth="110" SortMemberPath="primary_element" CellStyle="{StaticResource QC.DetailCell.Alternating}">
               <DataGridTemplateColumn.CellTemplate>
                 <DataTemplate>
                   <TextBlock Text="{Binding primary_element}" Style="{StaticResource QC.TextCell.Wrap}"/>
                 </DataTemplate>
               </DataGridTemplateColumn.CellTemplate>
             </DataGridTemplateColumn>
-            <DataGridTemplateColumn Header="Secondary Element" Width="13*" MinWidth="110" SortMemberPath="secondary_element" CellStyle="{StaticResource QC.DetailCell}">
+            <DataGridTemplateColumn Header="Secondary Element" Width="13*" MinWidth="110" SortMemberPath="secondary_element" CellStyle="{StaticResource QC.DetailCell.Alternating}">
               <DataGridTemplateColumn.CellTemplate>
                 <DataTemplate>
                   <TextBlock Text="{Binding secondary_element}" Style="{StaticResource QC.TextCell.Wrap}"/>

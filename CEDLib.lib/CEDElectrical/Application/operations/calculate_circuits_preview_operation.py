@@ -32,7 +32,7 @@ class CalculateCircuitsPreviewOperation(object):
             preview_values = dict(overrides_by_circuit.get(cid, {}))
             branch = CircuitBranch(circuit, settings=settings, preview_values=preview_values)
 
-            can_calculate = bool(branch.is_power_circuit and not branch.is_space and not branch.is_spare)
+            can_calculate = bool(branch.is_power_circuit and not branch.is_special)
             if can_calculate:
                 branch.calculate_hot_wire_size()
                 branch.calculate_neutral_wire_size()
@@ -126,6 +126,11 @@ class CalculateCircuitsPreviewOperation(object):
         }
 
     def _collect_shared_param_values(self, branch):
+        if branch.is_special:
+            return branch.get_special_parameter_reset_values(
+                settings_manager.RESULT_PARAM_NAMES
+            )
+
         neutral_qty = branch.neutral_wire_quantity or 0
         ig_qty = branch.isolated_ground_wire_quantity or 0
         include_neutral = 1 if neutral_qty > 0 else 0

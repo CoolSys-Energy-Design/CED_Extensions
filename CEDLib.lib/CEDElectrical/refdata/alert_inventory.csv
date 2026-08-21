@@ -28,6 +28,7 @@
 "overrides_invalid_wire_sets","Overrides.InvalidWireSets","Overrides","Overrides","NONE","False","No","Yes","User-specified wire sets '{override_value}' invalid; using default wire sets: {default_value}","Alert manager only; not emitted by QC service."
 "qc_circuit_non_standard_breaker","QC.Circuit.NonStandardBreaker","Circuit","QC","MEDIUM","True","No","No","Circuit breaker rating is non-standard.","Definition only / not currently emitted by known UI paths."
 "qc_circuit_rating_below_current","QC.Circuit.RatingBelowCurrent","Circuit","QC","HIGH","True","No","No","Circuit rating is below apparent current.","Definition only / not currently emitted by known UI paths."
+"qc_circuit_special_circuit_stale_data","QC.Circuit.SpecialCircuitStaleData","Circuit","QC","MEDIUM","True","Yes","No","Spare/space circuit has stale CED shared-parameter data.","QC service recommends recalculating the circuit."
 "qc_circuit_zero_load","QC.Circuit.ZeroLoad","Circuit","QC","MEDIUM","True","No","No","Circuit connected to a panel has zero apparent load.","Definition only / not currently emitted by known UI paths."
 "qc_device_load_no_panel","QC.Device.LoadNoPanel","Device","QC","HIGH","True","Yes","No","Non-zero load circuit is not assigned to a panel.","QC service only."
 "qc_device_load_not_connected","QC.Device.LoadNotConnected","Device","QC","HIGH","True","Yes","No","Non-zero load is not connected to an electrical system.","QC service only."

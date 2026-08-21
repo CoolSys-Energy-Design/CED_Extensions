@@ -197,6 +197,7 @@ def main():
     if result.get("status") == "ok":
         edited = int(result.get("edited_circuits", 0) or 0)
         updated = int(result.get("updated_circuits", 0) or 0)
+        updated += int(result.get("updated_special_circuits", 0) or 0)
         forms.alert(
             "Applied staged edits to {} circuit(s).\nRecalculated {} circuit(s).".format(edited, updated),
             title=TITLE,
