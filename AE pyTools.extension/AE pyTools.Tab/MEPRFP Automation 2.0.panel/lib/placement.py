@@ -1583,6 +1583,8 @@ class PlacementResult(object):
         self.element_linker_writes = 0
         self.static_param_writes = 0
         self.parent_directive_writes = 0
+        self.byparent_group_count = 0
+        self.byparent_suffix_writes = 0
         self.warnings = []
         self.errors = []
         self.skipped_already_placed = 0
@@ -2084,7 +2086,7 @@ def _place_fixture(doc, led, anchor_world_pt, anchor_rotation_deg, level_id,
     return inst, status, info
 
 
-def _write_linker(elem, led, profile, target):
+def _write_linker(elem, led, profile, target, ckt_circuit_override=None):
     """Stamp the placed element with an Element_Linker payload so audit
     and re-placement tools can find it.
 
@@ -2093,6 +2095,11 @@ def _write_linker(elem, led, profile, target):
     payload — matches the legacy engine, which embeds those two
     circuit-identity strings in Element_Linker so SuperCircuit and the
     audit tools can read them without a YAML round-trip.
+
+    ``ckt_circuit_override`` replaces the captured circuit-number string
+    when the placement loop rewrote the live parameter (the per-parent
+    ``BYPARENT_<n>`` group suffix) so the linker snapshot agrees with
+    what's actually on the element.
     """
     if elem is None:
         return False
@@ -2121,7 +2128,10 @@ def _write_linker(elem, led, profile, target):
         facing=_element_facing(elem),
         host_name=target.name,
         parent_location_ft=list(target.world_pt),
-        ckt_circuit_number=_param_str(led_params, "CKT_Circuit Number_CEDT"),
+        ckt_circuit_number=(
+            ckt_circuit_override
+            or _param_str(led_params, "CKT_Circuit Number_CEDT")
+        ),
         ckt_panel=_param_str(led_params, "CKT_Panel_CEDT"),
     )
     try:
@@ -2514,6 +2524,75 @@ def _apply_parent_directives(child, parent_elem, params_dict, warnings=None):
                     )
                 )
     return written, skipped
+
+
+_CKT_CIRCUIT_PARAM_NAME = "CKT_Circuit Number_CEDT"
+
+# Circuiting tokens that receive a per-parent ``_N`` group suffix at
+# placement time. Exact trimmed match, case-insensitive — mirrors the
+# SuperCircuit BYPARENT token family (``circuit_clients.base``).
+# SECONDBYPARENT is deliberately absent: it stays a bare token.
+_BYPARENT_CIRCUIT_TOKENS = frozenset({"byparent", "circuitbyparent"})
+
+_BYPARENT_SUFFIXED_RE = re.compile(
+    r"^\s*(?:BYPARENT|CIRCUITBYPARENT)_(\d+)\s*$", re.IGNORECASE
+)
+
+
+def _byparent_circuit_param(elem):
+    """Return ``(param, token)`` when ``CKT_Circuit Number_CEDT`` on the
+    placed ``elem`` currently holds a bare BYPARENT-family circuiting
+    token, else ``(None, None)``. ``token`` is the trimmed original text
+    so the suffix preserves whatever casing/alias the profile used.
+    """
+    if elem is None:
+        return None, None
+    param = _find_parameter(elem, _CKT_CIRCUIT_PARAM_NAME)
+    if param is None:
+        return None, None
+    try:
+        text = param.AsString()
+    except Exception:
+        return None, None
+    token = (text or "").strip()
+    if token.lower() not in _BYPARENT_CIRCUIT_TOKENS:
+        return None, None
+    return param, token
+
+
+def _max_existing_byparent_group(doc):
+    """Highest ``_N`` suffix already stamped on any ``BYPARENT_<n>`` /
+    ``CIRCUITBYPARENT_<n>`` circuit number in the model. Seeds the
+    per-run group counter so a second placement run (or the append
+    workflow) continues numbering instead of reusing ``_1`` and
+    silently merging two different parents' circuit groups.
+    """
+    highest = 0
+    try:
+        collector = (
+            FilteredElementCollector(doc)
+            .OfClass(FamilyInstance)
+            .WhereElementIsNotElementType()
+        )
+    except Exception:
+        return highest
+    for inst in collector:
+        try:
+            param = inst.LookupParameter(_CKT_CIRCUIT_PARAM_NAME)
+            text = param.AsString() if param is not None else None
+        except Exception:
+            continue
+        if not text:
+            continue
+        match = _BYPARENT_SUFFIXED_RE.match(text)
+        if match:
+            try:
+                num = int(match.group(1))
+            except Exception:
+                continue
+            if num > highest:
+                highest = num
+    return highest
 
 
 def _parse_feet_inches(text):
@@ -2995,6 +3074,11 @@ def execute_placement(doc, matches, options=None):
     # copies.
     level_z_cache = {}
     level_z_warned = set()
+    # Next ``BYPARENT_<n>`` circuit-group number for this pass. Seeded
+    # lazily (first BYPARENT token seen) from the highest suffix already
+    # in the model, so repeat runs / per-level passes keep incrementing
+    # instead of reusing group numbers.
+    byparent_next_group = None
     if uidoc is not None:
         try:
             original_active_view = uidoc.ActiveView
@@ -3050,6 +3134,11 @@ def execute_placement(doc, matches, options=None):
             # point sources (no Revit parent to read), in which case
             # parent directives are reported as skipped per-LED.
             parent_elem = _resolve_target_parent_element(doc, m.target)
+            # ``BYPARENT_<n>`` circuit-group number for THIS parent
+            # target — assigned on the first placed LED whose circuit
+            # number reads a bare BYPARENT token, shared by every
+            # subsequent BYPARENT LED of the same parent.
+            byparent_group_num = None
             for set_dict in m.profile.get("linked_sets") or []:
                 if not isinstance(set_dict, dict):
                     continue
@@ -3265,6 +3354,36 @@ def execute_placement(doc, matches, options=None):
                         warnings=result.warnings,
                     )
                     result.parent_directive_writes += dir_written
+                    # Per-parent circuit-group suffix: when the circuiting
+                    # token BYPARENT (or CIRCUITBYPARENT) landed in
+                    # CKT_Circuit Number_CEDT, rewrite it to BYPARENT_<n>
+                    # — the same <n> for every fixture placed against this
+                    # parent target, incremented for the next parent — so
+                    # each parent's fixtures stay a distinct circuit group
+                    # downstream instead of every BYPARENT fixture in the
+                    # model string-merging into one giant circuit. Runs
+                    # after the static + directive writes (reads the live
+                    # value, whatever wrote it) and before _write_linker
+                    # so the linker snapshot carries the suffixed number.
+                    led_ckt_override = None
+                    ckt_param, ckt_token = _byparent_circuit_param(placed)
+                    if ckt_param is not None:
+                        if byparent_group_num is None:
+                            if byparent_next_group is None:
+                                byparent_next_group = (
+                                    _max_existing_byparent_group(doc) + 1
+                                )
+                            byparent_group_num = byparent_next_group
+                            byparent_next_group += 1
+                            result.byparent_group_count += 1
+                        suffixed = "{}_{}".format(
+                            ckt_token, byparent_group_num
+                        )
+                        if _set_param_value(
+                            ckt_param, suffixed, warnings=result.warnings
+                        ):
+                            result.byparent_suffix_writes += 1
+                            led_ckt_override = suffixed
                     # Post-creation Level writeback to SCHEDULE_LEVEL_PARAM
                     # (and any other writeable Level-shaped BIP /
                     # LookupParameter the family exposes). Uses the
@@ -3289,7 +3408,8 @@ def execute_placement(doc, matches, options=None):
                     _correct_elevation_from_level(
                         doc, placed, (info or {}).get("target_world_z"),
                     )
-                    if _write_linker(placed, led, m.profile, m.target):
+                    if _write_linker(placed, led, m.profile, m.target,
+                                     ckt_circuit_override=led_ckt_override):
                         result.element_linker_writes += 1
     finally:
         # Restore the user's original active view so the placement run

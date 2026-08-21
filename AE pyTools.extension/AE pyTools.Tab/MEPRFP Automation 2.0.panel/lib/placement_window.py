@@ -904,6 +904,7 @@ class PlacementController(object):
                 "- Fixtures placed: {}\n"
                 "- Element_Linker writes: {}\n"
                 "- Static parameter writes: {}\n"
+                "- BYPARENT circuit groups: {} ({} fixtures suffixed)\n"
                 "- Already-placed (skipped): {}\n"
                 "- Normalized-name matches: {}\n"
                 "- Type substitutions: {}\n"
@@ -911,6 +912,8 @@ class PlacementController(object):
                     result.placed_fixture_count,
                     result.element_linker_writes,
                     getattr(result, "static_param_writes", 0),
+                    getattr(result, "byparent_group_count", 0),
+                    getattr(result, "byparent_suffix_writes", 0),
                     result.skipped_already_placed,
                     getattr(result, "normalized_match_count", 0),
                     getattr(result, "substituted_type_count", 0),

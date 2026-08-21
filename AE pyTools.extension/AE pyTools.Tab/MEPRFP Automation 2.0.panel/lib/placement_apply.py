@@ -61,6 +61,8 @@ def _merge_result(agg, res):
     agg.element_linker_writes += res.element_linker_writes
     agg.static_param_writes += res.static_param_writes
     agg.parent_directive_writes += res.parent_directive_writes
+    agg.byparent_group_count += getattr(res, "byparent_group_count", 0)
+    agg.byparent_suffix_writes += getattr(res, "byparent_suffix_writes", 0)
     agg.skipped_already_placed += res.skipped_already_placed
     agg.normalized_match_count += res.normalized_match_count
     agg.substituted_type_count += res.substituted_type_count
