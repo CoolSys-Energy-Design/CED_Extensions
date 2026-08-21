@@ -11,7 +11,7 @@ for _wpf_asm in ("PresentationFramework", "PresentationCore", "WindowsBase"):
         pass
 
 from Autodesk.Revit.UI import ExternalEvent, IExternalEventHandler
-from System.Windows import Application, WindowState
+from System.Windows import Application, Visibility, WindowState
 from System.Windows.Controls import Button, DataGridRow
 from System.Windows.Media import VisualTreeHelper
 from pyrevit import forms, revit, script
@@ -246,6 +246,9 @@ class AlertsBrowserWindow(forms.WPFWindow):
         self._apply_theme()
 
         self._circuit_list = self.FindName("CircuitList")
+        self._all_alerts_list = self.FindName("AllAlertsList")
+        self._by_circuit_view = self.FindName("ByCircuitView")
+        self._all_alerts_view = self.FindName("AllAlertsView")
         self._active_list = self.FindName("ActiveAlertsList")
         self._hidden_list = self.FindName("HiddenAlertsList")
         self._document_text = self.FindName("DocumentText")
@@ -255,10 +258,13 @@ class AlertsBrowserWindow(forms.WPFWindow):
         self._status_text = self.FindName("StatusText")
         self._refresh_button = self.FindName("RefreshButton")
         self._show_hidden_toggle = self.FindName("ShowHiddenToggle")
+        self._toggle_view_button = self.FindName("ToggleViewButton")
         self._tabs = self.FindName("AlertsTabs")
         self._hide_unhide_button = self.FindName("HideUnhideButton")
+        self._is_all_alerts_view = False
         if self._tabs is not None:
             self._tabs.SelectionChanged += self.tabs_selection_changed
+        self._update_view_visual()
         self._apply_snapshot(snapshot, preferred_circuit_id=None)
 
     def _apply_theme(self):
@@ -286,6 +292,13 @@ class AlertsBrowserWindow(forms.WPFWindow):
             return 0
 
     def _selected_alert_row(self):
+        if self._is_all_alerts_view:
+            if self._all_alerts_list is None:
+                return None
+            try:
+                return getattr(self._all_alerts_list, "SelectedItem", None)
+            except Exception:
+                return None
         idx = self._current_tab_index()
         target_list = self._hidden_list if idx == 1 else self._active_list
         if target_list is None:
@@ -313,8 +326,9 @@ class AlertsBrowserWindow(forms.WPFWindow):
         btn = self._hide_unhide_button
         if btn is None:
             return
-        hidden_tab = self._current_tab_index() == 1
-        btn.Content = "Unhide Type" if hidden_tab else "Hide Type"
+        row = self._selected_alert_row()
+        hidden_row = bool(getattr(row, "is_hidden", False)) if row is not None else False
+        btn.Content = "Unhide Type" if hidden_row else "Hide Type"
 
         if self._gateway is not None and self._gateway.is_busy():
             btn.IsEnabled = False
@@ -327,7 +341,6 @@ class AlertsBrowserWindow(forms.WPFWindow):
             btn.ToolTip = "Select a circuit first."
             return
 
-        row = self._selected_alert_row()
         if row is None:
             btn.IsEnabled = False
             btn.ToolTip = "Select an alert type first."
@@ -339,7 +352,7 @@ class AlertsBrowserWindow(forms.WPFWindow):
             btn.ToolTip = "Only mapped alert types can be changed."
             return
 
-        if (not hidden_tab) and (not bool(getattr(row, "can_hide", False))):
+        if (not hidden_row) and (not bool(getattr(row, "can_hide", False))):
             btn.IsEnabled = False
             btn.ToolTip = "This alert type can not be hidden."
             return
@@ -348,6 +361,13 @@ class AlertsBrowserWindow(forms.WPFWindow):
         btn.ToolTip = "Toggle visibility for this alert type on the selected circuit."
 
     def _selected_item(self):
+        if self._is_all_alerts_view:
+            row = self._selected_alert_row()
+            item = getattr(row, "circuit_item", None) if row is not None else None
+            if item is not None:
+                return item
+            circuit_id = getattr(row, "circuit_id", 0) if row is not None else 0
+            return self._find_item_by_id(circuit_id)
         try:
             return getattr(self._circuit_list, "SelectedItem", None)
         except Exception:
@@ -386,22 +406,102 @@ class AlertsBrowserWindow(forms.WPFWindow):
             visible.append(item)
         return visible
 
+    def _visible_alert_rows(self):
+        rows = []
+        show_hidden = self._show_hidden_enabled()
+        for item in list(self._items or []):
+            for row in list(getattr(item, "rows", []) or []):
+                if show_hidden or not bool(getattr(row, "is_hidden", False)):
+                    rows.append(row)
+        return rows
+
+    def _update_alert_count_text(self, items):
+        """Show aggregate alert totals independently of the hidden-row filter."""
+        total_alerts = 0
+        hidden_alerts = 0
+        for item in list(items or []):
+            rows = list(getattr(item, "rows", []) or [])
+            total_alerts += int(getattr(item, "total_count", len(rows)) or 0)
+            hidden_alerts += int(
+                getattr(
+                    item,
+                    "hidden_count",
+                    sum(1 for row in rows if bool(getattr(row, "is_hidden", False))),
+                )
+                or 0
+            )
+        active_alerts = max(0, total_alerts - hidden_alerts)
+        if self._count_text is not None:
+            self._count_text.Text = "{} Alerts | {} Active | {} Hidden".format(
+                total_alerts,
+                active_alerts,
+                hidden_alerts,
+            )
+
+    def _update_view_visual(self):
+        if self._by_circuit_view is not None:
+            self._by_circuit_view.Visibility = (
+                Visibility.Collapsed if self._is_all_alerts_view else Visibility.Visible
+            )
+        if self._all_alerts_view is not None:
+            self._all_alerts_view.Visibility = (
+                Visibility.Visible if self._is_all_alerts_view else Visibility.Collapsed
+            )
+        if self._toggle_view_button is not None:
+            desired_state = bool(self._is_all_alerts_view)
+            if bool(getattr(self._toggle_view_button, "IsChecked", False)) != desired_state:
+                self._toggle_view_button.IsChecked = desired_state
+            if desired_state:
+                self._toggle_view_button.ToolTip = "Switch to the per-circuit display"
+            else:
+                self._toggle_view_button.ToolTip = "Switch to the all-alerts display"
+
     def _apply_snapshot(self, snapshot, preferred_circuit_id=None):
+        current_item = self._selected_item()
         data = dict(snapshot or {})
         doc_title = str(data.get("doc_title") or "-")
         self._doc_title = doc_title
         items = list(data.get("items") or [])
         self._items = items
+        self._update_alert_count_text(items)
         visible_items = self._visible_items()
         if self._document_text is not None:
             self._document_text.Text = "Document: {}".format(doc_title)
-        if self._count_text is not None:
-            self._count_text.Text = "{} circuits with alerts".format(len(visible_items))
+
+        if self._is_all_alerts_view:
+            visible_rows = self._visible_alert_rows()
+            if self._all_alerts_list is not None:
+                self._all_alerts_list.ItemsSource = list(visible_rows)
+            selected = self._find_item_by_id(preferred_circuit_id)
+            if selected is None:
+                selected = current_item
+            if selected not in visible_items and selected not in [
+                getattr(row, "circuit_item", None) for row in visible_rows
+            ]:
+                selected = None
+            selected_row = None
+            if selected is not None:
+                for row in visible_rows:
+                    if getattr(row, "circuit_item", None) is selected:
+                        selected_row = row
+                        break
+            if selected_row is None and visible_rows and selected is None:
+                selected_row = visible_rows[0]
+                selected = getattr(selected_row, "circuit_item", None)
+            if self._all_alerts_list is not None:
+                try:
+                    self._all_alerts_list.SelectedItem = selected_row
+                except Exception:
+                    pass
+            self._set_selected(selected)
+            self._update_view_visual()
+            return
+
         if self._circuit_list is not None:
             self._circuit_list.ItemsSource = list(visible_items)
         selected = self._find_item_by_id(preferred_circuit_id)
-        if selected is None:
-            selected = self._selected_item()
+        if selected is None or selected not in visible_items:
+            selected = current_item
             if selected not in visible_items:
                 selected = visible_items[0] if visible_items else None
         if self._circuit_list is not None:
@@ -410,6 +510,7 @@ class AlertsBrowserWindow(forms.WPFWindow):
             except Exception:
                 pass
         self._set_selected(selected)
+        self._update_view_visual()
 
     def show_hidden_toggled(self, sender, args):
         selected = self._selected_item()
@@ -420,29 +521,50 @@ class AlertsBrowserWindow(forms.WPFWindow):
         }
         self._apply_snapshot(snapshot, preferred_circuit_id=preferred_id)
 
-    def _set_selected(self, item):
+    def toggle_view_changed(self, sender, args):
+        selected = self._selected_item()
+        preferred_id = int(getattr(selected, "circuit_id", 0) or 0) if selected is not None else 0
+        requested_view = bool(getattr(sender, "IsChecked", False))
+        if requested_view == self._is_all_alerts_view:
+            return
+        self._is_all_alerts_view = requested_view
+        self._update_view_visual()
+        self._apply_snapshot(
+            {
+                "doc_title": self._doc_title,
+                "items": list(self._items or []),
+            },
+            preferred_circuit_id=preferred_id,
+        )
+
+    def _update_selected_labels(self, item):
         if item is None:
             if self._selected_circuit_text is not None:
                 self._selected_circuit_text.Text = "Select a circuit with alerts"
             if self._selected_counts_text is not None:
                 self._selected_counts_text.Text = "Alerts: 0"
-            if self._active_list is not None:
-                self._active_list.ItemsSource = []
-                self._active_list.SelectedItem = None
-            if self._hidden_list is not None:
-                self._hidden_list.ItemsSource = []
-                self._hidden_list.SelectedItem = None
-            self._update_refresh_state(None)
-            self._sync_hide_unhide_state()
             return
         if self._selected_circuit_text is not None:
             self._selected_circuit_text.Text = "{} - {}".format(item.panel_ckt_text, item.load_name or "-")
         if self._selected_counts_text is not None:
             self._selected_counts_text.Text = item.counts_text
-        if self._active_list is not None:
+
+    def _set_selected(self, item):
+        self._update_selected_labels(item)
+        if item is None:
+            if (not self._is_all_alerts_view) and self._active_list is not None:
+                self._active_list.ItemsSource = []
+                self._active_list.SelectedItem = None
+            if (not self._is_all_alerts_view) and self._hidden_list is not None:
+                self._hidden_list.ItemsSource = []
+                self._hidden_list.SelectedItem = None
+            self._update_refresh_state(None)
+            self._sync_hide_unhide_state()
+            return
+        if (not self._is_all_alerts_view) and self._active_list is not None:
             self._active_list.ItemsSource = list(item.active_rows or [])
             self._active_list.SelectedItem = None
-        if self._hidden_list is not None:
+        if (not self._is_all_alerts_view) and self._hidden_list is not None:
             self._hidden_list.ItemsSource = list(item.hidden_rows or [])
             self._hidden_list.SelectedItem = None
         self._update_refresh_state(item)
@@ -535,6 +657,8 @@ class AlertsBrowserWindow(forms.WPFWindow):
                 self._active_list.SelectedItem = None
             if self._hidden_list is not None:
                 self._hidden_list.SelectedItem = None
+            if self._all_alerts_list is not None:
+                self._all_alerts_list.SelectedItem = None
         except Exception:
             pass
 
@@ -547,6 +671,8 @@ class AlertsBrowserWindow(forms.WPFWindow):
         if self._active_list is not None and _is_descendant_of_control(source, self._active_list):
             return
         if self._hidden_list is not None and _is_descendant_of_control(source, self._hidden_list):
+            return
+        if self._all_alerts_list is not None and _is_descendant_of_control(source, self._all_alerts_list):
             return
         self._clear_alert_grid_selection()
 
@@ -563,7 +689,9 @@ class AlertsBrowserWindow(forms.WPFWindow):
         self._sync_hide_unhide_state()
 
     def alerts_grid_selection_changed(self, sender, args):
-        if sender == self._active_list and self._active_list is not None:
+        if sender == self._all_alerts_list:
+            self._update_selected_labels(self._selected_item())
+        elif sender == self._active_list and self._active_list is not None:
             if getattr(self._active_list, "SelectedItem", None) is not None and self._hidden_list is not None:
                 self._hidden_list.SelectedItem = None
         elif sender == self._hidden_list and self._hidden_list is not None:
@@ -600,8 +728,8 @@ class AlertsBrowserWindow(forms.WPFWindow):
             self._sync_hide_unhide_state()
             return
 
-        hidden_tab = self._current_tab_index() == 1
-        if (not hidden_tab) and (not bool(getattr(row, "can_hide", False))):
+        hidden_now = bool(getattr(row, "is_hidden", False))
+        if (not hidden_now) and (not bool(getattr(row, "can_hide", False))):
             self._set_status("This alert type can not be hidden.")
             self._sync_hide_unhide_state()
             return
@@ -609,7 +737,13 @@ class AlertsBrowserWindow(forms.WPFWindow):
         for item_row in list(getattr(item, "rows", []) or []):
             if str(getattr(item_row, "definition_id", "") or "").strip() != definition_id:
                 continue
-            item_row.is_hidden = not hidden_tab
+            item_row.is_hidden = not hidden_now
+
+        if self._all_alerts_list is not None:
+            try:
+                self._all_alerts_list.Items.Refresh()
+            except Exception:
+                pass
 
         hidden_ids = self._build_hidden_ids_for_item(item)
         if self._gateway is None:

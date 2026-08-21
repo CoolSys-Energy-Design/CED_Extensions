@@ -16,6 +16,10 @@ You can pick a circuit, read active/hidden alerts, jump to related model element
 - **Right tabs**:
   - **Active**: currently active alerts.
   - **Hidden**: hidden/suppressed alerts.
+- **Grid Display**: switches to an **All Alerts** grid with one row per alert and no circuit picker, or back to the by-circuit display.
+- The header summary always shows total **Alerts** and **Hidden** counts; `Show Hidden` only controls which rows are displayed.
+- **All Alerts columns**: Circuit (`Panel / Circuit`), Load Name, Severity, Group, Alert ID, and Message. Click headers to sort.
+- Hidden rows are shown with subdued/italic text when **Show Hidden** is enabled.
 - **Bottom commands**: model selection buttons + refresh.
 
 ## Bottom Buttons
