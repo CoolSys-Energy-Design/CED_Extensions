@@ -719,10 +719,25 @@ def _sync_lock_state_from_row(row):
 
 
 def _derive_branch_type(circuit):
-    if circuit.CircuitType == DBE.CircuitType.Space:
-        return "SPACE"
-    if circuit.CircuitType == DBE.CircuitType.Spare:
-        return "SPARE"
+    # Circuit Manager is imported during Revit startup.  Keep this path on
+    # direct, native enum comparisons; CircuitBranch's calculation helper is
+    # intentionally not used by the startup-loaded panel classifier.
+    try:
+        native_type = circuit.CircuitType
+    except Exception:
+        native_type = None
+
+    try:
+        if native_type == DBE.CircuitType.Space:
+            return "SPACE"
+        if native_type == DBE.CircuitType.Spare:
+            return "SPARE"
+        if native_type == DBE.CircuitType.Circuit:
+            branch_type = (_lookup_param_text(circuit, "CKT_Circuit Type_CEDT") or "").strip().upper()
+            if branch_type:
+                return branch_type
+    except Exception:
+        pass
     return "BRANCH"
 
 
@@ -772,7 +787,11 @@ class CircuitListItem(object):
                 rating_value = None
         self.sort_rating = float(rating_value) if rating_value is not None else 999999.0
 
-        if circuit.CircuitType == DBE.CircuitType.Space:
+        try:
+            is_space = circuit.CircuitType == DBE.CircuitType.Space
+        except Exception:
+            is_space = False
+        if is_space:
             self.rating_poles = "/{}P".format(poles)
         elif rating_value is None:
             self.rating_poles = "- / {}P".format(poles)
@@ -798,13 +817,7 @@ class CircuitListItem(object):
         except Exception:
             self.load_line_color = "#384450"
 
-        branch_type = _lookup_param_value(circuit, "CKT_Circuit Type_CEDT")
-        if isinstance(branch_type, str):
-            branch_type = branch_type.strip().upper()
-        if not branch_type:
-            branch_type = _derive_branch_type(circuit)
-
-        self.branch_type = branch_type
+        self.branch_type = _derive_branch_type(circuit)
         self.branch_type_line = "Circuit Type: {}".format(self.branch_type)
 
         conduit_wire = _lookup_param_value(circuit, "Conduit and Wire Size_CEDT")
@@ -2627,7 +2640,6 @@ class CircuitBrowserPanel(forms.WPFPanel):
         self._list_scrollviewer_hooked = False
         self._uniform_item_width = 0.0
         self._compress_item_width = False
-        self._compress_hide_load_name = False
         self._is_refreshing_list = False
         self._list_layout_refresh_pending = False
         self._browser_compress_item = None
@@ -2729,6 +2741,8 @@ class CircuitBrowserPanel(forms.WPFPanel):
         self._apply_compact_toolbar_mode(width < self._COMPACT_TOOLBAR_BREAKPOINT)
         self._apply_action_card_layout(width < self._ACTION_CARD_STACK_BREAKPOINT)
         self._apply_mini_toolbar_mode(width < self._MINI_TOOLBAR_BREAKPOINT)
+        if getattr(self, "_list", None) is not None and hasattr(self, "_list_layout_refresh_pending"):
+            self._schedule_list_layout_refresh()
 
     def _apply_action_card_layout(self, stacked):
         """Put action labels above their controls when the dock is narrow."""
@@ -2881,7 +2895,17 @@ class CircuitBrowserPanel(forms.WPFPanel):
             return
 
         if result.get("status") == "ok":
-            self._set_status("Calculated {} circuits".format(result.get("updated_circuits", 0)))
+            updated = int(result.get("updated_circuits", 0) or 0)
+            updated_special = int(result.get("updated_special_circuits", 0) or 0)
+            if updated_special:
+                self._set_status(
+                    "Calculated {} circuits (refreshed {} SPARE/SPACE)".format(
+                        updated,
+                        updated_special,
+                    )
+                )
+            else:
+                self._set_status("Calculated {} circuits".format(updated))
             try:
                 self._show_run_summary_if_needed(result)
             except Exception as ex:
@@ -3405,27 +3429,6 @@ class CircuitBrowserPanel(forms.WPFPanel):
     def _use_compact_compress_mode(self):
         return bool(self._compress_item_width)
 
-    def _load_name_hide_thresholds(self):
-        if bool(self._is_card_view):
-            hide = 250.0
-        else:
-            hide = 300.0 if bool(self._compact_show_type_badges) else 260.0
-        return float(hide), float(hide + 36.0)
-
-    def _should_hide_load_name_for_width(self, viewport_width):
-        try:
-            viewport = float(viewport_width or 0.0)
-        except Exception:
-            viewport = 0.0
-        if viewport <= 0.0:
-            return bool(self._compress_hide_load_name)
-        hide_threshold, show_threshold = self._load_name_hide_thresholds()
-        if bool(self._compress_hide_load_name):
-            self._compress_hide_load_name = viewport < show_threshold
-        else:
-            self._compress_hide_load_name = viewport <= hide_threshold
-        return bool(self._compress_hide_load_name)
-
     def _reset_horizontal_offset_for_compress(self, viewer=None):
         if not self._use_compact_compress_mode():
             return
@@ -3483,24 +3486,22 @@ class CircuitBrowserPanel(forms.WPFPanel):
     def _apply_item_width_mode(self, items):
         records = list(items or [])
         use_compress = self._use_compact_compress_mode()
-        hide_load_name = False
         char_limit = 0
         max_item_width = 100000.0
         if use_compress:
             viewport_width = self._compute_list_viewport_width()
-            hide_load_name = self._should_hide_load_name_for_width(viewport_width)
             char_limit = 0 if bool(self._is_card_view) else self._compute_load_name_char_limit()
             max_item_width = max(0.0, float(viewport_width - 2.0))
-        else:
-            self._compress_hide_load_name = False
         for item in records:
             full_name = str(getattr(item, "load_name", "") or "")
-            if use_compress and hide_load_name:
-                item.load_name_display = ""
-                item.load_name_visibility = "Collapsed"
+            if use_compress and char_limit > 0:
+                # Keep the load-name field visible in compressed mode.  The
+                # star-sized XAML column and TextTrimming handle the remaining
+                # width, avoiding direction-dependent collapse state.
+                item.load_name_display = _clip_with_ellipsis(full_name, char_limit)
             else:
-                item.load_name_display = _clip_with_ellipsis(full_name, char_limit) if (use_compress and char_limit > 0) else full_name
-                item.load_name_visibility = "Visible"
+                item.load_name_display = full_name
+            item.load_name_visibility = "Visible"
             item.item_max_width = max_item_width if use_compress else 100000.0
 
     def list_scroll_changed(self, sender, args):
@@ -4756,6 +4757,7 @@ class CircuitBrowserPanel(forms.WPFPanel):
             if isinstance(recalc_result, dict):
                 try:
                     recalced_count = int(recalc_result.get("updated_circuits", 0) or 0)
+                    recalced_count += int(recalc_result.get("updated_special_circuits", 0) or 0)
                 except Exception:
                     recalced_count = 0
             if moved_ids and recalced_count > 0:
@@ -5483,8 +5485,10 @@ class CircuitBrowserPanel(forms.WPFPanel):
                 settings=settings,
                 preview_values={"CKT_User Override_CED": 0},
             )
-            if not branch.is_power_circuit or branch.is_space or branch.is_spare:
+            if not branch.is_power_circuit:
                 return row.current_wire
+            if branch.is_special:
+                return ""
             branch.calculate_hot_wire_size()
             branch.calculate_neutral_wire_size()
             branch.calculate_ground_wire_size()
@@ -5785,6 +5789,7 @@ class CircuitBrowserPanel(forms.WPFPanel):
                 edited_count = 0
             try:
                 recalculated = int(payload.get("updated_circuits", 0) or 0)
+                recalculated += int(payload.get("updated_special_circuits", 0) or 0)
             except Exception:
                 recalculated = 0
             self._set_status("Edited {} circuit(s) | Recalculated {}".format(edited_count, recalculated))

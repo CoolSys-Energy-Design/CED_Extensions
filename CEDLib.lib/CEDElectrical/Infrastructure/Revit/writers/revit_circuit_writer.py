@@ -50,6 +50,8 @@ class RevitCircuitWriter(object):
         locked_ids = locked_ids or set()
         if not design_options.is_main_model_element(circuit):
             return fixture_count, equipment_count
+        if bool(getattr(branch, 'is_special', False)):
+            return fixture_count, equipment_count
 
         write_fixtures = getattr(settings, 'write_fixture_results', False)
         write_equipment = getattr(settings, 'write_equipment_results', False)

@@ -145,6 +145,54 @@ def _bip_text(element, bip):
         return ""
 
 
+def _special_parameter_value(param):
+    """Read a shared parameter without relying on formatted display text."""
+    if param is None:
+        return None
+    try:
+        storage_type = param.StorageType
+        if storage_type == DB.StorageType.String:
+            value = param.AsString()
+            return _to_text(value, "")
+        if storage_type == DB.StorageType.Integer:
+            return param.AsInteger()
+        if storage_type == DB.StorageType.Double:
+            return param.AsDouble()
+        if storage_type == DB.StorageType.ElementId:
+            return _idval(param.AsElementId())
+    except Exception:
+        return None
+    return None
+
+
+def _special_parameter_matches(param, expected):
+    """Return whether a present parameter matches the special-circuit contract."""
+    actual = _special_parameter_value(param)
+    try:
+        storage_type = param.StorageType
+    except Exception:
+        return False
+
+    if expected is None:
+        if storage_type == DB.StorageType.String:
+            return not _to_text(actual, "").strip()
+        if storage_type == DB.StorageType.ElementId:
+            return _idval(actual) <= 0
+        number = _safe_float(actual)
+        return number is not None and abs(number) <= 0.000001
+
+    if storage_type == DB.StorageType.String:
+        return _to_text(actual, "").strip() == _to_text(expected, "").strip()
+    if storage_type == DB.StorageType.ElementId:
+        return _idval(actual) == _idval(expected)
+
+    actual_number = _safe_float(actual)
+    expected_number = _safe_float(expected)
+    if actual_number is None or expected_number is None:
+        return False
+    return abs(actual_number - expected_number) <= 0.000001
+
+
 def _element_name(element):
     if element is None:
         return ""
@@ -979,6 +1027,7 @@ class ElectricalQCScanner(object):
     def _check_circuits(self, circuits):
         for circuit in list(circuits or []):
             branch = self._branch_for_circuit(circuit)
+            self._check_special_circuit_data(circuit, branch)
             if not self._is_regular_power_branch(branch):
                 continue
             base = None
@@ -1017,6 +1066,57 @@ class ElectricalQCScanner(object):
                     highlight_circuit=True,
                     highlight_load=bool(connected_loads),
                 )
+
+    def _check_special_circuit_data(self, circuit, branch):
+        """Report stale CED result values on native SPARE/SPACE circuits."""
+        if branch is None:
+            return
+        try:
+            if not branch.is_power_circuit or not branch.is_special:
+                return
+        except Exception:
+            return
+
+        try:
+            expected_values = branch.get_special_parameter_reset_values(
+                settings_manager.RESULT_PARAM_NAMES
+            )
+        except Exception as ex:
+            self._log_debug("Special circuit parameter contract failed: {}".format(ex))
+            return
+
+        stale_names = []
+        present_count = 0
+        for param_name in list(settings_manager.RESULT_PARAM_NAMES or []):
+            try:
+                param = circuit.LookupParameter(param_name)
+            except Exception:
+                param = None
+            if not param:
+                # Revit 25 and earlier projects may not have any CED shared
+                # parameters.  Missing parameters are not stale values.
+                continue
+            present_count += 1
+            if not _special_parameter_matches(param, expected_values.get(param_name)):
+                stale_names.append(param_name)
+
+        if not present_count or not stale_names:
+            return
+
+        circuit_type = "SPARE" if branch.is_spare else "SPACE"
+        self._add(
+            "QC.Circuit.SpecialCircuitStaleData",
+            circuit=circuit,
+            observed="{} shared parameters out of sync".format(len(stale_names)),
+            limit_target="CED circuit parameters match the native {} circuit and blank/zero reset values".format(
+                circuit_type
+            ),
+            recommended_action="Recalculate this circuit to synchronize spare/space parameters.",
+            category="Circuits",
+            severity="MEDIUM",
+            issue="{} circuit has stale CED shared-parameter data.".format(circuit_type),
+            highlight_circuit=True,
+        )
 
     def _check_transformers(self):
         for eid, model in list((self.model_by_id or {}).items()):
