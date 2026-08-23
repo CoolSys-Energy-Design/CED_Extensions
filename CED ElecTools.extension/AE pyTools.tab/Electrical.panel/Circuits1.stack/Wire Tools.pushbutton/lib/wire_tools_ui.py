@@ -528,18 +528,13 @@ class WireToolsWindow(forms.WPFWindow):
         self.select_devices_button.IsEnabled = active
         self.use_current_button.IsEnabled = active
         self.clear_devices_button.IsEnabled = active
-        connector_scheme = scheme in (
-            SCHEME_INTERCONNECT,
-            SCHEME_INDIVIDUAL_HOMERUN,
-            SCHEME_WIRE_TO_NODE,
-        )
         self.system_type_panel.Visibility = (
             Visibility.Visible
-            if connector_scheme and len(self.system_type_choices) > 1
+            if len(self.system_type_choices) > 1
             else Visibility.Collapsed
         )
-        self.system_type_panel.IsEnabled = active and connector_scheme
-        self.system_type_combo.IsEnabled = active and connector_scheme
+        self.system_type_panel.IsEnabled = active and bool(self.system_type_choices)
+        self.system_type_combo.IsEnabled = active and bool(self.system_type_choices)
         self.node_group.Visibility = (
             Visibility.Visible
             if node_options_visible
@@ -790,6 +785,7 @@ class WireToolsWindow(forms.WPFWindow):
                 )
             finally:
                 self.suspend_option_events = False
+            self._refresh_control_state()
             if result.get("node_excluded"):
                 self._set_status("Device selection updated; the picked node was excluded.")
             else:

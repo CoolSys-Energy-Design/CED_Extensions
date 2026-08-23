@@ -107,6 +107,10 @@ def _system_type_status(invalid_devices, requested_system_type):
         item for item in list(invalid_devices or [])
         if item.get("category") == "ambiguous_connector"
     ])
+    no_circuit_count = len([
+        item for item in list(invalid_devices or [])
+        if item.get("category") == "no_circuit"
+    ])
     messages = []
     if missing_count:
         noun = "device" if missing_count == 1 else "devices"
@@ -122,6 +126,15 @@ def _system_type_status(invalid_devices, requested_system_type):
         messages.append(
             "{} selected {} have multiple matching {} connectors.".format(
                 ambiguous_count,
+                noun,
+                type_name,
+            )
+        )
+    if no_circuit_count:
+        noun = "device" if no_circuit_count == 1 else "devices"
+        messages.append(
+            "{} selected {} do not have a matching {} circuit.".format(
+                no_circuit_count,
                 noun,
                 type_name,
             )
@@ -377,12 +390,10 @@ class _WireToolsHandler(UI.IExternalEventHandler):
             )
 
     def _sync_result(self, document, view, scheme, requested_system_type=None):
-        type_choices = []
-        if scheme != SCHEME_WIRE_BY_CIRCUIT:
-            type_choices = system_type_choices(document, self.gateway.device_ids)
-            available_keys = [item.get("id") for item in type_choices]
-            if requested_system_type not in available_keys and type_choices:
-                requested_system_type = type_choices[0].get("id")
+        type_choices = system_type_choices(document, self.gateway.device_ids)
+        available_keys = [item.get("id") for item in type_choices]
+        if requested_system_type not in available_keys and type_choices:
+            requested_system_type = type_choices[0].get("id")
         valid_devices, invalid_devices = valid_device_ids(
             document,
             self.gateway.device_ids,
@@ -391,7 +402,11 @@ class _WireToolsHandler(UI.IExternalEventHandler):
         )
         circuit_count = 0
         if scheme == SCHEME_WIRE_BY_CIRCUIT:
-            circuit_count = len(circuits_from_elements(document, valid_devices))
+            circuit_count = len(circuits_from_elements(
+                document,
+                valid_devices,
+                requested_system_type=requested_system_type,
+            ))
         node_element = None
         node_connector_count = 0
         node_name = "-"
@@ -457,12 +472,10 @@ class _WireToolsHandler(UI.IExternalEventHandler):
             raw_id for raw_id in raw_ids
             if node_value is None or element_id_value(raw_id) != node_value
         ]
-        type_choices = []
-        if scheme != SCHEME_WIRE_BY_CIRCUIT:
-            type_choices = system_type_choices(document, device_raw_ids)
-            available_keys = [item.get("id") for item in type_choices]
-            if requested_system_type not in available_keys and type_choices:
-                requested_system_type = type_choices[0].get("id")
+        type_choices = system_type_choices(document, device_raw_ids)
+        available_keys = [item.get("id") for item in type_choices]
+        if requested_system_type not in available_keys and type_choices:
+            requested_system_type = type_choices[0].get("id")
         diagnostics = []
         valid_elements, invalid_elements = valid_device_ids(
             document,
@@ -475,7 +488,11 @@ class _WireToolsHandler(UI.IExternalEventHandler):
         circuit_count = 0
         no_circuit_elements = []
         if scheme == SCHEME_WIRE_BY_CIRCUIT:
-            circuit_count = len(circuits_from_elements(document, valid_elements))
+            circuit_count = len(circuits_from_elements(
+                document,
+                valid_elements,
+                requested_system_type=requested_system_type,
+            ))
             no_circuit_elements = [
                 item for item in invalid_elements
                 if item.get("category") == "no_circuit"

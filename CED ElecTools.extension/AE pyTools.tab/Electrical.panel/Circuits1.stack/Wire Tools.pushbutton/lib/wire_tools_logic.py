@@ -32,6 +32,7 @@ HOMERUN_DIRECTION_DEVICE = "device"
 HOMERUN_SHAPE_STRAIGHT = "straight"
 HOMERUN_SHAPE_BEND = "bend"
 INTERCONNECT_SCOPE_SELECTED = "selected_only"
+SYSTEM_TYPE_KEY_PREFIX = "ElectricalSystemType:"
 INTERCONNECT_SCOPE_CIRCUITS = "selected_circuits"
 
 SCHEME_WIRE_BY_CIRCUIT = "wire_by_circuit"
@@ -51,7 +52,7 @@ SELECTION_RULES = {
         "Main-model, non-annotation MEP elements and electrical-system "
         "objects are accepted initially. A selected element is valid only "
         "when the shared electrical-system resolver finds at least one "
-        "eligible power circuit."
+        "eligible circuit matching the selected system type."
     ),
     SCHEME_INTERCONNECT: (
         "Main-model FamilyInstance elements are accepted only when they have "
@@ -230,13 +231,28 @@ def _connector_is_electrical(connector):
 def connector_type_key(connector):
     try:
         electrical_type = connector.ElectricalSystemType
-        return "ElectricalSystemType:{}".format(str(electrical_type))
+        return "{}{}".format(SYSTEM_TYPE_KEY_PREFIX, str(electrical_type))
     except Exception:
         pass
     try:
         return "Domain:{}".format(str(connector.Domain))
     except Exception:
         return "Electrical"
+
+
+def circuit_system_type_key(circuit):
+    """Return the same normalized key format used by connector types."""
+    try:
+        electrical_type = circuit.SystemType
+        return "{}{}".format(SYSTEM_TYPE_KEY_PREFIX, str(electrical_type))
+    except Exception:
+        return None
+
+
+def circuit_matches_system_type(circuit, requested_system_type=None):
+    if requested_system_type is None:
+        return True
+    return circuit_system_type_key(circuit) == str(requested_system_type)
 
 
 def _connector_is_primary(connector):
@@ -311,35 +327,86 @@ def connector_type_name(key):
 
 
 def system_type_choices(document, element_ids):
-    """Return distinct connector types and the number of supporting devices."""
+    """Return distinct connector/circuit types represented by the selection."""
     counts = {}
     for element_id in list(element_ids or []):
         try:
             element = document.GetElement(element_id_from(element_id_value(element_id)))
-            groups = connector_groups(element)
         except Exception:
             continue
+
+        try:
+            groups = connector_groups(element)
+        except Exception:
+            groups = {}
         for key in groups.keys():
-            counts.setdefault(key, set()).add(element_id_value(element.Id))
+            entry = counts.setdefault(key, {"devices": set(), "circuits": set()})
+            entry["devices"].add(element_id_value(element.Id))
+
+        # Circuit-based schemes need the same list even when the selected
+        # element is an ElectricalSystem rather than a connector host.
+        try:
+            circuits = list(_element_systems(element) or [])
+        except Exception:
+            circuits = []
+        for circuit in circuits:
+            key = circuit_system_type_key(circuit)
+            if key is None:
+                continue
+            entry = counts.setdefault(key, {"devices": set(), "circuits": set()})
+            entry["circuits"].add(element_id_value(circuit.Id))
+            entry["devices"].add(element_id_value(element.Id))
 
     keys = sorted(
         counts.keys(),
-        key=lambda value: (-len(counts[value]), connector_type_name(value).lower(), value),
+        key=lambda value: (
+            -len(counts[value]["devices"]),
+            -len(counts[value]["circuits"]),
+            connector_type_name(value).lower(),
+            value,
+        ),
     )
     choices = []
     for key in keys:
-        count = len(counts[key])
-        suffix = "device" if count == 1 else "devices"
-        display_name = "{} — {} {}".format(
+        device_count = len(counts[key]["devices"])
+        circuit_count = len(counts[key]["circuits"])
+        parts = []
+        if device_count:
+            parts.append("{} {}".format(
+                device_count,
+                "device" if device_count == 1 else "devices",
+            ))
+        if circuit_count:
+            parts.append("{} {}".format(
+                circuit_count,
+                "circuit" if circuit_count == 1 else "circuits",
+            ))
+        display_name = "{} — {}".format(
             connector_type_name(key),
-            count,
-            suffix,
+            ", ".join(parts),
         )
         choices.append({
             "id": key,
             "name": display_name,
             "type_name": connector_type_name(key),
-            "device_count": count,
+            "device_count": device_count,
+            "circuit_count": circuit_count,
+        })
+    if len(choices) > 1:
+        choices.insert(0, {
+            "id": None,
+            "name": "All System Types",
+            "type_name": "All System Types",
+            "device_count": len(set([
+                device_id
+                for entry in counts.values()
+                for device_id in entry["devices"]
+            ])),
+            "circuit_count": len(set([
+                circuit_id
+                for entry in counts.values()
+                for circuit_id in entry["circuits"]
+            ])),
         })
     return choices
 
@@ -523,8 +590,10 @@ def is_valid_node(element):
     return is_valid_device(element, allow_circuit=False)
 
 
-def circuit_eligible(circuit):
-    return electrical_utils.is_circuit_eligible(circuit)
+def circuit_eligible(circuit, requested_system_type=None):
+    if not electrical_utils.is_circuit_eligible(circuit, system_type=None):
+        return False
+    return circuit_matches_system_type(circuit, requested_system_type)
 
 
 def _append_selection_step(selection_steps, stage_name, passed, message):
@@ -536,7 +605,10 @@ def _append_selection_step(selection_steps, stage_name, passed, message):
         })
 
 
-def _element_systems(element, selection_steps=None):
+def _element_systems(
+        element,
+        selection_steps=None,
+        requested_system_type=None):
     if element is None:
         _append_selection_step(
             selection_steps,
@@ -552,13 +624,20 @@ def _element_systems(element, selection_steps=None):
     )
     if selection_resolver is not None:
         try:
-            resolved_systems = list(selection_resolver([element]) or [])
+            resolved_systems = list(selection_resolver(
+                [element],
+                system_type=None,
+            ) or [])
+            resolved_systems = [
+                circuit for circuit in resolved_systems
+                if circuit_matches_system_type(circuit, requested_system_type)
+            ]
             if resolved_systems:
                 _append_selection_step(
                     selection_steps,
                     "shared circuit resolver",
                     True,
-                    "Resolved {} eligible circuit(s).".format(
+                    "Resolved {} matching circuit(s).".format(
                         len(resolved_systems)
                     ),
                 )
@@ -567,7 +646,7 @@ def _element_systems(element, selection_steps=None):
                 selection_steps,
                 "shared circuit resolver",
                 False,
-                "Returned zero eligible circuits.",
+                "Returned zero circuits matching the selected system type.",
             )
         except Exception as error:
             _append_selection_step(
@@ -578,14 +657,14 @@ def _element_systems(element, selection_steps=None):
             )
     circuit_class = getattr(DB.Electrical, "ElectricalSystem", None)
     if circuit_class is not None and isinstance(element, circuit_class):
-        eligible = circuit_eligible(element)
+        eligible = circuit_eligible(element, requested_system_type)
         _append_selection_step(
             selection_steps,
             "selected electrical system",
             eligible,
-            "Selected element is an eligible power circuit."
+            "Selected element is a matching electrical circuit."
             if eligible
-            else "Selected electrical system is not an eligible power circuit.",
+            else "Selected electrical system is not a matching eligible circuit.",
         )
         return [element] if eligible else []
     try:
@@ -610,12 +689,19 @@ def _element_systems(element, selection_steps=None):
     if getter is not None:
         try:
             raw_systems = list(getter() or [])
-            filtered_systems = electrical_utils.filter_circuits(raw_systems)
+            filtered_systems = electrical_utils.filter_circuits(
+                raw_systems,
+                system_type=None,
+            )
+            filtered_systems = [
+                circuit for circuit in filtered_systems
+                if circuit_matches_system_type(circuit, requested_system_type)
+            ]
             _append_selection_step(
                 selection_steps,
                 "MEPModel.GetElectricalSystems",
                 bool(filtered_systems),
-                "Returned {} system(s); {} eligible power circuit(s) remained "
+                "Returned {} system(s); {} matching circuit(s) remained "
                 "after filtering.".format(
                     len(raw_systems),
                     len(filtered_systems),
@@ -631,12 +717,19 @@ def _element_systems(element, selection_steps=None):
             )
     try:
         raw_systems = list(mep_model.ElectricalSystems or [])
-        filtered_systems = electrical_utils.filter_circuits(raw_systems)
+        filtered_systems = electrical_utils.filter_circuits(
+            raw_systems,
+            system_type=None,
+        )
+        filtered_systems = [
+            circuit for circuit in filtered_systems
+            if circuit_matches_system_type(circuit, requested_system_type)
+        ]
         _append_selection_step(
             selection_steps,
             "MEPModel.ElectricalSystems",
             bool(filtered_systems),
-            "Returned {} system(s); {} eligible power circuit(s) remained after "
+            "Returned {} system(s); {} matching circuit(s) remained after "
             "filtering.".format(
                 len(raw_systems),
                 len(filtered_systems),
@@ -653,17 +746,26 @@ def _element_systems(element, selection_steps=None):
         return []
 
 
-def circuits_from_elements(document, elements):
+def circuits_from_elements(document, elements, requested_system_type=None):
     circuits = {}
     for element in list(elements or []):
-        for circuit in get_element_circuits(element):
+        for circuit in get_element_circuits(
+                element,
+                requested_system_type=requested_system_type):
             circuits[element_id_value(circuit.Id)] = circuit
     return list(circuits.values())
 
 
-def get_element_circuits(element, selection_steps=None):
+def get_element_circuits(
+        element,
+        selection_steps=None,
+        requested_system_type=None):
     """Return eligible circuits associated with one selected host element."""
-    return list(_element_systems(element, selection_steps=selection_steps) or [])
+    return list(_element_systems(
+        element,
+        selection_steps=selection_steps,
+        requested_system_type=requested_system_type,
+    ) or [])
 
 
 def _runtime_type_name(element):
@@ -839,6 +941,7 @@ def selection_validation_detail(
         circuit_list = get_element_circuits(
             element,
             selection_steps=detail["resolution_steps"],
+            requested_system_type=requested_system_type,
         )
         detail["circuit_ids"] = [
             element_id_value(circuit.Id) for circuit in circuit_list
@@ -851,7 +954,7 @@ def selection_validation_detail(
             detail["steps"],
             "Circuit requirement",
             bool(circuit_list),
-            "Resolved {} eligible power circuit(s): {}.".format(
+            "Resolved {} matching circuit(s): {}.".format(
                 len(circuit_list),
                 ", ".join([str(value) for value in detail["circuit_ids"]])
                 if circuit_list
@@ -863,7 +966,7 @@ def selection_validation_detail(
                 detail,
                 False,
                 "Circuit requirement",
-                "No eligible power circuit could be resolved from this selected element.",
+                "No eligible circuit matching the selected system type could be resolved from this selected element.",
                 "no_circuit",
             )
         return _selection_outcome(
@@ -992,7 +1095,13 @@ def circuit_member_count(circuit):
 
 def _view_wires_for_circuits(document, view_id, circuits):
     circuit_values = set([element_id_value(circuit.Id) for circuit in circuits])
-    wire_map = collect_active_view_wires_by_circuit(document, view_id)
+    # Wire Tools supports every selected system type; the shared utility keeps
+    # its legacy PowerCircuit default for callers outside this tool.
+    wire_map = collect_active_view_wires_by_circuit(
+        document,
+        view_id,
+        system_type=None,
+    )
     wires = []
     seen_values = set()
     for circuit_value in circuit_values:
@@ -1390,7 +1499,11 @@ def _apply_wire_type(wire_set, wire_type_id):
 def run_wire_by_circuit(document, view, elements, settings):
     if not settings.get("wire_type_id"):
         raise ValueError("Select a wire type before creating wires.")
-    circuits = circuits_from_elements(document, elements)
+    circuits = circuits_from_elements(
+        document,
+        elements,
+        requested_system_type=settings.get("system_type_key"),
+    )
     if not circuits:
         raise ValueError("No eligible electrical circuits were found from the selected devices.")
     skipped_circuits = []
@@ -2104,13 +2217,14 @@ def _custom_interconnect_homerun(document, view, wire_type_id,
 
 
 def _run_native_interconnect(document, view, device_elements, settings):
-    circuits = circuits_from_elements(document, device_elements)
+    circuits = circuits_from_elements(
+        document,
+        device_elements,
+        requested_system_type=settings.get("system_type_key"),
+    )
     if not circuits:
-        return _run_spatial_interconnect(
-            document,
-            view,
-            device_elements,
-            settings,
+        raise ValueError(
+            "No eligible circuits matched the selected system type for Full Circuits."
         )
     if not settings.get("wire_type_id"):
         raise ValueError("Select a wire type before creating wires.")
@@ -2518,12 +2632,110 @@ def _place_no_leader_tag(document, view, wire, open_connector, tag):
         )
 
 
+def _wire_leader_perpendicular_direction(wire, open_connector, view):
+    """Return a view-plane perpendicular to the wire at its open endpoint."""
+    open_point = open_connector.Origin
+    candidate_points = []
+    try:
+        for wire_connector in wire.ConnectorManager.Connectors:
+            candidate_point = wire_connector.Origin
+            if candidate_point.DistanceTo(open_point) > GEOMETRY_TOLERANCE:
+                candidate_points.append(candidate_point)
+    except Exception:
+        pass
+    try:
+        vertex_count = int(getattr(wire, "NumberOfVertices", 0) or 0)
+        for vertex_index in range(vertex_count):
+            candidate_point = wire.GetVertex(vertex_index)
+            if candidate_point.DistanceTo(open_point) > GEOMETRY_TOLERANCE:
+                candidate_points.append(candidate_point)
+    except Exception:
+        pass
+
+    wire_direction = None
+    if candidate_points:
+        nearest_point = min(
+            candidate_points,
+            key=lambda point: point.DistanceTo(open_point),
+        )
+        wire_direction = _project_direction(
+            nearest_point.Subtract(open_point),
+            view,
+        )
+
+    try:
+        if wire_direction is not None:
+            normal = _view_normal(view)
+            perpendicular = normal.CrossProduct(wire_direction)
+            if perpendicular.GetLength() > GEOMETRY_TOLERANCE:
+                perpendicular = perpendicular.Normalize()
+            else:
+                perpendicular = None
+        else:
+            perpendicular = None
+    except Exception:
+        perpendicular = None
+
+    try:
+        right_direction = _project_direction(view.RightDirection, view)
+    except Exception:
+        right_direction = None
+    try:
+        up_direction = _project_direction(view.UpDirection, view)
+    except Exception:
+        up_direction = None
+
+    if perpendicular is None:
+        return right_direction or DB.XYZ.BasisX
+
+    # For a mostly vertical wire, use the horizontal side.  For a mostly
+    # horizontal wire, use the vertical side.  This keeps the leader entering
+    # from the side of horizontal tag text rather than from above or below.
+    if right_direction is not None and up_direction is not None:
+        right_score = abs(perpendicular.DotProduct(right_direction))
+        up_score = abs(perpendicular.DotProduct(up_direction))
+        preferred_direction = (
+            right_direction if right_score >= up_score else up_direction
+        )
+        if perpendicular.DotProduct(preferred_direction) < 0.0:
+            perpendicular = perpendicular.Multiply(-1.0)
+    return perpendicular
+
+
+def _wire_leader_head_point(wire, open_connector, view):
+    """Return a single-segment leader head point offset from the wire."""
+    open_point = open_connector.Origin
+    direction = _wire_leader_perpendicular_direction(
+        wire,
+        open_connector,
+        view,
+    )
+    return open_point.Add(direction.Multiply(_tag_offset_distance(view)))
+
+
+def _place_leader_tag(document, view, wire, open_connector, tag):
+    """Place a leader tag head perpendicular to the wire endpoint vector."""
+    head_point = _wire_leader_head_point(wire, open_connector, view)
+    try:
+        tag.TagHeadPosition = head_point
+    except Exception as error:
+        script.get_logger().warning(
+            "Leader wire tag head placement was unavailable: {}".format(error)
+        )
+    try:
+        document.Regenerate()
+    except Exception:
+        pass
+
+
 def _create_wire_tag(document, view, wire, tag_type_id, add_leader):
     open_connector = _wire_open_connector(wire)
     if open_connector is None:
         raise ValueError("Homerun does not have exactly one open connector.")
     point = open_connector.Origin
-    if not add_leader:
+    if add_leader:
+        point = _wire_leader_head_point(wire, open_connector, view)
+    else:
         direction = _wire_tag_outward_direction(wire, open_connector, view)
         point = point.Add(direction.Multiply(_tag_offset_distance(view)))
     reference = DB.Reference(wire)
@@ -2540,7 +2752,9 @@ def _create_wire_tag(document, view, wire, tag_type_id, add_leader):
             orientation,
             point,
         )
-        if not add_leader:
+        if add_leader:
+            _place_leader_tag(document, view, wire, open_connector, created_tag)
+        else:
             _place_no_leader_tag(document, view, wire, open_connector, created_tag)
         return created_tag
     except Exception as error:
@@ -2556,7 +2770,9 @@ def _create_wire_tag(document, view, wire, tag_type_id, add_leader):
             point,
         )
         created_tag.ChangeTypeId(tag_type_id)
-        if not add_leader:
+        if add_leader:
+            _place_leader_tag(document, view, wire, open_connector, created_tag)
+        else:
             _place_no_leader_tag(document, view, wire, open_connector, created_tag)
         return created_tag
     except Exception as error:
