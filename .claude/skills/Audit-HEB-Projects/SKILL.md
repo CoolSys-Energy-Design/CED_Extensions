@@ -115,6 +115,11 @@ Build as HTML (tables, red/green highlights, embedded `file:///` images downscal
 and convert: `msedge.exe --headless --disable-gpu --no-pdf-header-footer --print-to-pdf=...`.
 Verify circuit numbers and quoted strings against the dumped JSON before citing them.
 
+**Reporting brevity (Reed 2026-08-24)**: when a check passes, do NOT enumerate every correct
+item — one line stating the check passed (with the count checked, e.g. "All 47 case-controller
+circuits include a neutral — PASS") is enough; move straight to the next check. Detailed tables
+are reserved for findings/failures. Applies to both the chat summary and the PDF reports.
+
 ## Runtime rules (hard-won — do not relearn these)
 
 - **IronPython 2** in `execute_revit_code`: `print` statement, `except Exception, ex:`, no
@@ -140,12 +145,16 @@ Verify circuit numbers and quoted strings against the dumped JSON before citing 
 ## Custom QC Checks (user-added; append new checks here, numbered)
 
 1. **Receptacle abbreviation standard is "RECS" — MANDATORY every run** (added by Reed
-   2026-08-07). Sweep every circuit load name AND every sheet text string in the Suspect project
-   for receptacle references. The ONLY acceptable form is `RECS`. Flag EVERY instance of any
-   other variant — `REC`, `RECEPT`, `RECEPTS`, `RCPT`, `RCPTS`, `RECPT`, `RECPTS`, `RECEPTACLE`,
-   `RECEPTACLES`, `RECEP`, `RECEPS` — with panel/circuit number (for load names) or sheet number
-   (for sheet text), the full source string, and the suggested `RECS` replacement. Report as its
-   own section with a total count per variant. Regex guide: match word-boundary tokens
+   2026-08-07; scope refined by Reed 2026-08-24). Sweep every circuit load name AND every sheet
+   text string in the Suspect project for receptacle references. Scope of the rule:
+   - **Circuit load names (print on panel schedules): `RECS` is the ONLY acceptable form.**
+     Flag every other variant, including the full words RECEPTACLE/RECEPTACLES.
+   - **Sheet text/notes: the full words `RECEPTACLE`/`RECEPTACLES` are also acceptable.** Flag
+     only non-RECS abbreviations in notes (`REC`, `RECEPT`, `RECEPTS`, `RCPT`, `RCPTS`, `RECPT`,
+     `RECPTS`, `RECEP`, `RECEPS`, `RECEPT.`, ...).
+   Report as its own section with a total count per variant, split load-name vs sheet-text; give
+   panel/circuit number (for load names) or sheet number (for sheet text), the full source
+   string, and the suggested replacement. Regex guide: match word-boundary tokens
    `\b(REC|RECEPTS?|RECEPS?|RCPTS?|RECPTS?|RECEPTACLES?)\b` case-insensitive; exclude legitimate
    non-receptacle words (RECEIVING, RECESSED, RECORD, RECOVERY, RECIRCULATING, RECYCL*).
    RECEP/RECEPS were found in the wild on Buda 2026-08-07 — do not narrow the pattern.

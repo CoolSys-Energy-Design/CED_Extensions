@@ -1,0 +1,4887 @@
+{
+ "n_projects": 26,
+ "recency_rank": [
+  [
+   "stratford_ct",
+   "2026-08-20"
+  ],
+  [
+   "miami",
+   "2026-08-14"
+  ],
+  [
+   "stockton_ca",
+   "2026-06-09"
+  ],
+  [
+   "san_lorenzo_ca",
+   "2026-05-11"
+  ],
+  [
+   "charlotte_center_lake_nc",
+   "2026-05-05"
+  ],
+  [
+   "chester_va",
+   "2026-04-10"
+  ],
+  [
+   "paterson_nj",
+   "2026-04-07"
+  ],
+  [
+   "davie_fl",
+   "2026-03-13"
+  ],
+  [
+   "dickson_city",
+   "2026-03-13"
+  ],
+  [
+   "el_cerrito_ca",
+   "2026-03-13"
+  ],
+  [
+   "ellsworth_me",
+   "2026-03-13"
+  ],
+  [
+   "fredericksburg_va",
+   "2026-03-13"
+  ],
+  [
+   "glen_oaks_ny_supreme",
+   "2026-03-13"
+  ],
+  [
+   "hanover",
+   "2026-03-13"
+  ],
+  [
+   "lindenhurst",
+   "2026-03-13"
+  ],
+  [
+   "newport_news_va",
+   "2026-03-13"
+  ],
+  [
+   "oceanside_ny",
+   "2026-03-13"
+  ],
+  [
+   "pleasanton_ca",
+   "2026-03-13"
+  ],
+  [
+   "valley_stream_ny",
+   "2026-03-13"
+  ],
+  [
+   "asheville",
+   "2025-08-06"
+  ],
+  [
+   "chesapeake",
+   "2025-08-06"
+  ],
+  [
+   "front_royal_va",
+   "2025-08-06"
+  ],
+  [
+   "glen_allen_va",
+   "2025-08-06"
+  ],
+  [
+   "levittown_ny",
+   "2025-08-06"
+  ],
+  [
+   "swannanoa_nc",
+   "2025-08-06"
+  ],
+  [
+   "taymax_san_jose_ca",
+   "2025-08-06"
+  ]
+ ],
+ "canonical_loads": {
+  "LTG - SALES FLOOR - ASLE 3": {
+   "projects": 21,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     21
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     21
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": null,
+   "panel_variants": [],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "POWERED BIKE": {
+   "projects": 11,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     11
+    ]
+   ],
+   "va_mode": 400,
+   "va_recent": 400,
+   "va_variants": [
+    [
+     400,
+     9
+    ],
+    [
+     1920,
+     2
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L1",
+   "panel_variants": [
+    [
+     "L1",
+     11
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "TREADMILL": {
+   "projects": 11,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     11
+    ]
+   ],
+   "va_mode": 1500,
+   "va_recent": 1500,
+   "va_variants": [
+    [
+     1500,
+     9
+    ],
+    [
+     1920,
+     2
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L1",
+   "panel_variants": [
+    [
+     "L1",
+     11
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "STAIRMASTER": {
+   "projects": 11,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     11
+    ]
+   ],
+   "va_mode": 1200,
+   "va_recent": 1200,
+   "va_variants": [
+    [
+     1200,
+     8
+    ],
+    [
+     1920,
+     3
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L1",
+   "panel_variants": [
+    [
+     "L1",
+     11
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "BATHROOM SINK": {
+   "projects": 10,
+   "type": "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+     10
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     9
+    ],
+    [
+     200,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     10
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "BATHROOM SINKS": {
+   "projects": 8,
+   "type": "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+     8
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     8
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     8
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "HAND DRYER": {
+   "projects": 10,
+   "type": "EF-U_Junction Box_CED : Wall - With Stem",
+   "type_variants": [
+    [
+     "EF-U_Junction Box_CED : Wall - With Stem",
+     10
+    ]
+   ],
+   "va_mode": 950,
+   "va_recent": 950,
+   "va_variants": [
+    [
+     950,
+     6
+    ],
+    [
+     1000,
+     4
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     7
+    ],
+    [
+     "L2",
+     2
+    ]
+   ],
+   "rating_mode": 15.0,
+   "poles_mode": 1
+  },
+  "RECEPT - BCS": {
+   "projects": 21,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     21
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     20
+    ],
+    [
+     360,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     21
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "STAND-UP TANNER - 103C": {
+   "projects": 17,
+   "type": "EF-U_Disconnect Switch_CED : Non-Fused - 60A",
+   "type_variants": [
+    [
+     "EF-U_Disconnect Switch_CED : Non-Fused - 60A",
+     14
+    ],
+    [
+     "EF-U_Disconnect Switch_CED : Fused - 60A",
+     3
+    ]
+   ],
+   "va_mode": 10392,
+   "va_recent": 10392,
+   "va_variants": [
+    [
+     10392,
+     14
+    ],
+    [
+     11640,
+     1
+    ],
+    [
+     9955,
+     1
+    ],
+    [
+     9500,
+     1
+    ]
+   ],
+   "v_mode": 240,
+   "panel_mode": "L4",
+   "panel_variants": [
+    [
+     "L4",
+     16
+    ],
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 40.0,
+   "poles_mode": 3
+  },
+  "TV - MEN/WOMEN LOCKER ROOM": {
+   "projects": 7,
+   "type": "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+     4
+    ],
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - TV",
+     3
+    ]
+   ],
+   "va_mode": 300,
+   "va_recent": 300,
+   "va_variants": [
+    [
+     300,
+     5
+    ],
+    [
+     250,
+     2
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     7
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "IT RACK": {
+   "projects": 20,
+   "type": "EF-U_Receptacle_CED : Quad Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Quad Wall",
+     19
+    ],
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     16
+    ],
+    [
+     360,
+     4
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     20
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "VENDING MACHINE": {
+   "projects": 21,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     20
+    ],
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+     1
+    ]
+   ],
+   "va_mode": 1000,
+   "va_recent": 1000,
+   "va_variants": [
+    [
+     1000,
+     21
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     21
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "CHECK-IN RECEPT": {
+   "projects": 19,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     15
+    ],
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - Isolated Ground",
+     2
+    ],
+    [
+     "EF-U_Receptacle_CED : Quad Wall",
+     1
+    ],
+    [
+     "EF-U_Receptacle_CED : Quad Wall - Isolated Ground",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     18
+    ],
+    [
+     360,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     19
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "TLT TANNING - 103F": {
+   "projects": 16,
+   "type": "EF-U_Disconnect Switch_CED : Non-Fused - 60A",
+   "type_variants": [
+    [
+     "EF-U_Disconnect Switch_CED : Non-Fused - 60A",
+     13
+    ],
+    [
+     "EF-U_Disconnect Switch_CED : Fused - 60A",
+     3
+    ]
+   ],
+   "va_mode": 11223,
+   "va_recent": 11223,
+   "va_variants": [
+    [
+     11223,
+     12
+    ],
+    [
+     11217,
+     2
+    ],
+    [
+     10809,
+     1
+    ],
+    [
+     10795,
+     1
+    ]
+   ],
+   "v_mode": 240,
+   "panel_mode": "L4",
+   "panel_variants": [
+    [
+     "L4",
+     16
+    ]
+   ],
+   "rating_mode": 40.0,
+   "poles_mode": 3
+  },
+  "CRYOLOUNGE - 103": {
+   "projects": 16,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     16
+    ]
+   ],
+   "va_mode": 1440,
+   "va_recent": 1440,
+   "va_variants": [
+    [
+     1440,
+     16
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L4",
+   "panel_variants": [
+    [
+     "L4",
+     16
+    ]
+   ],
+   "rating_mode": 40.0,
+   "poles_mode": 1
+  },
+  "TV - BLACK CARD SUITE": {
+   "projects": 18,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     10
+    ],
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - TV",
+     8
+    ]
+   ],
+   "va_mode": 300,
+   "va_recent": 250,
+   "va_variants": [
+    [
+     300,
+     14
+    ],
+    [
+     250,
+     3
+    ],
+    [
+     360,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     18
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "MASSAGE CHAIRS - 103": {
+   "projects": 18,
+   "type": "EF-U_Receptacle_CED : Duplex Floor",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Floor",
+     17
+    ],
+    [
+     "EF-U_Junction Box-2 ckts_CED : Floor",
+     1
+    ]
+   ],
+   "va_mode": 500,
+   "va_recent": 500,
+   "va_variants": [
+    [
+     500,
+     14
+    ],
+    [
+     250,
+     3
+    ],
+    [
+     300,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L4",
+   "panel_variants": [
+    [
+     "L4",
+     18
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "HYDROMASSAGE RECEPT - 103A": {
+   "projects": 20,
+   "type": "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+     16
+    ],
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     4
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     20
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     14
+    ],
+    [
+     "L4",
+     6
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "HYDROMASSAGE - 103A": {
+   "projects": 21,
+   "type": "EF-U_Receptacle_CED : Specialty Wall - 240V/1Ph",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Specialty Wall - 240V/1Ph",
+     20
+    ],
+    [
+     "EF-U_Receptacle_CED : Specialty Wall - 208V/1Ph",
+     1
+    ]
+   ],
+   "va_mode": 4320,
+   "va_recent": 4320,
+   "va_variants": [
+    [
+     4320,
+     19
+    ],
+    [
+     3840,
+     2
+    ]
+   ],
+   "v_mode": 240,
+   "panel_mode": "L4",
+   "panel_variants": [
+    [
+     "L4",
+     21
+    ]
+   ],
+   "rating_mode": 30.0,
+   "poles_mode": 2
+  },
+  "TMAX RECEPT": {
+   "projects": 18,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     18
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     18
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     18
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "SIGNAGE (IF NEEDED)": {
+   "projects": 10,
+   "type": "EF-U_Junction Box_CED : Wall - With Stem",
+   "type_variants": [
+    [
+     "EF-U_Junction Box_CED : Wall - With Stem",
+     10
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     8
+    ],
+    [
+     500,
+     2
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     10
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "HYBRID TANNER - 103B": {
+   "projects": 19,
+   "type": "EF-U_Disconnect Switch_CED : Non-Fused - 60A",
+   "type_variants": [
+    [
+     "EF-U_Disconnect Switch_CED : Non-Fused - 60A",
+     14
+    ],
+    [
+     "EF-U_Disconnect Switch_CED : Fused - 60A",
+     3
+    ],
+    [
+     "EF-U_Disconnect Switch_CED : Non-Fused - 30A",
+     2
+    ]
+   ],
+   "va_mode": 11640,
+   "va_recent": 11640,
+   "va_variants": [
+    [
+     11640,
+     15
+    ],
+    [
+     11223,
+     1
+    ],
+    [
+     6787,
+     1
+    ],
+    [
+     10600,
+     1
+    ]
+   ],
+   "v_mode": 240,
+   "panel_mode": "L4",
+   "panel_variants": [
+    [
+     "L4",
+     19
+    ]
+   ],
+   "rating_mode": 40.0,
+   "poles_mode": 3
+  },
+  "TV TRUSS": {
+   "projects": 19,
+   "type": "EF-U_Receptacle_CED : Quad Wall - TV",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Quad Wall - TV",
+     12
+    ],
+    [
+     "EF-U_Receptacle_CED : Quad Wall",
+     3
+    ],
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - TV",
+     3
+    ],
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     1
+    ]
+   ],
+   "va_mode": 360,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     360,
+     12
+    ],
+    [
+     180,
+     6
+    ],
+    [
+     300,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L2",
+   "panel_variants": [
+    [
+     "L2",
+     19
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "TV - DIGITAL MEDIA": {
+   "projects": 13,
+   "type": "EF-U_Receptacle_CED : Duplex Wall - TV",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - TV",
+     8
+    ],
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     5
+    ]
+   ],
+   "va_mode": 300,
+   "va_recent": 250,
+   "va_variants": [
+    [
+     300,
+     10
+    ],
+    [
+     250,
+     3
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     13
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "BIG FAN": {
+   "projects": 18,
+   "type": "EF-U_Disconnect Switch_CED : Non-Fused - 30A",
+   "type_variants": [
+    [
+     "EF-U_Disconnect Switch_CED : Non-Fused - 30A",
+     13
+    ],
+    [
+     "EF-U_Disconnect Switch_CED : Fused - 30A",
+     4
+    ],
+    [
+     "EF-U_Disconnect Switch_CED : Fused - 200A",
+     1
+    ]
+   ],
+   "va_mode": 1500,
+   "va_recent": 1500,
+   "va_variants": [
+    [
+     1500,
+     16
+    ],
+    [
+     2080,
+     2
+    ]
+   ],
+   "v_mode": 208,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     18
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 3
+  },
+  "SAUNA - 103H": {
+   "projects": 1,
+   "type": "EF-U_Disconnect Switch_CED : Non-Fused - 60A",
+   "type_variants": [
+    [
+     "EF-U_Disconnect Switch_CED : Non-Fused - 60A",
+     1
+    ]
+   ],
+   "va_mode": 5760,
+   "va_recent": 5760,
+   "va_variants": [
+    [
+     5760,
+     1
+    ]
+   ],
+   "v_mode": 240,
+   "panel_mode": "L4",
+   "panel_variants": [
+    [
+     "L4",
+     1
+    ]
+   ],
+   "rating_mode": null,
+   "poles_mode": 2
+  },
+  "TV & RADIANCE MONITOR - CHECK-IN 102": {
+   "projects": 6,
+   "type": "EF-U_Receptacle_CED : Duplex Wall - TV",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - TV",
+     4
+    ],
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     2
+    ]
+   ],
+   "va_mode": 300,
+   "va_recent": 300,
+   "va_variants": [
+    [
+     300,
+     5
+    ],
+    [
+     250,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     6
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "ROOM": {
+   "projects": 5,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     3
+    ],
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - USB",
+     2
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     5
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     5
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "DRY VANITY": {
+   "projects": 3,
+   "type": "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+     3
+    ]
+   ],
+   "va_mode": 1000,
+   "va_recent": 1000,
+   "va_variants": [
+    [
+     1000,
+     2
+    ],
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     3
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "LAY-DOWN TANNING - 103G": {
+   "projects": 5,
+   "type": "EF-U_Disconnect Switch_CED : Non-Fused - 60A",
+   "type_variants": [
+    [
+     "EF-U_Disconnect Switch_CED : Non-Fused - 60A",
+     4
+    ],
+    [
+     "EF-U_Disconnect Switch_CED : Fused - 60A",
+     1
+    ]
+   ],
+   "va_mode": 11223,
+   "va_recent": 10350,
+   "va_variants": [
+    [
+     11223,
+     2
+    ],
+    [
+     10350,
+     1
+    ],
+    [
+     7067,
+     1
+    ],
+    [
+     8800,
+     1
+    ]
+   ],
+   "v_mode": 240,
+   "panel_mode": "L4",
+   "panel_variants": [
+    [
+     "L4",
+     5
+    ]
+   ],
+   "rating_mode": 40.0,
+   "poles_mode": 3
+  },
+  "TV - MOBILITY RM": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall - TV",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - TV",
+     1
+    ]
+   ],
+   "va_mode": 300,
+   "va_recent": 300,
+   "va_variants": [
+    [
+     300,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "TV - CHECK-IN": {
+   "projects": 2,
+   "type": "EF-U_Receptacle_CED : Duplex Wall - TV",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - TV",
+     2
+    ]
+   ],
+   "va_mode": 300,
+   "va_recent": 300,
+   "va_variants": [
+    [
+     300,
+     2
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     2
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "CHECK-IN COMPUTER": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "BACKWRAP RCPTS": {
+   "projects": 2,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     2
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     2
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     2
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "TMAX TIMER": {
+   "projects": 2,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     2
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     2
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     2
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "STAR-LINE RACEWAY": {
+   "projects": 2,
+   "type": "EF-U_Junction Box_CED : Floor",
+   "type_variants": [
+    [
+     "EF-U_Junction Box_CED : Floor",
+     2
+    ]
+   ],
+   "va_mode": 10500,
+   "va_recent": 10500,
+   "va_variants": [
+    [
+     10500,
+     1
+    ],
+    [
+     9000,
+     1
+    ]
+   ],
+   "v_mode": 208,
+   "panel_mode": "L1",
+   "panel_variants": [
+    [
+     "L1",
+     2
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 3
+  },
+  "MENS FAUCET RCPTS": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L2",
+   "panel_variants": [
+    [
+     "L2",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "MENS VANITY RCPTS": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L2",
+   "panel_variants": [
+    [
+     "L2",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "WOMENS FAUCET RCPTS": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L2",
+   "panel_variants": [
+    [
+     "L2",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "WOMENS VANITY RCPTS": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L2",
+   "panel_variants": [
+    [
+     "L2",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "WOMENS MAINT. RCPTS": {
+   "projects": 2,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     2
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     2
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L2",
+   "panel_variants": [
+    [
+     "L2",
+     2
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "MENS MAINT. RCPTS": {
+   "projects": 2,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     2
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     2
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L2",
+   "panel_variants": [
+    [
+     "L2",
+     2
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "OFFICE GEN. RCPTS": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "OFFICE DESK RCPT": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Quad Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Quad Wall",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "GYM MAINT. RPCTS": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "GYM MAINT. RCPTS": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "HWH-1": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+     1
+    ]
+   ],
+   "va_mode": 1440,
+   "va_recent": 1440,
+   "va_variants": [
+    [
+     1440,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L2",
+   "panel_variants": [
+    [
+     "L2",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "P-1 CIRC. PUMP": {
+   "projects": 1,
+   "type": "EF-U_Motor Rated Switch_CED : Motor Rated Switch - 120V, 1 Pole",
+   "type_variants": [
+    [
+     "EF-U_Motor Rated Switch_CED : Motor Rated Switch - 120V, 1 Pole",
+     1
+    ]
+   ],
+   "va_mode": 200,
+   "va_recent": 200,
+   "va_variants": [
+    [
+     200,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L2",
+   "panel_variants": [
+    [
+     "L2",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "WATER COOLER": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L2",
+   "panel_variants": [
+    [
+     "L2",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "MECH RM MAINT. RCPTS": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L2",
+   "panel_variants": [
+    [
+     "L2",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "EXTERIOR SIGN": {
+   "projects": 1,
+   "type": "EF-U_Junction Box_CED : Wall - With Stem",
+   "type_variants": [
+    [
+     "EF-U_Junction Box_CED : Wall - With Stem",
+     1
+    ]
+   ],
+   "va_mode": 500,
+   "va_recent": 500,
+   "va_variants": [
+    [
+     500,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "EXHST FANS (EF-1 & EF-2)": {
+   "projects": 2,
+   "type": "EF-U_Motor Rated Switch_CED : Motor Rated Switch - 120V, 1 Pole",
+   "type_variants": [
+    [
+     "EF-U_Motor Rated Switch_CED : Motor Rated Switch - 120V, 1 Pole",
+     2
+    ]
+   ],
+   "va_mode": 0,
+   "va_recent": 0,
+   "va_variants": [
+    [
+     0,
+     2
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     2
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "EXHST FANS (EF-3)": {
+   "projects": 1,
+   "type": "EF-U_Motor Rated Switch_CED : Motor Rated Switch - 120V, 1 Pole",
+   "type_variants": [
+    [
+     "EF-U_Motor Rated Switch_CED : Motor Rated Switch - 120V, 1 Pole",
+     1
+    ]
+   ],
+   "va_mode": 0,
+   "va_recent": 0,
+   "va_variants": [
+    [
+     0,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "ROOF MAINT RCPTS": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "GYM CLOCK": {
+   "projects": 2,
+   "type": "EF-U_Junction Box_CED : Wall - With Stem",
+   "type_variants": [
+    [
+     "EF-U_Junction Box_CED : Wall - With Stem",
+     2
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ],
+    [
+     0,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     2
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "BREAK ROOM RECEPTS": {
+   "projects": 2,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     2
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     2
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ],
+    [
+     "L2",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "HWH": {
+   "projects": 6,
+   "type": "EF-U_Junction Box_CED : Wall - With Stem",
+   "type_variants": [
+    [
+     "EF-U_Junction Box_CED : Wall - With Stem",
+     4
+    ],
+    [
+     "EF-U_Motor Rated Switch_CED : Motor Rated Switch - 120V, 1 Pole",
+     1
+    ],
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+     1
+    ]
+   ],
+   "va_mode": 0,
+   "va_recent": 0,
+   "va_variants": [
+    [
+     0,
+     3
+    ],
+    [
+     150,
+     1
+    ],
+    [
+     200,
+     1
+    ],
+    [
+     720,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     4
+    ],
+    [
+     "L2",
+     2
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "VESTIBULE": {
+   "projects": 1,
+   "type": "EF-U_Junction Box_CED : Ceiling",
+   "type_variants": [
+    [
+     "EF-U_Junction Box_CED : Ceiling",
+     1
+    ]
+   ],
+   "va_mode": 3994,
+   "va_recent": 3994,
+   "va_variants": [
+    [
+     3994,
+     1
+    ]
+   ],
+   "v_mode": 208,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 25.0,
+   "poles_mode": 2
+  },
+  "HYBRID LIGHT BED - 103E": {
+   "projects": 1,
+   "type": "EF-U_Disconnect Switch_CED : Fused - 60A",
+   "type_variants": [
+    [
+     "EF-U_Disconnect Switch_CED : Fused - 60A",
+     1
+    ]
+   ],
+   "va_mode": 11223,
+   "va_recent": 11223,
+   "va_variants": [
+    [
+     11223,
+     1
+    ]
+   ],
+   "v_mode": 240,
+   "panel_mode": "L4",
+   "panel_variants": [
+    [
+     "L4",
+     1
+    ]
+   ],
+   "rating_mode": 40.0,
+   "poles_mode": 3
+  },
+  "BREAKROOM": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "DRINK FOUNTAIN": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L2",
+   "panel_variants": [
+    [
+     "L2",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "CRYOLOUNGE - 103B": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     1
+    ]
+   ],
+   "va_mode": 1440,
+   "va_recent": 1440,
+   "va_variants": [
+    [
+     1440,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L4",
+   "panel_variants": [
+    [
+     "L4",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "WATER FOUNTAIN": {
+   "projects": 5,
+   "type": "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+     5
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     5
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L2",
+   "panel_variants": [
+    [
+     "L2",
+     5
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "WOMENS RESTRM SINKS": {
+   "projects": 2,
+   "type": "EF-U_Junction Box_CED : Wall - With Stem",
+   "type_variants": [
+    [
+     "EF-U_Junction Box_CED : Wall - With Stem",
+     1
+    ],
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     2
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     2
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "TANNING - 103F": {
+   "projects": 1,
+   "type": "EF-U_Disconnect Switch_CED : Non-Fused - 60A",
+   "type_variants": [
+    [
+     "EF-U_Disconnect Switch_CED : Non-Fused - 60A",
+     1
+    ]
+   ],
+   "va_mode": 11223,
+   "va_recent": 11223,
+   "va_variants": [
+    [
+     11223,
+     1
+    ]
+   ],
+   "v_mode": 240,
+   "panel_mode": "L4",
+   "panel_variants": [
+    [
+     "L4",
+     1
+    ]
+   ],
+   "rating_mode": 40.0,
+   "poles_mode": 3
+  },
+  "HYBRID - 103E": {
+   "projects": 1,
+   "type": "EF-U_Disconnect Switch_CED : Non-Fused - 60A",
+   "type_variants": [
+    [
+     "EF-U_Disconnect Switch_CED : Non-Fused - 60A",
+     1
+    ]
+   ],
+   "va_mode": 11640,
+   "va_recent": 11640,
+   "va_variants": [
+    [
+     11640,
+     1
+    ]
+   ],
+   "v_mode": 240,
+   "panel_mode": "L4",
+   "panel_variants": [
+    [
+     "L4",
+     1
+    ]
+   ],
+   "rating_mode": 40.0,
+   "poles_mode": 3
+  },
+  "STAND-UP TANNER - 103D": {
+   "projects": 2,
+   "type": "EF-U_Disconnect Switch_CED : Non-Fused - 60A",
+   "type_variants": [
+    [
+     "EF-U_Disconnect Switch_CED : Non-Fused - 60A",
+     2
+    ]
+   ],
+   "va_mode": 10392,
+   "va_recent": 10392,
+   "va_variants": [
+    [
+     10392,
+     2
+    ]
+   ],
+   "v_mode": 240,
+   "panel_mode": "L4",
+   "panel_variants": [
+    [
+     "L4",
+     2
+    ]
+   ],
+   "rating_mode": 40.0,
+   "poles_mode": 3
+  },
+  "OFFICE 101B RECEPT": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "WOMENS VANITY RECEPT": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "WOMEN REST RM FLUSH VALVE": {
+   "projects": 1,
+   "type": "EF-U_Junction Box_CED : Wall - With Stem",
+   "type_variants": [
+    [
+     "EF-U_Junction Box_CED : Wall - With Stem",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "MENS REST RM FLUSH VALVE": {
+   "projects": 1,
+   "type": "EF-U_Junction Box_CED : Wall - With Stem",
+   "type_variants": [
+    [
+     "EF-U_Junction Box_CED : Wall - With Stem",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "MENS RESTRM SINKS": {
+   "projects": 3,
+   "type": "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+     2
+    ],
+    [
+     "EF-U_Junction Box_CED : Wall - With Stem",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     3
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     3
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "MENS VANITY RECEPT": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "CIRC. PUMP": {
+   "projects": 2,
+   "type": "EF-U_Junction Box_CED : Wall - With Stem",
+   "type_variants": [
+    [
+     "EF-U_Junction Box_CED : Wall - With Stem",
+     2
+    ]
+   ],
+   "va_mode": 150,
+   "va_recent": 150,
+   "va_variants": [
+    [
+     150,
+     1
+    ],
+    [
+     200,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     2
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "EF-9": {
+   "projects": 1,
+   "type": "EF-U_Motor Rated Switch_CED : Motor Rated Switch - 120V, 1 Pole",
+   "type_variants": [
+    [
+     "EF-U_Motor Rated Switch_CED : Motor Rated Switch - 120V, 1 Pole",
+     1
+    ]
+   ],
+   "va_mode": 207,
+   "va_recent": 207,
+   "va_variants": [
+    [
+     207,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": null,
+   "panel_variants": [],
+   "rating_mode": null,
+   "poles_mode": 1
+  },
+  "EF-8": {
+   "projects": 1,
+   "type": "EF-U_Motor Rated Switch_CED : Motor Rated Switch - 120V, 1 Pole",
+   "type_variants": [
+    [
+     "EF-U_Motor Rated Switch_CED : Motor Rated Switch - 120V, 1 Pole",
+     1
+    ]
+   ],
+   "va_mode": 207,
+   "va_recent": 207,
+   "va_variants": [
+    [
+     207,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": null,
+   "panel_variants": [],
+   "rating_mode": null,
+   "poles_mode": 1
+  },
+  "EF-7": {
+   "projects": 1,
+   "type": "EF-U_Motor Rated Switch_CED : Motor Rated Switch - 120V, 1 Pole",
+   "type_variants": [
+    [
+     "EF-U_Motor Rated Switch_CED : Motor Rated Switch - 120V, 1 Pole",
+     1
+    ]
+   ],
+   "va_mode": 207,
+   "va_recent": 207,
+   "va_variants": [
+    [
+     207,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": null,
+   "panel_variants": [],
+   "rating_mode": null,
+   "poles_mode": 1
+  },
+  "EF-6": {
+   "projects": 1,
+   "type": "EF-U_Motor Rated Switch_CED : Motor Rated Switch - 120V, 1 Pole",
+   "type_variants": [
+    [
+     "EF-U_Motor Rated Switch_CED : Motor Rated Switch - 120V, 1 Pole",
+     1
+    ]
+   ],
+   "va_mode": 207,
+   "va_recent": 207,
+   "va_variants": [
+    [
+     207,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": null,
+   "panel_variants": [],
+   "rating_mode": null,
+   "poles_mode": 1
+  },
+  "EF-5": {
+   "projects": 1,
+   "type": "EF-U_Motor Rated Switch_CED : Motor Rated Switch - 120V, 1 Pole",
+   "type_variants": [
+    [
+     "EF-U_Motor Rated Switch_CED : Motor Rated Switch - 120V, 1 Pole",
+     1
+    ]
+   ],
+   "va_mode": 207,
+   "va_recent": 207,
+   "va_variants": [
+    [
+     207,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": null,
+   "panel_variants": [],
+   "rating_mode": null,
+   "poles_mode": 1
+  },
+  "EF-4": {
+   "projects": 1,
+   "type": "EF-U_Motor Rated Switch_CED : Motor Rated Switch - 120V, 1 Pole",
+   "type_variants": [
+    [
+     "EF-U_Motor Rated Switch_CED : Motor Rated Switch - 120V, 1 Pole",
+     1
+    ]
+   ],
+   "va_mode": 207,
+   "va_recent": 207,
+   "va_variants": [
+    [
+     207,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": null,
+   "panel_variants": [],
+   "rating_mode": null,
+   "poles_mode": 1
+  },
+  "BEAUTY ANGEL - 103G": {
+   "projects": 1,
+   "type": "EF-U_Disconnect Switch_CED : Non-Fused - 30A",
+   "type_variants": [
+    [
+     "EF-U_Disconnect Switch_CED : Non-Fused - 30A",
+     1
+    ]
+   ],
+   "va_mode": 6651,
+   "va_recent": 6651,
+   "va_variants": [
+    [
+     6651,
+     1
+    ]
+   ],
+   "v_mode": 240,
+   "panel_mode": "L4",
+   "panel_variants": [
+    [
+     "L4",
+     1
+    ]
+   ],
+   "rating_mode": 30.0,
+   "poles_mode": 3
+  },
+  "HYBRID TANNER - 103C": {
+   "projects": 1,
+   "type": "EF-U_Disconnect Switch_CED : Non-Fused - 60A",
+   "type_variants": [
+    [
+     "EF-U_Disconnect Switch_CED : Non-Fused - 60A",
+     1
+    ]
+   ],
+   "va_mode": 11640,
+   "va_recent": 11640,
+   "va_variants": [
+    [
+     11640,
+     1
+    ]
+   ],
+   "v_mode": 240,
+   "panel_mode": "L4",
+   "panel_variants": [
+    [
+     "L4",
+     1
+    ]
+   ],
+   "rating_mode": 40.0,
+   "poles_mode": 3
+  },
+  "TLT TANNING - 103E": {
+   "projects": 1,
+   "type": "EF-U_Disconnect Switch_CED : Non-Fused - 60A",
+   "type_variants": [
+    [
+     "EF-U_Disconnect Switch_CED : Non-Fused - 60A",
+     1
+    ]
+   ],
+   "va_mode": 11223,
+   "va_recent": 11223,
+   "va_variants": [
+    [
+     11223,
+     1
+    ]
+   ],
+   "v_mode": 240,
+   "panel_mode": "L4",
+   "panel_variants": [
+    [
+     "L4",
+     1
+    ]
+   ],
+   "rating_mode": 40.0,
+   "poles_mode": 3
+  },
+  "USB RECEPT": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall - USB",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - USB",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": null,
+   "poles_mode": 1
+  },
+  "GEN RCPTS - GYM": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "GEN RCPTS - BREAK": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "Hand Dryer": {
+   "projects": 1,
+   "type": "EF-U_Junction Box_CED : Wall - With Stem",
+   "type_variants": [
+    [
+     "EF-U_Junction Box_CED : Wall - With Stem",
+     1
+    ]
+   ],
+   "va_mode": 950,
+   "va_recent": 950,
+   "va_variants": [
+    [
+     950,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L2",
+   "panel_variants": [
+    [
+     "L2",
+     1
+    ]
+   ],
+   "rating_mode": 15.0,
+   "poles_mode": 1
+  },
+  "BEAUTY ANGEL": {
+   "projects": 1,
+   "type": "EF-U_Disconnect Switch_CED : Non-Fused - 60A",
+   "type_variants": [
+    [
+     "EF-U_Disconnect Switch_CED : Non-Fused - 60A",
+     1
+    ]
+   ],
+   "va_mode": 6651,
+   "va_recent": 6651,
+   "va_variants": [
+    [
+     6651,
+     1
+    ]
+   ],
+   "v_mode": 240,
+   "panel_mode": "L4",
+   "panel_variants": [
+    [
+     "L4",
+     1
+    ]
+   ],
+   "rating_mode": 40.0,
+   "poles_mode": 3
+  },
+  "TV - FUNC TRNG & MOBILITY": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall - TV",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - TV",
+     1
+    ]
+   ],
+   "va_mode": 300,
+   "va_recent": 300,
+   "va_variants": [
+    [
+     300,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "HYDROMASSAGE REC - 103A": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "EXHST FAN (EF-3)": {
+   "projects": 1,
+   "type": "EF-U_Motor Rated Switch_CED : Motor Rated Switch - 120V, 1 Pole",
+   "type_variants": [
+    [
+     "EF-U_Motor Rated Switch_CED : Motor Rated Switch - 120V, 1 Pole",
+     1
+    ]
+   ],
+   "va_mode": 0,
+   "va_recent": 0,
+   "va_variants": [
+    [
+     0,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "ROOF MAINT. RCPTS": {
+   "projects": 2,
+   "type": "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+     2
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     2
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ],
+    [
+     "L2",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "HWH-1 IGNITER": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "CIRC PUMP (P-1)": {
+   "projects": 1,
+   "type": "EF-U_Junction Box_CED : Wall - With Stem",
+   "type_variants": [
+    [
+     "EF-U_Junction Box_CED : Wall - With Stem",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "MECHANICAL ROOM RCPTS": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L2",
+   "panel_variants": [
+    [
+     "L2",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "MEN'S RR VANITY RECPTS": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L2",
+   "panel_variants": [
+    [
+     "L2",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "MEN'S RR SINKS": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L2",
+   "panel_variants": [
+    [
+     "L2",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "WOMEN'S RR VANITY RECPTS": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L2",
+   "panel_variants": [
+    [
+     "L2",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "WOMEN'S RR SINKS": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L2",
+   "panel_variants": [
+    [
+     "L2",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "TOILET/SHOWER CORR REC": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L2",
+   "panel_variants": [
+    [
+     "L2",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "UTILITY RM / CLOSET RCPTS": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L2",
+   "panel_variants": [
+    [
+     "L2",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "MOBILITY ROOM RCPTS": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L2",
+   "panel_variants": [
+    [
+     "L2",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "OFFICE RECEPTS": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "MEZZANINE UTILITY RCPTS": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L2",
+   "panel_variants": [
+    [
+     "L2",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "CARDIO/FREE WEIGHT RCPTS": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "EWC-1": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "CARDIO/STRENGTH RCPTS": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L2",
+   "panel_variants": [
+    [
+     "L2",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "BLACK CARD SPA RECEPTS": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "FUTURE AMENITY RCPTS": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "RECEPTION RECEPTS": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "IT ROOM RECEPTS": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "BUILDING SIGN": {
+   "projects": 1,
+   "type": "EF-U_Junction Box_CED : Wall - With Stem",
+   "type_variants": [
+    [
+     "EF-U_Junction Box_CED : Wall - With Stem",
+     1
+    ]
+   ],
+   "va_mode": 1200,
+   "va_recent": 1200,
+   "va_variants": [
+    [
+     1200,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "EUH-1": {
+   "projects": 1,
+   "type": "EF-U_Junction Box-2 ckts_CED : Wall - No Stem",
+   "type_variants": [
+    [
+     "EF-U_Junction Box-2 ckts_CED : Wall - No Stem",
+     1
+    ]
+   ],
+   "va_mode": 3994,
+   "va_recent": 3994,
+   "va_variants": [
+    [
+     3994,
+     1
+    ]
+   ],
+   "v_mode": 208,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 2
+  },
+  "HYDROMASSAGE RECEPT": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "EMERGENCY - (Space)": {
+   "projects": 2,
+   "type": "EF-U_Junction Box_CED : Wall - With Stem",
+   "type_variants": [
+    [
+     "EF-U_Junction Box_CED : Wall - With Stem",
+     2
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ],
+    [
+     0,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     2
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "BCS GEN RCPTS": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "TV - WOMEN LOCKER ROOM": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+     1
+    ]
+   ],
+   "va_mode": 250,
+   "va_recent": 250,
+   "va_variants": [
+    [
+     250,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "TV - MEN LOCKER ROOM": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+     1
+    ]
+   ],
+   "va_mode": 250,
+   "va_recent": 250,
+   "va_variants": [
+    [
+     250,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "TVs & RADIANCE MONITOR - CHECK-IN 102": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     1
+    ]
+   ],
+   "va_mode": 250,
+   "va_recent": 250,
+   "va_variants": [
+    [
+     250,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "WOMENS VANITY": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "CHECK-IN COUNTER": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "RECEPTION GEN. RCPTS": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "GYM GEN. RCPTS": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "IT SERVER RACK": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Quad Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Quad Wall",
+     1
+    ]
+   ],
+   "va_mode": 360,
+   "va_recent": 360,
+   "va_variants": [
+    [
+     360,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "BREAKRM GEN RCPTS": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "CHECK-IN TABLETS": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall - USB",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - USB",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "MENS VANITY": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "WOMENS RESTRM GEN. RCPTS": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "MENS RESTRM GEN. RCPTS": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall - GFCI",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "EF-1 & 2 RESTROOMS": {
+   "projects": 1,
+   "type": "EF-U_Junction Box_CED : Wall - No Stem",
+   "type_variants": [
+    [
+     "EF-U_Junction Box_CED : Wall - No Stem",
+     1
+    ]
+   ],
+   "va_mode": 0,
+   "va_recent": 0,
+   "va_variants": [
+    [
+     0,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L2",
+   "panel_variants": [
+    [
+     "L2",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "EF-3 & 4 BCS & IT ROOM": {
+   "projects": 1,
+   "type": "EF-U_Junction Box_CED : Wall - No Stem",
+   "type_variants": [
+    [
+     "EF-U_Junction Box_CED : Wall - No Stem",
+     1
+    ]
+   ],
+   "va_mode": 0,
+   "va_recent": 0,
+   "va_variants": [
+    [
+     0,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L2",
+   "panel_variants": [
+    [
+     "L2",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "RTU-5": {
+   "projects": 1,
+   "type": "EF-U_Disconnect Switch_CED : Non-Fused - 100A",
+   "type_variants": [
+    [
+     "EF-U_Disconnect Switch_CED : Non-Fused - 100A",
+     1
+    ]
+   ],
+   "va_mode": 0,
+   "va_recent": 0,
+   "va_variants": [
+    [
+     0,
+     1
+    ]
+   ],
+   "v_mode": 208,
+   "panel_mode": "(E) MDP-2",
+   "panel_variants": [
+    [
+     "(E) MDP-2",
+     1
+    ]
+   ],
+   "rating_mode": 100.0,
+   "poles_mode": 3
+  },
+  "RTU-7": {
+   "projects": 1,
+   "type": "EF-U_Disconnect Switch_CED : Non-Fused - 100A",
+   "type_variants": [
+    [
+     "EF-U_Disconnect Switch_CED : Non-Fused - 100A",
+     1
+    ]
+   ],
+   "va_mode": 0,
+   "va_recent": 0,
+   "va_variants": [
+    [
+     0,
+     1
+    ]
+   ],
+   "v_mode": 208,
+   "panel_mode": "(E) MDP-1",
+   "panel_variants": [
+    [
+     "(E) MDP-1",
+     1
+    ]
+   ],
+   "rating_mode": 100.0,
+   "poles_mode": 3
+  },
+  "RTU-3": {
+   "projects": 1,
+   "type": "EF-U_Disconnect Switch_CED : Non-Fused - 100A",
+   "type_variants": [
+    [
+     "EF-U_Disconnect Switch_CED : Non-Fused - 100A",
+     1
+    ]
+   ],
+   "va_mode": 0,
+   "va_recent": 0,
+   "va_variants": [
+    [
+     0,
+     1
+    ]
+   ],
+   "v_mode": 208,
+   "panel_mode": "(E) MDP-2",
+   "panel_variants": [
+    [
+     "(E) MDP-2",
+     1
+    ]
+   ],
+   "rating_mode": 80.0,
+   "poles_mode": 3
+  },
+  "RTU-6": {
+   "projects": 1,
+   "type": "EF-U_Disconnect Switch_CED : Non-Fused - 100A",
+   "type_variants": [
+    [
+     "EF-U_Disconnect Switch_CED : Non-Fused - 100A",
+     1
+    ]
+   ],
+   "va_mode": 0,
+   "va_recent": 0,
+   "va_variants": [
+    [
+     0,
+     1
+    ]
+   ],
+   "v_mode": 208,
+   "panel_mode": "(E) MDP-1",
+   "panel_variants": [
+    [
+     "(E) MDP-1",
+     1
+    ]
+   ],
+   "rating_mode": 45.0,
+   "poles_mode": 3
+  },
+  "RTU-4": {
+   "projects": 1,
+   "type": "EF-U_Disconnect Switch_CED : Non-Fused - 100A",
+   "type_variants": [
+    [
+     "EF-U_Disconnect Switch_CED : Non-Fused - 100A",
+     1
+    ]
+   ],
+   "va_mode": 0,
+   "va_recent": 0,
+   "va_variants": [
+    [
+     0,
+     1
+    ]
+   ],
+   "v_mode": 208,
+   "panel_mode": "(E) MDP-2",
+   "panel_variants": [
+    [
+     "(E) MDP-2",
+     1
+    ]
+   ],
+   "rating_mode": 110.0,
+   "poles_mode": 3
+  },
+  "RTU-2": {
+   "projects": 1,
+   "type": "EF-U_Disconnect Switch_CED : Non-Fused - 100A",
+   "type_variants": [
+    [
+     "EF-U_Disconnect Switch_CED : Non-Fused - 100A",
+     1
+    ]
+   ],
+   "va_mode": 0,
+   "va_recent": 0,
+   "va_variants": [
+    [
+     0,
+     1
+    ]
+   ],
+   "v_mode": 208,
+   "panel_mode": "(E) MDP-2",
+   "panel_variants": [
+    [
+     "(E) MDP-2",
+     1
+    ]
+   ],
+   "rating_mode": 80.0,
+   "poles_mode": 3
+  },
+  "RTU-1": {
+   "projects": 1,
+   "type": "EF-U_Disconnect Switch_CED : Non-Fused - 100A",
+   "type_variants": [
+    [
+     "EF-U_Disconnect Switch_CED : Non-Fused - 100A",
+     1
+    ]
+   ],
+   "va_mode": 0,
+   "va_recent": 0,
+   "va_variants": [
+    [
+     0,
+     1
+    ]
+   ],
+   "v_mode": 208,
+   "panel_mode": "(E) MDP-2",
+   "panel_variants": [
+    [
+     "(E) MDP-2",
+     1
+    ]
+   ],
+   "rating_mode": 80.0,
+   "poles_mode": 3
+  },
+  "GEN GEN. RCPTS": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "ECH-1 (VESTIBULE HEATER)": {
+   "projects": 1,
+   "type": "EF-U_Junction Box_CED : Ceiling",
+   "type_variants": [
+    [
+     "EF-U_Junction Box_CED : Ceiling",
+     1
+    ]
+   ],
+   "va_mode": 3994,
+   "va_recent": 3994,
+   "va_variants": [
+    [
+     3994,
+     1
+    ]
+   ],
+   "v_mode": 208,
+   "panel_mode": "L3",
+   "panel_variants": [
+    [
+     "L3",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 2
+  },
+  "CLOCK": {
+   "projects": 1,
+   "type": "EF-U_Junction Box_CED : Ceiling",
+   "type_variants": [
+    [
+     "EF-U_Junction Box_CED : Ceiling",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L2",
+   "panel_variants": [
+    [
+     "L2",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "PF SIGN": {
+   "projects": 1,
+   "type": "EF-U_Junction Box_CED : Ceiling",
+   "type_variants": [
+    [
+     "EF-U_Junction Box_CED : Ceiling",
+     1
+    ]
+   ],
+   "va_mode": 360,
+   "va_recent": 360,
+   "va_variants": [
+    [
+     360,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L2",
+   "panel_variants": [
+    [
+     "L2",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  },
+  "PF_Plan TV Video Wall": {
+   "projects": 1,
+   "type": "EF-U_Receptacle_CED : Duplex Wall",
+   "type_variants": [
+    [
+     "EF-U_Receptacle_CED : Duplex Wall",
+     1
+    ]
+   ],
+   "va_mode": 180,
+   "va_recent": 180,
+   "va_variants": [
+    [
+     180,
+     1
+    ]
+   ],
+   "v_mode": 120,
+   "panel_mode": "L2",
+   "panel_variants": [
+    [
+     "L2",
+     1
+    ]
+   ],
+   "rating_mode": 20.0,
+   "poles_mode": 1
+  }
+ },
+ "keynote_map": {
+  "1": [
+   [
+    "Duplex Wall - GFCI",
+    27
+   ],
+   [
+    "Wall - With Stem",
+    4
+   ],
+   [
+    "Motor Rated Switch - 120V, 1 Pole",
+    4
+   ],
+   [
+    "BATHROOM SINKS",
+    4
+   ],
+   [
+    "DRY VANITY",
+    3
+   ]
+  ],
+  "2": [
+   [
+    "Wall - With Stem",
+    66
+   ],
+   [
+    "HAND DRYER",
+    38
+   ],
+   [
+    "Duplex Wall - GFCI",
+    6
+   ],
+   [
+    "Motor Rated Switch - 120V, 1 Pole",
+    3
+   ],
+   [
+    "Hand Dryer",
+    3
+   ]
+  ],
+  "3": [
+   [
+    "Duplex Wall - GFCI",
+    13
+   ],
+   [
+    "BATHROOM SINKS",
+    8
+   ],
+   [
+    "Wall - With Stem",
+    5
+   ],
+   [
+    "Motor Rated Switch - 120V, 1 Pole",
+    3
+   ],
+   [
+    "Wall - No Stem",
+    2
+   ]
+  ],
+  "4": [
+   [
+    "HYDROMASSAGE - 103A",
+    31
+   ],
+   [
+    "HYDROMASSAGE RECEPT - 103A",
+    21
+   ],
+   [
+    "Duplex Wall - GFCI",
+    7
+   ],
+   [
+    "VENDING MACHINE",
+    3
+   ],
+   [
+    "Specialty Wall - 240V/1Ph",
+    3
+   ]
+  ],
+  "5": [
+   [
+    "HYBRID TANNER - 103B",
+    21
+   ],
+   [
+    "STAND-UP TANNER - 103C",
+    19
+   ],
+   [
+    "TLT TANNING - 103F",
+    15
+   ],
+   [
+    "Non-Fused - 60A",
+    13
+   ],
+   [
+    "LAY-DOWN TANNING - 103G",
+    3
+   ]
+  ],
+  "6": [
+   [
+    "CHECK-IN RECEPT",
+    6
+   ],
+   [
+    "STAR-LINE RACEWAY",
+    5
+   ],
+   [
+    "BIG FAN",
+    2
+   ],
+   [
+    "HYBRID TANNER - 103B",
+    2
+   ],
+   [
+    "Non-Fused - 30A",
+    1
+   ]
+  ],
+  "7": [
+   [
+    "CHECK-IN RECEPT",
+    22
+   ],
+   [
+    "TMAX RECEPT",
+    5
+   ],
+   [
+    "Duplex Wall",
+    4
+   ],
+   [
+    "Duplex Wall - Isolated Ground",
+    1
+   ],
+   [
+    "CHECK-IN COMPUTER",
+    1
+   ]
+  ],
+  "8": [
+   [
+    "TMAX RECEPT",
+    9
+   ],
+   [
+    "Duplex Wall",
+    6
+   ],
+   [
+    "Motor Rated Switch - 120V, 1 Pole",
+    2
+   ],
+   [
+    "IT RACK",
+    2
+   ],
+   [
+    "CHECK-IN RECEPT",
+    2
+   ]
+  ],
+  "9": [
+   [
+    "IT RACK",
+    12
+   ],
+   [
+    "TV - BLACK CARD SUITE",
+    7
+   ],
+   [
+    "Motor Rated Switch - 120V, 1 Pole",
+    3
+   ],
+   [
+    "TV - DIGITAL MEDIA",
+    2
+   ],
+   [
+    "Duplex Wall",
+    2
+   ]
+  ],
+  "10": [
+   [
+    "Duplex Wall - TV",
+    10
+   ],
+   [
+    "Duplex Wall - GFCI",
+    4
+   ],
+   [
+    "TV TRUSS",
+    3
+   ],
+   [
+    "CHECK-IN RECEPT",
+    3
+   ],
+   [
+    "TV - BLACK CARD SUITE",
+    3
+   ]
+  ],
+  "11": [
+   [
+    "TV - BLACK CARD SUITE",
+    24
+   ],
+   [
+    "Duplex Wall - TV",
+    14
+   ],
+   [
+    "TV TRUSS",
+    11
+   ],
+   [
+    "Quad Wall",
+    10
+   ],
+   [
+    "TV - MEN/WOMEN LOCKER ROOM",
+    10
+   ]
+  ],
+  "12": [
+   [
+    "Floor",
+    9
+   ],
+   [
+    "Duplex Wall - GFCI",
+    5
+   ],
+   [
+    "Duplex Wall",
+    5
+   ],
+   [
+    "WATER FOUNTAIN",
+    3
+   ],
+   [
+    "STAIRMASTER",
+    2
+   ]
+  ],
+  "13": [
+   [
+    "TREADMILL",
+    70
+   ],
+   [
+    "STAIRMASTER",
+    26
+   ],
+   [
+    "Duplex Wall",
+    10
+   ],
+   [
+    "Floor",
+    10
+   ],
+   [
+    "POWERED BIKE",
+    9
+   ]
+  ],
+  "14": [
+   [
+    "Ceiling",
+    13
+   ],
+   [
+    "VENDING MACHINE",
+    8
+   ],
+   [
+    "TV TRUSS",
+    7
+   ],
+   [
+    "Wall - With Stem",
+    4
+   ],
+   [
+    "Duplex Wall",
+    3
+   ]
+  ],
+  "15": [
+   [
+    "Wall - With Stem",
+    5
+   ],
+   [
+    "BIG FAN",
+    5
+   ],
+   [
+    "Non-Fused - 30A",
+    3
+   ],
+   [
+    "Duplex Wall",
+    3
+   ],
+   [
+    "TMAX RECEPT",
+    2
+   ]
+  ],
+  "16": [
+   [
+    "VENDING MACHINE",
+    21
+   ],
+   [
+    "Duplex Wall - TV",
+    20
+   ],
+   [
+    "TV TRUSS",
+    9
+   ],
+   [
+    "Duplex Wall",
+    5
+   ],
+   [
+    "BIG FAN",
+    5
+   ]
+  ],
+  "17": [
+   [
+    "Wall - With Stem",
+    7
+   ],
+   [
+    "SIGNAGE (IF NEEDED)",
+    4
+   ],
+   [
+    "Ceiling",
+    3
+   ],
+   [
+    "Quad Wall - TV",
+    2
+   ],
+   [
+    "SAUNA - 103H",
+    1
+   ]
+  ],
+  "18": [
+   [
+    "Motor Rated Switch - 120V, 1 Pole",
+    6
+   ],
+   [
+    "BIG FAN",
+    6
+   ],
+   [
+    "Wall - With Stem",
+    4
+   ],
+   [
+    "Non-Fused - 30A",
+    4
+   ],
+   [
+    "Duplex Wall",
+    3
+   ]
+  ],
+  "19": [
+   [
+    "BIG FAN",
+    14
+   ],
+   [
+    "Duplex Wall - GFCI",
+    4
+   ],
+   [
+    "Duplex Wall",
+    2
+   ],
+   [
+    "MASSAGE CHAIRS - 103",
+    2
+   ],
+   [
+    "STAR-LINE RACEWAY",
+    1
+   ]
+  ],
+  "20": [
+   [
+    "MASSAGE CHAIRS - 103",
+    12
+   ],
+   [
+    "Duplex Wall",
+    2
+   ],
+   [
+    "Duplex Wall - GFCI",
+    2
+   ],
+   [
+    "Wall - With Stem",
+    2
+   ],
+   [
+    "WOMENS RESTRM SINKS",
+    1
+   ]
+  ],
+  "21": [
+   [
+    "Duplex Wall",
+    2
+   ],
+   [
+    "Ceiling",
+    2
+   ],
+   [
+    "Specialty Wall - 240V/1Ph",
+    1
+   ],
+   [
+    "Quad Wall",
+    1
+   ],
+   [
+    "HYBRID TANNER - 103B",
+    1
+   ]
+  ],
+  "22": [
+   [
+    "Duplex Wall",
+    2
+   ],
+   [
+    "Wall - With Stem",
+    2
+   ],
+   [
+    "Specialty Wall - 240V/1Ph",
+    1
+   ],
+   [
+    "OFFICE 101B RECEPT",
+    1
+   ],
+   [
+    "RECEPT - BCS",
+    1
+   ]
+  ],
+  "23": [
+   [
+    "Duplex Wall",
+    4
+   ],
+   [
+    "CRYOLOUNGE - 103",
+    2
+   ],
+   [
+    "Specialty Wall - 240V/1Ph",
+    1
+   ],
+   [
+    "RECEPT - BCS",
+    1
+   ]
+  ],
+  "24": [
+   [
+    "Specialty Wall - 240V/1Ph",
+    1
+   ]
+  ]
+ },
+ "fixture_tag_offset_ft": [
+  null,
+  null
+ ],
+ "tag_offset_note": "Panel & Circuit Number tag median offset from fixture (internal ft, +y is north)"
+}

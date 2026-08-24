@@ -1,0 +1,475 @@
+# Planet Fitness Corporate Valley Stream, NY - Takeover  (project None / None)
+Sheet: E-101  |  Plan view: E101 - Power Plan (scale 1:96)
+
+## Spaces (64)
+- 100 VESTIBULE 100  ctr=None
+- 100 VESTIBULE 100  ctr=[186.9, 154.1]
+- 101 RECEPTION 101  ctr=None
+- 101 RECEPTION 101  ctr=[177.7, 154.3]
+- 101A IT ROOM 101A  ctr=None
+- 101A EMPLOYEE BREAKROOM 101A  ctr=[110.6, 175.8]
+- 101B MECHANICAL ROOM 101B  ctr=None
+- 101B IT ROOM/ STORAGE 101B  ctr=[155.5, 171.9]
+- 101C EMPLOYEE BREAKROOM 101C  ctr=None
+- 101D STORAGE ROOM 101D  ctr=None
+- 102 CHECK-IN 102  ctr=None
+- 102 CHECK-IN 102  ctr=[166.6, 161.3]
+- 103 BLACK CARD SPA 103  ctr=None
+- 103 BLACK CARD SPA 103  ctr=[181.8, 180.7]
+- 103A HYDROMASSAGE 103A  ctr=None
+- 103A TANNING 103A  ctr=[164.8, 184.5]
+- 103B RED WAVE 103B  ctr=None
+- 103B HYDROMASSAGE 103B  ctr=[153.9, 198.0]
+- 103C TANNING 103C  ctr=None
+- 103C TANNING 103C  ctr=[163.6, 200.1]
+- 103D HYBRID 103D  ctr=None
+- 103D REDWAVE 103D  ctr=[170.5, 200.7]
+- 103E TANNING 103E  ctr=None
+- 103E HYBRID 103E  ctr=[176.8, 200.8]
+- 103F HYBRID 103F  ctr=None
+- 103F TANNING TLT 103F  ctr=[185.1, 200.7]
+- 103G CRYOLOUNGE 103G  ctr=None
+- 103H SAUNA 103H  ctr=None
+- 103J SPRAY TANNING 103J  ctr=None
+- 103K TANNING 103K  ctr=None
+- 103L TANNING 103L  ctr=None
+- 104 WOMENS LOCKER ROOM 104  ctr=None
+- 104 WOMEN'S LOCKER ROOM 104  ctr=[138.7, 191.6]
+- 104A TOILET 104A  ctr=None
+- 104A TOILET 104A  ctr=[119.2, 209.0]
+- 104B SHOWER 104B  ctr=None
+- 104B SHOWER 104B  ctr=[141.0, 204.9]
+- 104C JANITOR 104C  ctr=None
+- 104C JANITOR 104C  ctr=[131.6, 215.1]
+- 104D STORAGE 104D  ctr=None
+- 105 MENS LOCKER ROOM 105  ctr=None
+- 105 MEN'S LOCKER ROOM 105  ctr=[119.5, 190.9]
+- 105A TOILET 105A  ctr=None
+- 105A TOILET 105A  ctr=[100.6, 210.6]
+- 105B SHOWER 105B  ctr=None
+- 105B SHOWER 105B  ctr=[104.8, 185.9]
+- 105C JANITOR 105C  ctr=None
+- 105C JANITOR 105C  ctr=[95.6, 194.9]
+- 105D STORAGE 105D  ctr=None
+- 106 MECHANICAL ROOM 106  ctr=[97.2, 171.9]
+- 107 FUNCTIONAL TRAINING MOBILITY ROOM 107  ctr=None
+- 107 CARDIO 107  ctr=[164.7, 136.8]
+- 107A EX'G ELECTRICAL ROOM 107A  ctr=None
+- 108 CARDIO NEW 108  ctr=None
+- 108 HOUSE/UTILITY BACK OF 108  ctr=None
+- 108 CIRCUIT 108  ctr=[158.8, 100.1]
+- 108A OFFICE 108A  ctr=None
+- 108B OFFICE 108B  ctr=None
+- 109 CIRCUIT EX'G 109  ctr=None
+- 109 STRENGTH 109  ctr=[115.6, 102.0]
+- 110 STRENGTH 110  ctr=None
+- 110 WEIGHTS FREE 110  ctr=[111.3, 63.1]
+- 111 FREE WEIGHTS 111  ctr=None
+- 111 FUNCTIONAL TRAINING/ MOBILITY ROOM 111  ctr=[151.3, 62.1]
+
+## Panels (15)
+- None | EE-U_Electrical Meter_CED:Electrical Meter | loc=[-203.5, -1162.4] | mains=None volts=None
+- T-1 | EE-U_Transformer_CED:Dry-Type - 112.5 KVA | loc=[-203.5, -1154.6] | mains=175.0 volts=None
+- T-1 | EE-U_Utility Transformer_CED:Utility Transformer - 150 kVA | loc=[-203.5, -1158.2] | mains=0.0 volts=None
+- LP1 | EE-U_Placeholder Equipment-NO POWER_CED:PLACEHOLDER Panelboard - Shaded | loc=[-201.6, -1142.7] | mains=100.0 volts=208/120V, 1Ph, 3W
+- PLACEHOLDER SWG | EE-U_Placeholder Equipment-NO POWER_CED:PLACEHOLDER Switchboard - Hatched | loc=[-205.8, -1139.9] | mains=400.0 volts=None
+- PLACEHOLDER SWG | EE-U_Placeholder Equipment-NO POWER_CED:PLACEHOLDER Switchboard - Shaded | loc=[-201.4, -1139.9] | mains=400.0 volts=None
+- PLACEHOLDER PANEL | EE-U_Placeholder Equipment-NO POWER_CED:PLACEHOLDER Panelboard - Hatched | loc=[-204.8, -1145.4] | mains=100.0 volts=None
+- PLACEHOLDER PANEL | EE-U_Placeholder Equipment-NO POWER_CED:PLACEHOLDER Panelboard - Hatched | loc=[-201.4, -1145.4] | mains=100.0 volts=None
+- LP1 | EE-U_Placeholder Equipment-NO POWER_CED:PLACEHOLDER Panelboard - Shaded | loc=[-204.8, -1142.7] | mains=100.0 volts=None
+- TR-L3 | EE-U_Transformer_CED:Dry-Type - 112.5 KVA | loc=[150.6, 179.5] | mains=175.0 volts=208VΔ
+- L3 | EE-U_Panelboard_CED:L4_Panelboard - 240V/3Ph | loc=[153.9, 179.5] | mains=225.0 volts=240VΔ/120
+- L2 | EE-U_Panelboard_CED:Panelboard - 208V/3Ph, 125A | loc=[156.1, 179.5] | mains=150.0 volts=208Y/120V
+- L1 | EE-U_Panelboard_CED:Panelboard - 208V/3Ph, 600A | loc=[158.2, 179.5] | mains=250.0 volts=208Y/120V
+- MDP | EE-U_Switchboard_CED:Switchboard - 208V/3Ph, I-Line Type | loc=[161.6, 178.6] | mains=800.0 volts=208Y/120V
+- None | EE-U_Electrical Meter_CED:Electrical Meter | loc=[116.5, 53.6] | mains=None volts=None
+
+## Fixtures in plan view (225)
+- [44] EF-U_Receptacle_CED : Duplex Wall | load=? | VA=1937.5039 V=1291.6693 panel=None rating=0.0 poles=1 | rot={0: 14, 270: 10, 180: 5, 90: 13, 49: 1, 319: 1}
+- [24] EF-U_Receptacle_CED : Duplex Wall | load=TREADMILL | VA=16145.8656 V=1291.6693 panel=L1 rating=20.0 poles=1 | rot={0: 24}
+- [17] EF-U_Receptacle_CED : Duplex Wall - GFCI | load=? | VA=1937.5039 V=1291.6693 panel=None rating=0.0 poles=1 | rot={0: 3, 180: 2, 270: 7, 90: 5}
+- [14] EF-U_Receptacle_CED : Quad Wall - TV | load=TV TRUSS | VA=3875.0078 V=1291.6693 panel=L2 rating=20.0 poles=1 | rot={0: 14}
+- [8] EF-U_Receptacle_CED : Duplex Wall | load=STAIRMASTER | VA=12916.6925 V=1291.6693 panel=L1 rating=20.0 poles=1 | rot={0: 8}
+- [8] EF-U_Receptacle_CED : Duplex Wall - GFCI | load=BATHROOM SINKS | VA=1937.5039 V=1291.6693 panel=L3 rating=20.0 poles=1 | rot={180: 1, 90: 3, 0: 3, 270: 1}
+- [7] EF-U_Disconnect Switch_CED : Non-Fused - 60A | load=? | VA=139500.279 V=2238.8934 panel=None rating=0.0 poles=3 | rot={270: 6, 0: 1}
+- [6] EF-U_Motor Rated Switch_CED : Motor Rated Switch - 120V, 1 Pole | load=? | VA=0.0 V=1291.6693 panel=None rating=0.0 poles=1 | rot={0: 1, 180: 5}
+- [5] EF-U_Receptacle_CED : Duplex Wall | load=RECEPT - BCS | VA=1937.5039 V=1291.6693 panel=L3 rating=20.0 poles=1 | rot={0: 4, 270: 1}
+- [4] EF-U_Junction Box_CED : Floor | load=? | VA=0.0 V=1291.6693 panel=None rating=0.0 poles=1 | rot={0: 4}
+- [4] EF-U_Junction Box_CED : Wall - With Stem | load=HAND DRYER | VA=10225.7149 V=1291.6693 panel=L3 rating=15.0 poles=1 | rot={90: 2, 0: 2}
+- [4] EF-U_Receptacle_CED : Duplex Wall - GFCI | load=HYDROMASSAGE RECEPT - 103A | VA=1937.5039 V=1291.6693 panel=L3 rating=20.0 poles=1 | rot={270: 2, 0: 2}
+- [4] EF-U_Receptacle_CED : Specialty Wall - 240V/1Ph | load=HYDROMASSAGE - 103A | VA=46500.093 V=2583.3385 panel=L4 rating=30.0 poles=2 | rot={270: 2, 0: 2}
+- [4] EF-U_Receptacle_CED : Duplex Wall | load=TMAX RECEPT | VA=1937.5039 V=1291.6693 panel=L3 rating=20.0 poles=1 | rot={180: 3, 90: 1}
+- [3] EF-U_Junction Box_CED : Ceiling | load=? | VA=0.0 V=1291.6693 panel=None rating=0.0 poles=1 | rot={0: 3}
+- [3] EF-U_Receptacle_CED : Duplex Wall | load=VENDING MACHINE | VA=10763.9104 V=1291.6693 panel=L3 rating=20.0 poles=1 | rot={270: 1, 180: 2}
+- [3] EF-U_Receptacle_CED : Duplex Wall | load=CHECK-IN RECEPT | VA=1937.5039 V=1291.6693 panel=L3 rating=20.0 poles=1 | rot={0: 3}
+- [2] EF-U_Disconnect Switch_CED : Fused - 200A | load=? | VA=0.0 V=2238.8934 panel=None rating=0.0 poles=3 | rot={0: 1, 229: 1}
+- [2] EF-U_Disconnect Switch_CED : Non-Fused - 30A | load=BIG FAN | VA=16145.8656 V=2238.8934 panel=L3 rating=20.0 poles=3 | rot={0: 2}
+- [2] EF-U_Disconnect Switch_CED : Non-Fused - 60A | load=TLT TANNING - 103F | VA=120738.7831 V=2583.3385 panel=L4 rating=40.0 poles=3 | rot={90: 1, 270: 1}
+- [2] EF-U_Junction Box_CED : Wall - With Stem | load=? | VA=0.0 V=1291.6693 panel=None rating=0.0 poles=1 | rot={0: 1, 180: 1}
+- [2] EF-U_Junction Box_CED : Wall - With Stem | load=SIGNAGE (IF NEEDED) | VA=5381.9552 V=1291.6693 panel=L3 rating=20.0 poles=1 | rot={270: 1, 0: 1}
+- [2] EF-U_Receptacle_CED : Duplex Wall | load=POWERED BIKE | VA=4305.5642 V=1291.6693 panel=L1 rating=20.0 poles=1 | rot={0: 2}
+- [2] EF-U_Receptacle_CED : Duplex Wall - GFCI | load=BATHROOM SINK | VA=1937.5039 V=1291.6693 panel=L3 rating=20.0 poles=1 | rot={90: 1, 0: 1}
+- [2] EF-U_Receptacle_CED : Duplex Wall - TV | load=TV - MEN/WOMEN LOCKER ROOM | VA=3229.1731 V=1291.6693 panel=L3 rating=20.0 poles=1 | rot={180: 2}
+- [2] EF-U_Receptacle_CED : Quad Wall | load=IT RACK | VA=1937.5039 V=1291.6693 panel=L3 rating=20.0 poles=1 | rot={180: 2}
+- [2] EF-U_Receptacle_CED : Duplex Floor | load=MASSAGE CHAIRS - 103 | VA=5381.9552 V=1291.6693 panel=L4 rating=20.0 poles=1 | rot={180: 2}
+- [2] EF-U_Receptacle_CED : Duplex Wall | load=CRYOLOUNGE - 103 | VA=15500.031 V=1291.6693 panel=L4 rating=40.0 poles=1 | rot={0: 2}
+- [1] EF-U_Cord Reel_CED : Cord Reel - JBox | load=? | VA=1937.5039 V=1291.6693 panel=None rating=0.0 poles=1 | rot={0: 1}
+- [1] EF-U_Cord Reel_CED : Drop Cord - Duplex | load=? | VA=1937.5039 V=1291.6693 panel=None rating=0.0 poles=1 | rot={0: 1}
+- [1] EF-U_Disconnect Switch_CED : Combination Starter - 200A | load=? | VA=0.0 V=2238.8934 panel=None rating=0.0 poles=3 | rot={0: 1}
+- [1] EF-U_Disconnect Switch_CED : Non-Fused - 200A | load=? | VA=0.0 V=2238.8934 panel=None rating=0.0 poles=3 | rot={0: 1}
+- [1] EF-U_Disconnect Switch_CED : Non-Fused - 60A | load=STAND-UP TANNER - 103C | VA=111858.5571 V=2583.3385 panel=L4 rating=40.0 poles=3 | rot={270: 1}
+- [1] EF-U_Disconnect Switch_CED : Non-Fused - 30A | load=HYBRID TANNER - 103B | VA=76079.3188 V=2583.3385 panel=L4 rating=30.0 poles=3 | rot={270: 1}
+- [1] EF-U_Disconnect Switch_CED : Non-Fused - 60A | load=HYBRID TANNER - 103B | VA=125291.9173 V=2583.3385 panel=L4 rating=40.0 poles=3 | rot={270: 1}
+- [1] EF-U_General Electrical Box_CED : Push Button - Wall Rectangle | load=? | VA=0.0 V=1291.6693 panel=None rating=0.0 poles=1 | rot={270: 1}
+- [1] EF-U_General Electrical Box_CED : Emergency Power Off Button | load=? | VA=0.0 V=1291.6693 panel=None rating=0.0 poles=1 | rot={270: 1}
+- [1] EF-U_General Electrical Box_CED : EMS - Energy Meter | load=? | VA=0.0 V=1291.6693 panel=None rating=0.0 poles=1 | rot={0: 1}
+- [1] EF-U_General Electrical Box_CED : Floor Box | load=? | VA=0.0 V=1291.6693 panel=None rating=0.0 poles=1 | rot={0: 1}
+- [1] EF-U_Motor Connection_CED : Ceiling - No Switch | load=? | VA=0.0 V=1291.6693 panel=None rating=0.0 poles=1 | rot={0: 1}
+- [1] EF-U_Motor Rated Switch_CED : Motor Rated Switch - 208V, 2 Pole | load=? | VA=0.0 V=2238.8934 panel=None rating=0.0 poles=2 | rot={0: 1}
+- [1] EF-U_Plug Strip_CED : zSymbol Legend - Plugstrip | load=? | VA=0.0 V=1291.6693 panel=None rating=0.0 poles=1 | rot={0: 1}
+- [1] EF-U_Receptacle_CED : Duplex Ceiling | load=? | VA=1937.5039 V=1291.6693 panel=None rating=0.0 poles=1 | rot={0: 1}
+- [1] EF-U_Receptacle_CED : Duplex Floor | load=? | VA=1937.5039 V=1291.6693 panel=None rating=0.0 poles=1 | rot={0: 1}
+- [1] EF-U_Receptacle_CED : Duplex Wall - Controlled | load=? | VA=1937.5039 V=1291.6693 panel=None rating=0.0 poles=1 | rot={0: 1}
+- [1] EF-U_Receptacle_CED : Duplex Wall - Emergency | load=? | VA=1937.5039 V=1291.6693 panel=None rating=0.0 poles=1 | rot={0: 1}
+- [1] EF-U_Receptacle_CED : Duplex Wall - Isolated Ground | load=? | VA=1937.5039 V=1291.6693 panel=None rating=0.0 poles=1 | rot={0: 1}
+- [1] EF-U_Receptacle_CED : Quad Ceiling | load=? | VA=3875.0078 V=1291.6693 panel=None rating=0.0 poles=1 | rot={0: 1}
+- [1] EF-U_Receptacle_CED : Quad Floor | load=? | VA=3875.0078 V=1291.6693 panel=None rating=0.0 poles=1 | rot={0: 1}
+- [1] EF-U_Receptacle_CED : Quad Wall | load=? | VA=3875.0078 V=1291.6693 panel=None rating=0.0 poles=1 | rot={0: 1}
+- [1] EF-U_Receptacle_CED : Quad Wall - Emergency | load=? | VA=3875.0078 V=1291.6693 panel=None rating=0.0 poles=1 | rot={0: 1}
+- [1] EF-U_Receptacle_CED : Quad Wall - GFCI | load=? | VA=3875.0078 V=1291.6693 panel=None rating=0.0 poles=1 | rot={0: 1}
+- [1] EF-U_Receptacle_CED : Quad Wall - Isolated Ground | load=? | VA=3875.0078 V=1291.6693 panel=None rating=0.0 poles=1 | rot={0: 1}
+- [1] EF-U_Receptacle_CED : Specialty Ceiling - 208V/1Ph | load=? | VA=0.0 V=2238.8934 panel=None rating=0.0 poles=2 | rot={0: 1}
+- [1] EF-U_Receptacle_CED : Specialty Floor - 208V/1Ph | load=? | VA=0.0 V=2238.8934 panel=None rating=0.0 poles=2 | rot={0: 1}
+- [1] EF-U_Receptacle_CED : Specialty Wall - 208V/1Ph | load=? | VA=0.0 V=2238.8934 panel=None rating=0.0 poles=2 | rot={0: 1}
+- [1] EF-U_Receptacle_CED : Simplex Ceiling | load=? | VA=1937.5039 V=1291.6693 panel=None rating=0.0 poles=1 | rot={0: 1}
+- [1] EF-U_Receptacle_CED : Simplex Floor | load=? | VA=1937.5039 V=1291.6693 panel=None rating=0.0 poles=1 | rot={0: 1}
+- [1] EF-U_Receptacle_CED : Simplex Wall | load=? | VA=1937.5039 V=1291.6693 panel=None rating=0.0 poles=1 | rot={0: 1}
+- [1] EF-U_Receptacle_CED : Quad Wall - Controlled | load=? | VA=3875.0078 V=1291.6693 panel=None rating=0.0 poles=1 | rot={0: 1}
+- [1] EF-U_Receptacle_CED : Specialty Ceiling - 208V/3Ph | load=? | VA=0.0 V=2238.8934 panel=None rating=0.0 poles=3 | rot={0: 1}
+- [1] EF-U_Receptacle_CED : Specialty Floor - 208V/3Ph | load=? | VA=0.0 V=2238.8934 panel=None rating=0.0 poles=3 | rot={0: 1}
+- [1] EF-U_Receptacle_CED : Specialty Wall - 208V/3Ph | load=? | VA=0.0 V=2238.8934 panel=None rating=0.0 poles=3 | rot={0: 1}
+- [1] EF-U_Receptacle_CED : Duplex Wall | load=LTG - SALES FLOOR - ASLE 3 | VA=1937.5039 V=1291.6693 panel=None rating=20.0 poles=1 | rot={0: 1}
+- [1] EF-U_Receptacle_CED : Duplex Wall | load=TV - BLACK CARD SUITE | VA=3229.1731 V=1291.6693 panel=L3 rating=20.0 poles=1 | rot={0: 1}
+- [1] EF-U_Receptacle_CED : Duplex Wall - TV | load=TV TRUSS | VA=1937.5039 V=1291.6693 panel=L2 rating=20.0 poles=1 | rot={270: 1}
+- [1] EF-U_Receptacle_CED : Duplex Wall - TV | load=TV - DIGITAL MEDIA | VA=3229.1731 V=1291.6693 panel=L3 rating=20.0 poles=1 | rot={180: 1}
+- [1] EF-U_Receptacle_CED : Duplex Wall - TV | load=TV & RADIANCE MONITOR - CHECK-IN 102 | VA=3229.1731 V=1291.6693 panel=L3 rating=20.0 poles=1 | rot={180: 1}
+- [1] EF-U_Receptacle_CED : Duplex Wall - TV | load=TV - BLACK CARD SUITE | VA=3229.1731 V=1291.6693 panel=L3 rating=20.0 poles=1 | rot={180: 1}
+
+## Circuits (181)
+### Panel ? (16 ckts)
+- ckt <unnamed> | SPARE | 20.0A 1P 0.0V | 0.0 VA | 0 fixtures
+- ckt <unnamed> | SPARE | 20.0A 1P 0.0V | 0.0 VA | 0 fixtures
+- ckt <unnamed> | SPARE | 20.0A 1P 0.0V | 0.0 VA | 0 fixtures
+- ckt <unnamed> | SPARE | 20.0A 1P 0.0V | 0.0 VA | 0 fixtures
+- ckt <unnamed> | SPARE | 20.0A 1P 0.0V | 0.0 VA | 0 fixtures
+- ckt <unnamed> | SPARE | 20.0A 1P 0.0V | 0.0 VA | 0 fixtures
+- ckt <unnamed> | SPARE | 20.0A 1P 0.0V | 0.0 VA | 0 fixtures
+- ckt <unnamed> | SPARE | 20.0A 1P 0.0V | 0.0 VA | 0 fixtures
+- ckt <unnamed> | SPARE | 20.0A 1P 0.0V | 0.0 VA | 0 fixtures
+- ckt <unnamed> | SPARE | 20.0A 1P 0.0V | 0.0 VA | 0 fixtures
+- ckt <unnamed> | SPARE | 20.0A 1P 0.0V | 0.0 VA | 0 fixtures
+- ckt <unnamed> | SPARE | 20.0A 1P 0.0V | 0.0 VA | 0 fixtures
+- ckt <unnamed> | SPACE | 0.0A 1P 0.0V | 0.0 VA | 0 fixtures
+- ckt <unnamed> | SPACE | 0.0A 1P 0.0V | 0.0 VA | 0 fixtures
+- ckt <unnamed> | SPACE | 0.0A 1P 0.0V | 0.0 VA | 0 fixtures
+- ckt <unnamed> | SPACE | 0.0A 1P 0.0V | 0.0 VA | 0 fixtures
+### Panel L1 (56 ckts)
+- ckt 1 | STAIRMASTER | 20.0A 1P 1291.7V | 12916.7 VA | 1 fixtures
+- ckt 2 | TREADMILL | 20.0A 1P 1291.7V | 16145.9 VA | 1 fixtures
+- ckt 3 | STAIRMASTER | 20.0A 1P 1291.7V | 12916.7 VA | 1 fixtures
+- ckt 4 | TREADMILL | 20.0A 1P 1291.7V | 16145.9 VA | 1 fixtures
+- ckt 5 | STAIRMASTER | 20.0A 1P 1291.7V | 12916.7 VA | 1 fixtures
+- ckt 6 | TREADMILL | 20.0A 1P 1291.7V | 16145.9 VA | 1 fixtures
+- ckt 7 | STAIRMASTER | 20.0A 1P 1291.7V | 12916.7 VA | 1 fixtures
+- ckt 8 | TREADMILL | 20.0A 1P 1291.7V | 16145.9 VA | 1 fixtures
+- ckt 9 | STAIRMASTER | 20.0A 1P 1291.7V | 12916.7 VA | 1 fixtures
+- ckt 10 | TREADMILL | 20.0A 1P 1291.7V | 16145.9 VA | 1 fixtures
+- ckt 11 | STAIRMASTER | 20.0A 1P 1291.7V | 12916.7 VA | 1 fixtures
+- ckt 12 | TREADMILL | 20.0A 1P 1291.7V | 16145.9 VA | 1 fixtures
+- ckt 13 | STAIRMASTER | 20.0A 1P 1291.7V | 12916.7 VA | 1 fixtures
+- ckt 14 | TREADMILL | 20.0A 1P 1291.7V | 16145.9 VA | 1 fixtures
+- ckt 15 | STAIRMASTER | 20.0A 1P 1291.7V | 12916.7 VA | 1 fixtures
+- ckt 16 | TREADMILL | 20.0A 1P 1291.7V | 16145.9 VA | 1 fixtures
+- ckt 17 | TREADMILL | 20.0A 1P 1291.7V | 16145.9 VA | 1 fixtures
+- ckt 18 | TREADMILL | 20.0A 1P 1291.7V | 16145.9 VA | 1 fixtures
+- ckt 19 | TREADMILL | 20.0A 1P 1291.7V | 16145.9 VA | 1 fixtures
+- ckt 20 | TREADMILL | 20.0A 1P 1291.7V | 16145.9 VA | 1 fixtures
+- ckt 21 | TREADMILL | 20.0A 1P 1291.7V | 16145.9 VA | 1 fixtures
+- ckt 22 | TREADMILL | 20.0A 1P 1291.7V | 16145.9 VA | 1 fixtures
+- ckt 23 | TREADMILL | 20.0A 1P 1291.7V | 16145.9 VA | 1 fixtures
+- ckt 24 | TREADMILL | 20.0A 1P 1291.7V | 16145.9 VA | 1 fixtures
+- ckt 25 | POWERED BIKE | 20.0A 1P 1291.7V | 4305.6 VA | 1 fixtures
+- ckt 26 | TREADMILL | 20.0A 1P 1291.7V | 16145.9 VA | 1 fixtures
+- ckt 27 | POWERED BIKE | 20.0A 1P 1291.7V | 4305.6 VA | 1 fixtures
+- ckt 28 | GYM MAINT. RCPTS | 20.0A 1P 1291.7V | 7750.0 VA | 4 fixtures
+- ckt 29 | TREADMILL | 20.0A 1P 1291.7V | 16145.9 VA | 1 fixtures
+- ckt 30 | GYM MAINT. RCPTS | 20.0A 1P 1291.7V | 11625.0 VA | 6 fixtures
+- ckt 31 | TREADMILL | 20.0A 1P 1291.7V | 16145.9 VA | 1 fixtures
+- ckt 32 | GYM MAINT. RCPTS | 20.0A 1P 1291.7V | 9687.5 VA | 5 fixtures
+- ckt 33 | TREADMILL | 20.0A 1P 1291.7V | 16145.9 VA | 1 fixtures
+- ckt 34 | GYM MAINT. RCPTS | 20.0A 1P 1291.7V | 7750.0 VA | 4 fixtures
+- ckt 35 | TREADMILL | 20.0A 1P 1291.7V | 16145.9 VA | 1 fixtures
+- ckt 36 | ELECTRIC WATER COOLER | 20.0A 1P 1291.7V | 1937.5 VA | 1 fixtures
+- ckt 37 | TREADMILL | 20.0A 1P 1291.7V | 16145.9 VA | 1 fixtures
+- ckt 38 | RECEPTION RCPTS | 20.0A 1P 1291.7V | 3875.0 VA | 2 fixtures
+- ckt 39 | TREADMILL | 20.0A 1P 1291.7V | 16145.9 VA | 1 fixtures
+- ckt 40 | TV TRUSS | 20.0A 1P 1291.7V | 11625.0 VA | 3 fixtures
+- ckt 41 | TREADMILL | 20.0A 1P 1291.7V | 16145.9 VA | 1 fixtures
+- ckt 42 | TV TRUSS | 20.0A 1P 1291.7V | 11625.0 VA | 3 fixtures
+- ckt 43 | SPARE | 20.0A 1P 1291.7V | 0.0 VA | 0 fixtures
+- ckt 44 | TV TRUSS | 20.0A 1P 1291.7V | 11625.0 VA | 3 fixtures
+- ckt 45 | SPARE | 20.0A 1P 1291.7V | 0.0 VA | 0 fixtures
+- ckt 46 | TV TRUSS | 20.0A 1P 1291.7V | 11625.0 VA | 3 fixtures
+- ckt 47 | SPARE | 20.0A 1P 1291.7V | 0.0 VA | 0 fixtures
+- ckt 48 | TV TRUSS | 20.0A 1P 1291.7V | 7750.0 VA | 2 fixtures
+- ckt 50 | TV - FUNCTIONAL TRAINING | 20.0A 1P 1291.7V | 3229.2 VA | 1 fixtures
+- ckt 52 | SPARE | 20.0A 1P 1291.7V | 0.0 VA | 0 fixtures
+- ckt 54 | SPARE | 20.0A 1P 1291.7V | 0.0 VA | 0 fixtures
+- ckt 56 | SPARE | 20.0A 1P 1291.7V | 0.0 VA | 0 fixtures
+- ckt 58 | SPARE | 20.0A 1P 1291.7V | 0.0 VA | 0 fixtures
+- ckt 60 | SPARE | 20.0A 1P 1291.7V | 0.0 VA | 0 fixtures
+- ckt 49,51,53 | BIG FAN | 20.0A 3P 2238.9V | 16145.9 VA | 1 fixtures
+- ckt 55,57,59 | BIG FAN | 20.0A 3P 2238.9V | 16145.9 VA | 1 fixtures
+### Panel L2 (68 ckts)
+- ckt 1 | VENDING MACHINE | 20.0A 1P 1291.7V | 10763.9 VA | 1 fixtures
+- ckt 2 | GYM LTS | 20.0A 1P 1291.7V | 9687.5 VA | 9 fixtures
+- ckt 3 | TV - BLACK CARD SPA | 20.0A 1P 1291.7V | 1937.5 VA | 1 fixtures
+- ckt 4 | GYM LTS | 20.0A 1P 1291.7V | 17222.3 VA | 16 fixtures
+- ckt 5 | BCS MAINT. RCPTS | 20.0A 1P 1291.7V | 5812.5 VA | 3 fixtures
+- ckt 6 | GYM LTS | 20.0A 1P 1291.7V | 12163.2 VA | 13 fixtures
+- ckt 7 | BCS MAINT. RCPTS | 20.0A 1P 1291.7V | 9687.5 VA | 5 fixtures
+- ckt 8 | ENTRY SPECIALTY LTS | 20.0A 1P 1291.7V | 2389.6 VA | 2 fixtures
+- ckt 9 | HYDROMASSAGE RCPT. - 103B | 20.0A 1P 1291.7V | 7750.0 VA | 4 fixtures
+- ckt 10 | SOFFIT GEAR LTS | 20.0A 1P 1291.7V | 968.8 VA | 6 fixtures
+- ckt 11 | T-MAX TIMER | 20.0A 1P 1291.7V | 1937.5 VA | 1 fixtures
+- ckt 12 | TRACK LTS | 20.0A 1P 1291.7V | 2583.3 VA | 1 fixtures
+- ckt 13 | BACKWRAP RCPTS | 20.0A 1P 1291.7V | 5812.5 VA | 3 fixtures
+- ckt 14 | BCS LTS | 20.0A 1P 1291.7V | 2421.9 VA | 15 fixtures
+- ckt 15 | CHECK-IN RCPTS | 20.0A 1P 1291.7V | 5812.5 VA | 3 fixtures
+- ckt 16 | BCS COVE LTS | 20.0A 1P 1291.7V | 2152.8 VA | 4 fixtures
+- ckt 17 | TV - CHECK-IN | 20.0A 1P 1291.7V | 9687.5 VA | 3 fixtures
+- ckt 18 | WOMENS RESTROOM LTS | 20.0A 1P 1291.7V | 5661.8 VA | 30 fixtures
+- ckt 19 | VENDING MACHINE | 20.0A 1P 1291.7V | 10763.9 VA | 1 fixtures
+- ckt 20 | MENS LOCKER & RESTROOM LTS | 20.0A 1P 1291.7V | 5661.8 VA | 30 fixtures
+- ckt 21 | VENDING MACHINE | 20.0A 1P 1291.7V | 10763.9 VA | 1 fixtures
+- ckt 22 | OFFICE, IT & MECH RM LTS | 20.0A 1P 1291.7V | 3013.9 VA | 7 fixtures
+- ckt 23 | I.T. RM MAINT. RCPTS | 20.0A 1P 1291.7V | 3875.0 VA | 2 fixtures
+- ckt 24 | EXTERIOR SIGN | 20.0A 1P 1291.7V | 5382.0 VA | 1 fixtures
+- ckt 25 | I.T. RACK | 20.0A 1P 1291.7V | 1937.5 VA | 1 fixtures
+- ckt 26 | RESTROOM EXHAUST FANS | 15.0A 1P 1291.7V | 17050.0 VA | 2 fixtures
+- ckt 27 | I.T. RACK | 20.0A 1P 1291.7V | 1937.5 VA | 1 fixtures
+- ckt 28 | BCS EXHAUST FAN | 20.0A 1P 1291.7V | 8525.0 VA | 1 fixtures
+- ckt 29 | BREAK RM RCPTS. | 20.0A 1P 1291.7V | 7750.0 VA | 4 fixtures
+- ckt 30 | I.T. ROOM EXHAUST FAN | 20.0A 1P 1291.7V | 1937.5 VA | 1 fixtures
+- ckt 31 | MECH RM MAINT. RCPTS | 20.0A 1P 1291.7V | 5812.5 VA | 3 fixtures
+- ckt 33 | HWH-1 - WATER HEATER | 20.0A 1P 1291.7V | 15500.0 VA | 1 fixtures
+- ckt 35 | P-1 - CIRC. PUMP | 20.0A 1P 1291.7V | 1614.6 VA | 1 fixtures
+- ckt 36 | GYM EM LTS | 20.0A 1P 1291.7V | 4617.7 VA | 10 fixtures
+- ckt 37 | TV - MEN/WOMEN LOCKER ROOM | 20.0A 1P 1291.7V | 6458.3 VA | 2 fixtures
+- ckt 38 | GYM EM LTS | 20.0A 1P 1291.7V | 4542.4 VA | 12 fixtures
+- ckt 39 | WOMENS LOCKER MAINT. RCPTS | 20.0A 1P 1291.7V | 5812.5 VA | 3 fixtures
+- ckt 40 | BCS & RESTROOM EM LTS | 20.0A 1P 1291.7V | 6081.6 VA | 39 fixtures
+- ckt 41 | WOMENS LOCKER VANITY | 20.0A 1P 1291.7V | 3875.0 VA | 2 fixtures
+- ckt 42 | ROOFTOP MAINT. RCPTS | 20.0A 1P 1291.7V | 11625.0 VA | 6 fixtures
+- ckt 43 | WOMENS HAND DRYER | 15.0A 1P 1291.7V | 10225.7 VA | 1 fixtures
+- ckt 44 | ROOFTOP MAINT. RCPTS | 20.0A 1P 1291.7V | 9687.5 VA | 5 fixtures
+- ckt 45 | WOMENS HAND DRYER | 15.0A 1P 1291.7V | 10225.7 VA | 1 fixtures
+- ckt 47 | WOMENS RESTRM VANITY | 20.0A 1P 1291.7V | 3875.0 VA | 2 fixtures
+- ckt 49 | WOMENS RESTRM SINKS | 20.0A 1P 1291.7V | 5812.5 VA | 3 fixtures
+- ckt 51 | MENS LOCKER MAINT. RCPTS | 20.0A 1P 1291.7V | 5812.5 VA | 3 fixtures
+- ckt 53 | MENS LOCKER VANITY | 20.0A 1P 1291.7V | 3875.0 VA | 2 fixtures
+- ckt 55 | MENS HAND DRYER | 15.0A 1P 1291.7V | 10225.7 VA | 1 fixtures
+- ckt 57 | MENS HAND DRYER | 15.0A 1P 1291.7V | 10225.7 VA | 1 fixtures
+- ckt 59 | MENS RESTRM VANITY | 20.0A 1P 1291.7V | 3875.0 VA | 2 fixtures
+- ckt 61 | MENS RESTRM SINKS | 20.0A 1P 1291.7V | 5812.5 VA | 3 fixtures
+- ckt 63 | SPARE | 20.0A 1P 1291.7V | 0.0 VA | 0 fixtures
+- ckt 65 | SPARE | 20.0A 1P 1291.7V | 0.0 VA | 0 fixtures
+- ckt 67 | SPARE | 20.0A 1P 1291.7V | 0.0 VA | 0 fixtures
+- ckt 69 | SPARE | 20.0A 1P 1291.7V | 0.0 VA | 0 fixtures
+- ckt 71 | SPARE | 20.0A 1P 1291.7V | 0.0 VA | 0 fixtures
+- ckt 73 | SPARE | 20.0A 1P 1291.7V | 0.0 VA | 0 fixtures
+- ckt 75 | SPACE | 0.0A 1P 1291.7V | 0.0 VA | 0 fixtures
+- ckt 76 | SPACE | 0.0A 1P 1291.7V | 0.0 VA | 0 fixtures
+- ckt 77 | SPACE | 0.0A 1P 1291.7V | 0.0 VA | 0 fixtures
+- ckt 78 | SPACE | 0.0A 1P 1291.7V | 0.0 VA | 0 fixtures
+- ckt 79 | SPACE | 0.0A 1P 1291.7V | 0.0 VA | 0 fixtures
+- ckt 80 | SPACE | 0.0A 1P 1291.7V | 0.0 VA | 0 fixtures
+- ckt 81 | SPACE | 0.0A 1P 1291.7V | 0.0 VA | 0 fixtures
+- ckt 82 | SPACE | 0.0A 1P 1291.7V | 0.0 VA | 0 fixtures
+- ckt 83 | SPACE | 0.0A 1P 1291.7V | 0.0 VA | 0 fixtures
+- ckt 84 | SPACE | 0.0A 1P 1291.7V | 0.0 VA | 0 fixtures
+- ckt 32,34 | ECH-1 | 20.0A 2P 2238.9V | 42991.1 VA | 1 fixtures
+### Panel L3 (28 ckts)
+- ckt 17 | CRYOLOUNGE - 103 | 40.0A 1P 1291.7V | 15500.0 VA | 1 fixtures
+- ckt 19 | CRYOLOUNGE - 103 | 40.0A 1P 1291.7V | 15500.0 VA | 1 fixtures
+- ckt 21 | MASSAGE CHAIRS - 103 | 20.0A 1P 1291.7V | 10763.9 VA | 2 fixtures
+- ckt 23 | SPACE | 0.0A 1P 1291.7V | 0.0 VA | 0 fixtures
+- ckt 25 | SPACE | 0.0A 1P 1291.7V | 0.0 VA | 0 fixtures
+- ckt 27 | SPACE | 0.0A 1P 1291.7V | 0.0 VA | 0 fixtures
+- ckt 29 | SPACE | 0.0A 1P 1291.7V | 0.0 VA | 0 fixtures
+- ckt 31 | SPACE | 0.0A 1P 1291.7V | 0.0 VA | 0 fixtures
+- ckt 32 | SPACE | 0.0A 1P 1291.7V | 0.0 VA | 0 fixtures
+- ckt 33 | SPACE | 0.0A 1P 1291.7V | 0.0 VA | 0 fixtures
+- ckt 34 | SPACE | 0.0A 1P 1291.7V | 0.0 VA | 0 fixtures
+- ckt 35 | SPACE | 0.0A 1P 1291.7V | 0.0 VA | 0 fixtures
+- ckt 36 | SPACE | 0.0A 1P 1291.7V | 0.0 VA | 0 fixtures
+- ckt 37 | SPACE | 0.0A 1P 1291.7V | 0.0 VA | 0 fixtures
+- ckt 38 | SPACE | 0.0A 1P 1291.7V | 0.0 VA | 0 fixtures
+- ckt 39 | SPACE | 0.0A 1P 1291.7V | 0.0 VA | 0 fixtures
+- ckt 40 | SPACE | 0.0A 1P 1291.7V | 0.0 VA | 0 fixtures
+- ckt 41 | SPACE | 0.0A 1P 1291.7V | 0.0 VA | 0 fixtures
+- ckt 42 | SPACE | 0.0A 1P 1291.7V | 0.0 VA | 0 fixtures
+- ckt 1,3 | HYDROMASSAGE - 103A | 30.0A 2P 2583.3V | 46500.1 VA | 1 fixtures
+- ckt 5,7 | HYDROMASSAGE - 103A | 30.0A 2P 2583.3V | 46500.1 VA | 1 fixtures
+- ckt 9,11 | HYDROMASSAGE - 103A | 30.0A 2P 2583.3V | 46500.1 VA | 1 fixtures
+- ckt 13,15 | HYDROMASSAGE - 103A | 30.0A 2P 2583.3V | 46500.1 VA | 1 fixtures
+- ckt 2,4,6 | TANNING BED - 103A | 20.0A 3P 2583.3V | 120738.8 VA | 1 fixtures
+- ckt 8,10,12 | STAND-UP TANNER - 103C | 40.0A 3P 2583.3V | 111858.6 VA | 1 fixtures
+- ckt 14,16,18 | RED WAVE - 103D | 30.0A 3P 2583.3V | 76079.3 VA | 1 fixtures
+- ckt 20,22,24 | HYBRID TANNER - 103E | 40.0A 3P 2583.3V | 125291.9 VA | 1 fixtures
+- ckt 26,28,30 | TLT TANNING - 103F | 35.0A 3P 2583.3V | 120803.4 VA | 1 fixtures
+### Panel MDP (12 ckts)
+- ckt 1 | PANEL L1 | 250.0A 3P 2238.9V | 631841.5 VA | 1 fixtures
+- ckt 2 | PANEL L2 | 150.0A 3P 2238.9V | 381634.4 VA | 1 fixtures
+- ckt 3 | PANEL L4 VIA 112.5KVA XFMR (TR-L3) | 400.0A 3P 2238.9V | 782536.3 VA | 1 fixtures
+- ckt 4 | ERTU-1 | 50.0A 3P 2238.9V | 174375.3 VA | 1 fixtures
+- ckt 5 | ERTU-2 | 50.0A 3P 2238.9V | 174375.3 VA | 1 fixtures
+- ckt 6 | ERTU-3 | 50.0A 3P 2238.9V | 174375.3 VA | 1 fixtures
+- ckt 7 | ERTU-4 | 50.0A 3P 2238.9V | 139500.3 VA | 1 fixtures
+- ckt 8 | ERTU-5 | 50.0A 3P 2238.9V | 139500.3 VA | 1 fixtures
+- ckt 9 | ERTU-6 | 50.0A 3P 2238.9V | 139500.3 VA | 1 fixtures
+- ckt 10 | ERTU-7 | 50.0A 3P 2238.9V | 139500.3 VA | 1 fixtures
+- ckt 11 | SPACE | 0.0A 3P 2238.9V | 0.0 VA | 0 fixtures
+- ckt 12 | SPACE | 0.0A 3P 2238.9V | 0.0 VA | 0 fixtures
+### Panel TR-L3 (1 ckts)
+- ckt 1 | TR-L3 | 20.0A 3P 2583.3V | 782536.3 VA | 1 fixtures
+
+## Keynotes / generic annotations in view (41)
+- [2] Manual Key Note- All Shapes:Square - Typical #1 | nearest-fixture dist min/med/max = [3.2, 5.1, 5.1]
+- [4] Manual Key Note- All Shapes:Square #2 | nearest-fixture dist min/med/max = [1.0, 3.5, 3.5]
+- [2] Manual Key Note- All Shapes:Square #3 | nearest-fixture dist min/med/max = [3.6, 5.0, 5.0]
+- [4] Manual Key Note- All Shapes:Square #4 | nearest-fixture dist min/med/max = [2.3, 4.5, 5.3]
+- [3] Manual Key Note- All Shapes:Square #5 | nearest-fixture dist min/med/max = [2.2, 2.4, 2.7]
+- [1] Manual Key Note- All Shapes:Square #6 | nearest-fixture dist min/med/max = [2.6, 2.6, 2.6]
+- [1] Manual Key Note- All Shapes:Square #7 | nearest-fixture dist min/med/max = [3.0, 3.0, 3.0]
+- [1] Manual Key Note- All Shapes:Square #8 | nearest-fixture dist min/med/max = [4.8, 4.8, 4.8]
+- [1] Manual Key Note- All Shapes:Square #9 | nearest-fixture dist min/med/max = [2.8, 2.8, 2.8]
+- [7] Manual Key Note- All Shapes:Square #11 | nearest-fixture dist min/med/max = [1.8, 3.9, 5.0]
+- [1] Manual Key Note- All Shapes:Square #12 | nearest-fixture dist min/med/max = [3.5, 3.5, 3.5]
+- [3] Manual Key Note- All Shapes:Square #13 | nearest-fixture dist min/med/max = [3.3, 3.3, 3.4]
+- [1] Manual Key Note- All Shapes:Square #14 | nearest-fixture dist min/med/max = [4.3, 4.3, 4.3]
+- [3] Manual Key Note- All Shapes:Square #16 | nearest-fixture dist min/med/max = [1.8, 3.2, 3.4]
+- [1] Manual Key Note- All Shapes:Square #17 | nearest-fixture dist min/med/max = [4.5, 4.5, 4.5]
+- [2] Manual Key Note- All Shapes:Square #18 | nearest-fixture dist min/med/max = [3.0, 3.0, 3.0]
+- [1] Manual Key Note- All Shapes:Square #20 | nearest-fixture dist min/med/max = [4.3, 4.3, 4.3]
+- [1] Manual Key Note- All Shapes:Square #21 | nearest-fixture dist min/med/max = [2.4, 2.4, 2.4]
+- [1] Manual Key Note- All Shapes:Square #22 | nearest-fixture dist min/med/max = [6.2, 6.2, 6.2]
+- [1] Manual Key Note- All Shapes:Square #23 | nearest-fixture dist min/med/max = [7.0, 7.0, 7.0]
+
+## Fixture tags (156)
+- [147] EF-Tag_Electrical Fixtures_CED:Panel & Circuit Number | median offset from fixture=(0.0, 1.46) | sample texts=[('L1/30', 6), ('L1/32', 5), ('L2/7', 5), ('L1/28', 4), ('L1/34', 4)]
+- [9] EF-Tag_Electrical Fixtures_CED:Comments | median offset from fixture=(0.53, -0.65) | sample texts=[('60A/3P\r\nNF', 4), ('30A/3\r\nNF', 2), ('30A/3P\r\nNF', 1), ('ECH-1', 1), ('NEW 800AMP SWITCH', 1)]
+
+## Wires (248)
+- [133] type=THWN wiring=None verts=3
+- [115] type=THWN wiring=None verts=2
+
+## Wire tags (4)
+- [1] 'L1/40,42,44,46,48'
+- [1] 'L1/1,3,5,7,9,11,13,15,17,19,21,23'
+- [1] 'L1/2,4,6,8,10,12,14,16,18,20,22,24,26'
+- [1] 'L1/25,27,29,31,33,35,37,39,41'
+
+## Sheet text (legend candidates)
+- 'GFCI FACEPLATE RECEPTACLE ABOVE COUNTER, COORDINATE MOUNTING HEIGHT WITH TENANT.\x0b / HAND DRYER MOUNTED AT 42" AFF.\x0b / PROVIDE A GFCI DUPLEX RECEPTACLE MOUNTED BELOW COUNTERTOP FOR CONNECTION OF AUTOMATIC FAUCET SENSOR. E'
+- 'ANY EXISTING CONDITIONS INDICATED IN THIS SET OF DRAWINGS ARE BASED ON INFORMATION PROVIDED BY OTHERS AND POSSIBLE LIMITED FIELD VERIFICATION. ADJUST FOR ACTUAL FIELD CONDITIONS AT NO ADDITIONAL EXPENSE TO THE OWNER.\x0b / '
+
+## Plan-view text (first 40)
+
+## Links
+- cad FA-100 FIRE ALARM PLAN.dwg (2) origin=[0.0, 0.0] basisX=[1.0, 0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg origin=[-262.8, -77.3] basisX=[1.0, 0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg origin=[-257.14, -80.63] basisX=[1.0, 0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg origin=[-257.14, -78.43] basisX=[1.0, 0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[-433.99, -27.24] basisX=[1.0, 0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[-428.32, -30.57] basisX=[1.0, 0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[-428.32, -28.37] basisX=[1.0, 0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg origin=[-262.8, -77.3] basisX=[1.0, 0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg origin=[-257.14, -80.63] basisX=[1.0, 0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg origin=[-257.14, -78.43] basisX=[1.0, 0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[-433.99, -27.24] basisX=[1.0, 0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[-428.32, -30.57] basisX=[1.0, 0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[-428.32, -28.37] basisX=[1.0, 0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg origin=[-262.8, -77.3] basisX=[1.0, 0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg origin=[-257.14, -80.63] basisX=[1.0, 0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg origin=[-257.14, -78.43] basisX=[1.0, 0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[-433.99, -27.24] basisX=[1.0, 0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[-428.32, -30.57] basisX=[1.0, 0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[-428.32, -28.37] basisX=[1.0, 0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg origin=[-262.8, -77.3] basisX=[1.0, 0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg origin=[-257.14, -80.63] basisX=[1.0, 0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg origin=[-257.14, -78.43] basisX=[1.0, 0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[-433.99, -27.24] basisX=[1.0, 0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[-428.32, -30.57] basisX=[1.0, 0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[-428.32, -28.37] basisX=[1.0, 0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[29.07, 11.07] basisX=[0.07, -0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[28.52, 11.07] basisX=[0.07, -0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[30.33, 11.07] basisX=[0.07, -0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[31.0, 11.07] basisX=[0.07, -0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[32.21, 11.07] basisX=[0.07, -0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[27.58, 11.07] basisX=[0.07, -0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[30.33, 4.89] basisX=[0.07, -0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[29.91, 4.9] basisX=[0.07, -0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[30.86, 4.9] basisX=[0.07, -0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[31.8, 4.9] basisX=[0.07, -0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[32.74, 4.9] basisX=[0.07, -0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[33.68, 4.9] basisX=[0.07, -0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[34.62, 4.9] basisX=[0.07, -0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[35.56, 4.9] basisX=[0.07, -0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[36.5, 4.9] basisX=[0.07, -0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[37.44, 4.9] basisX=[0.07, -0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[38.33, 4.9] basisX=[0.07, -0.0]
+- cad P-001 PLUMBING OVERVIEW.dwg origin=[0.0, 0.0] basisX=[1.0, 0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[19.86, 17.03] basisX=[0.07, -0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[20.57, 17.03] basisX=[0.07, -0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[21.33, 17.03] basisX=[0.07, -0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[23.58, 17.03] basisX=[0.07, -0.0]
+- cad FIRE PROTECTION DETAILS.dwg origin=[0.0, 0.0] basisX=[1.0, 0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg origin=[-262.8, -77.3] basisX=[1.0, 0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg origin=[-257.14, -80.63] basisX=[1.0, 0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg origin=[-257.14, -78.43] basisX=[1.0, 0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[-433.99, -27.24] basisX=[1.0, 0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[-428.32, -30.57] basisX=[1.0, 0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[-428.32, -28.37] basisX=[1.0, 0.0]
+- cad X_BG.dwg (2) origin=[0.0, 0.0] basisX=[1.0, 0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[13.19, 16.24] basisX=[0.07, -0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[13.19, 16.04] basisX=[0.07, -0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg origin=[-262.8, -77.3] basisX=[1.0, 0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg origin=[-257.14, -80.63] basisX=[1.0, 0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg origin=[-257.14, -78.43] basisX=[1.0, 0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[-433.99, -27.24] basisX=[1.0, 0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[-428.32, -30.57] basisX=[1.0, 0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[-428.32, -28.37] basisX=[1.0, 0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[14.51, 12.58] basisX=[0.07, -0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[14.51, 12.43] basisX=[0.07, -0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[14.51, 12.29] basisX=[0.07, -0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[11.46, 14.78] basisX=[0.07, -0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[26.95, 22.16] basisX=[0.07, -0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[26.95, 21.96] basisX=[0.07, -0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[28.37, 17.79] basisX=[0.07, -0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[28.37, 17.65] basisX=[0.07, -0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[25.22, 20.71] basisX=[0.07, -0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[27.84, 20.43] basisX=[0.07, -0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[27.7, 20.43] basisX=[0.07, -0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[26.95, 20.43] basisX=[0.07, -0.0]
+- cad E-401 ELECTRICAL ONE-LINE DIAGRAM -copy.dwg (2) origin=[26.64, 20.43] basisX=[0.07, -0.0]
+- rvt GO 18k Prototype_STRUC_v24.rvt : 8 : location <Not Shared> origin=[0.0, 0.0] basisX=[1.0, 0.0]
+- rvt CED_Placeholder Link_SHELL_R24.rvt : 9 : location <Not Shared> origin=[0.0, 0.0] basisX=[1.0, 0.0]
+- rvt CED_Placeholder Link_SITE_R24.rvt : 10 : location <Not Shared> origin=[0.0, 0.0] basisX=[1.0, 0.0]
+- rvt CED_Placeholder Link_MECH_R24.rvt : 11 : location <Not Shared> origin=[0.0, 0.0] basisX=[1.0, 0.0]
+- rvt CED_Placeholder Link_PLMB_R24.rvt : 12 : location <Not Shared> origin=[0.0, 0.0] basisX=[1.0, 0.0]
+- rvt GO 18K Prototype_MEPR_R24.rvt : 13 : location <Not Shared> origin=[0.0, 0.0] basisX=[1.0, 0.0]
+- rvt GO 18K Prototype_ARCH_R24.rvt : 14 : location <Not Shared> origin=[242.74, -502.49] basisX=[1.0, 0.0]
+- rvt GO PROTO AE TEST.rvt : 15 : location <Not Shared> origin=[0.0, 0.0] basisX=[1.0, 0.0]
+
+## Leaders/detail lines in view: 0

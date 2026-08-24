@@ -41,6 +41,197 @@ try:
 except Exception:
     EventHandler = None
 
+
+# ---------------------------------------------------------------------------
+# Revit 2027+ CPython engine primer
+#
+# On Revit 2027 (netcore / .NET 10) the FIRST CPython engine init of a
+# session, if it happens after a document has been opened, can abort
+# mid-assembly-scan and leave pythonnet's ``clr`` module without its
+# ``_available_namespaces`` table — every ``#! python3`` button then dies
+# on its first CLR import for the rest of the session
+# (pyrevitlabs/pyRevit #3341 / #3346 / #3510 family).
+#
+# Initializing the engine HERE — at session load, before any document —
+# sidesteps that window. pyRevit's own CPythonEngine.Start() skips init
+# when PythonEngine.IsInitialized is already true (and tolerates
+# re-setting the same PythonDLL), so this is transparent to normal runs.
+#
+# A raw embedded init can also come up with no stdlib on sys.path
+# ("No module named 'traceback'"), and CPythonEngine.StoreSearchPaths()
+# snapshots sys.path on each command's first run — so the warm-up below
+# seeds the stdlib zip + engine dir and proves traceback/clr/System/
+# Autodesk.Revit.DB all import before any button ever runs.
+# ---------------------------------------------------------------------------
+_PRIMER_LOG = os.path.join(
+    os.environ.get("APPDATA", ""), "pyRevit", "CED_cpython_primer.log")
+
+
+def _primer_note(msg):
+    """File breadcrumb — pyRevit 6.5.4 writes no 2027 runtime log."""
+    try:
+        with open(_PRIMER_LOG, "a") as f:
+            f.write("%s %s\n" % (time.strftime("%Y-%m-%d %H:%M:%S"), msg))
+    except Exception:
+        pass
+
+
+def _prime_cpython_engine():
+    logger = script.get_logger()
+    try:
+        import re as _re
+        from pyrevit import HOST_APP
+        import pyrevit as _pyrevit
+        from System import AppDomain, Type, Array, Object
+        from System.Reflection import Assembly
+
+        try:
+            if int(str(HOST_APP.version)) < 2027:
+                return
+        except Exception:
+            return
+        _primer_note("--- session start (Revit %s, pid %s) ---" % (
+            HOST_APP.version, os.getpid()))
+
+        pn = None
+        bin_dir = None
+        for _asm in AppDomain.CurrentDomain.GetAssemblies():
+            try:
+                name = _asm.GetName().Name
+            except Exception:
+                continue
+            if name == "pyRevitLabs.PythonNet":
+                pn = _asm
+            elif bin_dir is None and name.startswith("pyRevitLabs.PyRevit"):
+                try:
+                    loc = _asm.Location
+                    if loc:
+                        # ...\bin\<netcore|netfx>\pyRevitLabs.*.dll
+                        bin_dir = os.path.dirname(loc)
+                except Exception:
+                    pass
+        if pn is None:
+            # Assembly loading is lazy — at startup time nothing has
+            # touched the CPython types yet, so load it ourselves.
+            candidates = []
+            if bin_dir:
+                candidates.append(
+                    os.path.join(bin_dir, "pyRevitLabs.PythonNet.dll"))
+            candidates.append(os.path.join(
+                _pyrevit.HOME_DIR, "bin", "netcore",
+                "pyRevitLabs.PythonNet.dll"))
+            for cand in candidates:
+                if os.path.isfile(cand):
+                    try:
+                        pn = Assembly.LoadFrom(cand)
+                        _primer_note("loaded PythonNet from %s" % cand)
+                        break
+                    except Exception as load_exc:
+                        _primer_note(
+                            "LoadFrom failed for %s: %s" % (cand, load_exc))
+        if pn is None:
+            _primer_note("ABORT: pyRevitLabs.PythonNet not loadable")
+            return
+        engine_t = pn.GetType("Python.Runtime.PythonEngine")
+        runtime_t = pn.GetType("Python.Runtime.Runtime")
+        py_t = pn.GetType("Python.Runtime.Py")
+        if engine_t is None or runtime_t is None or py_t is None:
+            _primer_note("ABORT: Python.Runtime types missing")
+            return
+
+        # newest CPython engine bundled with this clone
+        cengines = os.path.join(_pyrevit.HOME_DIR, "bin", "cengines")
+        if not os.path.isdir(cengines):
+            _primer_note("ABORT: no cengines dir at %s" % cengines)
+            return
+        engine_dirs = sorted(
+            d for d in os.listdir(cengines)
+            if _re.match(r"^CPY\d+$", d)
+            and os.path.isdir(os.path.join(cengines, d))
+        )
+        if not engine_dirs:
+            _primer_note("ABORT: no CPY* engine dirs in %s" % cengines)
+            return
+        engine_dir = os.path.join(cengines, engine_dirs[-1])
+        dlls = sorted(
+            f for f in os.listdir(engine_dir)
+            if _re.match(r"^python3\d+\.dll$", f.lower())
+        )
+        if not dlls:
+            _primer_note("ABORT: no python3*.dll in %s" % engine_dir)
+            return
+        python_dll = os.path.join(engine_dir, dlls[-1])
+        stdlib_zip = os.path.splitext(python_dll)[0] + ".zip"
+
+        if not engine_t.GetProperty("IsInitialized").GetValue(None, None):
+            runtime_t.GetProperty("PythonDLL").SetValue(None, python_dll, None)
+            engine_t.GetProperty("ProgramName").SetValue(None, "pyrevit", None)
+            engine_t.GetMethod("Initialize", Type.EmptyTypes).Invoke(None, None)
+            _primer_note("engine initialized (dll=%s)" % python_dll)
+        else:
+            _primer_note("engine was already initialized")
+
+        # CRITICAL: pythonnet's Runtime.PythonDLL setter throws
+        # unconditionally once Runtime._isInitialized is true — and
+        # CPythonEngine.Start() assigns PythonDLL on every fresh engine
+        # instance, so pre-initializing here would crash the FIRST run
+        # of every command ("This property must be set before runtime is
+        # initialized"), caching an engine with empty _sysPaths (-> "No
+        # module named 'configparser'" on the second run). Flipping the
+        # private guard field back to False lets Start() assign the (now
+        # inert) property and fall through to StoreSearchPaths(), which
+        # snapshots our seeded sys.path. PythonEngine.IsInitialized is a
+        # separate flag and stays True, so Start() still skips its own
+        # Initialize() call.
+        from System.Reflection import BindingFlags
+        init_fld = runtime_t.GetField(
+            "_isInitialized", BindingFlags.NonPublic | BindingFlags.Static)
+        if init_fld is not None:
+            init_fld.SetValue(None, False)
+            _primer_note("Runtime._isInitialized flipped to False "
+                         "(defuses PythonDLL setter for first Start)")
+        else:
+            _primer_note("WARN: Runtime._isInitialized field not found — "
+                         "first click per session may fail once")
+
+        snippet = (
+            "import sys\n"
+            "for _p in (r'{zip}', r'{dir}'):\n"
+            "    if _p not in sys.path:\n"
+            "        sys.path.insert(0, _p)\n"
+            "import traceback\n"
+            "import clr\n"
+            "import System\n"
+            "import Autodesk.Revit.DB\n"
+        ).format(zip=stdlib_zip, dir=engine_dir)
+        gil = py_t.GetMethod("GIL").Invoke(None, None)
+        try:
+            rc = engine_t.GetMethod("RunSimpleString").Invoke(
+                None, Array[Object]([snippet]))
+        finally:
+            gil.Dispose()
+        if rc == 0:
+            _primer_note("OK: stdlib seeded + warm-up imports passed")
+            logger.info("CPython engine primed (dll=%s)", python_dll)
+        else:
+            _primer_note("WARM-UP FAILED (rc=%s)" % rc)
+            logger.warning(
+                "CPython engine primer warm-up failed (rc=%s) — "
+                "python3 buttons may not work this session", rc)
+    except Exception as exc:
+        _primer_note("EXCEPTION: %s" % exc)
+        try:
+            logger.warning("CPython engine primer failed: %s", exc)
+        except Exception:
+            pass
+
+
+try:
+    _prime_cpython_engine()
+except Exception:
+    pass
+
+
 _SYNC_HANDLER_UI = None
 _SYNC_HANDLER_APP = None
 _MODULE = None
