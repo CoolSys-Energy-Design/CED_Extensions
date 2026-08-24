@@ -38,7 +38,7 @@ class ElectricalDeviceSelectionFilter(ISelectionFilter):
                 DB.BuiltInCategory.OST_MechanicalEquipment,
             ]
         self._allowed = set([
-            _id_value(DB.ElementId(item)) for item in allowed
+        _id_value(revit_helpers.elementid_from_value(int(item))) for item in allowed
         ]) if DB is not None else set()
 
     def AllowElement(self, element):  # noqa: N802

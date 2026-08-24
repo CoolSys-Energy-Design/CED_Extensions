@@ -607,7 +607,10 @@ def _log_save_context(logger, transaction_name, store):
     for tracking_set in sets:
         properties = list(tracking_set.get("tracked_properties") or [])
         labels = [
-            _diagnostic_value(item.get("name"), u"Unnamed parameter")
+            u"{} [{}]".format(
+                _diagnostic_value(item.get("name"), u"Unnamed parameter"),
+                _diagnostic_value(item.get("key"), u"unknown identity"),
+            )
             for item in properties[:20]
         ]
         if len(properties) > 20:

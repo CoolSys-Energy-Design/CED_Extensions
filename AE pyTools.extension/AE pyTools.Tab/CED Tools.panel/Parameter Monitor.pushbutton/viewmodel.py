@@ -3,6 +3,18 @@
 
 from __future__ import print_function
 
+import calendar
+import datetime
+import time
+
+try:
+    from System import DateTime
+    from System.Globalization import CultureInfo, DateTimeStyles
+except Exception:
+    DateTime = None
+    CultureInfo = None
+    DateTimeStyles = None
+
 import comparison_engine
 import models
 import text_service
@@ -46,6 +58,31 @@ def _display(value, fallback="-"):
     if value is None or text_service.to_text(value) == "":
         return fallback
     return text_service.to_text(value)
+
+
+def system_datetime_text(value, fallback="Never"):
+    """Render stored UTC timestamps with Windows' current short date/time format."""
+    raw = text_service.to_text(value or "").strip()
+    if not raw:
+        return fallback
+    if DateTime is not None and CultureInfo is not None and DateTimeStyles is not None:
+        try:
+            parsed = DateTime.Parse(
+                raw,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
+            )
+            return text_service.to_text(
+                parsed.ToLocalTime().ToString("g", CultureInfo.CurrentCulture)
+            )
+        except Exception:
+            pass
+    try:
+        utc_value = datetime.datetime.strptime(raw, "%Y-%m-%dT%H:%M:%SZ")
+        local_value = time.localtime(calendar.timegm(utc_value.timetuple()))
+        return time.strftime("%x %X", local_value)
+    except Exception:
+        return raw
 
 
 def _value_display(value):
@@ -106,7 +143,7 @@ class TrackingSetRow(object):
             text_service.to_text(item.get("message") or item.get("kind") or "Source condition")
             for item in list(tracking_set.get("source_conditions") or [])
         ])
-        self.last_check = _display(tracking_set.get("last_check"), "Never")
+        self.last_check = system_datetime_text(tracking_set.get("last_check"), "Never")
         self.property_count = len(tracking_set.get("tracked_properties") or [])
         # The cards and main-grid summary describe the records that can appear
         # in the main grid. Element Linker children live in the inspector and
@@ -193,7 +230,15 @@ class ElementRow(object):
         self.family_change_state = "Changed" if models.FAMILY_PROPERTY_KEY in changed_keys else "Unchanged"
         self.type_change_text = "Changed" if models.TYPE_PROPERTY_KEY in changed_keys else "-"
         self.type_change_state = "Changed" if models.TYPE_PROPERTY_KEY in changed_keys else "Unchanged"
-        self.location_text = "On" if bool((record or {}).get("track_location", False)) else "Off"
+        if not bool((record or {}).get("track_location", False)):
+            self.location_text = "Untracked"
+            self.location_state = "Untracked"
+        elif self.location_change_count:
+            self.location_text = "Changed"
+            self.location_state = "Changed"
+        else:
+            self.location_text = "Unchanged"
+            self.location_state = "Unchanged"
         context = (record or {}).get("relationship_context") or {}
         self.circuit = _display(context.get("status_text"))
         self.can_navigate = (not untracked) and state != models.ELEMENT_REMOVED
@@ -301,11 +346,19 @@ def element_rows(tracking_set, filter_key=FILTER_ALL, search_text=""):
     if tracking_set is None:
         return []
     rows = []
+    untracked_ids = set(tracking_set.get("untracked_ids") or [])
     if filter_key == FILTER_UNTRACKED:
-        for persistent_id in list(tracking_set.get("untracked_ids") or []):
-            rows.append(ElementRow(persistent_id, record=None, untracked=True))
+        elements = tracking_set.get("elements") or {}
+        for persistent_id in sorted(untracked_ids):
+            rows.append(ElementRow(
+                persistent_id,
+                record=elements.get(persistent_id),
+                untracked=True,
+            ))
         return rows
     for persistent_id, record in list((tracking_set.get("elements") or {}).items()):
+        if persistent_id in untracked_ids:
+            continue
         # Element Linker children are filed under their parent's LINKED
         # CHILDREN panel instead of cluttering the main grid.
         if text_service.to_text((record or {}).get("parent_persistent_id") or ""):
@@ -352,7 +405,10 @@ def main_grid_summary(tracking_set):
     if tracking_set is None:
         return summarize_element_rows([])
     rows = []
+    untracked_ids = set(tracking_set.get("untracked_ids") or [])
     for persistent_id, record in list((tracking_set.get("elements") or {}).items()):
+        if persistent_id in untracked_ids:
+            continue
         if text_service.to_text((record or {}).get("parent_persistent_id") or ""):
             continue
         rows.append(ElementRow(persistent_id, record=record))

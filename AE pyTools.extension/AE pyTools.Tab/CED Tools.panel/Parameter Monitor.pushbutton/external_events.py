@@ -11,6 +11,7 @@ import traceback
 from Autodesk.Revit.UI import ExternalEvent, IExternalEventHandler
 from pyrevit import forms, script
 
+import edit_set_window
 import element_linker_sync_service
 import models
 import navigation_service
@@ -101,9 +102,13 @@ def _choose_category(document, source):
 
 def _parameter_label(descriptor):
     scope = "Type" if descriptor.get("scope") == "type" else "Instance"
-    return "{} [{}]  {} / {}".format(
+    kind = text_service.to_text(
+        descriptor.get("identity_kind") or "name"
+    ).replace("_", " ").title()
+    return "{} [{} | {}]  {} / {}".format(
         descriptor.get("name") or "Unnamed Parameter",
         scope,
+        kind,
         int(descriptor.get("available_count", 0) or 0),
         int(descriptor.get("element_count", 0) or 0),
     )
@@ -151,7 +156,10 @@ def _log_add_set_context(logger, tracking_set):
         return
     properties = list(tracking_set.get("tracked_properties") or [])
     labels = [
-        text_service.diagnostic_text(item.get("name"), u"Unnamed parameter")
+        u"{} [{}]".format(
+            text_service.diagnostic_text(item.get("name"), u"Unnamed parameter"),
+            text_service.diagnostic_text(item.get("key"), u"unknown identity"),
+        )
         for item in properties[:20]
     ]
     if len(properties) > 20:
@@ -229,43 +237,53 @@ def _edit_set_interactive(document, store, set_id, logger):
     resolved = source_service.resolve_source(document, tracking_set.get("source") or {})
     if not resolved.get("available"):
         raise ValueError(resolved.get("message") or "Source model is unavailable.")
-    selected_keys = [item.get("key") for item in tracking_set.get("tracked_properties") or []]
+    tracked_descriptors = list(tracking_set.get("tracked_properties") or [])
+    selected_keys = [item.get("key") for item in tracked_descriptors]
     explicit_elements = None
     if text_service.to_text(tracking_set.get("membership") or "") == models.MEMBERSHIP_EXPLICIT:
         explicit_elements = source_service.collect_set_elements(
             resolved.get("source_document"), tracking_set
         )
-    descriptors = _choose_parameters(
-        resolved.get("source_document"),
-        tracking_set.get("category") or {},
-        selected_keys=selected_keys,
-        elements=explicit_elements,
-    )
-    if descriptors is None:
-        return None
-    name = _prompt_set_name(tracking_set.get("name"))
-    if name is None:
-        return None
+    source_document = resolved.get("source_document")
+    elements = explicit_elements
+    if elements is None:
+        elements = source_service.collect_elements(
+            source_document, tracking_set.get("category") or {}
+        )
+    descriptors = parameter_service.discover_parameters(elements, source_document)
+    discovered_keys = set([
+        text_service.to_text(item.get("key") or "") for item in descriptors
+    ])
+    # Keep currently tracked definitions visible even when no current element
+    # exposes them. Otherwise opening Edit Set and clicking Apply would silently
+    # remove temporarily unavailable parameters.
+    for tracked in tracked_descriptors:
+        key = text_service.to_text(tracked.get("key") or "")
+        if key in discovered_keys:
+            continue
+        unavailable = copy.deepcopy(tracked)
+        unavailable["available_count"] = 0
+        unavailable["element_count"] = len(elements)
+        descriptors.append(unavailable)
     current_default = bool(
         (tracking_set.get("location_defaults") or {}).get("track_new_elements", False)
     )
-    track_new_elements = bool(forms.alert(
-        "Track location by default for future Added elements?\n\n"
-        "Current default: {}. Existing per-element choices are not changed.".format(
-            "On" if current_default else "Off"
-        ),
-        title=TITLE,
-        yes=True,
-        no=True,
-    ))
+    edit_result = edit_set_window.show_edit_set_dialog(
+        descriptors,
+        selected_keys,
+        tracking_set.get("name"),
+        current_default,
+    )
+    if edit_result is None:
+        return None
     updated_store, updated_set = tracking_service.edit_tracking_set(
         document,
         store,
         set_id,
-        name,
-        descriptors,
+        edit_result.get("name"),
+        edit_result.get("descriptors") or [],
         active=tracking_set.get("active", True),
-        track_new_elements=track_new_elements,
+        track_new_elements=bool(edit_result.get("track_new_elements")),
         logger=logger,
     )
     return updated_store, "Updated {}. Newly added properties were accepted immediately.".format(
@@ -311,11 +329,7 @@ def _map_imported_descriptors(source_document, category, imported_descriptors):
     mapped = []
     unresolved = []
     for imported in list(imported_descriptors or []):
-        match = None
-        for candidate in available:
-            if parameter_service.descriptor_matches(imported, candidate):
-                match = candidate
-                break
+        match = parameter_service.find_matching_descriptor(imported, available)
         if match is None:
             unresolved.append(imported)
             mapped.append(copy.deepcopy(imported))

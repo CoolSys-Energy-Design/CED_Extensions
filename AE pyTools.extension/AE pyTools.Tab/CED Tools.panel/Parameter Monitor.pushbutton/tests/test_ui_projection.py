@@ -100,6 +100,205 @@ class UiProjectionTests(unittest.TestCase):
         self.assertIn('<Trigger Property="Tag" Value="Active">', xaml)
         self.assertIn('def reset_filters_clicked(', source)
 
+    def test_grid_refresh_preserves_wpf_sort_descriptions(self):
+        bundle = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        with io.open(os.path.join(bundle, "script.py"), "r", encoding="utf-8") as stream:
+            source = stream.read()
+
+        self.assertIn("from System.ComponentModel import SortDescription", source)
+        self.assertIn("for item in list(control.Items.SortDescriptions)", source)
+        self.assertIn("preserve_sort=True", source)
+        self.assertIn("column.SortDirection = direction", source)
+
+    def test_location_is_one_semantic_column_and_console_starts_collapsed(self):
+        bundle = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        path = os.path.join(bundle, "ParameterMonitorWindow.xaml")
+        with io.open(path, "r", encoding="utf-8") as stream:
+            xaml = stream.read()
+
+        self.assertIn(
+            'Header="Location" Binding="{Binding location_text}"', xaml
+        )
+        self.assertNotIn('Header="Location Track"', xaml)
+        self.assertNotIn('Header="Location Δ"', xaml)
+        self.assertIn('x:Key="PM.LocationCell"', xaml)
+        self.assertIn('Binding="{Binding location_state}" Value="Untracked"', xaml)
+        self.assertIn('<Setter Property="FontStyle" Value="Italic" />', xaml)
+        self.assertIn('x:Name="ConsoleExpander" IsExpanded="False"', xaml)
+
+    def test_location_projection_uses_requested_three_states(self):
+        untracked = viewmodel.ElementRow("one", _record("Element 1", "A", "A"))
+        self.assertEqual(("Untracked", "Untracked"), (
+            untracked.location_text, untracked.location_state
+        ))
+
+        unchanged_record = _record("Element 2", "A", "A")
+        unchanged_record["track_location"] = True
+        unchanged = viewmodel.ElementRow("two", unchanged_record)
+        self.assertEqual(("Unchanged", "Unchanged"), (
+            unchanged.location_text, unchanged.location_state
+        ))
+
+        changed_record = _record("Element 3", "A", "A")
+        changed_record["track_location"] = True
+        changed_record["changed_property_keys"] = [models.LOCATION_PROPERTY_KEY]
+        changed_record["change_count"] = 1
+        changed = viewmodel.ElementRow("three", changed_record)
+        self.assertEqual(("Changed", "Changed"), (
+            changed.location_text, changed.location_state
+        ))
+
+    def test_inspector_has_family_type_context_and_status_badge_controls(self):
+        bundle = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        xaml_path = os.path.join(bundle, "ParameterMonitorWindow.xaml")
+        script_path = os.path.join(bundle, "script.py")
+        with io.open(xaml_path, "r", encoding="utf-8") as stream:
+            xaml = stream.read()
+        with io.open(script_path, "r", encoding="utf-8") as stream:
+            source = stream.read()
+
+        self.assertIn('x:Name="ElementTypeText"', xaml)
+        self.assertIn('x:Name="ElementStatusBadge"', xaml)
+        self.assertIn('x:Name="ElementStatusText"', xaml)
+        self.assertIn("self.ElementTitleText.Text = element_row.family", source)
+        self.assertIn("self.ElementTypeText.Text = element_row.type", source)
+        self.assertIn('self.ElementStatusBadge.Tag = element_row.status', source)
+
+    def test_edit_set_uses_custom_checked_only_picker(self):
+        bundle = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        external_path = os.path.join(bundle, "external_events.py")
+        picker_path = os.path.join(bundle, "EditSetWindow.xaml")
+        with io.open(external_path, "r", encoding="utf-8") as stream:
+            external_source = stream.read()
+        with io.open(picker_path, "r", encoding="utf-8") as stream:
+            picker_xaml = stream.read()
+
+        edit_source = external_source.split("def _edit_set_interactive", 1)[1].split(
+            "\ndef _export_definitions", 1
+        )[0]
+        self.assertIn("edit_set_window.show_edit_set_dialog", edit_source)
+        self.assertNotIn("forms.SelectFromList.show", edit_source)
+        self.assertIn('x:Name="SetNameTextBox"', picker_xaml)
+        self.assertIn('x:Name="ShowCheckedOnlyCheckBox"', picker_xaml)
+
+    def test_monitor_local_theme_polish_preserves_visuals_while_busy(self):
+        bundle = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        xaml_path = os.path.join(bundle, "ParameterMonitorWindow.xaml")
+        picker_path = os.path.join(bundle, "EditSetWindow.xaml")
+        script_path = os.path.join(bundle, "script.py")
+        with io.open(xaml_path, "r", encoding="utf-8") as stream:
+            xaml = stream.read()
+        with io.open(picker_path, "r", encoding="utf-8") as stream:
+            picker_xaml = stream.read()
+        with io.open(script_path, "r", encoding="utf-8") as stream:
+            source = stream.read()
+
+        self.assertIn('UseLayoutRounding="True"', xaml)
+        self.assertIn('RowHeight="28"', xaml)
+        self.assertIn('<Setter Property="MinHeight" Value="28" />', xaml)
+        self.assertIn('<Setter Property="BorderThickness" Value="0" />', xaml)
+        self.assertIn('Value="{DynamicResource CED.Brush.AccentBlue}"', xaml)
+        self.assertIn('Style="{StaticResource PM.PrimaryButton}" Content="Add Device"', xaml)
+        self.assertIn('self.MainContent.IsEnabled = True', source)
+        self.assertIn('self.MainContent.IsHitTestVisible = not bool(busy)', source)
+        self.assertNotIn('self.MainContent.IsEnabled = not bool(busy)', source)
+        self.assertIn(
+            'Background="{DynamicResource CED.Brush.ListItemBackground}"',
+            picker_xaml,
+        )
+        self.assertIn('Style="{DynamicResource CED.Button.Apply}"', picker_xaml)
+
+    def test_grid_uses_global_checkbox_style_and_id_has_no_filter_button(self):
+        bundle = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        xaml_path = os.path.join(bundle, "ParameterMonitorWindow.xaml")
+        script_path = os.path.join(bundle, "script.py")
+        with io.open(xaml_path, "r", encoding="utf-8") as stream:
+            xaml = stream.read()
+        with io.open(script_path, "r", encoding="utf-8") as stream:
+            source = stream.read()
+
+        self.assertIn('Style="{DynamicResource CED.Input.CheckBox}"', xaml)
+        self.assertNotIn("StaticResource CED.Input.CheckBox", xaml)
+        self.assertIn('select_all.Style = self.FindResource("CED.Input.CheckBox")', source)
+        self.assertIn('Header="ID" Binding="{Binding element_id}"', xaml)
+        self.assertIn('if field == "element_id":', source)
+        self.assertIn('column.Header = label', source)
+
+    def test_linked_child_elements_panel_consolidates_relationship_controls(self):
+        bundle = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        path = os.path.join(bundle, "ParameterMonitorWindow.xaml")
+        with io.open(path, "r", encoding="utf-8") as stream:
+            xaml = stream.read()
+
+        self.assertIn('Text="LINKED CHILD ELEMENTS"', xaml)
+        self.assertNotIn('Text="HOST DEVICE / CIRCUIT"', xaml)
+        self.assertEqual(1, xaml.count('x:Name="SyncElementLinkerButton"'))
+        self.assertIn(
+            'x:Name="UnlinkDeviceButton" Style="{StaticResource PM.DangerButton}"',
+            xaml,
+        )
+        self.assertIn('x:Name="RelationshipText"', xaml)
+
+    def test_status_actions_are_fixed_to_main_grid_right_edge(self):
+        bundle = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        path = os.path.join(bundle, "ParameterMonitorWindow.xaml")
+        with io.open(path, "r", encoding="utf-8") as stream:
+            xaml = stream.read()
+
+        middle = xaml.split('x:Name="MiddleColumnGrid"', 1)[1].split(
+            'x:Name="RightPanelBorder"', 1
+        )[0]
+        self.assertIn('x:Name="StatusBarText"', middle)
+        self.assertIn('Grid.Column="0"', middle)
+        self.assertIn('x:Name="StatusActionsPanel" Grid.Column="1"', middle)
+        self.assertIn('TextWrapping="Wrap"', middle)
+
+    def test_untracked_projection_keeps_last_known_identity_metadata(self):
+        record = _record("Element 1", "A", "A")
+        record["metadata"].update({
+            "element_id": "101",
+            "family_name": "Family A",
+            "type_name": "Type B",
+            "level": "Level 2",
+        })
+        tracking_set = {
+            "elements": {"host:one": record},
+            "untracked_ids": ["host:one"],
+        }
+
+        self.assertEqual([], viewmodel.element_rows(tracking_set))
+        rows = viewmodel.element_rows(
+            tracking_set, filter_key=viewmodel.FILTER_UNTRACKED
+        )
+
+        self.assertEqual(1, len(rows))
+        self.assertEqual("Untracked", rows[0].status)
+        self.assertEqual("101", rows[0].element_id)
+        self.assertEqual("Family A", rows[0].family)
+        self.assertEqual("Type B", rows[0].type)
+        self.assertEqual("Level 2", rows[0].level)
+
+    def test_last_check_uses_system_local_date_time_display(self):
+        raw = "2026-08-09T12:00:00Z"
+        rendered = viewmodel.system_datetime_text(raw)
+
+        self.assertNotEqual(raw, rendered)
+        self.assertNotIn("T", rendered)
+
+    def test_edit_picker_hides_raw_parameter_identity_and_storage_details(self):
+        bundle = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        path = os.path.join(bundle, "edit_set_window.py")
+        with io.open(path, "r", encoding="utf-8") as stream:
+            source = stream.read()
+        row_source = source.split("class ParameterChoiceRow", 1)[1].split(
+            "\n\nclass EditSetWindow", 1
+        )[0]
+
+        self.assertIn('parameter_service.spec_type_label(', row_source)
+        self.assertNotIn('descriptor.get("identity_value")', row_source)
+        self.assertNotIn('descriptor.get("parameter_id")', row_source)
+        self.assertNotIn('descriptor.get("storage_type")', row_source)
+
     def test_property_grid_values_follow_selected_element_record(self):
         key = "name:sample:instance"
         tracking_set = {

@@ -16,8 +16,17 @@ import models
 import text_service
 
 
+_SPEC_LABEL_CACHE = {}
+
+
 def _id_value(value):
-    return revit_helpers.get_elementid_value(value)
+    numeric = revit_helpers.get_elementid_value(value, default=0)
+    if numeric:
+        return numeric
+    try:
+        return int(value or 0)
+    except Exception:
+        return 0
 
 
 def _storage_type_name(storage_type):
@@ -44,18 +53,70 @@ def _definition_name(parameter):
 def _shared_guid(parameter):
     try:
         if bool(parameter.IsShared):
-            return str(parameter.GUID).lower()
+            guid = parameter.GUID
+            try:
+                guid = guid.ToString()
+            except Exception:
+                pass
+            return text_service.to_text(
+                guid, context=u"Shared parameter GUID"
+            ).strip().lower()
     except Exception:
         pass
     return None
 
 
-def _spec_type(parameter):
+def spec_type_label(value):
+    raw = text_service.to_text(value or "").strip()
+    if not raw:
+        return "Other"
+    lowered = raw.lower()
+    if (
+        "forgetypeid" in lowered
+        or ("object at" in lowered and "0x" in lowered)
+        or raw.startswith("<")
+    ):
+        return "Other"
+    cached = _SPEC_LABEL_CACHE.get(raw)
+    if cached is not None:
+        return cached
+    token = raw.rsplit(":", 1)[-1]
+    if "-" in token:
+        candidate, version = token.rsplit("-", 1)
+        if version and version[0].isdigit():
+            token = candidate
+    token = token.replace(".", " ").replace("_", " ").replace("-", " ")
+    label = " ".join([part.capitalize() for part in token.split()])
+    _SPEC_LABEL_CACHE[raw] = label
+    return label
+
+
+def _spec_type_info(parameter):
     try:
         data_type = parameter.Definition.GetDataType()
-        return text_service.to_text(data_type.TypeId or data_type)
+        type_id = text_service.to_text(
+            getattr(data_type, "TypeId", "") or ""
+        ).strip()
     except Exception:
-        return ""
+        return "", "Other"
+    if not type_id:
+        return "", "Other"
+    cached = _SPEC_LABEL_CACHE.get(type_id)
+    if cached is not None:
+        return type_id, cached
+    label = ""
+    if DB is not None:
+        try:
+            label = text_service.to_text(DB.LabelUtils.GetLabelForSpec(data_type))
+        except Exception:
+            pass
+    label = label or spec_type_label(type_id)
+    _SPEC_LABEL_CACHE[type_id] = label
+    return type_id, label
+
+
+def _spec_type(parameter):
+    return _spec_type_info(parameter)[0]
 
 
 def descriptor_from_parameter(parameter, scope):
@@ -63,6 +124,8 @@ def descriptor_from_parameter(parameter, scope):
     name = _definition_name(parameter)
     param_id = _id_value(getattr(parameter, "Id", None))
     shared_guid = _shared_guid(parameter)
+    storage_type = _storage_type_name(getattr(parameter, "StorageType", None))
+    spec_type, _spec_label = _spec_type_info(parameter)
     if shared_guid:
         identity_kind = "shared"
         identity_value = shared_guid
@@ -74,7 +137,12 @@ def descriptor_from_parameter(parameter, scope):
         identity_value = str(param_id)
     else:
         identity_kind = "name"
-        identity_value = name.strip().lower()
+        # A name-only identity is a legacy/last-resort case. Include the value
+        # shape so two API parameters with the same localized display name do
+        # not collapse into one discovery row.
+        identity_value = "{}|{}|{}".format(
+            name.strip().lower(), storage_type, spec_type
+        )
     key = "{}:{}:{}".format(identity_kind, identity_value, scope)
     return {
         "key": key,
@@ -85,8 +153,8 @@ def descriptor_from_parameter(parameter, scope):
         "parameter_id": param_id if param_id else None,
         "shared_guid": shared_guid,
         "builtin_id": param_id if param_id < 0 else None,
-        "storage_type": _storage_type_name(getattr(parameter, "StorageType", None)),
-        "spec_type": _spec_type(parameter),
+        "storage_type": storage_type,
+        "spec_type": spec_type,
     }
 
 
@@ -148,19 +216,51 @@ def _enum_built_in(value):
             return None
 
 
-def _parameter_by_name(owner, name):
+def _parameters_by_name(owner, name):
+    """Return every matching parameter; never use Revit's random first match.
+
+    Autodesk explicitly documents that ``LookupParameter`` returns the first
+    of potentially several same-name parameters and that the match is not
+    deterministic. ``GetParameters`` is therefore the primary API here, with
+    enumeration retained only for test doubles and defensive compatibility.
+    """
     if owner is None or not name:
-        return None
+        return []
+    requested = text_service.to_text(name)
     try:
-        parameter = owner.LookupParameter(text_service.to_text(name))
-        if parameter is not None:
-            return parameter
+        matches = list(owner.GetParameters(requested) or [])
+        if matches:
+            return matches
     except Exception:
         pass
-    target = text_service.to_text(name).strip().lower()
-    for candidate in _iter_parameters(owner):
-        if _definition_name(candidate).strip().lower() == target:
-            return candidate
+    target = requested.strip().lower()
+    return [
+        candidate
+        for candidate in _iter_parameters(owner)
+        if _definition_name(candidate).strip().lower() == target
+    ]
+
+
+def _parameter_shape_matches(parameter, descriptor):
+    descriptor = descriptor or {}
+    storage_type = text_service.to_text(descriptor.get("storage_type") or "").lower()
+    spec_type = text_service.to_text(descriptor.get("spec_type") or "")
+    if storage_type and storage_type != _storage_type_name(
+        getattr(parameter, "StorageType", None)
+    ):
+        return False
+    if spec_type and spec_type != _spec_type(parameter):
+        return False
+    return True
+
+
+def _unique_parameter_by_shape(parameters, descriptor):
+    matches = [
+        item for item in list(parameters or [])
+        if _parameter_shape_matches(item, descriptor)
+    ]
+    if len(matches) == 1:
+        return matches[0]
     return None
 
 
@@ -176,6 +276,8 @@ def resolve_parameter(owner, descriptor):
                 return parameter
         except Exception:
             pass
+        # Never degrade an exact GUID identity to a display-name lookup.
+        return None
     if kind == "builtin" and descriptor.get("builtin_id") is not None:
         built_in = _enum_built_in(descriptor.get("builtin_id"))
         if built_in is not None:
@@ -185,16 +287,22 @@ def resolve_parameter(owner, descriptor):
                     return parameter
             except Exception:
                 pass
+        # Never degrade a built-in identity to a localized display name.
+        return None
     if kind == "project" and descriptor.get("parameter_id") is not None:
-        try:
-            parameter = owner.get_Parameter(
-                revit_helpers.elementid_from_value(descriptor.get("parameter_id"))
-            )
-            if parameter is not None:
+        target_id = _id_value(descriptor.get("parameter_id"))
+        # Element.get_Parameter has overloads for BuiltInParameter,
+        # Definition, and Guid -- not for a project parameter ElementId.
+        # Get every same-name candidate and match Parameter.Id instead.
+        for parameter in _parameters_by_name(owner, descriptor.get("name")):
+            if _id_value(getattr(parameter, "Id", None)) == target_id:
                 return parameter
-        except Exception:
-            pass
-    return _parameter_by_name(owner, descriptor.get("name"))
+        return None
+    # Legacy imported/name-only definitions are allowed only when name plus
+    # stored value shape identifies one unambiguous parameter.
+    return _unique_parameter_by_shape(
+        _parameters_by_name(owner, descriptor.get("name")), descriptor
+    )
 
 
 def normalize_parameter(parameter, source_document=None):
@@ -302,18 +410,56 @@ def read_properties(element, source_document, descriptors, type_cache=None):
 def descriptor_matches(left, right):
     left = left or {}
     right = right or {}
-    if (
-        left.get("identity_kind") in ("shared", "builtin")
-        and left.get("key")
-        and left.get("key") == right.get("key")
-    ):
+    if left.get("scope") != right.get("scope"):
+        return False
+    if left.get("key") and left.get("key") == right.get("key"):
         return True
-    if left.get("shared_guid") and left.get("shared_guid") == right.get("shared_guid"):
-        return left.get("scope") == right.get("scope")
-    if left.get("builtin_id") is not None and left.get("builtin_id") == right.get("builtin_id"):
-        return left.get("scope") == right.get("scope")
+    left_kind = text_service.to_text(left.get("identity_kind") or "name")
+    right_kind = text_service.to_text(right.get("identity_kind") or "name")
+    if left_kind == "shared":
+        return (
+            right_kind == "shared"
+            and bool(left.get("shared_guid"))
+            and left.get("shared_guid") == right.get("shared_guid")
+        )
+    if left_kind == "builtin":
+        return (
+            right_kind == "builtin"
+            and left.get("builtin_id") is not None
+            and left.get("builtin_id") == right.get("builtin_id")
+        )
+    if left_kind == "project":
+        if right_kind != "project":
+            return False
+        if (
+            left.get("parameter_id") is not None
+            and left.get("parameter_id") == right.get("parameter_id")
+        ):
+            return True
     return (
         text_service.to_text(left.get("name") or "").strip().lower()
         == text_service.to_text(right.get("name") or "").strip().lower()
-        and left.get("scope") == right.get("scope")
+        and text_service.to_text(left.get("storage_type") or "").lower()
+        == text_service.to_text(right.get("storage_type") or "").lower()
+        and text_service.to_text(left.get("spec_type") or "")
+        == text_service.to_text(right.get("spec_type") or "")
     )
+
+
+def find_matching_descriptor(imported, available):
+    """Map a stored/imported descriptor without choosing an ambiguous name."""
+    candidates = [
+        item for item in list(available or [])
+        if descriptor_matches(imported, item)
+    ]
+    if len(candidates) == 1:
+        return candidates[0]
+    if len(candidates) > 1:
+        exact_key = text_service.to_text((imported or {}).get("key") or "")
+        exact = [
+            item for item in candidates
+            if exact_key and text_service.to_text(item.get("key") or "") == exact_key
+        ]
+        if len(exact) == 1:
+            return exact[0]
+    return None

@@ -16,6 +16,7 @@ for _assembly in ("PresentationFramework", "PresentationCore", "WindowsBase", "S
 
 from System import Boolean, DateTime, Object, String
 from System.Collections.Generic import List
+from System.ComponentModel import SortDescription
 from System.Data import DataTable
 from System.Windows import Application, GridLength, GridUnitType, Thickness, VerticalAlignment, Visibility, WindowState
 from System.Windows.Controls import Dock
@@ -100,6 +101,7 @@ class ParameterMonitorWindow(CEDWindowBase):
         self._data_table_type = DataTable
         self._string_type = String
         self._boolean_type = Boolean
+        self._sort_description_type = SortDescription
         self._date_time_type = DateTime
         self._visibility = Visibility
         self._grid_length_type = GridLength
@@ -138,8 +140,7 @@ class ParameterMonitorWindow(CEDWindowBase):
             (5, "", "Level", "level"),
             (6, "", "Param Δ", "parameter_change_text"),
             (7, "", "Param Missing", "missing_text"),
-            (8, "", "Location Track", "location_text"),
-            (9, "", "Location Δ", "location_change_text"),
+            (8, "", "Location", "location_text"),
         ]
         self._tracking_sets_expanded_width = 290.0
         self._right_panel_expanded_width = 480.0
@@ -216,13 +217,28 @@ class ParameterMonitorWindow(CEDWindowBase):
         """Give every data column a sort surface and an Excel-style filter menu."""
         if len(self.ElementGrid.Columns):
             select_all = self._check_box_type()
-            select_all.Style = self.FindResource("PM.GridSelectAllCheckBox")
+            # Shared UI dictionaries are attached by CEDWindowBase after the
+            # XAML reader has created the window. Resolve the global checkbox
+            # style here instead of using a load-time StaticResource in XAML.
+            select_all.Style = self.FindResource("CED.Input.CheckBox")
+            select_all.Width = 16.0
+            select_all.Height = 18.0
+            select_all.MinWidth = 16.0
+            select_all.Focusable = False
+            select_all.ToolTip = "Select or clear all displayed rows"
             select_all.IsThreeState = False
             select_all.Click += self.select_all_elements_clicked
             self.ElementGrid.Columns[0].Header = select_all
             self._select_all_checkbox = select_all
         for index, group, label, field in self._element_column_definitions:
             if index >= len(self.ElementGrid.Columns):
+                continue
+            column = self.ElementGrid.Columns[index]
+            if field == "element_id":
+                # Element IDs are useful for sorting and identification but do
+                # not need an Excel-style value filter menu.
+                column.Header = label
+                column.SortMemberPath = field
                 continue
             panel = self._dock_panel_type()
             panel.LastChildFill = True
@@ -238,7 +254,6 @@ class ParameterMonitorWindow(CEDWindowBase):
             header_text.VerticalAlignment = self._vertical_alignment.Center
             panel.Children.Add(filter_button)
             panel.Children.Add(header_text)
-            column = self.ElementGrid.Columns[index]
             column.Header = panel
             column.SortMemberPath = field
             self._column_filter_buttons[field] = filter_button
@@ -463,7 +478,12 @@ class ParameterMonitorWindow(CEDWindowBase):
 
     def _set_busy(self, busy, message=None):
         try:
-            self.MainContent.IsEnabled = not bool(busy)
+            # Disabling the visual tree invokes WPF's disabled templates. That
+            # washed themed list/card backgrounds out to white during scans and
+            # modal edits. Keep the themed visuals enabled and block interaction
+            # at the root instead; the gateway still rejects concurrent work.
+            self.MainContent.IsEnabled = True
+            self.MainContent.IsHitTestVisible = not bool(busy)
         except Exception:
             pass
         if message:
@@ -580,13 +600,41 @@ class ParameterMonitorWindow(CEDWindowBase):
             self._apply_store(store)
         self._set_status(result.get("message") or "Operation complete.")
 
-    def _replace_items(self, control, items):
+    def _replace_items(self, control, items, preserve_sort=False):
         """Replace a grid source in one notification for large result sets."""
+        sort_state = []
+        if preserve_sort:
+            try:
+                sort_state = [
+                    (item.PropertyName, item.Direction)
+                    for item in list(control.Items.SortDescriptions)
+                ]
+            except Exception:
+                sort_state = []
         source = self._object_list_type()
         for item in list(items or []):
             source.Add(item)
         control.ItemsSource = None
         control.ItemsSource = source
+        if preserve_sort and sort_state:
+            try:
+                control.Items.SortDescriptions.Clear()
+                for property_name, direction in sort_state:
+                    control.Items.SortDescriptions.Add(
+                        self._sort_description_type(property_name, direction)
+                    )
+                # Keep the arrow glyphs in sync even when WPF rebuilt the
+                # default collection view as ItemsSource changed.
+                for column in list(control.Columns):
+                    column.SortDirection = None
+                    for property_name, direction in sort_state:
+                        if column.SortMemberPath == property_name:
+                            column.SortDirection = direction
+                            break
+            except Exception:
+                self._log_ui_exception(
+                    "Parameter Monitor could not restore main-grid sorting"
+                )
         return source
 
     def _replace_children_items(self, items):
@@ -721,7 +769,9 @@ class ParameterMonitorWindow(CEDWindowBase):
                 self.RemovedCountText, self.UnchangedCountText,
             ):
                 control.Text = "0"
-            self._element_rows = self._replace_items(self.ElementGrid, [])
+            self._element_rows = self._replace_items(
+                self.ElementGrid, [], preserve_sort=True
+            )
             self.ElementCountText.Text = "0 elements"
             self._selected_persistent_id = None
             self._selected_persistent_ids = []
@@ -814,13 +864,18 @@ class ParameterMonitorWindow(CEDWindowBase):
         preferred_id_set = set(preferred_ids)
         self._refreshing = True
         try:
-            self._element_rows = self._replace_items(self.ElementGrid, rows)
+            self._element_rows = self._replace_items(
+                self.ElementGrid, rows, preserve_sort=True
+            )
             selected_rows = []
             for row in rows:
                 if row.persistent_id in preferred_id_set:
                     selected_rows.append(row)
             if not selected_rows and rows:
-                selected_rows = [rows[0]]
+                try:
+                    selected_rows = [self.ElementGrid.Items[0]]
+                except Exception:
+                    selected_rows = [rows[0]]
             self.ElementGrid.SelectedItems.Clear()
             self.ElementGrid.SelectedItem = selected_rows[0] if selected_rows else None
             for row in selected_rows[1:]:
@@ -853,7 +908,9 @@ class ParameterMonitorWindow(CEDWindowBase):
         if not element_rows:
             self._log_console("SELECT", "No element selected; inspector cleared.")
             self.ElementTitleText.Text = "Select an element"
+            self.ElementTypeText.Text = ""
             self.ElementContextText.Text = "-"
+            self.ElementStatusBadge.Visibility = self._visibility.Collapsed
             self._property_rows = self._replace_property_items([])
             self.RelationshipText.Text = "No host device linked"
             self.ChildrenSummaryText.Text = "No linked children"
@@ -864,9 +921,11 @@ class ParameterMonitorWindow(CEDWindowBase):
             self._selected_persistent_id = None
             self._selected_persistent_ids = [row.persistent_id for row in element_rows]
             self.ElementTitleText.Text = "{} elements selected".format(len(element_rows))
+            self.ElementTypeText.Text = ""
             self.ElementContextText.Text = (
                 "Element-specific properties and device details are hidden for multiple selection."
             )
+            self.ElementStatusBadge.Visibility = self._visibility.Collapsed
             self._property_rows = self._replace_property_items([])
             self.RelationshipText.Text = "Multiple elements selected"
             self.ChildrenSummaryText.Text = "Multiple elements selected"
@@ -882,13 +941,15 @@ class ParameterMonitorWindow(CEDWindowBase):
         element_row = element_rows[0]
         self._selected_persistent_id = element_row.persistent_id
         self._selected_persistent_ids = [element_row.persistent_id]
-        self.ElementTitleText.Text = element_row.element
-        self.ElementContextText.Text = "{} | ID {} | Level {} | {}".format(
-            element_row.family_type,
+        self.ElementTitleText.Text = element_row.family
+        self.ElementTypeText.Text = element_row.type
+        self.ElementContextText.Text = "ID {} | Level {}".format(
             element_row.element_id,
             element_row.level,
-            element_row.status,
         )
+        self.ElementStatusText.Text = element_row.status
+        self.ElementStatusBadge.Tag = element_row.status
+        self.ElementStatusBadge.Visibility = self._visibility.Visible
         rows = self._viewmodel.property_rows(tracking_set, element_row)
         selected_property = self._selected_property_row()
         preferred_property_key = self._property_field(selected_property, "key")

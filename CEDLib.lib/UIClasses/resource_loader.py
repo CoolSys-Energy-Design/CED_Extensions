@@ -12,7 +12,7 @@ for _wpf_asm in ("PresentationFramework", "PresentationCore", "WindowsBase"):
     except Exception:
         pass
 
-from System.Windows import ResourceDictionary
+from System.Windows import DependencyProperty, ResourceDictionary
 
 DEFAULT_BASE_RESOURCE_RELATIVE_PATHS = (
     os.path.join("Themes", "CED.Sizes.xaml"),
@@ -143,7 +143,7 @@ def try_find_resource(owner, key):
         return None
     try:
         value = owner.TryFindResource(key)
-        if value is not None:
+        if value is not None and value != DependencyProperty.UnsetValue:
             return value
     except Exception:
         pass

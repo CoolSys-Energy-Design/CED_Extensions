@@ -16,6 +16,9 @@
   <Color x:Key="CED.Color.HeadingText">#E5EDF9</Color>
   <Color x:Key="CED.Color.PrimaryText">#E5EDF9</Color>
   <Color x:Key="CED.Color.SecondaryText">#B4C0CE</Color>
+  <Color x:Key="CED.Color.DocumentCanvas">#171C22</Color>
+  <Color x:Key="CED.Color.Link">#58A6FF</Color>
+  <Color x:Key="CED.Color.LinkHover">#79C0FF</Color>
 
   <Color x:Key="CED.Color.SearchBorder">#3A434F</Color>
   <Color x:Key="CED.Color.SearchBackground">#1F252C</Color>
@@ -30,6 +33,7 @@
 
   <Color x:Key="CED.Color.ButtonDefaultBackground">#2A3139</Color>
   <Color x:Key="CED.Color.ButtonHoverBackground">#36404B</Color>
+  <Color x:Key="CED.Color.ButtonForegroundOnAccent">#F5F8FC</Color>
   <Color x:Key="CED.Color.ButtonStateOverlayHover">#0AFFFFFF</Color>
   <Color x:Key="CED.Color.ButtonStateOverlayPressed">#1FFFFFFF</Color>
   <Color x:Key="CED.Color.InputControlBackground">#2A3139</Color>

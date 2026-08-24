@@ -142,6 +142,7 @@ def recompute_record(record, tracking_set):
 
 
 def summarize_set(tracking_set):
+    untracked_ids = set((tracking_set or {}).get("untracked_ids") or [])
     summary = {
         "tracked": 0,
         "changed": 0,
@@ -152,7 +153,11 @@ def summarize_set(tracking_set):
         "untracked": len(list((tracking_set or {}).get("untracked_ids") or [])),
         "unresolved": 0,
     }
-    for record in list(((tracking_set or {}).get("elements") or {}).values()):
+    for persistent_id, record in list(
+        ((tracking_set or {}).get("elements") or {}).items()
+    ):
+        if persistent_id in untracked_ids:
+            continue
         state = record.get("state")
         if state == models.ELEMENT_ADDED:
             summary["added"] += 1
@@ -201,7 +206,9 @@ def apply_scan(tracking_set, current_map, checked_at, source_state=None):
 
     for persistent_id in list(elements.keys()):
         if persistent_id in untracked:
-            elements.pop(persistent_id, None)
+            # Keep the last known record as an identity tombstone. Scans still
+            # skip the element, but the Untracked view retains its ID, family,
+            # type, level, and other useful context until tracking is restored.
             continue
         record = elements[persistent_id]
         snapshot = current_map.get(persistent_id)
@@ -312,7 +319,10 @@ def resolve_element(tracking_set, persistent_id):
 
 def resolve_set(tracking_set):
     result = copy.deepcopy(tracking_set)
+    untracked = set(result.get("untracked_ids") or [])
     for persistent_id in list((result.get("elements") or {}).keys()):
+        if persistent_id in untracked:
+            continue
         record = result["elements"][persistent_id]
         if record.get("state") == models.ELEMENT_REMOVED:
             continue
@@ -347,7 +357,6 @@ def untrack_elements(tracking_set, persistent_ids):
         record = elements.get(key)
         if record is None or record.get("state") == models.ELEMENT_REMOVED:
             continue
-        elements.pop(key, None)
         untracked.add(key)
     result["untracked_ids"] = sorted(list(untracked))
     _set_status_from_summary(result)
@@ -422,8 +431,11 @@ def update_tracked_properties(tracking_set, descriptors, current_map=None):
     removed_keys = old_keys - new_keys
     result["tracked_properties"] = new_descriptors
     current_map = current_map or {}
+    untracked = set(result.get("untracked_ids") or [])
 
     for persistent_id, record in list((result.get("elements") or {}).items()):
+        if persistent_id in untracked:
+            continue
         accepted = record.setdefault("accepted_properties", {})
         current = record.setdefault("current_properties", {})
         for key in removed_keys:

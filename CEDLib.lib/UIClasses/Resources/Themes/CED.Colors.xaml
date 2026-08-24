@@ -16,6 +16,9 @@
   <Color x:Key="CED.Color.HeadingText">#1F2E3D</Color>
   <Color x:Key="CED.Color.PrimaryText">#1F2E3D</Color>
   <Color x:Key="CED.Color.SecondaryText">#4A5866</Color>
+  <Color x:Key="CED.Color.DocumentCanvas">#FFFFFF</Color>
+  <Color x:Key="CED.Color.Link">#0969DA</Color>
+  <Color x:Key="CED.Color.LinkHover">#0550AE</Color>
 
   <Color x:Key="CED.Color.SearchBorder">#B8C8DB</Color>
   <Color x:Key="CED.Color.SearchBackground">#FFFFFF</Color>

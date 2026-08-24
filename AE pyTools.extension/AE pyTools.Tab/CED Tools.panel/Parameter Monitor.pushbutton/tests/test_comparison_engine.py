@@ -50,6 +50,7 @@ def snapshot(key="host:uid-1", mark="A", loc=None, family="Family", type_name="T
         "metadata": {
             "friendly_name": mark,
             "element_id": 1,
+            "level": "Level 1",
             "family_type": "{} : {}".format(family, type_name),
             "family_name": family,
             "type_name": type_name,
@@ -180,13 +181,21 @@ class ComparisonEngineTests(unittest.TestCase):
         self.assertFalse(comparison_engine.normalized_values_equal(missing, blank))
         self.assertTrue(comparison_engine.normalized_values_equal(missing, models.missing_value()))
 
-    def test_untrack_retains_identity_only_and_restore_baselines(self):
+    def test_untrack_preserves_last_known_record_and_restore_baselines(self):
         tracking_set = tracking_set_with_baseline()
         untracked = comparison_engine.untrack_element(tracking_set, "host:uid-1")
-        self.assertNotIn("host:uid-1", untracked["elements"])
+        self.assertIn("host:uid-1", untracked["elements"])
         self.assertEqual(["host:uid-1"], untracked["untracked_ids"])
+        preserved = untracked["elements"]["host:uid-1"]["metadata"]
+        self.assertEqual(1, preserved["element_id"])
+        self.assertEqual("Family", preserved["family_name"])
+        self.assertEqual("Type", preserved["type_name"])
+        self.assertEqual("Level 1", preserved["level"])
+        rescanned = comparison_engine.apply_scan(untracked, {}, "t1")
+        self.assertIn("host:uid-1", rescanned["elements"])
+        self.assertEqual(0, comparison_engine.summarize_set(rescanned)["tracked"])
         restored = comparison_engine.restore_element(
-            untracked, "host:uid-1", snapshot(mark="RESTORED")
+            rescanned, "host:uid-1", snapshot(mark="RESTORED")
         )
         self.assertNotIn("host:uid-1", restored["untracked_ids"])
         record = restored["elements"]["host:uid-1"]
@@ -205,7 +214,10 @@ class ComparisonEngineTests(unittest.TestCase):
             ["host:uid-1", "host:uid-2"],
         )
 
-        self.assertEqual({}, updated["elements"])
+        self.assertEqual(
+            set(["host:uid-1", "host:uid-2"]),
+            set(updated["elements"].keys()),
+        )
         self.assertEqual(["host:uid-1", "host:uid-2"], updated["untracked_ids"])
         self.assertEqual(2, len(tracking_set["elements"]))
 
