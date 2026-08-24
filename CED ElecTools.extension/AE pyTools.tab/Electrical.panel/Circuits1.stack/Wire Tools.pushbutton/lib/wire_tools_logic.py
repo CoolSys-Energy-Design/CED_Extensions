@@ -48,10 +48,10 @@ SCHEME_LABELS = {
 
 SELECTION_RULES = {
     SCHEME_WIRE_BY_CIRCUIT: (
-        "Main-model, non-type elements are accepted initially. A selected "
-        "element is valid only when the shared electrical-system resolver "
-        "finds at least one eligible power circuit. FamilyInstance and "
-        "connector checks are not required."
+        "Main-model, non-annotation MEP elements and electrical-system "
+        "objects are accepted initially. A selected element is valid only "
+        "when the shared electrical-system resolver finds at least one "
+        "eligible power circuit."
     ),
     SCHEME_INTERCONNECT: (
         "Main-model FamilyInstance elements are accepted only when they have "
@@ -437,6 +437,69 @@ def common_connector_key(elements, requested_key=None):
 
 def main_model_element(element):
     return design_options.is_main_model_element(element)
+
+
+def is_annotation_element(element):
+    """Return True when an element belongs to an annotation category."""
+    if element is None:
+        return False
+    category = getattr(element, "Category", None)
+    if category is None:
+        return False
+    category_type = getattr(category, "CategoryType", None)
+    category_type_enum = getattr(DB, "CategoryType", None)
+    annotation_type = getattr(category_type_enum, "Annotation", None)
+    if annotation_type is not None and category_type == annotation_type:
+        return True
+    return False
+
+
+def is_linked_element(element):
+    """Return True for link instances or elements owned by a linked document."""
+    if element is None:
+        return False
+    link_instance_class = getattr(DB, "RevitLinkInstance", None)
+    if link_instance_class is not None and isinstance(element, link_instance_class):
+        return True
+    try:
+        return bool(element.Document.IsLinked)
+    except Exception:
+        return False
+
+
+def is_electrical_system_element(element):
+    electrical_system_class = getattr(DB.Electrical, "ElectricalSystem", None)
+    return (
+        electrical_system_class is not None
+        and element is not None
+        and isinstance(element, electrical_system_class)
+    )
+
+
+def has_mep_model(element):
+    """Return True when Revit exposes an MEP model for the element."""
+    if element is None:
+        return False
+    try:
+        return getattr(element, "MEPModel", None) is not None
+    except Exception:
+        return False
+
+
+def is_allowed_device_pick(element, allow_circuit=False):
+    """Apply the lightweight restrictions used while picking device elements."""
+    if element is None:
+        return False
+    if is_annotation_element(element) or is_linked_element(element):
+        return False
+    if not main_model_element(element):
+        return False
+    element_type_class = getattr(DB, "ElementType", None)
+    if element_type_class is not None and isinstance(element, element_type_class):
+        return False
+    if allow_circuit and not is_electrical_system_element(element):
+        return has_mep_model(element)
+    return True
 
 
 def is_valid_device(element, allow_circuit=False):
@@ -1186,11 +1249,13 @@ def _homerun_points(start, end_point, shape, bend_offset,
         requested_offset = None
 
     # A zero offset is the straight-path setting.  Keep accepting the shape
-    # argument for compatibility with older payloads, but the UI now uses the
-    # offset itself to select straight versus bent geometry.
-    if (shape == HOMERUN_SHAPE_STRAIGHT
-            or (requested_offset is not None
-                and abs(requested_offset) <= GEOMETRY_TOLERANCE)):
+    # argument for compatibility with older payloads, but let a non-zero
+    # offset select a bend even when a stale legacy shape says "straight".
+    if (requested_offset is not None
+            and abs(requested_offset) <= GEOMETRY_TOLERANCE) or (
+                requested_offset is None
+                and shape == HOMERUN_SHAPE_STRAIGHT
+            ):
         midpoint = start.Add(end_point.Subtract(start).Multiply(0.5))
         return [start, midpoint, end_point]
 
@@ -1385,10 +1450,19 @@ def run_wire_by_circuit(document, view, elements, settings):
                 _apply_wire_type(wire_set, wire_type_id)
                 generated_homerun = _homerun_from_wire_set(wire_set)
                 if generated_homerun is not None:
+                    bend_offset = settings.get("bend_offset")
+                    try:
+                        has_bend_offset = (
+                            bend_offset is not None
+                            and abs(float(bend_offset)) > GEOMETRY_TOLERANCE
+                        )
+                    except Exception:
+                        has_bend_offset = False
                     if (settings.get("homerun_direction", HOMERUN_DIRECTION_PANEL)
                             != HOMERUN_DIRECTION_PANEL
                             or settings.get("homerun_shape", HOMERUN_SHAPE_STRAIGHT)
-                            != HOMERUN_SHAPE_STRAIGHT):
+                            != HOMERUN_SHAPE_STRAIGHT
+                            or has_bend_offset):
                         generated_homerun = _replace_homerun_custom(
                             document,
                             view,
@@ -1404,7 +1478,7 @@ def run_wire_by_circuit(document, view, elements, settings):
                                 "homerun_shape",
                                 HOMERUN_SHAPE_STRAIGHT,
                             ),
-                            settings.get("bend_offset", 1.0),
+                            settings.get("bend_offset", 0.0),
                         )
                     homerun_ids.append(element_id_value(generated_homerun.Id))
                 created_count += len(list(wire_set))
@@ -1587,7 +1661,7 @@ def _run_direct_wires(document, view, device_elements, settings,
                             "homerun_shape",
                             HOMERUN_SHAPE_STRAIGHT,
                         ),
-                        settings.get("bend_offset", 1.0),
+                        settings.get("bend_offset", 0.0),
                     )
                     created_wire = _create_wire_from_points(
                         document,
@@ -1847,7 +1921,7 @@ def _run_spatial_interconnect(document, view, device_elements, settings):
                     first_connector.Origin,
                     second_connector.Origin,
                     branch_type,
-                    settings.get("bend_offset", 1.0),
+                    settings.get("bend_offset", 0.0),
                 )
                 _create_wire_from_points(
                     document,
@@ -2013,7 +2087,7 @@ def _custom_interconnect_homerun(document, view, wire_type_id,
         connector.Origin,
         end_point,
         settings.get("homerun_shape", HOMERUN_SHAPE_STRAIGHT),
-        settings.get("bend_offset", 1.0),
+        settings.get("bend_offset", 0.0),
     )
     homerun_type = wiring_type_from_name(
         settings.get("homerun_wiring_type"),
@@ -2653,6 +2727,11 @@ class DeviceSelectionFilter(ISelectionFilter):
                     return False
             except Exception:
                 pass
+        if not is_allowed_device_pick(
+            element,
+            allow_circuit=self.scheme == SCHEME_WIRE_BY_CIRCUIT,
+        ):
+            return False
         return is_valid_device(
             element,
             allow_circuit=self.scheme == SCHEME_WIRE_BY_CIRCUIT,

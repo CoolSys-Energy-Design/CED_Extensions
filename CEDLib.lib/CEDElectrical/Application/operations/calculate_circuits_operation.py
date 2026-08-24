@@ -109,6 +109,7 @@ class CalculateCircuitsOperation(object):
                 return {'status': 'cancelled', 'reason': 'large_selection_cancel'}
 
         branches = []
+        calculation_branches = []
         existing_values_by_id = {}
         for circuit in circuits:
             cid = _elid_value(circuit.Id)
@@ -124,7 +125,11 @@ class CalculateCircuitsOperation(object):
             branch = CircuitBranch(circuit, settings=settings, preview_values=preview_values)
             if cid in force_auto_for_ids:
                 branch._calc_preview_force_auto = True
-            if not branch.is_power_circuit or branch.is_space or branch.is_spare:
+            if not branch.is_power_circuit:
+                continue
+
+            branches.append(branch)
+            if branch.is_special:
                 continue
 
             branch.calculate_hot_wire_size()
@@ -132,14 +137,14 @@ class CalculateCircuitsOperation(object):
             branch.calculate_ground_wire_size()
             branch.calculate_isolated_ground_wire_size()
             branch.calculate_conduit_size()
-            branches.append(branch)
+            calculation_branches.append(branch)
 
         if not branches:
-            forms.alert('No editable branch circuits found to process.')
+            forms.alert('No editable power circuits found to process.')
             return {'status': 'cancelled', 'reason': 'no_branches'}
 
         preview_rows = self._collect_conduit_wire_preview_rows(
-            branches,
+            calculation_branches,
             existing_values_by_id,
             ignored_preview_fields_by_id,
         )
@@ -158,7 +163,7 @@ class CalculateCircuitsOperation(object):
         if preview_decision == 'skip' and preview_changed_ids:
             branches = [
                 branch for branch in branches
-                if _elid_value(branch.circuit.Id) not in preview_changed_ids
+                if branch.is_special or _elid_value(branch.circuit.Id) not in preview_changed_ids
             ]
             if not branches:
                 return {
@@ -171,12 +176,14 @@ class CalculateCircuitsOperation(object):
                 }
 
         if preview_decision == 'keep_existing' and preview_rows:
-            branches = self._rebuild_branches_with_existing_sizes(
-                branches,
+            rebuilt = self._rebuild_branches_with_existing_sizes(
+                calculation_branches,
                 existing_values_by_id,
                 staged_preview_values_by_id,
                 settings,
             )
+            special_branches = [branch for branch in branches if branch.is_special]
+            branches = special_branches + rebuilt
 
         total_fixtures = 0
         total_equipment = 0
@@ -199,10 +206,14 @@ class CalculateCircuitsOperation(object):
                 )
                 param_values = self._collect_shared_param_values(branch)
                 self.writer.write_circuit_parameters(branch.circuit, param_values)
-                f_cnt, e_cnt = self.writer.write_connected_elements(branch, param_values, settings, locked_ids)
-                total_fixtures += f_cnt
-                total_equipment += e_cnt
+                if not branch.is_special:
+                    f_cnt, e_cnt = self.writer.write_connected_elements(branch, param_values, settings, locked_ids)
+                    total_fixtures += f_cnt
+                    total_equipment += e_cnt
 
+                # SPARE/SPACE circuits use the same fresh payload contract as
+                # regular circuits.  This removes stale alerts and refreshes
+                # calculation metadata without clearing Circuit Data_CED.
                 alert_payload = self._build_alert_payload(branch)
                 if alert_payload is None:
                     self.alert_store.clear_alert_payload(branch.circuit)
@@ -233,7 +244,8 @@ class CalculateCircuitsOperation(object):
         runtime_alert_rows = self._collect_runtime_alert_rows(branches)
         return {
             'status': 'ok',
-            'updated_circuits': len(branches),
+            'updated_circuits': len([branch for branch in branches if not branch.is_special]),
+            'updated_special_circuits': len([branch for branch in branches if branch.is_special]),
             'updated_fixtures': total_fixtures,
             'updated_equipment': total_equipment,
             'locked_rows': locked_rows,
@@ -536,6 +548,9 @@ class CalculateCircuitsOperation(object):
 
     def _collect_shared_param_values(self, branch):
         """Map branch results into shared-parameter values."""
+        if branch.is_special:
+            return branch.get_special_parameter_reset_values(settings_manager.RESULT_PARAM_NAMES)
+
         neutral_qty = branch.neutral_wire_quantity or 0
         ig_qty = branch.isolated_ground_wire_quantity or 0
         include_neutral = 1 if neutral_qty > 0 else 0
@@ -588,7 +603,13 @@ class CalculateCircuitsOperation(object):
         if not isinstance(existing, dict):
             existing = {}
         metadata = {}
-        for key in self.CIRCUIT_DATA_METADATA_KEYS:
+        metadata_keys = self.CIRCUIT_DATA_METADATA_KEYS
+        if branch.is_special:
+            # Voltage-drop method is not meaningful for a native SPARE/SPACE
+            # circuit.  Rebuild the payload without carrying that old
+            # regular-circuit metadata forward.
+            metadata_keys = ('last_calculation',)
+        for key in metadata_keys:
             if key in existing:
                 metadata[key] = existing.get(key)
         metadata['last_calculation'] = datetime.utcnow().isoformat() + 'Z'
@@ -644,7 +665,11 @@ class CalculateCircuitsOperation(object):
             pass
         output.close_others()
         output.print_md('## Shared Parameters Updated')
-        output.print_md('* Circuits updated: **{}**'.format(len(branches)))
+        regular_count = len([branch for branch in branches if not branch.is_special])
+        special_count = len([branch for branch in branches if branch.is_special])
+        output.print_md('* Circuits updated: **{}**'.format(regular_count))
+        if special_count:
+            output.print_md('* SPARE/SPACE circuits refreshed: **{}**'.format(special_count))
         output.print_md('* Fixtures and Devices updated: **{}**'.format(total_fixtures))
         output.print_md('* Electrical Equipment updated: **{}**'.format(total_equipment))
 

@@ -670,6 +670,7 @@
       <StackPanel Grid.Column="0" Orientation="Vertical" Margin="0,0,12,0">
         <CheckBox Name="AllowDiscardToggle"
                   Style="{DynamicResource CED.Input.CheckBox}"
+                  HorizontalContentAlignment="Stretch"
                   IsChecked="False"
                   ToolTip="Default spare/space definition:
 - Unlocked slot
@@ -680,6 +681,7 @@
         </CheckBox>
         <CheckBox Name="MaintainGroupToggle"
                   Style="{DynamicResource CED.Input.CheckBox}"
+                  HorizontalContentAlignment="Stretch"
                   Margin="0,2,0,0"
                   IsChecked="True">
           <TextBlock Text="Maintain grouped circuits when moving." TextWrapping="Wrap"/>
@@ -726,6 +728,7 @@
                          Style="{DynamicResource CED.Text.Secondary}"/>
               <RadioButton Name="AddPole1Radio"
                            Style="{DynamicResource CED.Input.RadioButton}"
+                           HorizontalContentAlignment="Left"
                            Content="1P"
                            IsChecked="True"
                            VerticalAlignment="Center"
@@ -733,12 +736,14 @@
                            Checked="add_poles_changed"/>
               <RadioButton Name="AddPole2Radio"
                            Style="{DynamicResource CED.Input.RadioButton}"
+                           HorizontalContentAlignment="Left"
                            Content="2P"
                            VerticalAlignment="Center"
                            Margin="0,0,8,0"
                            Checked="add_poles_changed"/>
               <RadioButton Name="AddPole3Radio"
                            Style="{DynamicResource CED.Input.RadioButton}"
+                           HorizontalContentAlignment="Left"
                            Content="3P"
                            VerticalAlignment="Center"
                            Checked="add_poles_changed"/>
@@ -750,8 +755,10 @@
                          Style="{DynamicResource CED.Text.Secondary}"/>
               <TextBox Name="SpareRatingTextBox"
                        Style="{DynamicResource CED.Input.TextBox}"
-                       Width="56"
-                       Height="24"
+                       Width="68"
+                       MinWidth="68"
+                       Height="28"
+                       Padding="4,1"
                        HorizontalContentAlignment="Center"
                        VerticalContentAlignment="Center"
                        Text="20 A"
@@ -764,8 +771,10 @@
                          Style="{DynamicResource CED.Text.Secondary}"/>
               <TextBox Name="SpareFrameTextBox"
                        Style="{DynamicResource CED.Input.TextBox}"
-                       Width="56"
-                       Height="24"
+                       Width="68"
+                       MinWidth="68"
+                       Height="28"
+                       Padding="4,1"
                        HorizontalContentAlignment="Center"
                        VerticalContentAlignment="Center"
                        Text="20 A"

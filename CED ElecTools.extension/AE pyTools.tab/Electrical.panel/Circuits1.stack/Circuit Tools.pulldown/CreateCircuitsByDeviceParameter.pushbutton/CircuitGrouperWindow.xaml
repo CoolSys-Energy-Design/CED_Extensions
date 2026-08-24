@@ -1,0 +1,432 @@
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Create Circuits by Device Parameter"
+        Height="720" Width="1180"
+        MinHeight="520" MinWidth="940"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource CED.Brush.WindowBackground}"
+        PreviewMouseLeftButtonDown="window_mouse_down">
+  <Window.Resources>
+    <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+
+    <Style TargetType="{x:Type ToolTip}">
+      <Setter Property="MaxWidth" Value="420"/>
+      <Setter Property="ContentTemplate">
+        <Setter.Value>
+          <DataTemplate>
+            <TextBlock Text="{Binding}" TextWrapping="Wrap" MaxWidth="400"/>
+          </DataTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <!-- GroupItem is not a DataGridRow, so its hover/selection overlay must be
+         supplied locally while still using the shared CED theme brushes. -->
+    <Style x:Key="CircuitGroupHeaderBorder" TargetType="Border">
+      <Setter Property="Background" Value="{DynamicResource CED.Brush.DataGridHeaderBackground}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource CED.Brush.DataGridHeaderBorder}"/>
+      <Setter Property="BorderThickness" Value="0,0,0,1"/>
+      <Style.Triggers>
+        <Trigger Property="IsMouseOver" Value="True">
+          <Setter Property="Background" Value="{DynamicResource CED.Brush.CircuitItemHoverBackground}"/>
+        </Trigger>
+        <DataTrigger Binding="{Binding is_selected}" Value="True">
+          <Setter Property="Background" Value="{DynamicResource CED.Brush.CircuitItemSelectedBackground}"/>
+        </DataTrigger>
+        <DataTrigger Binding="{Binding is_drag_target}" Value="True">
+          <Setter Property="Background" Value="{DynamicResource CED.Brush.InfoAccentBackground}"/>
+          <Setter Property="BorderBrush" Value="{DynamicResource CED.Brush.InfoAccentBorder}"/>
+          <Setter Property="BorderThickness" Value="0,0,0,2"/>
+        </DataTrigger>
+      </Style.Triggers>
+    </Style>
+
+    <Style x:Key="CircuitExpandHeaderStyle"
+           TargetType="{x:Type DataGridColumnHeader}">
+      <!-- Keep this local because the shared CED dictionaries are merged after
+           WPF constructs the window. DynamicResource resolves them safely at
+           runtime while preserving the standard themed header behavior. -->
+      <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="Height" Value="34"/>
+      <Setter Property="Background" Value="{DynamicResource CED.Brush.DataGridHeaderBackground}"/>
+      <Setter Property="Foreground" Value="{DynamicResource CED.Brush.DataGridHeaderForeground}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource CED.Brush.DataGridHeaderBorder}"/>
+      <Setter Property="BorderThickness" Value="0,0,1,1"/>
+      <Setter Property="Padding" Value="0"/>
+      <Style.Triggers>
+        <Trigger Property="IsMouseOver" Value="True">
+          <Setter Property="Background" Value="{DynamicResource CED.Brush.DataGridHeaderHoverBackground}"/>
+        </Trigger>
+        <Trigger Property="IsPressed" Value="True">
+          <Setter Property="Background" Value="{DynamicResource CED.Brush.DataGridHeaderPressedBackground}"/>
+        </Trigger>
+      </Style.Triggers>
+    </Style>
+
+    <Style x:Key="CircuitGroupExpandToggle" TargetType="ToggleButton">
+      <Setter Property="Foreground" Value="{DynamicResource CED.Brush.PrimaryText}"/>
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderBrush" Value="Transparent"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Width" Value="20"/>
+      <Setter Property="Height" Value="20"/>
+      <Setter Property="Padding" Value="0"/>
+      <Setter Property="Focusable" Value="False"/>
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="Content" Value="&#9656;"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="ToggleButton">
+            <Border x:Name="Root"
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="{DynamicResource CED.CornerRadius.Control}">
+              <Grid>
+                <ContentPresenter HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"
+                                  Content="{TemplateBinding Content}"
+                                  TextElement.Foreground="{TemplateBinding Foreground}"/>
+                <Border x:Name="StateOverlay"
+                        Background="Transparent"
+                        CornerRadius="{DynamicResource CED.CornerRadius.Control}"
+                        IsHitTestVisible="False"/>
+              </Grid>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="StateOverlay" Property="Background" Value="{DynamicResource CED.Brush.ButtonStateOverlayHover}"/>
+              </Trigger>
+              <Trigger Property="IsPressed" Value="True">
+                <Setter TargetName="StateOverlay" Property="Background" Value="{DynamicResource CED.Brush.ButtonStateOverlayPressed}"/>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+      <Style.Triggers>
+        <Trigger Property="IsChecked" Value="True">
+          <Setter Property="Content" Value="&#9662;"/>
+        </Trigger>
+      </Style.Triggers>
+    </Style>
+  </Window.Resources>
+
+  <Grid Margin="12">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+
+    <!-- Title -->
+    <StackPanel Grid.Row="0" Margin="0,0,0,8">
+      <TextBlock Style="{DynamicResource CED.Text.Title}"
+                 Text="Create Circuits by Device Parameter"/>
+      <TextBlock Style="{DynamicResource CED.Text.Secondary}"
+                 Text="One row per circuit sets the load name (left), panel and breaker. Drag member rows onto another group to move them, or use the selection commands. Dedicated selections create one native Revit circuit per member on Run."/>
+    </StackPanel>
+
+    <!-- Toolbar -->
+    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,8">
+      <Button Style="{DynamicResource CED.Button.Base}"
+              Name="NewGroupButton"
+              Content="New Group from Selected" MinWidth="170" Margin="0,0,4,0"
+              Click="new_group_clicked"/>
+      <Button Style="{DynamicResource CED.Button.Base}"
+              Name="DedicatedGroupButton"
+              Content="Create Dedicated" MinWidth="125" Margin="0,0,4,0"
+              ToolTip="Create one dedicated circuit row for each selected element row, preserving the source group's panel, breaker, load name, and notes."
+              Click="create_dedicated_clicked"/>
+      <Button Style="{DynamicResource CED.Button.Base}"
+              Name="BulkSetButton"
+              Content="Bulk Set Selected" MinWidth="125" Margin="0,0,4,0"
+              ToolTip="Set non-blank load name, panel, breaker, and circuit notes values for the selected circuit rows (group headers)."
+              Click="bulk_set_selected_clicked"/>
+      <TextBlock Style="{DynamicResource CED.Text.Secondary}"
+                 Text="Group by:" Margin="16,0,4,0"
+                 VerticalAlignment="Center"/>
+      <ComboBox Style="{DynamicResource CED.Input.ComboBox.Flat}"
+                Name="GroupByCombo" Width="220" VerticalAlignment="Center"
+                ItemsSource="{Binding GroupParamOptions}"
+                SelectionChanged="group_param_changed"
+                ToolTip="Group by a parameter, Space, or the concatenated Identity value"/>
+      <TextBlock Style="{DynamicResource CED.Text.Secondary}"
+                 Text="Name by:" Margin="16,0,4,0"
+                 VerticalAlignment="Center"/>
+      <ComboBox Style="{DynamicResource CED.Input.ComboBox.Flat}"
+                Name="NameByCombo" Width="220" VerticalAlignment="Center"
+                ItemsSource="{Binding NameParamOptions}"
+                SelectionChanged="name_param_changed"
+                ToolTip="Parameter used to seed each circuit's Load Name (the name set on the created Revit circuit). Switching it re-seeds every name; you can still edit any name by hand."/>
+    </StackPanel>
+
+    <!-- Grid -->
+    <DataGrid Grid.Row="2"
+              Name="Grid"
+              AutoGenerateColumns="False"
+              CanUserAddRows="False"
+              CanUserDeleteRows="False"
+              IsReadOnly="True"
+              HeadersVisibility="Column"
+              SelectionMode="Extended"
+              SelectionUnit="FullRow"
+              SelectionChanged="grid_selection_changed"
+              GridLinesVisibility="Horizontal"
+              RowHeaderWidth="0"
+              CanUserResizeColumns="True"
+              Style="{DynamicResource CED.DataGrid.Base}"
+              RowStyle="{DynamicResource CED.DataGrid.Row.Display.NeutralSelection}"
+              CellStyle="{DynamicResource CED.DataGrid.Cell.DisplayReadonly.NeutralSelection}"
+              ColumnHeaderStyle="{DynamicResource CED.DataGrid.Header.Wrap}"
+              EnableRowVirtualization="True"
+              EnableColumnVirtualization="True"
+              VirtualizingPanel.IsVirtualizing="True"
+              VirtualizingPanel.IsVirtualizingWhenGrouping="True"
+              VirtualizingPanel.VirtualizationMode="Recycling"
+              VirtualizingPanel.ScrollUnit="Pixel"
+              VirtualizingPanel.CacheLength="2"
+              VirtualizingPanel.CacheLengthUnit="Page"
+              ScrollViewer.CanContentScroll="True"
+              ScrollViewer.HorizontalScrollBarVisibility="Auto"
+              AllowDrop="True"
+              PreviewMouseLeftButtonDown="grid_mouse_down"
+              PreviewMouseLeftButtonUp="grid_mouse_up"
+              MouseMove="grid_mouse_move"
+              DragOver="grid_drag_over"
+              Drop="grid_drop">
+      <DataGrid.GroupStyle>
+        <!-- One collapsible circuit group. Readiness is validation text on the
+             header and validation pane, not a second visual grouping level.
+             Custom GroupItem template
+             (a stretching header + ItemsPresenter) instead of an Expander, so
+             the header fills the full width and the status text remains
+             left-aligned in its available area. GroupItem DataContext is the
+             CollectionViewGroup; Name = the GroupVM. -->
+        <GroupStyle>
+          <GroupStyle.ContainerStyle>
+            <Style TargetType="{x:Type GroupItem}">
+              <Setter Property="Template">
+                <Setter.Value>
+                  <ControlTemplate TargetType="{x:Type GroupItem}">
+                    <StackPanel Margin="0,6,0,0">
+                      <Border x:Name="GroupHeaderBorder"
+                              DataContext="{Binding Name}"
+                              Style="{StaticResource CircuitGroupHeaderBorder}"
+                              Padding="2,3"
+                              PreviewMouseLeftButtonDown="group_header_mouse_down">
+                        <Grid>
+                          <Grid.ColumnDefinitions>
+                          <ColumnDefinition Width="26"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="210"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="145"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="72"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="65"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                          </Grid.ColumnDefinitions>
+
+                          <ToggleButton Grid.Column="0"
+                                        x:Name="ExpandToggle"
+                                        IsChecked="{Binding is_expanded, Mode=TwoWay}"
+                                        VerticalAlignment="Center" HorizontalAlignment="Center"
+                                        ToolTip="Expand / collapse this circuit">
+                            <ToggleButton.Style>
+                              <Style TargetType="ToggleButton" BasedOn="{StaticResource CircuitGroupExpandToggle}"/>
+                            </ToggleButton.Style>
+                          </ToggleButton>
+
+                          <TextBlock Grid.Column="1"
+                                     Style="{DynamicResource CED.Text.Secondary}"
+                                     Text="Load name:"
+                                     VerticalAlignment="Center"
+                                     Margin="8,0,4,0"/>
+
+                          <TextBox Grid.Column="2"
+                                   Style="{DynamicResource CED.Input.TextBox}"
+                                   Text="{Binding load_name, Mode=OneWay}"
+                                   ToolTip="Load name for this circuit (set on the created Revit circuit only; the members' load-name parameter is never modified)"
+                                   FontWeight="Bold"
+                                   VerticalAlignment="Center"
+                                   LostFocus="group_load_name_changed"/>
+
+                          <TextBlock Grid.Column="3" Style="{DynamicResource CED.Text.Secondary}"
+                                     Text="Panel:" Margin="12,0,4,0"
+                                     VerticalAlignment="Center"/>
+                          <ComboBox Grid.Column="4"
+                                    Style="{DynamicResource CED.Input.ComboBox.Flat.Compact.Editable}"
+                                    ItemsSource="{Binding panel_options}"
+                                     Text="{Binding panel, Mode=OneWay}"
+                                     VerticalAlignment="Center"
+                                     SelectionChanged="group_panel_changed"
+                                     DropDownClosed="group_panel_changed"
+                                     LostFocus="group_panel_changed"/>
+
+                          <TextBlock Grid.Column="5" Style="{DynamicResource CED.Text.Secondary}"
+                                     Text="Breaker:" Margin="12,0,4,0"
+                                     VerticalAlignment="Center"/>
+                          <ComboBox Grid.Column="6"
+                                    Style="{DynamicResource CED.Input.ComboBox.Flat.Compact.Editable}"
+                                    ItemsSource="{Binding DataContext.RatingOptions, RelativeSource={RelativeSource AncestorType=Window}}"
+                                     Text="{Binding rating, Mode=OneWay}"
+                                     ToolTip="Breaker amps (number only). Enter 20, 20 A or 20A."
+                                     VerticalAlignment="Center"
+                                     SelectionChanged="group_rating_changed"
+                                     DropDownClosed="group_rating_changed"
+                                     LostFocus="group_rating_changed"
+                                     GotKeyboardFocus="rating_got_focus"
+                                     PreviewMouseLeftButtonDown="rating_mouse_down"/>
+                          <TextBlock Grid.Column="7" Style="{DynamicResource CED.Text.Secondary}"
+                                     Text="A" Margin="3,0,0,0"
+                                     VerticalAlignment="Center"/>
+
+                          <TextBlock Grid.Column="8" Style="{DynamicResource CED.Text.Secondary}"
+                                     Text="Schedule notes:" Margin="12,0,4,0"
+                                     VerticalAlignment="Center"/>
+                          <TextBox Grid.Column="9"
+                                   Style="{DynamicResource CED.Input.TextBox}"
+                                   Text="{Binding schedule_notes, Mode=OneWay}"
+                                   ToolTip="Schedule circuit notes set on the created native Revit circuit"
+                                   VerticalAlignment="Center"
+                                   LostFocus="group_schedule_notes_changed"/>
+
+                          <TextBlock Grid.Column="10"
+                                     Text="&#9888;"
+                                     FontWeight="Bold"
+                                     FontSize="14"
+                                     Foreground="{DynamicResource CED.Brush.BadgeWarningText}"
+                                      Margin="6,0,0,0"
+                                      VerticalAlignment="Center"
+                                      Visibility="{Binding rating_warning_visibility}"
+                                      ToolTip="{Binding rating_tooltip}"/>
+
+                          <TextBlock Grid.Column="11"
+                                     HorizontalAlignment="Left"
+                                     Margin="12,0,4,0"
+                                     TextWrapping="Wrap"
+                                     VerticalAlignment="Center"
+                                     Text="{Binding status}"
+                                     Foreground="{Binding status_color}"/>
+                        </Grid>
+                      </Border>
+                        <ItemsPresenter Visibility="{Binding IsChecked, ElementName=ExpandToggle, Converter={StaticResource BoolToVis}}"/>
+                    </StackPanel>
+                  </ControlTemplate>
+                </Setter.Value>
+              </Setter>
+            </Style>
+          </GroupStyle.ContainerStyle>
+        </GroupStyle>
+      </DataGrid.GroupStyle>
+
+      <DataGrid.Columns>
+        <DataGridTemplateColumn Header="" Width="40" MinWidth="40" MaxWidth="40"
+                                CanUserResize="False"
+                                HeaderStyle="{StaticResource CircuitExpandHeaderStyle}">
+          <DataGridTemplateColumn.HeaderTemplate>
+            <DataTemplate>
+              <Button Content="&#8597;"
+                      Style="{DynamicResource CED.Button.IconSmall}"
+                      Width="28" Height="28" MinWidth="0" MinHeight="0"
+                      Padding="0"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center"
+                      ToolTip="Expand or collapse all groups"
+                      Click="expand_collapse_all_clicked"/>
+            </DataTemplate>
+          </DataGridTemplateColumn.HeaderTemplate>
+          <DataGridTemplateColumn.CellTemplate>
+            <DataTemplate>
+              <CheckBox Style="{DynamicResource CED.Input.CheckBox}"
+                        IsChecked="{Binding include, Mode=OneWay}"
+                        IsEnabled="{Binding can_include}"
+                        HorizontalAlignment="Center"
+                        Checked="row_include_changed"
+                        Unchecked="row_include_changed"/>
+            </DataTemplate>
+          </DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
+
+        <DataGridTextColumn Header="Family / Type" Binding="{Binding family_type}" Width="270" MinWidth="270"/>
+        <DataGridTextColumn Header="Identity Mark" Binding="{Binding identity_mark}" Width="150" MinWidth="150"/>
+        <DataGridTextColumn Header="Voltage" Binding="{Binding voltage_text}" Width="85" MinWidth="85"/>
+        <DataGridTextColumn Header="Poles" Binding="{Binding poles_text}" Width="65" MinWidth="65"/>
+        <DataGridTextColumn Header="Space" Binding="{Binding space}" Width="140" MinWidth="140"/>
+        <DataGridTextColumn Header="Level" Binding="{Binding level}" Width="85" MinWidth="85"/>
+        <DataGridTextColumn Header="Elev. from Level" Binding="{Binding elevation_text}" Width="125" MinWidth="125"/>
+
+        <DataGridTemplateColumn Header="Status" Width="*" MinWidth="180">
+          <DataGridTemplateColumn.CellTemplate>
+            <DataTemplate>
+              <TextBlock Text="{Binding status}"
+                         Foreground="{Binding status_color}"
+                         TextWrapping="Wrap"
+                         TextAlignment="Left"
+                         HorizontalAlignment="Left"/>
+            </DataTemplate>
+          </DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
+      </DataGrid.Columns>
+    </DataGrid>
+
+    <!-- Validation -->
+    <Border Grid.Row="3" Margin="0,8,0,0" Padding="8"
+            Background="{DynamicResource CED.Brush.ListBackground}"
+            BorderBrush="{DynamicResource CED.Brush.Border}" BorderThickness="1">
+      <ScrollViewer MaxHeight="90" VerticalScrollBarVisibility="Auto">
+        <TextBlock Name="ValidationText" Style="{DynamicResource CED.Text.Secondary}"
+                   TextWrapping="Wrap"
+                   Text="No validation issues."/>
+      </ScrollViewer>
+    </Border>
+
+    <!-- Footer -->
+    <Grid Grid.Row="4" Margin="0,10,0,0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto"/>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="Auto"/>
+      </Grid.ColumnDefinitions>
+      <TextBlock Name="GridSelectionText"
+                 Style="{DynamicResource CED.Text.Secondary}"
+                 Grid.Column="0"
+                 HorizontalAlignment="Left"
+                 VerticalAlignment="Center"
+                 Text="0 element row(s) selected"/>
+      <Border Grid.Column="1"
+              Margin="24,0,0,0"
+              Padding="16,0,0,0"
+              BorderBrush="{DynamicResource CED.Brush.Border}"
+              BorderThickness="1,0,0,0"
+              VerticalAlignment="Stretch">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+          <TextBlock Name="SummaryText"
+                     Style="{DynamicResource CED.Text.Secondary}"
+                     VerticalAlignment="Center"
+                     Text="Ready"/>
+          <TextBlock Name="GroupSelectionText"
+                     Style="{DynamicResource CED.Text.Secondary}"
+                     Margin="12,0,0,0"
+                     VerticalAlignment="Center"
+                     Text="No circuit rows selected"/>
+        </StackPanel>
+      </Border>
+      <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
+        <Button Content="Cancel" Style="{DynamicResource CED.Button.Base}"
+                Click="cancel_clicked"/>
+        <Button Content="Run Circuiting" MinWidth="130"
+                Style="{DynamicResource CED.Button.Apply}"
+                Margin="4,0,0,0" Click="run_clicked"/>
+      </StackPanel>
+    </Grid>
+  </Grid>
+</Window>

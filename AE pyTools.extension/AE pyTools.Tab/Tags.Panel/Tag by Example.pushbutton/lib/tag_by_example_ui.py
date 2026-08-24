@@ -1,23 +1,44 @@
 # -*- coding: utf-8 -*-
 """Modeless WPF UI for Tag by Example."""
 
-from System import Action
-from System.Windows import Visibility
+from System import Action, TimeSpan
+from System.Windows import Duration, UIElement, Visibility
 from System.Windows.Input import Key
+from System.Windows.Media.Animation import DoubleAnimation
+from System.Windows.Threading import DispatcherTimer
 from pyrevit import DB, UI, forms, script
+
+from UIClasses import resource_loader
 
 
 class TagByExampleWindow(forms.WPFWindow):
-    def __init__(self, xaml_path, gateway, config):
+    def __init__(self, xaml_path, gateway, config, resources_root=None,
+                 theme_mode="light", accent_mode="blue"):
         self.gateway = gateway
         self.config = config
+        self.resources_root = resources_root
+        self.theme_mode = resource_loader.normalize_theme_mode(
+            theme_mode,
+            "light",
+        )
+        self.accent_mode = resource_loader.normalize_accent_mode(
+            accent_mode,
+            "blue",
+        )
         self.ready = False
         self.is_closed = False
         self.view_supported = True
         self.example_available = False
         self.selection_active = False
         self.target_count = 0
+        self._error_timer = None
         forms.WPFWindow.__init__(self, xaml_path)
+        resource_loader.apply_theme(
+            self,
+            resources_root=self.resources_root,
+            theme_mode=self.theme_mode,
+            accent_mode=self.accent_mode,
+        )
 
         self.example_type_text = self.FindName("ExampleTypeText")
         self.host_category_text = self.FindName("HostCategoryText")
@@ -26,7 +47,10 @@ class TagByExampleWindow(forms.WPFWindow):
         self.owner_view_text = self.FindName("OwnerViewText")
         self.reference_count_text = self.FindName("ReferenceCountText")
         self.leader_text = self.FindName("LeaderText")
+        self.selection_instruction_panel = self.FindName("SelectionInstructionsPanel")
         self.selection_instruction_text = self.FindName("SelectionInstructionsText")
+        self.error_banner_panel = self.FindName("ErrorBannerPanel")
+        self.error_banner_text = self.FindName("ErrorBannerText")
         self.target_mode_combo = self.FindName("TargetModeCombo")
         self.new_targets_button = self.FindName("NewTargetsButton")
         self.edit_targets_button = self.FindName("EditTargetsButton")
@@ -130,6 +154,62 @@ class TagByExampleWindow(forms.WPFWindow):
     def _set_status(self, text):
         self.status_text.Text = str(text or "")
 
+    def _stop_error_timer(self):
+        timer = self._error_timer
+        self._error_timer = None
+        if timer is not None:
+            try:
+                timer.Stop()
+            except Exception:
+                pass
+
+    def _clear_error(self):
+        self._stop_error_timer()
+        try:
+            self.error_banner_panel.BeginAnimation(UIElement.OpacityProperty, None)
+            self.error_banner_panel.Opacity = 1.0
+            self.error_banner_panel.Visibility = Visibility.Collapsed
+        except Exception:
+            pass
+
+    def _fade_error(self):
+        self._stop_error_timer()
+        try:
+            animation = DoubleAnimation()
+            animation.From = 1.0
+            animation.To = 0.0
+            animation.Duration = Duration(TimeSpan.FromMilliseconds(350))
+
+            def animation_completed(sender, args):
+                if self.is_closed:
+                    return
+                self.error_banner_panel.Visibility = Visibility.Collapsed
+                self.error_banner_panel.Opacity = 1.0
+                self.error_banner_panel.BeginAnimation(UIElement.OpacityProperty, None)
+
+            animation.Completed += animation_completed
+            self.error_banner_panel.BeginAnimation(UIElement.OpacityProperty, animation)
+        except Exception:
+            self._clear_error()
+
+    def _error_timer_tick(self, sender, args):
+        self._fade_error()
+
+    def _set_error(self, text):
+        self._stop_error_timer()
+        try:
+            self.error_banner_panel.BeginAnimation(UIElement.OpacityProperty, None)
+            self.error_banner_panel.Opacity = 1.0
+            self.error_banner_text.Text = str(text or "An unexpected error occurred.")
+            self.error_banner_panel.Visibility = Visibility.Visible
+            timer = DispatcherTimer()
+            timer.Interval = TimeSpan.FromSeconds(5)
+            timer.Tick += self._error_timer_tick
+            self._error_timer = timer
+            timer.Start()
+        except Exception:
+            self._set_status(text)
+
     def _set_enabled_for_view(self, enabled):
         self.view_supported = bool(enabled)
         self._refresh_control_state()
@@ -156,8 +236,13 @@ class TagByExampleWindow(forms.WPFWindow):
         self.create_button.IsEnabled = active and self.target_count > 0
 
     def _set_selection_state(self, active, message):
+        if active:
+            self._clear_error()
         self.selection_active = bool(active)
         self.selection_instruction_text.Text = str(message or "")
+        self.selection_instruction_panel.Visibility = (
+            Visibility.Visible if active else Visibility.Collapsed
+        )
         self.selection_instruction_text.Visibility = (
             Visibility.Visible if active else Visibility.Collapsed
         )
@@ -193,9 +278,16 @@ class TagByExampleWindow(forms.WPFWindow):
             message = str(error) if error is not None else "Revit is not available."
             self._set_status(message)
             return
+        if status == "user_error":
+            self._set_selection_state(False, "")
+            message = str(error) if error is not None else "The operation could not be completed."
+            self._set_error(message)
+            self._set_status(message)
+            return
         if status == "error":
             self._set_selection_state(False, "")
             message = str(error) if error is not None else "Unknown Revit operation error."
+            self._set_error(message)
             self._set_status(message)
             if ("document" in message.lower()
                     or "reference" in message.lower()
@@ -409,11 +501,13 @@ class TagByExampleWindow(forms.WPFWindow):
             self._set_selection_state(False, "")
 
     def preview_selection_clicked(self, sender, args):
+        self._clear_error()
         self._set_status("Updating the Revit selection...")
         if not self.gateway.raise_action("preview_selection", self._payload()):
             self._set_status("Could not update the Revit selection.")
 
     def create_clicked(self, sender, args):
+        self._clear_error()
         self._save_config()
         self.create_button.IsEnabled = False
         self._set_status("Creating tags in Revit...")
@@ -423,6 +517,9 @@ class TagByExampleWindow(forms.WPFWindow):
     def close_clicked(self, sender, args):
         self.Close()
 
+    def dismiss_error_clicked(self, sender, args):
+        self._fade_error()
+
     def window_preview_key_down(self, sender, args):
         if args.Key == Key.Escape:
             args.Handled = True
@@ -430,4 +527,5 @@ class TagByExampleWindow(forms.WPFWindow):
 
     def window_closing(self, sender, args):
         self.is_closed = True
+        self._stop_error_timer()
         self.gateway.detach_lifecycle()

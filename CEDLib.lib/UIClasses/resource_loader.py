@@ -23,6 +23,7 @@ DEFAULT_BASE_RESOURCE_RELATIVE_PATHS = (
     os.path.join("Styles", "InputStyles.xaml"),
     os.path.join("Styles", "ListStyles.xaml"),
     os.path.join("Styles", "BadgeStyles.xaml"),
+    os.path.join("Styles", "AlertStyles.xaml"),
     os.path.join("Icons", "Icons.xaml"),
     os.path.join("Templates", "ListItems.xaml"),
     os.path.join("Templates", "Cards.xaml"),

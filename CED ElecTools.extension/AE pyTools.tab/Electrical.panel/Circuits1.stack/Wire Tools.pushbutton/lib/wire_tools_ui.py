@@ -183,10 +183,6 @@ class WireToolsWindow(forms.WPFWindow):
         configured_offset = getattr(self.config, "bend_offset", None)
         if configured_offset is None:
             configured_offset = 1.0 if configured_shape == "bend" else 0.0
-        elif configured_shape == "straight":
-            # Preserve the old straight-mode behavior when loading a config
-            # created before Shape was replaced by the offset value.
-            configured_offset = 0.0
         self.bend_offset_text.Text = str(
             configured_offset
         )

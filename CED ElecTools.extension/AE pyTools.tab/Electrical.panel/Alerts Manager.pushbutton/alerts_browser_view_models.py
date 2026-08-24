@@ -10,6 +10,15 @@ class AlertRow(object):
         self.message = str(message or "")
         self.is_hidden = False
         self.can_hide = bool(can_hide)
+        # These fields are populated when the row is attached to its circuit.
+        # Keeping them on the row lets the all-alerts grid use the same object
+        # as the existing per-circuit grids.
+        self.panel = "-"
+        self.circuit = "-"
+        self.panel_ckt_text = "- / -"
+        self.load_name = "-"
+        self.circuit_id = 0
+        self.circuit_item = None
 
 
 class AlertCircuitItem(object):
@@ -35,3 +44,10 @@ class AlertCircuitItem(object):
         )
         self.recalc_blocked = bool(blocked)
         self.recalc_block_reason = str(block_reason or "")
+        for row in self.rows:
+            row.panel = self.panel or "-"
+            row.circuit = self.circuit_number or "-"
+            row.panel_ckt_text = self.panel_ckt_text
+            row.load_name = self.load_name or "-"
+            row.circuit_id = self.circuit_id
+            row.circuit_item = self

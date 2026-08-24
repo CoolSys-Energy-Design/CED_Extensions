@@ -211,6 +211,13 @@ ALERT_DEFINITIONS = {
         severity="HIGH",
         category="Circuits",
     ),
+    "qc_circuit_special_circuit_stale_data": AlertDefinition(
+        "QC.Circuit.SpecialCircuitStaleData",
+        "Spare/space circuit has stale CED shared-parameter data.",
+        group="QC",
+        severity="MEDIUM",
+        category="Circuits",
+    ),
     "qc_device_load_not_connected": AlertDefinition(
         "QC.Device.LoadNotConnected",
         "Non-zero load is not connected to an electrical system.",

@@ -12,6 +12,15 @@
   - Base styles for window/page chrome and section cards.
 - `Resources/Templates/ControlPrimitives.xaml`
   - Common icon, separator, empty-state, and overlay primitives.
+- `Resources/Styles/ListStyles.xaml` and `Resources/Templates/DataGrids.xaml`
+  - Data grids default to the existing flat row treatment for compatibility.
+  - Use `CED.DataGrid.Base.Alternating` or `CED.DataGrid.Display.Alternating` to
+    enable two-row alternation, and the corresponding `.Flat` key to explicitly
+    disable it.
+  - Use the `.Alternating` row/cell variants when a grid or column supplies an
+    opaque custom background; they preserve selection and semantic state colors.
+  - DataGrid row surfaces and selection use dedicated tokens so list-item colors
+    do not compete with grid borders, read-only cells, or selected rows.
 
 ## Minimal usage
 

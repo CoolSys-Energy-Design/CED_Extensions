@@ -1,4 +1,4 @@
-name: Bump Develop Build On Push
+name: Mark Develop WIP Build
 
 on:
   push:
@@ -6,8 +6,10 @@ on:
       - develop
 
 concurrency:
-  group: develop-build-bump
-  cancel-in-progress: true
+  # Shared with the main-PR metadata workflow so both jobs can not write the
+  # develop branch at the same time.
+  group: release-metadata-${{ github.ref_name }}
+  cancel-in-progress: false
 
 jobs:
   bump-develop-build:
@@ -28,7 +30,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Bump build metadata
+      - name: Mark WIP version and bump build
         run: |
           set -euo pipefail
 
@@ -42,7 +44,8 @@ jobs:
 
           python3 .github/scripts/update_release_metadata.py \
             --file "${ABOUT_FILE}" \
-            --build "${BUILD_TS}"
+            --build "${BUILD_TS}" \
+            --mark-wip
 
           read_file_key() {
             local key="$1"
@@ -59,7 +62,7 @@ jobs:
             exit 0
           fi
 
-          COMMIT_MESSAGE="Bot: build bumped to ${FINAL_BUILD} (develop push, toolbar_version ${FINAL_VERSION})"
+          COMMIT_MESSAGE="Bot: WIP build bumped to ${FINAL_VERSION}-${FINAL_BUILD}"
           git commit -m "${COMMIT_MESSAGE}"
           git push origin HEAD:develop
           echo "::notice::Pushed metadata commit: ${COMMIT_MESSAGE}"

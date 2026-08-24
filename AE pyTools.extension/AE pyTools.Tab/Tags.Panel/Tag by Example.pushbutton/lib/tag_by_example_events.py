@@ -58,6 +58,10 @@ EXISTING_BEHAVIOR_LABELS = {
 }
 
 
+class TagByExampleUserError(Exception):
+    """An expected user-action problem that belongs in the UI, not the log."""
+
+
 def _element_id(value):
     return revit_helpers.elementid_from_value(value)
 
@@ -416,12 +420,11 @@ def _prepare_existing_tag_actions(document, tag_index, proposals, examples, beha
     }
 
 
-def _apply_tag_properties(document, created_tag, item, options):
+def _apply_tag_base_properties(created_tag, item, options):
+    """Apply tag properties that do not depend on regenerated leader state."""
     warnings = []
     example_data = item["example"]
-    geometry = example_data["geometry"]
     points = item["points"]
-    reference = item["reference"]
 
     target_angle = points.get("rotation_angle")
     if target_angle is None:
@@ -440,15 +443,24 @@ def _apply_tag_properties(document, created_tag, item, options):
     except Exception as error:
         raise RuntimeError("Tag head position could not be applied: {}".format(error))
 
-    if options.get("copy_leader", True) and geometry.has_leader:
-        if not set_leader_end_condition(created_tag, geometry.leader_end_condition):
-            warnings.append("Leader end condition is unsupported for this tag.")
-        if geometry.elbow_local is not None:
-            if not set_leader_elbow(created_tag, reference, points.get("elbow")):
-                warnings.append("Leader elbow is unsupported for this tag.")
-        if geometry.end_local is not None:
-            if not set_leader_end(created_tag, reference, points.get("end")):
-                warnings.append("Leader end is unsupported for this tag.")
+    return warnings
+
+
+def _apply_tag_leader_properties(created_tag, item):
+    """Apply leader geometry after the batch has been regenerated once."""
+    warnings = []
+    geometry = item["example"]["geometry"]
+    points = item["points"]
+    reference = item["reference"]
+
+    if not set_leader_end_condition(created_tag, geometry.leader_end_condition):
+        warnings.append("Leader end condition is unsupported for this tag.")
+    if geometry.elbow_local is not None:
+        if not set_leader_elbow(created_tag, reference, points.get("elbow")):
+            warnings.append("Leader elbow is unsupported for this tag.")
+    if geometry.end_local is not None:
+        if not set_leader_end(created_tag, reference, points.get("end")):
+            warnings.append("Leader end is unsupported for this tag.")
     return warnings
 
 
@@ -459,6 +471,7 @@ def _create_tags(document, view, proposals, options, actions):
     failures = []
     warnings = []
     attempted_pairs = set()
+    leader_jobs = []
     transaction = DB.Transaction(document, "Create tags")
     transaction.Start()
     try:
@@ -497,14 +510,15 @@ def _create_tags(document, view, proposals, options, actions):
                         orientation,
                         item["points"].get("head"),
                     )
-                    document.Regenerate()
-                    target_warnings = _apply_tag_properties(
-                        document, created_tag, item, options
+                    target_warnings = _apply_tag_base_properties(
+                        created_tag, item, options
                     )
                     warnings.extend([(target_id, warning)
                                      for warning in target_warnings])
                     subtransaction.Commit()
                     created += 1
+                    if has_leader:
+                        leader_jobs.append((target_id, created_tag, item))
                 except Exception as error:
                     subtransaction.RollBack()
                     failures.append({
@@ -512,6 +526,17 @@ def _create_tags(document, view, proposals, options, actions):
                         "element": proposal["target"],
                         "reason": "Tag creation failed: {}".format(error),
                     })
+        if leader_jobs:
+            # Leader APIs can require the just-created tag's derived leader
+            # state. Regenerate once for the whole leader batch instead of
+            # once per tag; no-leader batches need no explicit regeneration.
+            document.Regenerate()
+            for target_id, created_tag, item in leader_jobs:
+                target_warnings = _apply_tag_leader_properties(
+                    created_tag, item
+                )
+                warnings.extend([(target_id, warning)
+                                 for warning in target_warnings])
         transaction.Commit()
     except Exception:
         if transaction.GetStatus() == DB.TransactionStatus.Started:
@@ -542,7 +567,7 @@ def _selection_reference_list(document, values):
 
 class TagByExampleExternalEventGateway(object):
     def __init__(self, window, document, owner_view, initial_tag_ids=None,
-                 ui_application=None):
+                 ui_application=None, show_output_report=False):
         self.window = window
         self.document_key = _document_key(document)
         self.owner_view_id = id_value(owner_view.Id)
@@ -552,6 +577,7 @@ class TagByExampleExternalEventGateway(object):
         self.manual_target_ids = []
         self.pending = None
         self.ui_application = ui_application
+        self.show_output_report = bool(show_output_report)
         self.lifecycle_handlers = {}
         self.document_closing_handler = None
         self.lifecycle_attached = False
@@ -827,7 +853,9 @@ class _TagByExampleHandler(UI.IExternalEventHandler):
                     for picked_reference in picked_references
                 ])
                 if not picked_ids:
-                    raise ValueError("No reference tags were selected.")
+                    raise TagByExampleUserError(
+                        "No reference tags were selected. Pick at least one reference tag to continue."
+                    )
                 old_ids = list(self.gateway.example_tag_ids)
                 old_owner_view = self.gateway.owner_view_id
                 selected_owner_ids = []
@@ -987,22 +1015,26 @@ class _TagByExampleHandler(UI.IExternalEventHandler):
                     "mode": TARGET_MODE_LABELS.get(mode, mode),
                     "existing_behavior": EXISTING_BEHAVIOR_LABELS[behavior],
                 }
-                try:
-                    self._report(document, result)
-                except Exception as report_error:
-                    script.get_logger().warning(
-                        "Tag by Example completed, but its output report could not be "
-                        "displayed: {}".format(report_error)
-                    )
+                if self.gateway.show_output_report:
+                    try:
+                        self._report(document, result)
+                    except Exception as report_error:
+                        script.get_logger().warning(
+                            "Tag by Example completed, but its output report could not be "
+                            "displayed: {}".format(report_error)
+                        )
                 self._result("ok", action_name, result)
                 return
 
             raise ValueError("Unknown Tag by Example operation: {}".format(action_name))
         except Exception as error:
-            script.get_logger().exception(
-                "Tag by Example operation failed: {}".format(error)
-            )
-            self._result("error", action_name, None, error)
+            if isinstance(error, TagByExampleUserError):
+                self._result("user_error", action_name, None, error)
+            else:
+                script.get_logger().exception(
+                    "Tag by Example operation failed: {}".format(error)
+                )
+                self._result("error", action_name, None, error)
 
     def _snapshot(self, examples):
         first_example = examples[0]
@@ -1032,6 +1064,8 @@ class _TagByExampleHandler(UI.IExternalEventHandler):
         }
 
     def _report(self, document, result):
+        if not self.gateway.show_output_report:
+            return False
         output = script.get_output()
         try:
             if output.window is None or bool(output.is_closed_by_user):

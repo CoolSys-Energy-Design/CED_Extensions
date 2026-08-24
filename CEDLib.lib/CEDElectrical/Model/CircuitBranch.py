@@ -42,6 +42,31 @@ get_elementid = revit_helpers.get_elementid_value
 CIRCUIT_DATA_PARAM_NAME = "Circuit Data_CED"
 CIRCUIT_DATA_VD_METHOD_KEY = "circuit_vd_method"
 
+
+def get_native_circuit_type_label(circuit):
+    """Return the native Revit circuit type as a stable label.
+
+    Keep this deliberately limited to direct enum comparisons.  This module is
+    imported by the Circuit Manager during Revit startup, so CLR namespace
+    probing and enum string conversion are avoided here.
+    """
+    try:
+        circuit_type = circuit.CircuitType
+    except Exception:
+        return ""
+
+    try:
+        if circuit_type == DBE.CircuitType.Space:
+            return "SPACE"
+        if circuit_type == DBE.CircuitType.Spare:
+            return "SPARE"
+        if circuit_type == DBE.CircuitType.Circuit:
+            return "CIRCUIT"
+    except Exception:
+        return ""
+    return ""
+
+
 ALLOWED_WIRE_SIZES = [
     "12", "10", "8", "6", "4", "3", "2", "1",
     "1/0", "2/0", "3/0", "4/0",
@@ -250,6 +275,7 @@ class CircuitBranch(object):
         if not eu.is_circuit_eligible(circuit):
             raise ValueError("CircuitBranch only supports main-model power circuits.")
         self.circuit = circuit
+        self._native_circuit_type_label = get_native_circuit_type_label(circuit)
         self.settings = settings if settings else CircuitSettings()
         self._preview_values_raw = dict(preview_values or {})
         self._preview_values_by_guid = self._build_preview_value_map(preview_values)
@@ -260,10 +286,18 @@ class CircuitBranch(object):
         self.name = "{}-{}".format(self.panel, self.circuit_number)
 
         # feeder/transformer flags
-        self._is_transformer_secondary = self._detect_transformer_secondary()
+        self._is_transformer_secondary = (
+            False
+            if self.is_special
+            else self._detect_transformer_secondary()
+        )
         self._is_transformer_primary = False
-        self._is_feeder = self._detect_feeder()
-        self._circuit_vd_method = self._load_circuit_vd_method()
+        self._is_feeder = False if self.is_special else self._detect_feeder()
+        self._circuit_vd_method = (
+            CircuitVDMethod.GLOBAL
+            if self.is_special
+            else self._load_circuit_vd_method()
+        )
 
         # wire length (Revit length + makeup)
         self._wire_length = None
@@ -318,7 +352,8 @@ class CircuitBranch(object):
         self._wire_info = self._get_wire_info_for_rating()
         self._base_cable_defaults = CableSet.from_defaults(self._wire_info)
         self._base_conduit_defaults = ConduitRun.from_defaults(self._wire_info)
-        self._validate_overrides()
+        if not self.is_special:
+            self._validate_overrides()
         self._setup_structural_quantities()
         self._check_panel_load_alerts()
 
@@ -543,14 +578,14 @@ class CircuitBranch(object):
     # -----------------------------------------------------------------
     @property
     def branch_type(self):
-        if self.cable.cleared and self.conduit.cleared:
-            return "N/A"
-        if self.cable.cleared:
-            return "CONDUIT ONLY"
         if self.is_space:
             return "SPACE"
         if self.is_spare:
             return "SPARE"
+        if self.cable.cleared and self.conduit.cleared:
+            return "N/A"
+        if self.cable.cleared:
+            return "CONDUIT ONLY"
         if self._is_transformer_primary:
             return "XFMR PRI"
         if self._is_transformer_secondary:
@@ -628,11 +663,15 @@ class CircuitBranch(object):
 
     @property
     def is_spare(self):
-        return self.circuit.CircuitType == DBE.CircuitType.Spare
+        return self._native_circuit_type_label == "SPARE"
 
     @property
     def is_space(self):
-        return self.circuit.CircuitType == DBE.CircuitType.Space
+        return self._native_circuit_type_label == "SPACE"
+
+    @property
+    def is_special(self):
+        return self._native_circuit_type_label in ("SPARE", "SPACE")
 
     @property
     def max_voltage_drop(self):
@@ -647,7 +686,17 @@ class CircuitBranch(object):
         self._wire_length = None
         self._wire_length_makeup = 0.0
 
-        if self.is_power_circuit and not self.is_spare and not self.is_space:
+        if self.is_special:
+            self._include_neutral_explicit = False
+            self._include_neutral = False
+            self._include_isolated_ground = False
+            self._auto_calculate_override = False
+            self._wire_info = {}
+            self._base_cable_defaults = None
+            self._base_conduit_defaults = None
+            return
+
+        if self.is_power_circuit:
             try:
                 rvt_length = self.circuit.Length
                 makeup = self._get_param_value(SHARED_PARAMS['CKT_Length Makeup_CED']['GUID'])
@@ -694,7 +743,7 @@ class CircuitBranch(object):
         self._base_conduit_defaults = None
 
     def _get_wire_info_for_rating(self):
-        if not self.is_power_circuit:
+        if not self.is_power_circuit or self.is_special:
             return {}
 
         rating = self.rating
@@ -769,6 +818,8 @@ class CircuitBranch(object):
         return material_map.get("CU")
 
     def _load_overrides(self):
+        if self.is_special:
+            return
         try:
             # These may be provided in both auto and manual modes
             self._wire_material_override = self._get_param_value(
@@ -811,6 +862,8 @@ class CircuitBranch(object):
             logger.debug("_load_overrides failed for {}: {}".format(self.name, e))
 
     def _validate_overrides(self):
+        if self.is_special:
+            return
         valid_insulations = set()
         for v in CONDUCTOR_AREA_TABLE.values():
             valid_insulations.update(v.get("area", {}).keys())
@@ -1057,6 +1110,20 @@ class CircuitBranch(object):
 
     def _setup_structural_quantities(self):
         """Establish default quantities based on poles, flags, feeder logic."""
+        if self.is_special:
+            self.cable.hot_qty = 0
+            self.cable.neutral_qty = 0
+            self.cable.ground_qty = 0
+            self.cable.ig_qty = 0
+            self.cable.sets = 0
+            self.cable.cleared = True
+            self.cable.material = None
+            self.cable.temp_c = None
+            self.cable.insulation = None
+            self.conduit.clear()
+            self.conduit.cleared = True
+            return
+
         # hot qty = poles (or 0)
         self.cable.hot_qty = self.poles or 0
 
@@ -1064,7 +1131,7 @@ class CircuitBranch(object):
         self.cable.neutral_qty = self._expected_neutral_qty()
 
         # ground qty = 1 for load circuits
-        if self.circuit.CircuitType == DBE.CircuitType.Circuit:
+        if self._native_circuit_type_label == "CIRCUIT":
             self.cable.ground_qty = 1
         else:
             self.cable.ground_qty = 0
@@ -1248,6 +1315,13 @@ class CircuitBranch(object):
 
     @property
     def rating(self):
+        if self.is_space:
+            return None
+        if self.is_spare:
+            try:
+                return self.circuit.Rating
+            except Exception:
+                return None
         try:
             preview_guid = SHARED_PARAMS['CKT_Rating_CED']['GUID']
             has_preview, preview_value = self._try_get_preview_value(preview_guid)
@@ -1256,7 +1330,7 @@ class CircuitBranch(object):
         except Exception:
             pass
         try:
-            if self.is_power_circuit and not self.is_space:
+            if self.is_power_circuit:
                 return self.circuit.Rating
         except Exception:
             return None
@@ -1277,6 +1351,30 @@ class CircuitBranch(object):
         except Exception:
             pass
         return ""
+
+    def get_special_parameter_reset_values(self, result_param_names):
+        """Return the complete shared-parameter reset map for SPARE/SPACE.
+
+        Missing shared parameters are harmless: the Revit writer ignores names
+        that are not present, which preserves compatibility with Revit 25 and
+        earlier projects that do not contain the CED parameters.
+        """
+        values = dict((name, None) for name in list(result_param_names or []))
+        values.update(
+            {
+                "CKT_Circuit Type_CEDT": self.branch_type,
+                "CKT_Panel_CEDT": self.panel,
+                "CKT_Circuit Number_CEDT": self.circuit_number,
+                "CKT_Load Name_CEDT": self.load_name,
+                "CKT_Rating_CED": self.rating,
+                "CKT_Frame_CED": self.frame,
+                "CKT_Schedule Notes_CEDT": self.circuit_notes,
+                "CKT_User Override_CED": 0,
+                "CKT_Include Neutral_CED": 0,
+                "CKT_Include Isolated Ground_CED": 0,
+            }
+        )
+        return values
 
     @property
     def length(self):
@@ -1313,7 +1411,7 @@ class CircuitBranch(object):
 
     @property
     def circuit_load_current(self):
-        if self.circuit.CircuitType != DBE.CircuitType.Circuit:
+        if self._native_circuit_type_label != "CIRCUIT":
             return None
         if self.uses_feeder_vd_method:
             return self.get_downstream_demand_current()
@@ -1442,10 +1540,14 @@ class CircuitBranch(object):
 
     @property
     def hot_wire_size(self):
+        if self.is_special:
+            return ""
         return self._format_wire_size(self.cable.hot_size)
 
     @property
     def neutral_wire_size(self):
+        if self.is_special:
+            return ""
         if self._user_clear_hot:
             return "-"
         if self.neutral_wire_quantity == 0:
@@ -1456,12 +1558,16 @@ class CircuitBranch(object):
 
     @property
     def ground_wire_size(self):
+        if self.is_special:
+            return ""
         if self._user_clear_hot or self._user_clear_ground:
             return "-"
         return self._format_wire_size(self.cable.ground_size)
 
     @property
     def isolated_ground_wire_size(self):
+        if self.is_special:
+            return ""
         if self._user_clear_hot or self._user_clear_ground:
             return "-"
         if self.isolated_ground_wire_quantity == 0:
@@ -1470,6 +1576,8 @@ class CircuitBranch(object):
 
     @property
     def number_of_sets(self):
+        if self.is_special:
+            return 0
         if self.calc_failed:
             return None
         if self.cable.cleared:
@@ -1527,6 +1635,8 @@ class CircuitBranch(object):
     # -----------------------------------------------------------------
     def calculate_breaker_size(self):
         """Only used if settings.auto_calculate_breaker is True."""
+        if self.is_special:
+            return
         try:
             amps = self.apparent_current
             if not amps:
@@ -1548,6 +1658,8 @@ class CircuitBranch(object):
 
         Uses overrides first (if valid), then automatic sizing.
         """
+        if self.is_special:
+            return
         if self._user_clear_hot and self.cable.cleared:
             self.cable.voltage_drop = None
             return
@@ -1567,6 +1679,8 @@ class CircuitBranch(object):
         self._auto_hot_sizing(rating)
 
     def calculate_neutral_wire_size(self):
+        if self.is_special:
+            return
         if self.cable.cleared or self.calc_failed:
             self.cable.neutral_size = None
             return
@@ -1598,6 +1712,8 @@ class CircuitBranch(object):
 
     def calculate_ground_wire_size(self):
         """EGC sizing based on breaker rating and material tables."""
+        if self.is_special:
+            return
         if self.cable.cleared or self.calc_failed:
             self.cable.ground_size = None
             return
@@ -1638,6 +1754,8 @@ class CircuitBranch(object):
         self._check_ground_design_limits()
 
     def calculate_isolated_ground_wire_size(self):
+        if self.is_special:
+            return
         if self.cable.cleared or self.calc_failed:
             self.cable.ig_size = None
             return
@@ -1688,6 +1806,8 @@ class CircuitBranch(object):
 
     def calculate_conduit_size(self):
         """Size conduit (or apply override) using CableSet + ConduitRun."""
+        if self.is_special:
+            return
         if (self.cable.cleared and not self._user_clear_hot) or self.calc_failed:
             self._clear_conduit_data()
             return
@@ -2284,6 +2404,8 @@ class CircuitBranch(object):
         return " ({})".format(suffix) if include_parens else suffix
 
     def get_wire_set_string(self):
+        if self.is_special:
+            return ""
         if self.cable.cleared or self.calc_failed:
             return "-"
 
@@ -2329,6 +2451,8 @@ class CircuitBranch(object):
         return final
 
     def get_wire_size_callout(self):
+        if self.is_special:
+            return ""
         if self.cable.cleared or self.calc_failed:
             return "-"
 
@@ -2342,6 +2466,8 @@ class CircuitBranch(object):
         return "{}{}".format(wire_str, suffix)
 
     def get_conduit_and_wire_size(self):
+        if self.is_special:
+            return ""
         if (self.conduit.cleared or self.calc_failed) and (self.cable.cleared or self.calc_failed):
             return "-"
 

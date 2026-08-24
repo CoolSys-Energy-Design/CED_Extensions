@@ -23,15 +23,18 @@ from System import EventHandler, Action
 from System.Collections.Generic import List
 from System.Collections.ObjectModel import ObservableCollection
 
-from System.Windows import GridLength, GridUnitType, Visibility
+from System.Windows import GridLength, GridUnitType, HorizontalAlignment, Thickness, Visibility
 from System.Windows.Controls import (
     ContextMenu,
+    ColumnDefinition,
+    Grid,
     MenuItem,
     Separator,
     DataGridRow,
     ListViewItem,
     Button,
     DataGridTextColumn,
+    RowDefinition,
     ScrollViewer,
     ScrollBarVisibility,
 )
@@ -716,10 +719,25 @@ def _sync_lock_state_from_row(row):
 
 
 def _derive_branch_type(circuit):
-    if circuit.CircuitType == DBE.CircuitType.Space:
-        return "SPACE"
-    if circuit.CircuitType == DBE.CircuitType.Spare:
-        return "SPARE"
+    # Circuit Manager is imported during Revit startup.  Keep this path on
+    # direct, native enum comparisons; CircuitBranch's calculation helper is
+    # intentionally not used by the startup-loaded panel classifier.
+    try:
+        native_type = circuit.CircuitType
+    except Exception:
+        native_type = None
+
+    try:
+        if native_type == DBE.CircuitType.Space:
+            return "SPACE"
+        if native_type == DBE.CircuitType.Spare:
+            return "SPARE"
+        if native_type == DBE.CircuitType.Circuit:
+            branch_type = (_lookup_param_text(circuit, "CKT_Circuit Type_CEDT") or "").strip().upper()
+            if branch_type:
+                return branch_type
+    except Exception:
+        pass
     return "BRANCH"
 
 
@@ -769,7 +787,11 @@ class CircuitListItem(object):
                 rating_value = None
         self.sort_rating = float(rating_value) if rating_value is not None else 999999.0
 
-        if circuit.CircuitType == DBE.CircuitType.Space:
+        try:
+            is_space = circuit.CircuitType == DBE.CircuitType.Space
+        except Exception:
+            is_space = False
+        if is_space:
             self.rating_poles = "/{}P".format(poles)
         elif rating_value is None:
             self.rating_poles = "- / {}P".format(poles)
@@ -795,13 +817,7 @@ class CircuitListItem(object):
         except Exception:
             self.load_line_color = "#384450"
 
-        branch_type = _lookup_param_value(circuit, "CKT_Circuit Type_CEDT")
-        if isinstance(branch_type, str):
-            branch_type = branch_type.strip().upper()
-        if not branch_type:
-            branch_type = _derive_branch_type(circuit)
-
-        self.branch_type = branch_type
+        self.branch_type = _derive_branch_type(circuit)
         self.branch_type_line = "Circuit Type: {}".format(self.branch_type)
 
         conduit_wire = _lookup_param_value(circuit, "Conduit and Wire Size_CEDT")
@@ -2554,10 +2570,20 @@ class CircuitBrowserPanel(forms.WPFPanel):
     panel_title = TITLE
     panel_source = os.path.abspath(os.path.join(_THIS_DIR, "CircuitBrowserPanel.xaml"))
 
+    # Responsive dock-width thresholds.  The card stacks its labels before the
+    # toolbar needs to give up space, then the mini toolbar removes low-priority
+    # controls so the Actions button remains usable at the smallest widths.
+    _COMPACT_TOOLBAR_BREAKPOINT = 330.0
+    _ACTION_CARD_STACK_BREAKPOINT = 300.0
+    _MINI_TOOLBAR_BREAKPOINT = 270.0
+
     _instance = None
     _operation_gateway = None
 
     def __init__(self):
+        self._compact_toolbar_mode = False
+        self._action_card_stacked = False
+        self._mini_toolbar_mode = False
         forms.WPFPanel.__init__(self)
         self._theme_mode = CURRENT_THEME_MODE
         self._accent_mode = CURRENT_ACCENT_MODE
@@ -2614,7 +2640,6 @@ class CircuitBrowserPanel(forms.WPFPanel):
         self._list_scrollviewer_hooked = False
         self._uniform_item_width = 0.0
         self._compress_item_width = False
-        self._compress_hide_load_name = False
         self._is_refreshing_list = False
         self._list_layout_refresh_pending = False
         self._browser_compress_item = None
@@ -2628,6 +2653,7 @@ class CircuitBrowserPanel(forms.WPFPanel):
         self._status = self.FindName("StatusText")
         self._doc_name_text = self.FindName("DocumentNameText")
         self._toggle = self.FindName("ToggleViewButton")
+        self._check_all_button = self.FindName("CheckAllButton")
         self._calc_preview_toggle = self.FindName("CalcPreviewToggle")
         self._calc_preview_state_text = self.FindName("CalcPreviewStateText")
         self._filter_button = self.FindName("FilterButton")
@@ -2636,6 +2662,21 @@ class CircuitBrowserPanel(forms.WPFPanel):
         self._toggle_list_icon = self.FindName("ToggleListIcon")
         self._toggle_card_icon = self.FindName("ToggleCardIcon")
         self._dock_frame_host = self.FindName("DockFrameHost")
+        self._actions_label = self.FindName("ActionsLabel")
+        self._actions_bolt_icon = self.FindName("ActionsBoltIcon")
+        self._select_equipment_button = self.FindName("SelectEquipmentButton")
+        self._select_circuits_button = self.FindName("SelectCircuitsButton")
+        self._select_downstream_button = self.FindName("SelectDownstreamButton")
+        self._action_card_border = self.FindName("ActionCardBorder")
+        self._select_in_model_row = self.FindName("SelectInModelRow")
+        self._select_in_model_label = self.FindName("SelectInModelLabel")
+        self._select_in_model_controls = self.FindName("SelectInModelControls")
+        self._calc_preview_row = self.FindName("CalcPreviewRow")
+        self._calc_preview_label = self.FindName("CalcPreviewLabel")
+        self._calc_preview_controls = self.FindName("CalcPreviewControls")
+        self._calculate_row = self.FindName("CalculateRow")
+        self._calculate_label = self.FindName("CalculateLabel")
+        self._calculate_controls = self.FindName("CalculateControls")
         self._apply_revit_frame_background(is_dark=False)
         self._surface_item_style = _try_find_resource(self, "CED.ListViewItem.SurfaceBehavior")
         self._apply_list_interaction_mode()
@@ -2689,6 +2730,137 @@ class CircuitBrowserPanel(forms.WPFPanel):
         except Exception:
             pass
 
+    def dock_frame_size_changed(self, sender, args):
+        """Switch toolbar/card labels to compact variants when the pane narrows."""
+        try:
+            width = float(getattr(sender, "ActualWidth", 0.0) or 0.0)
+        except Exception:
+            width = 0.0
+        if width <= 0.0:
+            return
+        self._apply_compact_toolbar_mode(width < self._COMPACT_TOOLBAR_BREAKPOINT)
+        self._apply_action_card_layout(width < self._ACTION_CARD_STACK_BREAKPOINT)
+        self._apply_mini_toolbar_mode(width < self._MINI_TOOLBAR_BREAKPOINT)
+        if getattr(self, "_list", None) is not None and hasattr(self, "_list_layout_refresh_pending"):
+            self._schedule_list_layout_refresh()
+
+    def _apply_action_card_layout(self, stacked):
+        """Put action labels above their controls when the dock is narrow."""
+        stacked = bool(stacked)
+        rows = (
+            (
+                getattr(self, "_select_in_model_row", None),
+                getattr(self, "_select_in_model_label", None),
+                getattr(self, "_select_in_model_controls", None),
+            ),
+            (
+                getattr(self, "_calc_preview_row", None),
+                getattr(self, "_calc_preview_label", None),
+                getattr(self, "_calc_preview_controls", None),
+            ),
+            (
+                getattr(self, "_calculate_row", None),
+                getattr(self, "_calculate_label", None),
+                getattr(self, "_calculate_controls", None),
+            ),
+        )
+        if any(item is None for row in rows for item in row):
+            return
+        if stacked == bool(self._action_card_stacked):
+            return
+
+        self._action_card_stacked = stacked
+        for row, label, controls in rows:
+            row.RowDefinitions.Clear()
+            row.ColumnDefinitions.Clear()
+            if stacked:
+                column = ColumnDefinition()
+                column.Width = GridLength(1, GridUnitType.Star)
+                row.ColumnDefinitions.Add(column)
+                for _index in range(2):
+                    row_definition = RowDefinition()
+                    row_definition.Height = GridLength(1, GridUnitType.Auto)
+                    row.RowDefinitions.Add(row_definition)
+                Grid.SetRow(label, 0)
+                Grid.SetColumn(label, 0)
+                Grid.SetRow(controls, 1)
+                Grid.SetColumn(controls, 0)
+                controls.Margin = Thickness(0, 2, 0, 0)
+            else:
+                label_column = ColumnDefinition()
+                label_column.Width = GridLength(1, GridUnitType.Auto)
+                label_column.SharedSizeGroup = "ActionLabelCol"
+                controls_column = ColumnDefinition()
+                controls_column.Width = GridLength(1, GridUnitType.Auto)
+                row.ColumnDefinitions.Add(label_column)
+                row.ColumnDefinitions.Add(controls_column)
+                Grid.SetRow(label, 0)
+                Grid.SetColumn(label, 0)
+                Grid.SetRow(controls, 0)
+                Grid.SetColumn(controls, 1)
+                controls.Margin = Thickness(6, 0, 0, 0)
+
+        if self._action_card_border is not None:
+            self._action_card_border.HorizontalAlignment = (
+                HorizontalAlignment.Stretch if stacked else HorizontalAlignment.Left
+            )
+
+    def _apply_mini_toolbar_mode(self, mini):
+        """Hide secondary toolbar controls below the smallest dock threshold."""
+        mini = bool(mini)
+        check_all = getattr(self, "_check_all_button", None)
+        toggle = getattr(self, "_toggle", None)
+        if check_all is None or toggle is None:
+            return
+        if mini == bool(self._mini_toolbar_mode):
+            return
+
+        self._mini_toolbar_mode = mini
+        visibility = Visibility.Collapsed if mini else Visibility.Visible
+        check_all.Visibility = visibility
+        toggle.Visibility = visibility
+
+    def _apply_compact_toolbar_mode(self, compact):
+        compact = bool(compact)
+        if not all(hasattr(self, name) for name in (
+            "_actions_label",
+            "_actions_bolt_icon",
+            "_select_equipment_button",
+            "_select_circuits_button",
+            "_select_downstream_button",
+        )):
+            return
+        if compact == bool(self._compact_toolbar_mode):
+            return
+        controls = (
+            self._actions_label,
+            self._actions_bolt_icon,
+            self._select_equipment_button,
+            self._select_circuits_button,
+            self._select_downstream_button,
+        )
+        if any(control is None for control in controls):
+            return
+
+        self._compact_toolbar_mode = compact
+        self._actions_label.Visibility = Visibility.Collapsed if compact else Visibility.Visible
+        self._actions_bolt_icon.Visibility = Visibility.Visible
+
+        if compact:
+            self._select_equipment_button.Content = "Pnl"
+            self._select_circuits_button.Content = "Ckt"
+            self._select_downstream_button.Content = "Dev"
+            self._select_equipment_button.Width = 42
+            self._select_circuits_button.Width = 42
+            self._select_downstream_button.Width = 42
+        else:
+            self._select_equipment_button.Content = "Panel"
+            self._select_circuits_button.Content = "Circuit"
+            self._select_downstream_button.Content = "Device"
+            self._select_equipment_button.Width = 52
+            self._select_circuits_button.Width = 56
+            self._select_downstream_button.Width = 54
+
     def _ensure_theme_bridge(self):
         if self._theme_bridge is None:
             uiapp = self._get_uiapp()
@@ -2723,7 +2895,17 @@ class CircuitBrowserPanel(forms.WPFPanel):
             return
 
         if result.get("status") == "ok":
-            self._set_status("Calculated {} circuits".format(result.get("updated_circuits", 0)))
+            updated = int(result.get("updated_circuits", 0) or 0)
+            updated_special = int(result.get("updated_special_circuits", 0) or 0)
+            if updated_special:
+                self._set_status(
+                    "Calculated {} circuits (refreshed {} SPARE/SPACE)".format(
+                        updated,
+                        updated_special,
+                    )
+                )
+            else:
+                self._set_status("Calculated {} circuits".format(updated))
             try:
                 self._show_run_summary_if_needed(result)
             except Exception as ex:
@@ -3063,8 +3245,9 @@ class CircuitBrowserPanel(forms.WPFPanel):
             or self._checked_only
             or (default_active != set(self._active_type_filters))
         )
-        primary = _try_find_resource(self, "CED.Brush.Accent")
+        primary = _try_find_resource(self, "CED.Brush.InputControlChecked")
         button_bg = _try_find_resource(self, "CED.Brush.ButtonDefaultBackground")
+        button_border = _try_find_resource(self, "CED.Brush.Border")
         foreground_on_accent = _try_find_resource(self, "CED.Brush.ButtonForegroundOnAccent")
         if is_filtered:
             if primary is not None:
@@ -3077,9 +3260,11 @@ class CircuitBrowserPanel(forms.WPFPanel):
         else:
             if button_bg is not None:
                 self._filter_button.Background = button_bg
-            if primary is not None:
-                self._filter_button.BorderBrush = primary
-                self._filter_button.Foreground = primary
+            if button_border is not None:
+                self._filter_button.BorderBrush = button_border
+            accent = _try_find_resource(self, "CED.Brush.Accent")
+            if accent is not None:
+                self._filter_button.Foreground = accent
             if self._filter_active_mark is not None:
                 self._filter_active_mark.Visibility = Visibility.Collapsed
 
@@ -3244,27 +3429,6 @@ class CircuitBrowserPanel(forms.WPFPanel):
     def _use_compact_compress_mode(self):
         return bool(self._compress_item_width)
 
-    def _load_name_hide_thresholds(self):
-        if bool(self._is_card_view):
-            hide = 250.0
-        else:
-            hide = 300.0 if bool(self._compact_show_type_badges) else 260.0
-        return float(hide), float(hide + 36.0)
-
-    def _should_hide_load_name_for_width(self, viewport_width):
-        try:
-            viewport = float(viewport_width or 0.0)
-        except Exception:
-            viewport = 0.0
-        if viewport <= 0.0:
-            return bool(self._compress_hide_load_name)
-        hide_threshold, show_threshold = self._load_name_hide_thresholds()
-        if bool(self._compress_hide_load_name):
-            self._compress_hide_load_name = viewport < show_threshold
-        else:
-            self._compress_hide_load_name = viewport <= hide_threshold
-        return bool(self._compress_hide_load_name)
-
     def _reset_horizontal_offset_for_compress(self, viewer=None):
         if not self._use_compact_compress_mode():
             return
@@ -3322,24 +3486,22 @@ class CircuitBrowserPanel(forms.WPFPanel):
     def _apply_item_width_mode(self, items):
         records = list(items or [])
         use_compress = self._use_compact_compress_mode()
-        hide_load_name = False
         char_limit = 0
         max_item_width = 100000.0
         if use_compress:
             viewport_width = self._compute_list_viewport_width()
-            hide_load_name = self._should_hide_load_name_for_width(viewport_width)
             char_limit = 0 if bool(self._is_card_view) else self._compute_load_name_char_limit()
             max_item_width = max(0.0, float(viewport_width - 2.0))
-        else:
-            self._compress_hide_load_name = False
         for item in records:
             full_name = str(getattr(item, "load_name", "") or "")
-            if use_compress and hide_load_name:
-                item.load_name_display = ""
-                item.load_name_visibility = "Collapsed"
+            if use_compress and char_limit > 0:
+                # Keep the load-name field visible in compressed mode.  The
+                # star-sized XAML column and TextTrimming handle the remaining
+                # width, avoiding direction-dependent collapse state.
+                item.load_name_display = _clip_with_ellipsis(full_name, char_limit)
             else:
-                item.load_name_display = _clip_with_ellipsis(full_name, char_limit) if (use_compress and char_limit > 0) else full_name
-                item.load_name_visibility = "Visible"
+                item.load_name_display = full_name
+            item.load_name_visibility = "Visible"
             item.item_max_width = max_item_width if use_compress else 100000.0
 
     def list_scroll_changed(self, sender, args):
@@ -3997,6 +4159,8 @@ class CircuitBrowserPanel(forms.WPFPanel):
             self._checked_only = False
 
     def panel_loaded(self, sender, args):
+        if self._dock_frame_host is not None:
+            self.dock_frame_size_changed(self._dock_frame_host, None)
         if not self._is_pane_visible():
             return
         self._sync_theme_from_config(apply_if_changed=True)
@@ -4593,6 +4757,7 @@ class CircuitBrowserPanel(forms.WPFPanel):
             if isinstance(recalc_result, dict):
                 try:
                     recalced_count = int(recalc_result.get("updated_circuits", 0) or 0)
+                    recalced_count += int(recalc_result.get("updated_special_circuits", 0) or 0)
                 except Exception:
                     recalced_count = 0
             if moved_ids and recalced_count > 0:
@@ -5320,8 +5485,10 @@ class CircuitBrowserPanel(forms.WPFPanel):
                 settings=settings,
                 preview_values={"CKT_User Override_CED": 0},
             )
-            if not branch.is_power_circuit or branch.is_space or branch.is_spare:
+            if not branch.is_power_circuit:
                 return row.current_wire
+            if branch.is_special:
+                return ""
             branch.calculate_hot_wire_size()
             branch.calculate_neutral_wire_size()
             branch.calculate_ground_wire_size()
@@ -5622,6 +5789,7 @@ class CircuitBrowserPanel(forms.WPFPanel):
                 edited_count = 0
             try:
                 recalculated = int(payload.get("updated_circuits", 0) or 0)
+                recalculated += int(payload.get("updated_special_circuits", 0) or 0)
             except Exception:
                 recalculated = 0
             self._set_status("Edited {} circuit(s) | Recalculated {}".format(edited_count, recalculated))
