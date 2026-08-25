@@ -27,7 +27,7 @@ for _asm in ("WindowsBase", "PresentationFramework", "PresentationCore",
         # must remain visible in the pyRevit traceback.
         pass
 
-from System import Math
+from System import Action, Math
 from System.Collections.Generic import List
 from System.Collections.ObjectModel import ObservableCollection
 from System.ComponentModel import (
@@ -41,14 +41,18 @@ except ImportError:
     ListSortDirection = None
     SortDescription = None
 from System.Windows import DataObject, DragDrop, DragDropEffects, Visibility
-from System.Windows.Controls import Button, CheckBox, ComboBox, DataGridRow, TextBox
-from System.Windows.Controls.Primitives import ToggleButton
+from System.Windows.Controls import (
+    Button, CheckBox, ComboBox, ContextMenu, DataGridRow, MenuItem, TextBox,
+)
+from System.Windows.Controls.Primitives import DataGridColumnHeader, ToggleButton
 from System.Windows.Data import CollectionViewSource, PropertyGroupDescription
-from System.Windows.Input import Keyboard, ModifierKeys, MouseButtonState
+from System.Windows.Input import Key, Keyboard, ModifierKeys, MouseButtonState
 from System.Windows.Media import BrushConverter, VisualTreeHelper
+from System.Windows.Threading import DispatcherPriority
 
 from pyrevit import forms, revit, DB
 
+from Snippets import revit_helpers
 from UIClasses import pathing as ui_pathing
 
 import cg_core
@@ -109,6 +113,7 @@ class GroupVM(_Notifier):
     def __init__(self, key, status_brushes=None):
         _Notifier.__init__(self)
         brushes = status_brushes or {}
+        self._colors = brushes
         self.key = key
         self.load_name = key
         self.schedule_notes = ""
@@ -123,6 +128,14 @@ class GroupVM(_Notifier):
         self.status_color = brushes.get("ready", BRUSH_READY)
         self.rating_warning_visibility = Visibility.Collapsed
         self.rating_tooltip = NONSTANDARD_TOOLTIP
+        self.status_detail = "Ready"
+        self._rating_warning = False
+        self.status_icon = u"⚠"
+        self.status_icon_color = brushes.get("bad", BRUSH_BAD)
+        self.is_editable = True
+        self.planning_visibility = Visibility.Visible
+        self.result_visibility = Visibility.Collapsed
+        self.result_assignment_label = ""
         # collapse state, two-way bound to each circuit's Expander so the
         # user's expand/collapse choice survives view refreshes
         self.is_expanded = True
@@ -132,12 +145,70 @@ class GroupVM(_Notifier):
     def set_status(self, text, color):
         # skip the PropertyChanged round-trip when nothing changed; at
         # thousands of rows the no-op notifies are a real UI cost
-        if self.status == text and self.status_color is color:
-            return
-        self.status = text
-        self.status_color = color
-        self.notify("status")
-        self.notify("status_color")
+        if self.status != text or self.status_color is not color:
+            self.status = text
+            self.status_color = color
+            self.notify("status")
+            self.notify("status_color")
+        self._update_status_indicator()
+
+    def _update_status_indicator(self):
+        detail = (self.rating_tooltip
+                  if self._rating_warning and self.status == "Ready"
+                  else self.status)
+        if self.status_detail != detail:
+            self.status_detail = detail
+            self.notify("status_detail")
+        vis = (Visibility.Visible
+               if self._rating_warning or self.status != "Ready"
+               else Visibility.Collapsed)
+        if self.rating_warning_visibility != vis:
+            self.rating_warning_visibility = vis
+            self.notify("rating_warning_visibility")
+        icon_color = (
+            self._colors.get("warn", BRUSH_WARN)
+            if self._rating_warning and self.status == "Ready"
+            else self._colors.get("bad", BRUSH_BAD))
+        if self.status_icon != u"⚠":
+            self.status_icon = u"⚠"
+            self.notify("status_icon")
+        if self.status_icon_color is not icon_color:
+            self.status_icon_color = icon_color
+            self.notify("status_icon_color")
+
+    def set_result_status(self, kind, assignment_label, detail, colors):
+        kind = str(kind or "error").lower()
+        if kind == "success":
+            icon = u"✓"
+            color = colors.get("ready", BRUSH_READY)
+        elif kind == "warning":
+            icon = u"⚠"
+            color = colors.get("warn", BRUSH_WARN)
+        elif kind == "neutral":
+            icon = u"—"
+            color = colors.get("off", BRUSH_OFF)
+        else:
+            icon = u"✕"
+            color = colors.get("bad", BRUSH_BAD)
+        self.is_editable = False
+        self.planning_visibility = Visibility.Collapsed
+        self.result_visibility = Visibility.Visible
+        self.result_assignment_label = str(assignment_label or "No circuit created")
+        self.status = (
+            "Circuited" if kind == "success" else
+            "Created with attention" if kind == "warning" else
+            "Not run" if kind == "neutral" else
+            "Circuiting failed")
+        self.status_detail = str(detail or self.status)
+        self.status_icon = icon
+        self.status_icon_color = color
+        self.rating_warning_visibility = Visibility.Visible
+        for property_name in (
+                "is_editable", "planning_visibility", "result_visibility",
+                "result_assignment_label", "status", "status_detail",
+                "status_icon", "status_icon_color",
+                "rating_warning_visibility"):
+            self.notify(property_name)
 
     def set_expanded(self, value):
         value = bool(value)
@@ -161,11 +232,11 @@ class GroupVM(_Notifier):
         self.notify("is_drag_target")
 
     def set_warning(self, show):
-        vis = Visibility.Visible if show else Visibility.Collapsed
-        if self.rating_warning_visibility == vis:
+        show = bool(show)
+        if self._rating_warning == show:
             return
-        self.rating_warning_visibility = vis
-        self.notify("rating_warning_visibility")
+        self._rating_warning = show
+        self._update_status_indicator()
 
     def set_panel_options(self, values):
         prior = [str(x) for x in list(self.panel_options or [])]
@@ -195,6 +266,7 @@ class RowVM(_Notifier):
         self.elevation_text = data.get("elevation_text", "") or ""
         self.location = data.get("location", None)
         self.group_values = data.get("group_values", {}) or {}
+        self.group_value = ""
         self.already_circuited = bool(data.get("already_circuited", False))
         self.src_panel = (data.get("panel", "") or "").strip()
         self.src_rating = (data.get("rating", "") or "").strip()
@@ -203,9 +275,77 @@ class RowVM(_Notifier):
         self.group = group
         self.group_key = group.key if group is not None else ""
         self.can_include = not self.already_circuited
+        self.results_locked = False
+        self.can_edit = bool(self.can_include)
         self.include = not self.already_circuited
+        self.is_enabled = bool(self.can_include and self.include)
         self.status = ""
         self.status_color = brushes.get("ready", BRUSH_READY)
+
+    def set_already_circuited(self, value, restore_include=False):
+        value = bool(value)
+        was_circuited = bool(self.already_circuited)
+        if self.already_circuited != value:
+            self.already_circuited = value
+            self.notify("already_circuited")
+        can_include = not value
+        if self.can_include != can_include:
+            self.can_include = can_include
+            self.notify("can_include")
+        desired_include = self.include
+        if value:
+            desired_include = False
+        elif restore_include and was_circuited:
+            desired_include = True
+        if self.include != desired_include:
+            self.include = desired_include
+            self.notify("include")
+        enabled = bool(self.can_include and self.include)
+        if self.is_enabled != enabled:
+            self.is_enabled = enabled
+            self.notify("is_enabled")
+        can_edit = bool(self.can_include and not self.results_locked)
+        if self.can_edit != can_edit:
+            self.can_edit = can_edit
+            self.notify("can_edit")
+
+    def lock_results(self):
+        self.results_locked = True
+        if self.can_edit:
+            self.can_edit = False
+            self.notify("can_edit")
+
+    def refresh_from_data(self, data):
+        """Refresh Revit-backed fields without changing this row's UI group."""
+        field_map = (
+            ("family_type", "family_type", ""),
+            ("identity_mark", "identity_mark", ""),
+            ("voltage_text", "voltage_text", ""),
+            ("voltage_key", "voltage_key", None),
+            ("poles_text", "poles_text", ""),
+            ("poles_value", "poles_value", None),
+            ("space", "space", ""),
+            ("level", "level", ""),
+            ("elevation_text", "elevation_text", ""),
+            ("location", "location", None),
+        )
+        for attr_name, data_name, fallback in field_map:
+            value = data.get(data_name, fallback)
+            if fallback == "":
+                value = value or ""
+            if getattr(self, attr_name) != value:
+                setattr(self, attr_name, value)
+                self.notify(attr_name)
+        self.group_values = data.get("group_values", {}) or {}
+        self.src_panel = (data.get("panel", "") or "").strip()
+        self.src_rating = (data.get("rating", "") or "").strip()
+        self.src_schedule_notes = (
+            data.get("schedule_notes", "") or "").strip()
+        self.set_already_circuited(
+            bool(data.get("already_circuited", False)),
+            restore_include=True,
+        )
+
     def set_status(self, text, color):
         if self.status == text and self.status_color is color:
             return
@@ -222,6 +362,10 @@ class RowVM(_Notifier):
             return
         self.include = value
         self.notify("include")
+        enabled = bool(self.can_include and self.include)
+        if self.is_enabled != enabled:
+            self.is_enabled = enabled
+            self.notify("is_enabled")
 
     def move_to(self, group):
         self.group = group
@@ -300,8 +444,13 @@ class CircuitGrouperWindow(CEDWindowBase):
     def __init__(self, rows_data, panel_options, name_to_id, rating_options,
                  group_param_options=None, default_group_param="", title="",
                  panel_info=None, name_param_options=None,
-                 default_name_param=""):
-        CEDWindowBase.__init__(self, xaml_source=_XAML, theme_aware=True)
+                 default_name_param="", gateway=None, document_key="",
+                 document_title="", scope_label="model", scope_ids=None):
+        # This is a modeless Revit tool. pyRevit's default Escape handler closes
+        # WPF windows, which is especially easy to trigger after a model
+        # selection command, so disable it and consume Escape explicitly below.
+        CEDWindowBase.__init__(self, xaml_source=_XAML, theme_aware=True,
+                               handle_esc=False)
 
         self._status_brushes = {
             "ready": self._theme_resource("CED.Brush.AccentGreen", BRUSH_READY),
@@ -327,6 +476,12 @@ class CircuitGrouperWindow(CEDWindowBase):
 
         self._name_to_id = name_to_id
         self._panel_info = panel_info or {}
+        self._gateway = gateway
+        self._document_key = str(document_key or "")
+        self._document_title = str(document_title or "-")
+        self._scope_label = str(scope_label or "model")
+        self._scope_ids = list(scope_ids) if scope_ids is not None else None
+        self._replacing_window = False
         self.result_plans = None
         self._drag_start = None
         self._drag_items = []
@@ -381,6 +536,32 @@ class CircuitGrouperWindow(CEDWindowBase):
         self.NameByCombo = self.FindName("NameByCombo")
         self.GroupSelectionText = self.FindName("GroupSelectionText")
         self.GridSelectionText = self.FindName("GridSelectionText")
+        self.DocumentText = self.FindName("DocumentText")
+        self.ScopeText = self.FindName("ScopeText")
+        self.ActionStatusText = self.FindName("ActionStatusText")
+        self.RefreshButton = self.FindName("RefreshButton")
+        self.RunButton = self.FindName("RunButton")
+        self.NewGroupButton = self.FindName("NewGroupButton")
+        self.DedicatedGroupButton = self.FindName("DedicatedGroupButton")
+        self.BulkSetButton = self.FindName("BulkSetButton")
+        self.ToolInfoButton = self.FindName("ToolInfoButton")
+        self.ToolInfoPopup = self.FindName("ToolInfoPopup")
+        self.CircuitStatusPopup = self.FindName("CircuitStatusPopup")
+        self.CircuitStatusPopupText = self.FindName("CircuitStatusPopupText")
+        self.BulkValuesPopup = self.FindName("BulkValuesPopup")
+        self.BulkPopupLoadName = self.FindName("BulkPopupLoadName")
+        self.BulkPopupIncrement = self.FindName("BulkPopupIncrement")
+        self.BulkPopupPanel = self.FindName("BulkPopupPanel")
+        self.BulkPopupRating = self.FindName("BulkPopupRating")
+        self.BulkPopupNotes = self.FindName("BulkPopupNotes")
+        if self.BulkPopupPanel is not None:
+            self.BulkPopupPanel.ItemsSource = self.PanelOptions
+        if self.BulkPopupRating is not None:
+            self.BulkPopupRating.ItemsSource = self.RatingOptions
+        self._bulk_target_groups = []
+        self._column_menu = None
+        self._run_in_progress = False
+        self._results_mode = False
 
         self._items = ObservableCollection[object]()
         for vm in self._rows:
@@ -401,6 +582,12 @@ class CircuitGrouperWindow(CEDWindowBase):
         self._view = self._cvs.View
         self.Grid.ItemsSource = self._view
 
+        self._update_group_value_display()
+        if self.DocumentText is not None:
+            self.DocumentText.Text = "Document: {}".format(self._document_title)
+        if self.ScopeText is not None:
+            self.ScopeText.Text = "Scope: {}".format(self._scope_label)
+
         # seed the combos without triggering a redundant regroup/reseed
         if self.GroupByCombo is not None and self._group_param:
             self.GroupByCombo.SelectedItem = self._group_param
@@ -411,6 +598,246 @@ class CircuitGrouperWindow(CEDWindowBase):
         self._update_group_selection_summary()
         self._update_grid_selection_summary()
         self._revalidate()
+
+    def _set_action_status(self, text):
+        if self.ActionStatusText is not None:
+            self.ActionStatusText.Text = str(text or "")
+
+    def tool_info_toggled(self, sender, args):
+        if self.ToolInfoPopup is not None:
+            self.ToolInfoPopup.IsOpen = bool(sender.IsChecked)
+
+    def tool_info_popup_closed(self, sender, args):
+        if self.ToolInfoButton is not None and self.ToolInfoButton.IsChecked:
+            self.ToolInfoButton.IsChecked = False
+
+    def group_status_clicked(self, sender, args):
+        group = sender.DataContext
+        if not isinstance(group, GroupVM) or self.CircuitStatusPopup is None:
+            return
+        if self.CircuitStatusPopupText is not None:
+            self.CircuitStatusPopupText.Text = str(group.status_detail or group.status)
+        self.CircuitStatusPopup.PlacementTarget = sender
+        self.CircuitStatusPopup.IsOpen = True
+        args.Handled = True
+
+    def grid_header_right_click(self, sender, args):
+        """Open a show/hide menu from any visible column header."""
+        node = args.OriginalSource
+        header = None
+        while node is not None:
+            if isinstance(node, DataGridColumnHeader):
+                header = node
+                break
+            try:
+                node = VisualTreeHelper.GetParent(node)
+            except Exception:
+                node = None
+        if header is None:
+            return
+
+        menu = ContextMenu()
+        for index, column in enumerate(list(self.Grid.Columns)):
+            # The first column owns expand/collapse and inclusion controls. It
+            # remains visible so the menu is always recoverable.
+            if index == 0:
+                continue
+            item = MenuItem()
+            item.Header = str(column.Header or "Column")
+            item.IsCheckable = True
+            item.IsChecked = column.Visibility == Visibility.Visible
+            item.Tag = column
+            item.Click += self.column_visibility_clicked
+            menu.Items.Add(item)
+        menu.PlacementTarget = header
+        self._column_menu = menu
+        menu.IsOpen = True
+        args.Handled = True
+
+    def column_visibility_clicked(self, sender, args):
+        column = getattr(sender, "Tag", None)
+        if column is None:
+            return
+        column.Visibility = (Visibility.Visible
+                             if bool(sender.IsChecked)
+                             else Visibility.Collapsed)
+
+    def window_preview_key_down(self, sender, args):
+        """Keep Escape from closing the modeless tool or leaking to Revit."""
+        try:
+            if args.Key == Key.Escape or args.SystemKey == Key.Escape:
+                args.Handled = True
+        except Exception:
+            pass
+
+    def window_activated(self, sender, args):
+        """Retarget after the user switches Revit documents.
+
+        The external event performs the API-side document check. It only
+        recollects devices when the active document is actually different, so
+        normal focus changes do not rescan a large model.
+        """
+        if self._replacing_window or self._gateway is None:
+            return
+        if self._gateway.is_busy():
+            return
+        self._gateway.raise_sync(self._document_key, self._handle_sync_complete)
+
+    def _handle_sync_complete(self, status, op_name, result, error):
+        if status != "ok":
+            self._set_action_status(str(error or "Could not track the active document."))
+            return
+        data = result or {}
+        if data.get("changed") and data.get("snapshot"):
+            self._replace_with_snapshot(
+                data.get("snapshot"), "Target document updated.")
+
+    def _replace_with_snapshot(self, snapshot, completion_message=None):
+        """Queue a clean replacement after the Revit external event returns."""
+        if not snapshot:
+            self._set_action_status("Refresh returned no device data.")
+            return
+        self._replacing_window = True
+        try:
+            self.Dispatcher.BeginInvoke(
+                Action(lambda: self._finish_snapshot_replacement(
+                    snapshot, completion_message)),
+                DispatcherPriority.Background,
+            )
+        except Exception:
+            self._finish_snapshot_replacement(snapshot, completion_message)
+
+    def _finish_snapshot_replacement(self, snapshot, completion_message=None):
+        try:
+            replacement = show_modeless(snapshot, self._gateway, activate=True)
+            if replacement is not None:
+                if completion_message:
+                    replacement._set_action_status(completion_message)
+                self.Close()
+                return
+            raise RuntimeError("The refreshed window could not be opened.")
+        except Exception as exc:
+            self._replacing_window = False
+            message = "Refresh failed: {}".format(exc)
+            self._set_action_status(message)
+            forms.alert(message, title="Create Circuits by Device Parameter")
+
+    def _replace_string_list(self, target, values, keep_value=""):
+        incoming = [str(value) for value in list(values or [])]
+        if keep_value and keep_value not in incoming:
+            incoming.insert(0, str(keep_value))
+        target.Clear()
+        for value in incoming:
+            target.Add(value)
+
+    def _apply_snapshot_in_place(self, snapshot, completion_message=None):
+        """Refresh Revit data while retaining groups and staged group values."""
+        data = dict(snapshot or {})
+        incoming_rows = list(data.get("rows_data") or [])
+        incoming_by_id = {}
+        for row_data in incoming_rows:
+            try:
+                incoming_by_id[int(row_data.get("element_id"))] = row_data
+            except Exception:
+                continue
+
+        self._begin_view_batch()
+        try:
+            existing_by_id = dict(
+                (int(row.element_id), row) for row in list(self._rows))
+
+            for element_id, row in list(existing_by_id.items()):
+                row_data = incoming_by_id.get(element_id)
+                if row_data is not None:
+                    row.refresh_from_data(row_data)
+                    continue
+                self._rows.remove(row)
+                try:
+                    self._items.Remove(row)
+                except Exception:
+                    pass
+
+            groups_by_key = {}
+            for group in list(self._groups):
+                groups_by_key.setdefault(str(group.key or ""), group)
+            new_groups = []
+            for element_id, row_data in list(incoming_by_id.items()):
+                if element_id in existing_by_id:
+                    continue
+                row = RowVM(row_data, status_brushes=self._status_brushes)
+                key = str(
+                    row.group_values.get(self._active_key, "") or "").strip()
+                group = groups_by_key.get(key)
+                if group is None:
+                    group = GroupVM(key, status_brushes=self._status_brushes)
+                    group.is_expanded = (
+                        len(incoming_rows) <= INITIAL_EXPANDED_ROW_LIMIT)
+                    groups_by_key[key] = group
+                    self._groups.append(group)
+                    new_groups.append(group)
+                row.move_to(group)
+                self._rows.append(row)
+                self._items.Add(row)
+
+            self._reindex_members()
+            self._groups = [
+                group for group in self._groups
+                if group in self._members_by_group
+            ]
+            for group in new_groups:
+                members = self._members_by_group.get(group, [])
+                if members:
+                    self._init_group_defaults(group, members)
+
+            self._name_to_id = dict(data.get("name_to_id") or {})
+            self._panel_info = dict(data.get("panel_info") or {})
+            self._replace_string_list(
+                self.PanelOptions, data.get("panel_names") or [])
+            self._replace_string_list(
+                self.GroupParamOptions,
+                data.get("group_param_options") or [],
+                self._group_param,
+            )
+            self._replace_string_list(
+                self.NameParamOptions,
+                data.get("name_param_options") or [],
+                self._name_param,
+            )
+
+            self._suppress_regroup = True
+            try:
+                if self.GroupByCombo is not None:
+                    self.GroupByCombo.ItemsSource = self.GroupParamOptions
+                    self.GroupByCombo.SelectedItem = self._group_param
+                if self.NameByCombo is not None:
+                    self.NameByCombo.ItemsSource = self.NameParamOptions
+                    self.NameByCombo.SelectedItem = self._name_param
+                if self.BulkPopupPanel is not None:
+                    self.BulkPopupPanel.ItemsSource = self.PanelOptions
+            finally:
+                self._suppress_regroup = False
+
+            self._document_title = str(
+                data.get("document_title") or self._document_title)
+            self._scope_label = str(
+                data.get("scope_label") or self._scope_label)
+            self._scope_ids = (
+                list(data.get("scope_ids"))
+                if data.get("scope_ids") is not None else None)
+            if self.DocumentText is not None:
+                self.DocumentText.Text = "Document: {}".format(
+                    self._document_title)
+            if self.ScopeText is not None:
+                self.ScopeText.Text = "Scope: {}".format(self._scope_label)
+
+            self._update_group_value_display()
+            self._refresh_view()
+            self._revalidate()
+        finally:
+            self._end_view_batch()
+
+        if completion_message:
+            self._set_action_status(completion_message)
 
     def _theme_resource(self, key, fallback):
         """Resolve a required CED theme brush."""
@@ -598,13 +1025,14 @@ class CircuitGrouperWindow(CEDWindowBase):
         try:
             self._clear_group_selection()
             self._rebuild_groups(param_name)
+            self._update_group_value_display()
             self._refresh_view()
             self._revalidate()
         finally:
             self._end_view_batch()
 
     def group_param_changed(self, sender, args):
-        if self._suppress_regroup:
+        if self._suppress_regroup or self._results_mode:
             return
         item = sender.SelectedItem
         value = str(item) if item is not None else ""
@@ -615,11 +1043,17 @@ class CircuitGrouperWindow(CEDWindowBase):
         if key and key != self._active_key:
             self._apply_grouping(key)
 
+    def _update_group_value_display(self):
+        """Project the selected Group By value into its own live column."""
+        for row in self._rows:
+            row.group_value = str(row.group_values.get(self._active_key, "") or "")
+            row.notify("group_value")
+
     def name_param_changed(self, sender, args):
         """Re-seed every circuit's Load Name from the newly chosen name-by
         parameter (replacing any hand edits, since the user asked for a new
         naming source)."""
-        if self._suppress_regroup:
+        if self._suppress_regroup or self._results_mode:
             return
         item = sender.SelectedItem
         value = str(item) if item is not None else ""
@@ -786,7 +1220,7 @@ class CircuitGrouperWindow(CEDWindowBase):
         """Return True when a header click originated in an input/control."""
         node = source
         while node is not None:
-            if isinstance(node, (ComboBox, TextBox, ToggleButton, CheckBox)):
+            if isinstance(node, (Button, ComboBox, TextBox, ToggleButton, CheckBox)):
                 return True
             try:
                 node = VisualTreeHelper.GetParent(node)
@@ -851,6 +1285,8 @@ class CircuitGrouperWindow(CEDWindowBase):
             if isinstance(node, Button):
                 return getattr(node, "Name", "") in (
                     "NewGroupButton", "DedicatedGroupButton", "BulkSetButton",
+                    "SelectDeviceButton", "ShowDeviceButton",
+                    "SelectGroupButton", "ShowGroupButton",
                 )
             try:
                 node = VisualTreeHelper.GetParent(node)
@@ -922,6 +1358,8 @@ class CircuitGrouperWindow(CEDWindowBase):
             problems = cg_core.validate_members(eff)
             if not (g.panel or "").strip():
                 problems.append("Panel is not selected")
+                if g.panel_note:
+                    problems.append(g.panel_note)
             amps, valid, standard = cg_core.parse_rating(g.rating)
             label = g.load_name or g.key
             if problems:
@@ -941,20 +1379,34 @@ class CircuitGrouperWindow(CEDWindowBase):
                 if not standard:
                     lines.append(u"'{}': non-standard breaker size ({} A)".format(
                         label, cg_core.format_amps_number(amps)))
-            # multi-panel auto-pick could not choose (no room / unknown names)
-            if g.panel_note and not g.panel:
-                lines.append(u"'{}': {}".format(label, g.panel_note))
-
-        self.SummaryText.Text = "{} circuit(s) ready | {} not ready".format(ready, not_ready)
+        if ready and not_ready:
+            summary = "{} circuit{} ready | {} circuit{} {} attention".format(
+                ready, "" if ready == 1 else "s",
+                not_ready, "" if not_ready == 1 else "s",
+                "needs" if not_ready == 1 else "need")
+        elif not_ready:
+            summary = "{} circuit{} {} attention".format(
+                not_ready, "" if not_ready == 1 else "s",
+                "needs" if not_ready == 1 else "need")
+        elif ready:
+            summary = "{} circuit{} ready".format(
+                ready, "" if ready == 1 else "s")
+        else:
+            summary = "No circuits available"
+        self.SummaryText.Text = summary
         self.ValidationText.Text = "\n".join(lines) if lines else "No validation issues."
     # -- group header handlers (sender.DataContext == GroupVM) -----------
     def group_load_name_changed(self, sender, args):
+        if self._results_mode:
+            return
         g = sender.DataContext
         if not isinstance(g, GroupVM):
             return
         g.load_name = sender.Text or ""
 
     def group_schedule_notes_changed(self, sender, args):
+        if self._results_mode:
+            return
         g = sender.DataContext
         if not isinstance(g, GroupVM):
             return
@@ -965,6 +1417,8 @@ class CircuitGrouperWindow(CEDWindowBase):
         g.notify("schedule_notes")
 
     def group_panel_changed(self, sender, args):
+        if self._results_mode:
+            return
         g = sender.DataContext
         if not isinstance(g, GroupVM):
             return
@@ -989,6 +1443,8 @@ class CircuitGrouperWindow(CEDWindowBase):
         self._revalidate()
 
     def group_rating_changed(self, sender, args):
+        if self._results_mode:
+            return
         g = sender.DataContext
         if not isinstance(g, GroupVM):
             return
@@ -1043,6 +1499,8 @@ class CircuitGrouperWindow(CEDWindowBase):
 
     # -- member row handlers ---------------------------------------------
     def row_include_changed(self, sender, args):
+        if self._results_mode:
+            return
         if self._checkbox_bulk_edit_in_progress:
             return
         vm = sender.DataContext
@@ -1076,6 +1534,157 @@ class CircuitGrouperWindow(CEDWindowBase):
             selected = []
         return [item for item in selected if isinstance(item, RowVM)]
 
+    def _device_target_ids(self):
+        return [int(row.element_id) for row in self._selected_rows()]
+
+    def _group_target_ids(self):
+        """Return every device in the UI-selected group(s).
+
+        Circuit headers are the primary group selection. When the user has
+        selected member rows instead, use the group(s) containing those rows;
+        this deliberately makes a single selected device resolve to its whole
+        group for the Select Group / Show Group commands.
+        """
+        groups = list(self._selected_groups())
+        if not groups:
+            for row in self._selected_rows():
+                if row.group is not None and row.group not in groups:
+                    groups.append(row.group)
+        result = []
+        seen = set()
+        for group in groups:
+            for row in self._members_by_group.get(group, []):
+                element_id = int(row.element_id)
+                if element_id not in seen:
+                    seen.add(element_id)
+                    result.append(element_id)
+        return result
+
+    def _raise_navigation(self, target_kind, show):
+        ids = (self._device_target_ids() if target_kind == "device"
+               else self._group_target_ids())
+        if not ids:
+            label = "device row(s)" if target_kind == "device" else "device or circuit row(s)"
+            forms.alert("Select {} in the tool first.".format(label),
+                        title="Create Circuits by Device Parameter")
+            return
+        # Selection and ShowElements are Revit UI operations and do not need an
+        # ExternalEvent. Circuit Manager uses the same direct modeless pattern;
+        # keeping these out of the write gateway also means a slow refresh can
+        # never block model navigation.
+        uidoc = getattr(revit, "uidoc", None)
+        doc = uidoc.Document if uidoc is not None else None
+        if doc is None:
+            self._set_action_status("No active Revit document.")
+            return
+        try:
+            current_key = str(doc.GetHashCode())
+        except Exception:
+            current_key = "{}|{}".format(
+                getattr(doc, "Title", "") or "",
+                getattr(doc, "PathName", "") or "",
+            )
+        if current_key != self._document_key:
+            self._set_action_status(
+                "The active document changed. Refreshing the tool target...")
+            if self._gateway is not None:
+                self._gateway.raise_refresh(
+                    self._document_key, self._scope_ids,
+                    self._handle_refresh_complete)
+            return
+
+        native_ids = List[DB.ElementId]()
+        for value in ids:
+            element_id = revit_helpers.elementid_from_value(value)
+            if doc.GetElement(element_id) is not None:
+                native_ids.Add(element_id)
+        if native_ids.Count == 0:
+            self._set_action_status("None of the chosen devices still exist.")
+            return
+        try:
+            if show:
+                uidoc.ShowElements(native_ids)
+                action = "Shown"
+            else:
+                uidoc.Selection.SetElementIds(native_ids)
+                action = "Selected"
+            self._set_action_status(
+                "{} {} device(s).".format(action, native_ids.Count))
+        except Exception as exc:
+            message = "Model navigation failed: {}".format(exc)
+            self._set_action_status(message)
+            forms.alert(message, title="Create Circuits by Device Parameter")
+
+    def _handle_navigation_complete(self, status, op_name, result, error):
+        if status == "ok":
+            snapshot = (result or {}).get("retarget_snapshot")
+            if snapshot:
+                self._replace_with_snapshot(snapshot)
+                return
+            count = int((result or {}).get("count") or 0)
+            action = "Shown" if (result or {}).get("show") else "Selected"
+            self._set_action_status("{} {} device(s).".format(action, count))
+            return
+        self._set_action_status(str(error or "Model navigation failed."))
+        forms.alert(str(error or "Model navigation failed."),
+                    title="Create Circuits by Device Parameter")
+
+    def select_device_clicked(self, sender, args):
+        self._raise_navigation("device", False)
+
+    def show_device_clicked(self, sender, args):
+        self._raise_navigation("device", True)
+
+    def select_group_clicked(self, sender, args):
+        self._raise_navigation("group", False)
+
+    def show_group_clicked(self, sender, args):
+        self._raise_navigation("group", True)
+
+    def refresh_clicked(self, sender, args):
+        if self._gateway is None:
+            return
+        self._set_action_status(
+            "Re-reading device data for {}...".format(self._scope_label))
+        raised = self._gateway.raise_refresh(
+            self._document_key, self._scope_ids, self._handle_refresh_complete)
+        if raised:
+            if self.RefreshButton is not None:
+                self.RefreshButton.IsEnabled = False
+        else:
+            self._set_action_status("Another Revit action is still pending.")
+
+    def _handle_refresh_complete(self, status, op_name, result, error):
+        try:
+            self.Dispatcher.BeginInvoke(
+                Action(lambda: self._finish_refresh_complete(
+                    status, result, error)),
+                DispatcherPriority.Background,
+            )
+        except Exception:
+            self._finish_refresh_complete(status, result, error)
+
+    def _finish_refresh_complete(self, status, result, error):
+        if self.RefreshButton is not None:
+            self.RefreshButton.IsEnabled = True
+        if status != "ok":
+            self._set_action_status(str(error or "Refresh failed."))
+            forms.alert(str(error or "Refresh failed."),
+                        title="Create Circuits by Device Parameter")
+            return
+        snapshot = (result or {}).get("snapshot")
+        if snapshot:
+            if str(snapshot.get("document_key") or "") != self._document_key:
+                self._replace_with_snapshot(
+                    snapshot, "Target document updated.")
+                return
+            self._apply_snapshot_in_place(
+                snapshot,
+                "Device data refreshed; current circuit groups were preserved.",
+            )
+        else:
+            self._set_action_status("Refresh completed without a document snapshot.")
+
     def bulk_set_selected_clicked(self, sender, args):
         # Circuit rows are represented by selected GroupVM headers, not by
         # DataGrid.SelectedItems (which contains element/member rows).
@@ -1085,12 +1694,52 @@ class CircuitGrouperWindow(CEDWindowBase):
                         title="Bulk Set Selected")
             return
 
-        dialog = BulkCircuitValuesWindow(self.PanelOptions, self.RatingOptions,
-                                         owner=self)
-        dialog.show_dialog()
-        values = dialog.result_values
-        if values is None:
+        if self.BulkValuesPopup is None:
+            self._set_action_status("Bulk Set controls are unavailable.")
             return
+        self._bulk_target_groups = list(groups)
+        self.bulk_popup_reset_clicked(None, None)
+        self.BulkValuesPopup.IsOpen = True
+        try:
+            self.BulkPopupLoadName.Focus()
+        except Exception:
+            pass
+
+    @staticmethod
+    def _bulk_popup_text(control):
+        try:
+            return str(control.Text or "").strip()
+        except Exception:
+            return ""
+
+    def bulk_popup_reset_clicked(self, sender, args):
+        self.BulkPopupLoadName.Text = ""
+        self.BulkPopupPanel.SelectedIndex = -1
+        self.BulkPopupPanel.Text = ""
+        self.BulkPopupRating.SelectedIndex = -1
+        self.BulkPopupRating.Text = ""
+        self.BulkPopupNotes.Text = ""
+        self.BulkPopupIncrement.IsChecked = False
+
+    def bulk_popup_cancel_clicked(self, sender, args):
+        self.BulkValuesPopup.IsOpen = False
+        self._bulk_target_groups = []
+
+    def bulk_popup_apply_clicked(self, sender, args):
+        values = {
+            "load_name": self._bulk_popup_text(self.BulkPopupLoadName),
+            "panel": self._bulk_popup_text(self.BulkPopupPanel),
+            "rating": self._bulk_popup_text(self.BulkPopupRating),
+            "schedule_notes": self._bulk_popup_text(self.BulkPopupNotes),
+            "increment_load_name": bool(self.BulkPopupIncrement.IsChecked),
+        }
+        groups = list(self._bulk_target_groups)
+        self.BulkValuesPopup.IsOpen = False
+        self._bulk_target_groups = []
+        if groups:
+            self._apply_bulk_values(groups, values)
+
+    def _apply_bulk_values(self, groups, values):
 
         load_name = values.get("load_name", "")
         panel = values.get("panel", "")
@@ -1317,6 +1966,8 @@ class CircuitGrouperWindow(CEDWindowBase):
             args.Handled = True
 
     def grid_mouse_move(self, sender, args):
+        if self._results_mode:
+            return
         if (
             args.LeftButton != MouseButtonState.Pressed
             or self._drag_start is None
@@ -1389,6 +2040,10 @@ class CircuitGrouperWindow(CEDWindowBase):
         self._defer_selection = False
 
     def grid_drag_over(self, sender, args):
+        if self._results_mode:
+            args.Effects = getattr(DragDropEffects, "None")
+            args.Handled = True
+            return
         if not self._drag_items:
             self._set_drag_target(None)
             args.Effects = getattr(DragDropEffects, "None")
@@ -1400,6 +2055,8 @@ class CircuitGrouperWindow(CEDWindowBase):
         args.Handled = True
 
     def grid_drop(self, sender, args):
+        if self._results_mode:
+            return
         if not self._drag_items:
             return
         dest = self._find_drop_group_from_source(args.OriginalSource)
@@ -1450,6 +2107,12 @@ class CircuitGrouperWindow(CEDWindowBase):
         return ok, blocked
 
     def run_clicked(self, sender, args):
+        if self._run_in_progress:
+            return
+        if self._gateway is not None and self._gateway.is_busy():
+            self._set_action_status("Another Revit action is still pending.")
+            return
+
         ok_plans, blocked = self._build_plans()
         if not ok_plans and not blocked:
             forms.alert("Nothing to circuit (all items are already circuited or excluded).",
@@ -1473,12 +2136,336 @@ class CircuitGrouperWindow(CEDWindowBase):
                 forms.alert("No circuit(s) are ready to run.", title="Create Circuits by Device Parameter")
                 return
 
-        self.result_plans = ok_plans
-        self.DialogResult = True
-        self.Close()
+        if self._gateway is None:
+            # Compatibility fallback for the legacy modal entry point.
+            self.result_plans = ok_plans
+            self.DialogResult = True
+            self.Close()
+            return
+
+        self._run_in_progress = True
+        self._set_action_status("Creating {} circuit(s)...".format(len(ok_plans)))
+        if self.RunButton is not None:
+            self.RunButton.IsEnabled = False
+        if self.RefreshButton is not None:
+            self.RefreshButton.IsEnabled = False
+        raised = self._gateway.raise_run(
+            self._document_key, ok_plans, self._scope_ids,
+            self._handle_run_complete)
+        if not raised:
+            self._run_in_progress = False
+            if self.RunButton is not None:
+                self.RunButton.IsEnabled = True
+            if self.RefreshButton is not None:
+                self.RefreshButton.IsEnabled = True
+            self._set_action_status("Another Revit action is still pending.")
+            return
+
+        # The established panel-assignment service can show native Revit
+        # confirmations while the ExternalEvent is running. A floating
+        # modeless WPF window can cover those dialogs and make Revit appear to
+        # hang. Hide only for the duration of Run; completion is marshalled
+        # back to the dispatcher after the ExternalEvent releases Revit.
+        try:
+            self.Hide()
+        except Exception:
+            pass
+
+    def _handle_run_complete(self, status, op_name, result, error):
+        """Marshal completion out of the Revit ExternalEvent callback."""
+        try:
+            self.Dispatcher.BeginInvoke(
+                Action(lambda: self._finish_run_complete(status, result, error)),
+                DispatcherPriority.Background,
+            )
+        except Exception:
+            self._finish_run_complete(status, result, error)
+
+    @staticmethod
+    def _result_id_set(values):
+        result = set()
+        for value in list(values or []):
+            try:
+                result.add(int(value))
+            except Exception:
+                continue
+        return result
+
+    @staticmethod
+    def _assignment_label(assignment_rows):
+        numbers_by_panel = {}
+        panel_order = []
+        for row in list(assignment_rows or []):
+            panel = str(row.get("actual_panel") or "(unassigned)")
+            if panel.strip().lower() in ("", "(none)", "none"):
+                panel = "(Unassigned)"
+            number = str(row.get("circuit_number") or "-")
+            if panel not in numbers_by_panel:
+                numbers_by_panel[panel] = []
+                panel_order.append(panel)
+            if number not in numbers_by_panel[panel]:
+                numbers_by_panel[panel].append(number)
+        return "; ".join(
+            u"{} – {}".format(panel, ", ".join(numbers_by_panel[panel]))
+            for panel in panel_order
+        )
+
+    def _lock_results_controls(self):
+        self._results_mode = True
+        if self.BulkValuesPopup is not None:
+            self.BulkValuesPopup.IsOpen = False
+        for control in (
+                self.NewGroupButton, self.DedicatedGroupButton,
+                self.BulkSetButton, self.GroupByCombo, self.NameByCombo,
+                self.RefreshButton, self.RunButton):
+            if control is not None:
+                control.IsEnabled = False
+        if self.Grid is not None:
+            self.Grid.AllowDrop = False
+        for row in list(self._rows):
+            row.lock_results()
+
+    def _enter_results_mode(self, report):
+        report = dict(report or {})
+        assignment = dict(report.get("panel_assignment") or {})
+        assignment_rows = list(assignment.get("circuit_status") or [])
+        assignment_by_id = {}
+        for row in assignment_rows:
+            try:
+                assignment_by_id[int(row.get("circuit_id"))] = row
+            except Exception:
+                continue
+
+        circuit_results = list(report.get("circuit_results") or [])
+        results_by_group = {}
+        result_by_member = {}
+        for circuit_result in circuit_results:
+            group_key = str(
+                circuit_result.get("source_group_key") or
+                circuit_result.get("group_key") or "")
+            results_by_group.setdefault(group_key, []).append(circuit_result)
+            for element_id in self._result_id_set(
+                    circuit_result.get("member_element_ids")):
+                result_by_member[element_id] = circuit_result
+
+        failures_by_group = {}
+        failed_member_ids = set()
+        for failure in list(report.get("circuit_failures") or []):
+            group_key = str(
+                failure.get("source_group_key") or
+                failure.get("group_key") or "")
+            failures_by_group.setdefault(group_key, []).append(failure)
+            failed_member_ids.update(self._result_id_set(
+                failure.get("member_element_ids")))
+
+        skipped_no_connector = self._result_id_set(
+            report.get("skipped_no_connector"))
+        skipped_in_use = self._result_id_set(
+            report.get("skipped_unavailable_primary"))
+        assignment_errors_by_panel = {}
+        for panel_name, message in list(assignment.get("errors") or []):
+            assignment_errors_by_panel.setdefault(
+                str(panel_name or ""), []).append(str(message or ""))
+        attempted_groups = set(
+            str(value or "") for value in list(
+                report.get("attempted_source_group_keys") or []))
+
+        self._lock_results_controls()
+        for row in list(self._rows):
+            element_id = int(row.element_id)
+            circuit_result = result_by_member.get(element_id)
+            if circuit_result is not None:
+                row.set_already_circuited(True)
+                assignment_row = assignment_by_id.get(
+                    int(circuit_result.get("circuit_id") or 0))
+                if assignment_row and assignment_row.get("status") == "ASSIGNED":
+                    row.set_status(
+                        "Circuited: {}".format(
+                            self._assignment_label([assignment_row])),
+                        self._status_brushes["ready"],
+                    )
+                else:
+                    row.set_status(
+                        "Circuit created; panel assignment needs attention",
+                        self._status_brushes["warn"],
+                    )
+            elif element_id in skipped_no_connector:
+                row.set_status(
+                    "Skipped: no primary power connector",
+                    self._status_brushes["warn"],
+                )
+            elif element_id in skipped_in_use:
+                row.set_status(
+                    "Skipped: primary power connector already in use",
+                    self._status_brushes["warn"],
+                )
+            elif element_id in failed_member_ids:
+                row.set_status(
+                    "Circuit creation failed",
+                    self._status_brushes["bad"],
+                )
+            elif row.already_circuited:
+                row.set_status(
+                    "Already circuited before Run",
+                    self._status_brushes["info"],
+                )
+            else:
+                row.set_status("Excluded", self._status_brushes["off"])
+
+        attention_groups = 0
+        failed_groups = 0
+        result_lines = []
+        for group in list(self._groups):
+            group_results = list(results_by_group.get(group.key) or [])
+            group_failures = list(failures_by_group.get(group.key) or [])
+            group_assignment_rows = []
+            missing_assignment = False
+            for circuit_result in group_results:
+                assignment_row = assignment_by_id.get(
+                    int(circuit_result.get("circuit_id") or 0))
+                if assignment_row is None:
+                    missing_assignment = True
+                else:
+                    group_assignment_rows.append(assignment_row)
+
+            member_ids = self._result_id_set(
+                row.element_id for row in self._members_by_group.get(group, []))
+            skipped_count = len(member_ids.intersection(
+                skipped_no_connector.union(skipped_in_use)))
+            assignment_attention = bool(
+                missing_assignment or any(
+                    row.get("status") != "ASSIGNED"
+                    for row in group_assignment_rows))
+            panel_errors = []
+            for circuit_result in group_results:
+                for message in assignment_errors_by_panel.get(
+                        str(circuit_result.get("target_panel") or ""), []):
+                    if message not in panel_errors:
+                        panel_errors.append(message)
+
+            detail_lines = []
+            for assignment_row in group_assignment_rows:
+                detail_lines.append(
+                    u"{} {}: {}".format(
+                        u"✓" if assignment_row.get("status") == "ASSIGNED" else u"⚠",
+                        self._assignment_label([assignment_row]),
+                        assignment_row.get("detail") or assignment_row.get("status"),
+                    ))
+            for failure in group_failures:
+                detail_lines.append(
+                    u"✕ {}".format(failure.get("detail") or
+                                   "Circuit creation failed."))
+            for message in panel_errors:
+                if message:
+                    detail_lines.append(u"⚠ {}".format(message))
+            if skipped_count:
+                detail_lines.append(
+                    u"⚠ {} selected member(s) were skipped.".format(
+                        skipped_count))
+
+            assignment_label = self._assignment_label(group_assignment_rows)
+            if not assignment_label and group_results:
+                assignment_label = "Created – assignment unavailable"
+            if not group_results and group.key not in attempted_groups:
+                group.set_result_status(
+                    "neutral", "Not run",
+                    "This group had no eligible included members when Run started.",
+                    self._status_brushes,
+                )
+            elif not group_results:
+                failed_groups += 1
+                group.set_result_status(
+                    "error", "No circuit created",
+                    "\n".join(detail_lines) or "No circuit was created for this group.",
+                    self._status_brushes,
+                )
+                result_lines.append(
+                    u"{}: no circuit created.".format(group.load_name or group.key))
+            elif assignment_attention or group_failures or skipped_count or panel_errors:
+                attention_groups += 1
+                group.set_result_status(
+                    "warning", assignment_label,
+                    "\n".join(detail_lines) or
+                    "Circuit was created but needs attention.",
+                    self._status_brushes,
+                )
+                result_lines.append(
+                    u"{}: created with attention.".format(
+                        group.load_name or group.key))
+            else:
+                group.set_result_status(
+                    "success", assignment_label,
+                    "\n".join(detail_lines) or
+                    "Circuit was created and assigned as intended.",
+                    self._status_brushes,
+                )
+
+        created = int(report.get("created") or 0)
+        assigned = sum(
+            1 for row in assignment_rows if row.get("status") == "ASSIGNED")
+        summary_parts = ["{} created".format(created),
+                         "{} assigned as intended".format(assigned)]
+        if attention_groups:
+            summary_parts.append("{} need attention".format(attention_groups))
+        if failed_groups:
+            summary_parts.append("{} failed".format(failed_groups))
+        if assignment.get("fallback_used"):
+            result_lines.insert(
+                0,
+                "Panel capacity workflow used removable SPARE/SPACE rows.",
+            )
+        self.SummaryText.Text = " | ".join(summary_parts)
+        self.ValidationText.Text = (
+            "\n".join(result_lines)
+            if result_lines else
+            "All created circuits were assigned as intended.")
+
+    def _finish_run_complete(self, status, result, error):
+        self._run_in_progress = False
+        if self.RunButton is not None:
+            self.RunButton.IsEnabled = True
+        if self.RefreshButton is not None:
+            self.RefreshButton.IsEnabled = True
+
+        if status != "ok":
+            message = str(error or "Circuiting failed.")
+            try:
+                self.Show()
+                self.Activate()
+            except Exception:
+                pass
+            self._set_action_status(message)
+            forms.alert(message, title="Create Circuits by Device Parameter")
+            return
+
+        report = result or {}
+        snapshot = report.get("snapshot") or report.get("retarget_snapshot")
+        created = int(report.get("created") or 0)
+        assignment = dict(report.get("panel_assignment") or {})
+        not_on_target = int(assignment.get("not_on_target") or 0)
+        assignment_errors = list(assignment.get("errors") or [])
+        if report.get("retarget_snapshot"):
+            completion_message = "The active document changed; no circuits were created."
+        elif not_on_target or assignment_errors:
+            completion_message = (
+                "Created {} circuit(s); {} require panel-assignment attention."
+                .format(created, max(not_on_target, len(assignment_errors))))
+        else:
+            completion_message = "Created {} circuit(s).".format(created)
+
+        if snapshot:
+            self._replace_with_snapshot(snapshot, completion_message)
+            return
+
+        try:
+            self.Show()
+            self.Activate()
+        except Exception:
+            pass
+        self._enter_results_mode(report)
+        self._set_action_status(completion_message)
 
     def cancel_clicked(self, sender, args):
-        self.DialogResult = False
         self.Close()
 
 
@@ -1493,3 +2480,35 @@ def show_window(rows_data, panel_options, name_to_id, rating_options,
         default_name_param=default_name_param)
     win.show_dialog()
     return win.result_plans, win._name_to_id
+
+
+def show_modeless(snapshot, gateway, activate=True):
+    """Open a modeless grouper window from a document snapshot."""
+    data = dict(snapshot or {})
+    rows_data = list(data.get("rows_data") or [])
+    win = CircuitGrouperWindow(
+        rows_data,
+        list(data.get("panel_names") or []),
+        dict(data.get("name_to_id") or {}),
+        list(data.get("rating_options") or cg_core.RATING_OPTIONS),
+        list(data.get("group_param_options") or []),
+        data.get("default_group_param") or "",
+        panel_info=dict(data.get("panel_info") or {}),
+        name_param_options=list(data.get("name_param_options") or []),
+        default_name_param=data.get("default_name_param") or "",
+        gateway=gateway,
+        document_key=data.get("document_key") or "",
+        document_title=data.get("document_title") or "-",
+        scope_label=data.get("scope_label") or "model",
+        scope_ids=data.get("scope_ids"),
+    )
+    win.Tag = "_ae_circuit_grouper_window_persistent_v6"
+    if data.get("empty_message"):
+        win._set_action_status(data.get("empty_message"))
+    win.Show()
+    if activate:
+        try:
+            win.Activate()
+        except Exception:
+            pass
+    return win

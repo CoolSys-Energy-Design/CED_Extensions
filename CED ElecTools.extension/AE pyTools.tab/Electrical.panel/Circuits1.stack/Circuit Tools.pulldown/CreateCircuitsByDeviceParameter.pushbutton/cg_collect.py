@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """Create Circuits by Device Parameter - Revit reads (collect devices + panels, read parameters)."""
 
-from pyrevit import DB
-from Snippets import revit_helpers
-from Snippets import revit_units
-
 import re
 
+from pyrevit import DB
+
 import cg_core
+from Snippets import revit_helpers
+from Snippets import revit_units
 
 try:
     from CEDElectrical.Infrastructure.Revit.repositories import (
@@ -892,3 +892,39 @@ def collect_panels(doc):
                 "profile": profile,
             }
     return sorted(name_to_id.keys()), name_to_id, panel_info
+
+
+def collect_target_panel_ids(doc, requested_names):
+    """Resolve only the panel ids needed by Run, without UI metadata scans."""
+    targets = set(
+        str(name or "").strip() for name in list(requested_names or [])
+        if str(name or "").strip()
+    )
+    if not targets:
+        return {}
+    resolved = {}
+    collector = (
+        DB.FilteredElementCollector(doc)
+        .OfCategory(DB.BuiltInCategory.OST_ElectricalEquipment)
+        .WhereElementIsNotElementType()
+    )
+    for element in collector:
+        name = ""
+        try:
+            parameter = element.get_Parameter(
+                DB.BuiltInParameter.RBS_ELEC_PANEL_NAME)
+            if parameter and parameter.HasValue:
+                name = parameter.AsString() or ""
+        except Exception:
+            name = ""
+        if not name:
+            try:
+                name = element.Name or ""
+            except Exception:
+                name = ""
+        name = str(name or "").strip()
+        if name in targets and name not in resolved:
+            resolved[name] = element.Id
+            if len(resolved) == len(targets):
+                break
+    return resolved
