@@ -84,6 +84,8 @@
 "CED.Color.PrimaryText","#1F2E3D","#E5EDF9","#EDEFF1"
 "CED.Color.SearchBackground","#FFFFFF","#1F252C","#3F454C"
 "CED.Color.SearchBorder","#B8C8DB","#3A434F","#4C5661"
+"CED.Color.SearchHighlightBackground","#FFF59D","#D4A72C","#E3B341"
+"CED.Color.SearchHighlightForeground","#1F2328","#1F2328","#1F2328"
 "CED.Color.SecondaryRed","#BE202F","#D15762","#D15762"
 "CED.Color.SecondaryText","#4A5866","#B4C0CE","#C8CDD3"
 "CED.Color.SectionDivider","#C4CFDB","#435160","#656E78"

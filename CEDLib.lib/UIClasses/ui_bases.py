@@ -374,6 +374,7 @@ def _apply_ced_theme_for_instance(instance, theme_mode=None, accent_mode=None):
         resources_root=getattr(instance, "_ced_resources_root", None),
         theme_mode=getattr(instance, "_theme_mode", "light"),
         accent_mode=getattr(instance, "_accent_mode", "blue"),
+        base_relative_paths=getattr(instance, "base_resource_relative_paths", None),
     )
 
 

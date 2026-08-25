@@ -22,6 +22,8 @@
 
   <Color x:Key="CED.Color.SearchBorder">#4C5661</Color>
   <Color x:Key="CED.Color.SearchBackground">#3F454C</Color>
+  <Color x:Key="CED.Color.SearchHighlightBackground">#E3B341</Color>
+  <Color x:Key="CED.Color.SearchHighlightForeground">#1F2328</Color>
   <Color x:Key="CED.Color.IconMuted">#C4CBD3</Color>
   <Color x:Key="CED.Color.PlaceholderText">#A2AAB3</Color>
   <Color x:Key="CED.Color.ListItemBackground">#3F454C</Color>
