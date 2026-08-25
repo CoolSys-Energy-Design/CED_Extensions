@@ -1,4 +1,7 @@
-title: Parameter Monitor
+title: >- 
+  Parameter 
+
+  Monitor
 tooltip: >-
   Track selected host or linked-model parameters against an explicitly
   accepted project baseline. Parameter Monitor never edits monitored element
