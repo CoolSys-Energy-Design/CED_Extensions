@@ -19,6 +19,8 @@
 
   <Color x:Key="CED.Color.SearchBorder">#B8C8DB</Color>
   <Color x:Key="CED.Color.SearchBackground">#FFFFFF</Color>
+  <Color x:Key="CED.Color.SearchHighlightBackground">#FFF59D</Color>
+  <Color x:Key="CED.Color.SearchHighlightForeground">#1F2328</Color>
   <Color x:Key="CED.Color.IconMuted">#718091</Color>
   <Color x:Key="CED.Color.PlaceholderText">#A1ADBA</Color>
   <Color x:Key="CED.Color.ListItemBackground">#FFFFFF</Color>
