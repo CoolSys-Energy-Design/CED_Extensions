@@ -18,11 +18,17 @@
   <SolidColorBrush x:Key="CED.Brush.HeadingText" Color="{DynamicResource CED.Color.HeadingText}"/>
   <SolidColorBrush x:Key="CED.Brush.PrimaryText" Color="{DynamicResource CED.Color.PrimaryText}"/>
   <SolidColorBrush x:Key="CED.Brush.SecondaryText" Color="{DynamicResource CED.Color.SecondaryText}"/>
+  <SolidColorBrush x:Key="CED.Brush.DocumentCanvas" Color="{DynamicResource CED.Color.DocumentCanvas}"/>
+  <SolidColorBrush x:Key="CED.Brush.Link" Color="{DynamicResource CED.Color.Link}"/>
+  <SolidColorBrush x:Key="CED.Brush.LinkHover" Color="{DynamicResource CED.Color.LinkHover}"/>
 
   <SolidColorBrush x:Key="CED.Brush.SearchBorder" Color="{DynamicResource CED.Color.SearchBorder}"/>
   <SolidColorBrush x:Key="CED.Brush.SearchBackground" Color="{DynamicResource CED.Color.SearchBackground}"/>
   <SolidColorBrush x:Key="CED.Brush.SearchHighlightBackground" Color="{DynamicResource CED.Color.SearchHighlightBackground}"/>
   <SolidColorBrush x:Key="CED.Brush.SearchHighlightForeground" Color="{DynamicResource CED.Color.SearchHighlightForeground}"/>
+  <SolidColorBrush x:Key="CED.Brush.AlertImportantBackground" Color="{DynamicResource CED.Color.AlertImportantBackground}"/>
+  <SolidColorBrush x:Key="CED.Brush.AlertImportantBorder" Color="{DynamicResource CED.Color.AlertImportantBorder}"/>
+  <SolidColorBrush x:Key="CED.Brush.AlertImportantText" Color="{DynamicResource CED.Color.AlertImportantText}"/>
   <SolidColorBrush x:Key="CED.Brush.IconMuted" Color="{DynamicResource CED.Color.IconMuted}"/>
   <SolidColorBrush x:Key="CED.Brush.PlaceholderText" Color="{DynamicResource CED.Color.PlaceholderText}"/>
   <SolidColorBrush x:Key="CED.Brush.ListItemBackground" Color="{DynamicResource CED.Color.ListItemBackground}"/>

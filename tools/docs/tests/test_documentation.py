@@ -8,11 +8,13 @@ import os
 import sys
 import tempfile
 import unittest
+import xml.etree.ElementTree as ElementTree
 
 REPOSITORY_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 DOCUMENTATION_ROOT = os.path.join(REPOSITORY_ROOT, "docs", "user-guide")
 TOOLS_ROOT = os.path.join(REPOSITORY_ROOT, "tools", "docs")
 LIB_ROOT = os.path.join(REPOSITORY_ROOT, "CEDLib.lib")
+RESOURCE_ROOT = os.path.join(LIB_ROOT, "UIClasses", "Resources")
 for path in (TOOLS_ROOT, LIB_ROOT):
     if path not in sys.path:
         sys.path.insert(0, path)
@@ -43,6 +45,41 @@ class DocumentationBuildTests(unittest.TestCase):
             source = stream.read()
         self.assertEqual(hashlib.sha256(source.encode("utf-8")).hexdigest(), zoom["source_sha256"])
         self.assertNotEqual(hashlib.sha256((source + "stale").encode("utf-8")).hexdigest(), zoom["source_sha256"])
+
+    def test_viewer_shared_resource_dependencies_are_present(self):
+        key_attribute = "{http://schemas.microsoft.com/winfx/2006/xaml}Key"
+
+        def resource_keys(*segments):
+            root = ElementTree.parse(os.path.join(RESOURCE_ROOT, *segments)).getroot()
+            return {element.attrib[key_attribute] for element in root.iter() if key_attribute in element.attrib}
+
+        documentation_styles = resource_keys("Styles", "DocumentationStyles.xaml")
+        text_styles = resource_keys("Styles", "TextStyles.xaml")
+        brushes = resource_keys("Themes", "CED.Brushes.xaml")
+        expected_colors = {
+            "CED.Color.DocumentCanvas",
+            "CED.Color.Link",
+            "CED.Color.LinkHover",
+            "CED.Color.AlertImportantBackground",
+            "CED.Color.AlertImportantBorder",
+            "CED.Color.AlertImportantText",
+        }
+        self.assertTrue(
+            {"CED.Documentation.FlowDocument", "CED.Documentation.Reader", "CED.Documentation.Tree", "CED.Documentation.TreeItem"}.issubset(documentation_styles)
+        )
+        self.assertIn("CED.Text.Hyperlink", text_styles)
+        self.assertTrue(
+            {
+                "CED.Brush.DocumentCanvas",
+                "CED.Brush.Link",
+                "CED.Brush.LinkHover",
+                "CED.Brush.AlertImportantBackground",
+                "CED.Brush.AlertImportantBorder",
+                "CED.Brush.AlertImportantText",
+            }.issubset(brushes)
+        )
+        for theme_file in ("CED.Colors.xaml", "CEDTheme.Dark.xaml", "CEDTheme.DarkAlt.xaml"):
+            self.assertTrue(expected_colors.issubset(resource_keys("Themes", theme_file)))
 
 
 class CatalogTests(unittest.TestCase):

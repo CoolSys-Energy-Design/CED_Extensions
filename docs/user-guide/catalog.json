@@ -1147,8 +1147,8 @@
       "path": "ae-pytools/parameter-monitor.md",
       "ribbon_location": "AE pyTools > CED Tools",
       "ribbon_path": "AE pyTools > CED Tools > Parameter Monitor",
-      "source_sha256": "c3a2fb74944f854530ac72ecb5756c25dc974337c159fa6fb0ce80df7c003486",
-      "status": "production",
+      "source_sha256": "ecad26d6204baff74554e854e6b904a5333aa211c3d54e977f6b58c914ddc713",
+      "status": "draft",
       "text": "Parameter Monitor At a glance Use this when Model impact Required context You need to track parameter changes against an accepted baseline. Monitored elements are read-only; the tool saves its tracking data in project storage. An active project and elements or linked-model data to monitor. What it does Opens a modeless monitoring window for creating tracking sets, reviewing monitored elements, comparing values to a stored baseline, filtering results, and navigating to elements. When to use it Use it to monitor coordinated parameter data over time without changing the monitored model values. Before you start Decide which elements and parameters should define the tracking set. Review and explicitly accept the baseline before treating later differences as changes. Steps Run Parameter Monitor . Create or choose a tracking set, then select the target elements and parameters. Accept the baseline when the values are correct. Refresh later to review changed, missing, or matching values. Results and verification Use the status, parameter-difference, missing-value, and location columns to review results. Select a row to inspect the associated element and properties. Notes and limitations The window is modeless; rerunning the command activates the existing window when present. It does not write values back to monitored host or linked elements. Tool storage is separate from the underlying model parameters being monitored. Related pages Theme",
       "title": "Parameter Monitor"
     },

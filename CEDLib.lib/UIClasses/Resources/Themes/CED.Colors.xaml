@@ -16,11 +16,17 @@
   <Color x:Key="CED.Color.HeadingText">#1F2E3D</Color>
   <Color x:Key="CED.Color.PrimaryText">#1F2E3D</Color>
   <Color x:Key="CED.Color.SecondaryText">#4A5866</Color>
+  <Color x:Key="CED.Color.DocumentCanvas">#FFFFFF</Color>
+  <Color x:Key="CED.Color.Link">#0969DA</Color>
+  <Color x:Key="CED.Color.LinkHover">#0550AE</Color>
 
   <Color x:Key="CED.Color.SearchBorder">#B8C8DB</Color>
   <Color x:Key="CED.Color.SearchBackground">#FFFFFF</Color>
   <Color x:Key="CED.Color.SearchHighlightBackground">#FFF59D</Color>
   <Color x:Key="CED.Color.SearchHighlightForeground">#1F2328</Color>
+  <Color x:Key="CED.Color.AlertImportantBackground">#F3E8FF</Color>
+  <Color x:Key="CED.Color.AlertImportantBorder">#8250DF</Color>
+  <Color x:Key="CED.Color.AlertImportantText">#5A32A3</Color>
   <Color x:Key="CED.Color.IconMuted">#718091</Color>
   <Color x:Key="CED.Color.PlaceholderText">#A1ADBA</Color>
   <Color x:Key="CED.Color.ListItemBackground">#FFFFFF</Color>

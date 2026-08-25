@@ -222,10 +222,6 @@
       "bundle_path": "AE pyTools.extension/AE pyTools.Tab/CED Tools.panel/DesignerHub.urlbutton"
     },
     {
-      "document_id": "ae-pytools-parameter-monitor",
-      "bundle_path": "AE pyTools.extension/AE pyTools.Tab/CED Tools.panel/Parameter Monitor.pushbutton"
-    },
-    {
       "document_id": "ae-pytools-theme",
       "bundle_path": "AE pyTools.extension/AE pyTools.Tab/CED Tools.panel/Theme.pushbutton"
     },

@@ -329,7 +329,7 @@ class FlowDocumentRenderer(object):
         key_map = {
             "NOTE": ("CED.Brush.AlertInfoBackground", "CED.Brush.AlertInfoBorder", "CED.Brush.AlertInfoText"),
             "TIP": ("CED.Brush.AlertSuccessBackground", "CED.Brush.AlertSuccessBorder", "CED.Brush.AlertSuccessText"),
-            "IMPORTANT": ("CED.Brush.AlertInfoBackground", "CED.Brush.Accent", "CED.Brush.PrimaryText"),
+            "IMPORTANT": ("CED.Brush.AlertImportantBackground", "CED.Brush.AlertImportantBorder", "CED.Brush.AlertImportantText"),
             "WARNING": ("CED.Brush.AlertWarningBackground", "CED.Brush.AlertWarningBorder", "CED.Brush.AlertWarningText"),
             "CAUTION": ("CED.Brush.AlertErrorBackground", "CED.Brush.AlertErrorBorder", "CED.Brush.AlertErrorText"),
         }

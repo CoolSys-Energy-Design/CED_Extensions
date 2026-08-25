@@ -11,4 +11,4 @@ engine:
   persistent: true
   full_frame: true
 
-is_beta: false
+is_beta: true
