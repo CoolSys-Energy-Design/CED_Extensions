@@ -38,6 +38,17 @@ foreach ($folder in $ManagedFolders) {
     }
 }
 
+# The offline viewer resolves this as <pyRevit Extensions>/docs/user-guide.
+# Keep the generated catalog beside its Markdown source in the deployed package.
+$DocumentationSource = Join-Path $RepoRoot "docs\user-guide"
+$DocumentationTargetRoot = Join-Path $StagingDir "docs"
+if (-not (Test-Path -LiteralPath $DocumentationSource)) {
+    throw "Documentation source not found: $DocumentationSource"
+}
+New-Item $DocumentationTargetRoot -ItemType Directory -Force | Out-Null
+Copy-Item -LiteralPath $DocumentationSource -Destination $DocumentationTargetRoot -Recurse
+Write-Host "  + docs/user-guide"
+
 # Harvest with heat.exe
 # -ag: auto-generate component GUIDs at compile time (stable across builds, derived from install path)
 Write-Host "`n[2/4] Harvesting file list..." -ForegroundColor Yellow
