@@ -2,8 +2,10 @@
 """Revit-side logic for the modeless multi-scheme Wire Tools command."""
 
 import math
+import time
 
 from Autodesk.Revit.UI.Selection import ISelectionFilter
+from System.Collections.Generic import List
 from pyrevit import DB, UI, script
 
 from Snippets import _elecutils as electrical_utils
@@ -11,8 +13,6 @@ from Snippets import design_options, revit_helpers
 from Snippets.wireutils import (
     are_points_coincident,
     collect_active_view_wires_by_circuit,
-    build_local_frame,
-    find_previous_connector_for_homerun,
     get_element_connector_from_wire_connector,
     get_wire_type_id,
     is_homerun_wire,
@@ -46,6 +46,25 @@ SCHEME_LABELS = {
     SCHEME_INDIVIDUAL_HOMERUN: "Individual Homeruns",
     SCHEME_WIRE_TO_NODE: "Wire to Node",
 }
+
+
+def _elapsed_milliseconds(started_at):
+    """Return a one-shot elapsed duration; no timer survives the operation."""
+    return round(max(0.0, time.time() - float(started_at)) * 1000.0, 2)
+
+
+def _log_operation_timing(operation_name, timing_ms):
+    ordered = [
+        "{}={}ms".format(name, timing_ms[name])
+        for name in sorted(timing_ms)
+    ]
+    script.get_logger().debug(
+        "Wire Tools one-shot timing [{}]: {}".format(
+            operation_name,
+            ", ".join(ordered),
+        )
+    )
+
 
 SELECTION_RULES = {
     SCHEME_WIRE_BY_CIRCUIT: (
@@ -1302,36 +1321,65 @@ def _create_wire(document, view, wire_type_id, wiring_type, start_connector,
     if start_point.DistanceTo(end_point) <= GEOMETRY_TOLERANCE:
         raise ValueError("Wire endpoints are coincident.")
     midpoint = start_point.Add(end_point.Subtract(start_point).Multiply(0.5))
-    points = [start_point, midpoint, end_point]
-    return DB.Electrical.Wire.Create(
+    return _create_wire_from_points(
         document,
+        view,
         wire_type_id,
-        view.Id,
         wiring_type,
-        points,
         start_connector,
-        end_connector,
+        [start_point, midpoint, end_point],
+        end_connector=end_connector,
     )
 
 
 def _create_wire_from_points(document, view, wire_type_id, wiring_type,
                              start_connector, points, end_connector=None):
-    usable_points = list(points or [])
-    if len(usable_points) < 2:
+    complete_points = list(points or [])
+    if len(complete_points) < 2:
         raise ValueError("At least two wire points are required.")
-    if usable_points[0].DistanceTo(usable_points[-1]) <= GEOMETRY_TOLERANCE:
+    if complete_points[0].DistanceTo(complete_points[-1]) <= GEOMETRY_TOLERANCE:
         raise ValueError("Wire endpoints are coincident.")
-    if len(usable_points) == 2:
-        midpoint = usable_points[0].Add(
-            usable_points[1].Subtract(usable_points[0]).Multiply(0.5)
+    if len(complete_points) == 2:
+        midpoint = complete_points[0].Add(
+            complete_points[1].Subtract(complete_points[0]).Multiply(0.5)
         )
-        usable_points.insert(1, midpoint)
+        complete_points.insert(1, midpoint)
+
+    # Wire.Create adds supplied connector origins to the total vertex list.
+    # Strip those endpoints from vertexPoints so the resulting wire still has
+    # the intended start-middle-end geometry without duplicate XY vertices.
+    usable_points = list(complete_points)
+    if start_connector is not None:
+        if not are_points_coincident(
+                usable_points[0], start_connector.Origin):
+            raise ValueError(
+                "The first wire point does not match the start connector."
+            )
+        usable_points.pop(0)
+    if end_connector is not None:
+        if not usable_points or not are_points_coincident(
+                usable_points[-1], end_connector.Origin):
+            raise ValueError(
+                "The last wire point does not match the end connector."
+            )
+        usable_points.pop()
+
+    typed_points = List[DB.XYZ]()
+    for point in usable_points:
+        typed_points.Add(point)
+    if not DB.Electrical.Wire.AreVertexPointsValid(
+            typed_points,
+            start_connector,
+            end_connector):
+        raise ValueError(
+            "Revit rejected the calculated start-middle-end wire geometry."
+        )
     return DB.Electrical.Wire.Create(
         document,
         wire_type_id,
         view.Id,
         wiring_type,
-        usable_points,
+        typed_points,
         start_connector,
         end_connector,
     )
@@ -1350,6 +1398,13 @@ def _clamp_value(value, minimum, maximum):
 
 def _homerun_points(start, end_point, shape, bend_offset,
                      native_vertex=None, previous_connector=None):
+    # Keep these arguments for compatibility with saved UI payloads and the
+    # prior geometry helper contract. Every homerun now deliberately retains
+    # exactly one middle vertex regardless of the selected shape or offset.
+    del shape
+    del native_vertex
+    del previous_connector
+
     requested_offset = None
     try:
         if bend_offset is not None:
@@ -1357,77 +1412,39 @@ def _homerun_points(start, end_point, shape, bend_offset,
     except Exception:
         requested_offset = None
 
-    # A zero offset is the straight-path setting.  Keep accepting the shape
-    # argument for compatibility with older payloads, but let a non-zero
-    # offset select a bend even when a stale legacy shape says "straight".
-    if (requested_offset is not None
-            and abs(requested_offset) <= GEOMETRY_TOLERANCE) or (
-                requested_offset is None
-                and shape == HOMERUN_SHAPE_STRAIGHT
-            ):
-        midpoint = start.Add(end_point.Subtract(start).Multiply(0.5))
-        return [start, midpoint, end_point]
-
     segment = end_point.Subtract(start)
     segment_length = _vector_length(segment)
     if segment_length <= GEOMETRY_TOLERANCE:
         raise ValueError("Homerun endpoints are coincident.")
-    direction = segment.Normalize()
-    previous_point = (
-        previous_connector.Origin
-        if previous_connector is not None
-        else None
-    )
-    unused_along, perpendicular_direction = build_local_frame(
-        start,
-        previous_point=previous_point,
-        fallback_end_point=end_point,
-    )
-    del unused_along
+    midpoint = start.Add(segment.Multiply(0.5))
+    if requested_offset is None:
+        requested_offset = 0.0
+    if abs(requested_offset) <= GEOMETRY_TOLERANCE:
+        return [start, midpoint, end_point]
 
-    perpendicular_length = (
-        abs(requested_offset) if requested_offset is not None else 0.0
+    # Use only the homerun's own start-to-end vector.  The perpendicular is
+    # therefore guaranteed to be centered at the midpoint and orthogonal to
+    # the actual homerun, regardless of previous connections or native wire
+    # geometry.
+    perpendicular_vector = DB.XYZ(
+        -segment.Y,
+        segment.X,
+        0.0,
     )
-    if perpendicular_length <= GEOMETRY_TOLERANCE:
-        perpendicular_length = max(segment_length * 0.2, 0.15)
-    if native_vertex is not None:
-        vertex_vector = native_vertex.Subtract(start)
-        along_length = vertex_vector.DotProduct(direction)
-        projected = direction.Multiply(along_length)
-        perpendicular_vector = vertex_vector.Subtract(projected)
-        candidate_length = _vector_length(perpendicular_vector)
-        if candidate_length > GEOMETRY_TOLERANCE:
-            perpendicular_direction = perpendicular_vector.Normalize()
-            if requested_offset is None or abs(requested_offset) <= GEOMETRY_TOLERANCE:
-                perpendicular_length = candidate_length
-
-    # Preserve the native bend side for positive values and mirror it for a
-    # negative value.  The sign must be applied after the native vertex has
-    # established the base perpendicular direction.
-    if requested_offset is not None and requested_offset < -GEOMETRY_TOLERANCE:
-        perpendicular_direction = perpendicular_direction.Multiply(-1.0)
-
-    perpendicular_length = max(
-        perpendicular_length,
-        max(segment_length * 0.08, 0.05),
+    if perpendicular_vector.GetLength() <= GEOMETRY_TOLERANCE:
+        perpendicular_vector = DB.XYZ.BasisX
+    else:
+        perpendicular_vector = perpendicular_vector.Normalize()
+    if requested_offset < 0.0:
+        perpendicular_vector = perpendicular_vector.Multiply(-1.0)
+    vertex = midpoint.Add(
+        perpendicular_vector.Multiply(abs(requested_offset))
     )
-    vertex_base = start.Add(direction.Multiply(segment_length * 0.5))
-    vertex = vertex_base.Add(
-        perpendicular_direction.Multiply(perpendicular_length)
-    )
-    if (are_points_coincident(start, vertex)
-            or are_points_coincident(vertex, end_point)):
-        vertex = vertex_base.Add(
-            perpendicular_direction.Multiply(
-                max(segment_length * 0.08, 0.05)
-            )
-        )
     return [start, vertex, end_point]
 
 
-def _replace_homerun_custom(document, view, wire, wire_type_id, wiring_type,
-                            homerun_length, direction_mode, shape,
-                            bend_offset):
+def _generated_homerun_geometry(wire, view, homerun_length, direction_mode,
+                                shape, bend_offset):
     connected, unconnected = wire_connected_unconnected_connectors(wire)
     if len(connected) != 1 or len(unconnected) != 1:
         raise ValueError("The generated homerun does not have one open endpoint.")
@@ -1437,48 +1454,149 @@ def _replace_homerun_custom(document, view, wire, wire_type_id, wiring_type,
     owner = getattr(start_connector, "Owner", None)
     if owner is None:
         raise ValueError("The homerun device could not be resolved.")
-    native_end = unconnected[0].Origin
-    previous_connector = find_previous_connector_for_homerun(
-        start_connector,
-        homerun_wire_id=wire.Id,
-    )
-    native_vertex = None
-    try:
-        if getattr(wire, "NumberOfVertices", 0) > 0:
-            native_vertex = wire.GetVertex(0)
-    except Exception as error:
-        script.get_logger().warning(
-            "Could not read the native homerun vertex; using a calculated vertex: {}".format(
-                error
-            )
+
+    vertex_count = int(getattr(wire, "NumberOfVertices", 0) or 0)
+    if vertex_count < 2:
+        raise ValueError("The generated homerun does not have two endpoints.")
+    first_point = wire.GetVertex(0)
+    last_point = wire.GetVertex(vertex_count - 1)
+    connected_point = connected[0].Origin
+    first_distance = first_point.DistanceTo(connected_point)
+    last_distance = last_point.DistanceTo(connected_point)
+    if first_distance <= last_distance:
+        connected_index = 0
+        start_point = first_point
+        native_end = last_point
+    else:
+        connected_index = vertex_count - 1
+        start_point = last_point
+        native_end = first_point
+
+    direction = None
+    if direction_mode == HOMERUN_DIRECTION_PANEL:
+        # Revit has already aimed the native homerun. Reuse that direction
+        # before performing any electrical-system or panel connector lookup.
+        direction = _project_direction(
+            native_end.Subtract(start_point),
+            view,
         )
-    end_point = _homerun_end_point(
-        owner,
-        start_connector,
-        view,
-        homerun_length,
-        direction_mode,
-        connector_type_key(start_connector),
-        fallback_end=native_end,
-    )
-    homerun_points = _homerun_points(
-        start_connector.Origin,
+        if direction is None:
+            direction = _panel_direction(
+                owner,
+                start_connector,
+                view,
+                connector_type_key(start_connector),
+                fallback_end=native_end,
+            )
+    else:
+        direction = _direction_from_last_device(
+            owner,
+            start_connector,
+            view,
+            fallback_end=native_end,
+        )
+
+    parsed_length = float(homerun_length or HOME_RUN_LENGTH)
+    if parsed_length <= GEOMETRY_TOLERANCE:
+        parsed_length = HOME_RUN_LENGTH
+    end_point = start_point.Add(direction.Multiply(parsed_length))
+    desired_points = _homerun_points(
+        start_point,
         end_point,
         shape,
         bend_offset,
-        native_vertex=native_vertex,
-        previous_connector=previous_connector,
     )
+    return start_connector, desired_points, connected_index == 0
+
+
+def _set_wire_vertex_if_changed(wire, index, point):
+    current = wire.GetVertex(index)
+    if are_points_coincident(current, point, GEOMETRY_TOLERANCE):
+        return False
+    wire.SetVertex(index, point)
+    return True
+
+
+def _edit_homerun_in_place(wire, wiring_type, desired_points,
+                            connected_is_first):
+    """Normalize a native homerun to exactly start-middle-end in place."""
+    if len(desired_points) != 3:
+        raise ValueError("A homerun requires exactly three calculated points.")
+    vertex_count = int(getattr(wire, "NumberOfVertices", 0) or 0)
+    if vertex_count < 2:
+        raise ValueError("The generated homerun does not have two endpoints.")
+
+    # Remove interior vertices only. The connected endpoint is never moved or
+    # removed, so Revit preserves the device connection and wire identity.
+    while int(wire.NumberOfVertices) > 3:
+        wire.RemoveVertex(1)
+
+    wire_order_points = (
+        list(desired_points)
+        if connected_is_first
+        else list(reversed(desired_points))
+    )
+    open_index = int(wire.NumberOfVertices) - 1 if connected_is_first else 0
+    _set_wire_vertex_if_changed(
+        wire,
+        open_index,
+        wire_order_points[open_index],
+    )
+
+    if int(wire.NumberOfVertices) == 2:
+        wire.InsertVertex(1, wire_order_points[1])
+    else:
+        _set_wire_vertex_if_changed(wire, 1, wire_order_points[1])
+    wire.WiringType = wiring_type
+    return wire
+
+
+def _replace_homerun_custom(document, view, wire, wire_type_id, wiring_type,
+                            homerun_length, direction_mode, shape,
+                            bend_offset):
+    start_connector, desired_points, connected_is_first = (
+        _generated_homerun_geometry(
+            wire,
+            view,
+            homerun_length,
+            direction_mode,
+            shape,
+            bend_offset,
+        )
+    )
+    try:
+        return _edit_homerun_in_place(
+            wire,
+            wiring_type,
+            desired_points,
+            connected_is_first,
+        )
+    except Exception as edit_error:
+        # Unusual endpoint topology can prevent in-place editing. Recreate only
+        # as a guarded fallback; the enclosing operation transaction remains
+        # atomic if either this fallback or a later circuit fails.
+        script.get_logger().warning(
+            "In-place homerun edit failed for wire {}; using recreate fallback: {}"
+            .format(element_id_value(wire.Id), edit_error)
+        )
     wire_type_value = get_wire_type_id(wire) or wire_type_id
     document.Delete(wire.Id)
-    return DB.Electrical.Wire.Create(
+    # A connected wire endpoint can carry an offset from its owning device
+    # connector. Wire.Create always restores the connector origin itself, so
+    # translate the complete three-point geometry before the rare recreate
+    # fallback instead of passing an endpoint that the API will reject.
+    translation = start_connector.Origin.Subtract(desired_points[0])
+    fallback_points = [
+        point.Add(translation) for point in desired_points
+    ]
+    return _create_wire_from_points(
         document,
+        view,
         wire_type_value,
-        view.Id,
         wiring_type,
-        homerun_points,
         start_connector,
-        None,
+        fallback_points,
+        end_connector=None,
     )
 
 
@@ -1497,6 +1615,7 @@ def _apply_wire_type(wire_set, wire_type_id):
 
 
 def run_wire_by_circuit(document, view, elements, settings):
+    operation_started = time.time()
     if not settings.get("wire_type_id"):
         raise ValueError("Select a wire type before creating wires.")
     circuits = circuits_from_elements(
@@ -1544,76 +1663,80 @@ def run_wire_by_circuit(document, view, elements, settings):
     created_count = 0
     homerun_ids = []
     deleted_count = 0
-    failures = []
+    delete_ms = 0.0
+    new_wires_ms = 0.0
+    homerun_edit_ms = 0.0
     try:
         if settings.get("redraw_existing_wires", True):
+            phase_started = time.time()
             existing_wires = _view_wires_for_circuits(document, view.Id, circuits)
             deleted_count, deletion_failures = _delete_wires(
                 document,
                 existing_wires,
             )
-            failures.extend(deletion_failures)
+            delete_ms = _elapsed_milliseconds(phase_started)
+            if deletion_failures:
+                raise ValueError(deletion_failures[0]["reason"])
         for circuit in circuits:
-            subtransaction = DB.SubTransaction(document)
-            subtransaction.Start()
             try:
+                phase_started = time.time()
                 wire_set = circuit.NewWires(view, branch_type)
                 if not wire_set:
                     raise ValueError("ElectricalSystem.NewWires returned no wires.")
-                _apply_wire_type(wire_set, wire_type_id)
-                generated_homerun = _homerun_from_wire_set(wire_set)
+                wire_list = list(wire_set)
+                if not wire_list:
+                    raise ValueError("ElectricalSystem.NewWires returned no wires.")
+                _apply_wire_type(wire_list, wire_type_id)
+                new_wires_ms += _elapsed_milliseconds(phase_started)
+                generated_homerun = _homerun_from_wire_set(wire_list)
                 if generated_homerun is not None:
-                    bend_offset = settings.get("bend_offset")
-                    try:
-                        has_bend_offset = (
-                            bend_offset is not None
-                            and abs(float(bend_offset)) > GEOMETRY_TOLERANCE
-                        )
-                    except Exception:
-                        has_bend_offset = False
-                    if (settings.get("homerun_direction", HOMERUN_DIRECTION_PANEL)
-                            != HOMERUN_DIRECTION_PANEL
-                            or settings.get("homerun_shape", HOMERUN_SHAPE_STRAIGHT)
-                            != HOMERUN_SHAPE_STRAIGHT
-                            or has_bend_offset):
-                        generated_homerun = _replace_homerun_custom(
-                            document,
-                            view,
-                            generated_homerun,
-                            wire_type_id,
-                            homerun_type,
-                            settings.get("homerun_length", HOME_RUN_LENGTH),
-                            settings.get(
-                                "homerun_direction",
-                                HOMERUN_DIRECTION_PANEL,
-                            ),
-                            settings.get(
-                                "homerun_shape",
-                                HOMERUN_SHAPE_STRAIGHT,
-                            ),
-                            settings.get("bend_offset", 0.0),
-                        )
+                    phase_started = time.time()
+                    generated_homerun = _replace_homerun_custom(
+                        document,
+                        view,
+                        generated_homerun,
+                        wire_type_id,
+                        homerun_type,
+                        settings.get("homerun_length", HOME_RUN_LENGTH),
+                        settings.get(
+                            "homerun_direction",
+                            HOMERUN_DIRECTION_PANEL,
+                        ),
+                        settings.get(
+                            "homerun_shape",
+                            HOMERUN_SHAPE_STRAIGHT,
+                        ),
+                        settings.get("bend_offset", 0.0),
+                    )
+                    homerun_edit_ms += _elapsed_milliseconds(phase_started)
                     homerun_ids.append(element_id_value(generated_homerun.Id))
-                created_count += len(list(wire_set))
-                subtransaction.Commit()
+                created_count += len(wire_list)
             except Exception as error:
-                subtransaction.RollBack()
-                failures.append({
-                    "id": element_id_value(circuit.Id),
-                    "element": circuit,
-                    "reason": "Circuit wiring failed: {}".format(error),
-                })
+                raise ValueError(
+                    "Circuit {} wiring failed: {}".format(
+                        element_id_value(circuit.Id),
+                        error,
+                    )
+                )
         transaction.Commit()
     except Exception:
         if transaction.GetStatus() == DB.TransactionStatus.Started:
             transaction.RollBack()
         raise
+    timing_ms = {
+        "delete_existing": delete_ms,
+        "new_wires": round(new_wires_ms, 2),
+        "homerun_edit": round(homerun_edit_ms, 2),
+        "total": _elapsed_milliseconds(operation_started),
+    }
+    _log_operation_timing("Wire by Circuit", timing_ms)
     return {
         "created": created_count,
         "homeruns": homerun_ids,
         "deleted": deleted_count,
         "skipped": skipped_circuits,
-        "failures": failures,
+        "failures": [],
+        "timing_ms": timing_ms,
         "scheme": SCHEME_LABELS[SCHEME_WIRE_BY_CIRCUIT],
     }
 
@@ -1653,31 +1776,54 @@ def _run_direct_wires(document, view, device_elements, settings,
         settings.get("homerun_wiring_type"),
         "Arc",
     )
+
+    # Resolve every connector before any destructive model change. Selection
+    # validation is broad; this is the final scheme-specific preflight.
+    connector_records = []
+    for element in device_elements:
+        try:
+            connector, resolved_key = _resolve_device_connector(
+                element,
+                connector_key,
+            )
+        except Exception as error:
+            raise ValueError(
+                "Device {} connector validation failed: {}".format(
+                    element_id_value(element.Id),
+                    error,
+                )
+            )
+        if connector_key is None:
+            connector_key = resolved_key
+        connector_records.append((element, connector, resolved_key))
+    if not connector_records:
+        raise ValueError("No usable device connectors were found.")
+    if node_element is not None:
+        for element, _unused_connector, resolved_key in connector_records:
+            if resolved_key != connector_key:
+                raise ValueError(
+                    "Device {} connector type does not match the node connector."
+                    .format(element_id_value(element.Id))
+                )
+    elif not individual_homeruns:
+        for index in range(len(connector_records) - 1):
+            first_record = connector_records[index]
+            second_record = connector_records[index + 1]
+            if first_record[2] != second_record[2]:
+                raise ValueError(
+                    "Devices {} and {} do not share a connector type.".format(
+                        element_id_value(first_record[0].Id),
+                        element_id_value(second_record[0].Id),
+                    )
+                )
+
     transaction_name = "Wire Tools - Custom wiring"
     transaction = DB.Transaction(document, transaction_name)
     transaction.Start()
     created_count = 0
     homerun_ids = []
-    failures = []
     deleted_count = 0
     try:
-        connector_records = []
-        for element in device_elements:
-            try:
-                connector, resolved_key = _resolve_device_connector(
-                    element,
-                    connector_key,
-                )
-                if connector_key is None:
-                    connector_key = resolved_key
-                connector_records.append((element, connector, resolved_key))
-            except Exception as error:
-                failures.append({
-                    "id": element_id_value(element.Id),
-                    "element": element,
-                    "reason": str(error),
-                })
-
         if settings.get("redraw_existing_wires", True):
             deleted_count, deletion_failures = _delete_wires_connected_to_records(
                 document,
@@ -1689,7 +1835,8 @@ def _run_direct_wires(document, view, device_elements, settings,
                 # homeruns on repeated Individual Homeruns runs.
                 homeruns_only=False,
             )
-            failures.extend(deletion_failures)
+            if deletion_failures:
+                raise ValueError(deletion_failures[0]["reason"])
 
         if node_element is not None:
             if settings.get("redraw_existing_wires", True):
@@ -1702,14 +1849,13 @@ def _run_direct_wires(document, view, device_elements, settings,
                     )
                 )
                 deleted_count += node_homerun_deleted
-                failures.extend(node_homerun_failures)
+                if node_homerun_failures:
+                    raise ValueError(node_homerun_failures[0]["reason"])
             for element, connector, resolved_key in connector_records:
-                subtransaction = DB.SubTransaction(document)
-                subtransaction.Start()
                 try:
                     if resolved_key != connector_key:
                         raise ValueError("Device connector type does not match the node connector.")
-                    created_wire = _create_wire(
+                    _create_wire(
                         document,
                         view,
                         wire_type_id,
@@ -1718,16 +1864,13 @@ def _run_direct_wires(document, view, device_elements, settings,
                         end_connector=node_connector,
                     )
                     created_count += 1
-                    subtransaction.Commit()
                 except Exception as error:
-                    subtransaction.RollBack()
-                    failures.append({
-                        "id": element_id_value(element.Id),
-                        "element": element,
-                        "reason": "Wire to node failed: {}".format(error),
-                    })
-            subtransaction = DB.SubTransaction(document)
-            subtransaction.Start()
+                    raise ValueError(
+                        "Wire to node failed for device {}: {}".format(
+                            element_id_value(element.Id),
+                            error,
+                        )
+                    )
             try:
                 created_homerun = _custom_interconnect_homerun(
                     document,
@@ -1740,21 +1883,18 @@ def _run_direct_wires(document, view, device_elements, settings,
                 created_count += 1
                 if created_homerun is not None:
                     homerun_ids.append(element_id_value(created_homerun.Id))
-                subtransaction.Commit()
             except Exception as error:
-                subtransaction.RollBack()
-                failures.append({
-                    "id": element_id_value(node_element.Id),
-                    "element": node_element,
-                    "reason": "Node homerun failed: {}".format(error),
-                })
+                raise ValueError(
+                    "Node {} homerun failed: {}".format(
+                        element_id_value(node_element.Id),
+                        error,
+                    )
+                )
             transaction.Commit()
-            return created_count, homerun_ids, failures, deleted_count
+            return created_count, homerun_ids, [], deleted_count
 
         if individual_homeruns:
             for element, connector, resolved_key in connector_records:
-                subtransaction = DB.SubTransaction(document)
-                subtransaction.Start()
                 try:
                     end_point = _homerun_end_point(
                         element,
@@ -1787,20 +1927,17 @@ def _run_direct_wires(document, view, device_elements, settings,
                     created_count += 1
                     if created_wire is not None:
                         homerun_ids.append(element_id_value(created_wire.Id))
-                    subtransaction.Commit()
                 except Exception as error:
-                    subtransaction.RollBack()
-                    failures.append({
-                        "id": element_id_value(element.Id),
-                        "element": element,
-                        "reason": "Individual homerun failed: {}".format(error),
-                    })
+                    raise ValueError(
+                        "Individual homerun failed for device {}: {}".format(
+                            element_id_value(element.Id),
+                            error,
+                        )
+                    )
         else:
             for index in range(len(connector_records) - 1):
                 first_element, first_connector, first_key = connector_records[index]
                 second_element, second_connector, second_key = connector_records[index + 1]
-                subtransaction = DB.SubTransaction(document)
-                subtransaction.Start()
                 try:
                     if first_key != second_key:
                         raise ValueError("Adjacent devices do not share a connector type.")
@@ -1813,23 +1950,20 @@ def _run_direct_wires(document, view, device_elements, settings,
                         end_connector=second_connector,
                     )
                     created_count += 1
-                    subtransaction.Commit()
                 except Exception as error:
-                    subtransaction.RollBack()
-                    failures.append({
-                        "id": element_id_value(first_element.Id),
-                        "element": first_element,
-                        "reason": "Interconnect failed to {}: {}".format(
+                    raise ValueError(
+                        "Interconnect failed from {} to {}: {}".format(
+                            element_id_value(first_element.Id),
                             element_id_value(second_element.Id),
                             error,
-                        ),
-                    })
+                        )
+                    )
         transaction.Commit()
     except Exception:
         if transaction.GetStatus() == DB.TransactionStatus.Started:
             transaction.RollBack()
         raise
-    return created_count, homerun_ids, failures, deleted_count
+    return created_count, homerun_ids, [], deleted_count
 
 
 def _connector_distance(first_connector, second_connector):
@@ -1972,7 +2106,6 @@ def _run_spatial_interconnect(document, view, device_elements, settings):
         raise ValueError("Selected devices do not share a connector type.")
 
     connector_records = []
-    failures = []
     for element in list(device_elements or []):
         try:
             connector, resolved_key = _resolve_device_connector(
@@ -1980,23 +2113,21 @@ def _run_spatial_interconnect(document, view, device_elements, settings):
                 connector_key,
             )
         except Exception as error:
-            failures.append({
-                "id": element_id_value(element.Id),
-                "element": element,
-                "reason": "Connector resolution failed: {}".format(error),
-            })
-            continue
+            raise ValueError(
+                "Connector resolution failed for device {}: {}".format(
+                    element_id_value(element.Id),
+                    error,
+                )
+            )
         if connector is None or resolved_key != connector_key:
-            failures.append({
-                "id": element_id_value(element.Id),
-                "element": element,
-                "reason": "No connector matching the common interconnect type.",
-            })
-            continue
+            raise ValueError(
+                "Device {} has no connector matching the common interconnect type."
+                .format(element_id_value(element.Id))
+            )
         connector_records.append((element, connector, resolved_key))
 
     if not connector_records:
-        return 0, [], failures, 0
+        raise ValueError("No usable device connectors were found.")
 
     ordered_records = _spatial_element_order(connector_records)
     pair_records = [
@@ -2021,12 +2152,11 @@ def _run_spatial_interconnect(document, view, device_elements, settings):
                 view,
                 connector_records,
             )
-            failures.extend(deletion_failures)
+            if deletion_failures:
+                raise ValueError(deletion_failures[0]["reason"])
         for first_record, second_record in pair_records:
             first_element, first_connector, first_key = first_record
             second_element, second_connector, second_key = second_record
-            subtransaction = DB.SubTransaction(document)
-            subtransaction.Start()
             try:
                 if first_key != second_key:
                     raise ValueError("Spatially selected connectors have different types.")
@@ -2046,22 +2176,17 @@ def _run_spatial_interconnect(document, view, device_elements, settings):
                     end_connector=second_connector,
                 )
                 created_count += 1
-                subtransaction.Commit()
             except Exception as error:
-                subtransaction.RollBack()
-                failures.append({
-                    "id": element_id_value(first_element.Id),
-                    "element": first_element,
-                    "reason": "Spatial interconnect to {} failed: {}".format(
+                raise ValueError(
+                    "Spatial interconnect from {} to {} failed: {}".format(
+                        element_id_value(first_element.Id),
                         element_id_value(second_element.Id),
                         error,
-                    ),
-                })
+                    )
+                )
 
         homerun_element, homerun_connector, homerun_key = ordered_records[0]
         del homerun_key
-        subtransaction = DB.SubTransaction(document)
-        subtransaction.Start()
         try:
             created_homerun = _custom_interconnect_homerun(
                 document,
@@ -2073,46 +2198,19 @@ def _run_spatial_interconnect(document, view, device_elements, settings):
             )
             created_count += 1
             homerun_ids.append(element_id_value(created_homerun.Id))
-            subtransaction.Commit()
         except Exception as error:
-            subtransaction.RollBack()
-            failures.append({
-                "id": element_id_value(homerun_element.Id),
-                "element": homerun_element,
-                "reason": "Selected-device homerun failed: {}".format(error),
-            })
+            raise ValueError(
+                "Selected-device homerun failed for {}: {}".format(
+                    element_id_value(homerun_element.Id),
+                    error,
+                )
+            )
         transaction.Commit()
     except Exception:
         if transaction.GetStatus() == DB.TransactionStatus.Started:
             transaction.RollBack()
         raise
-    return created_count, homerun_ids, failures, deleted_count
-
-
-def _wire_vertex_offset(wire):
-    try:
-        if int(getattr(wire, "NumberOfVertices", 0) or 0) <= 0:
-            return 0.0
-        connected, unconnected = wire_connected_unconnected_connectors(wire)
-        if len(connected) != 1 or len(unconnected) != 1:
-            return 0.0
-        start_connector = get_element_connector_from_wire_connector(connected[0])
-        if start_connector is None:
-            return 0.0
-        start_point = start_connector.Origin
-        end_point = unconnected[0].Origin
-        direction_vector = end_point.Subtract(start_point)
-        if direction_vector.GetLength() <= GEOMETRY_TOLERANCE:
-            return 0.0
-        direction = direction_vector.Normalize()
-        vertex = wire.GetVertex(0)
-        vertex_vector = vertex.Subtract(start_point)
-        along_length = vertex_vector.DotProduct(direction)
-        projected = direction.Multiply(along_length)
-        perpendicular = vertex_vector.Subtract(projected)
-        return _vector_length(perpendicular)
-    except Exception:
-        return 0.0
+    return created_count, homerun_ids, [], deleted_count
 
 
 def _native_homerun_record(circuit, wire):
@@ -2238,10 +2336,8 @@ def _run_native_interconnect(document, view, device_elements, settings):
     transaction.Start()
     created_count = 0
     deleted_count = 0
-    failures = []
     homerun_records = []
     successful_circuit_values = set()
-    reference_bend_offset = 0.0
     try:
         if settings.get("redraw_existing_wires", True):
             existing_wires = _view_wires_for_circuits(document, view.Id, circuits)
@@ -2249,11 +2345,10 @@ def _run_native_interconnect(document, view, device_elements, settings):
                 document,
                 existing_wires,
             )
-            failures.extend(deletion_failures)
+            if deletion_failures:
+                raise ValueError(deletion_failures[0]["reason"])
 
         for circuit in circuits:
-            subtransaction = DB.SubTransaction(document)
-            subtransaction.Start()
             try:
                 wire_set = circuit.NewWires(view, branch_type)
                 if not wire_set:
@@ -2267,31 +2362,22 @@ def _run_native_interconnect(document, view, device_elements, settings):
                         if record is not None:
                             homerun_records.append(record)
                             circuit_homerun_found = True
-                    elif reference_bend_offset <= GEOMETRY_TOLERANCE:
-                        candidate_offset = _wire_vertex_offset(wire)
-                        if candidate_offset > GEOMETRY_TOLERANCE:
-                            # Keep only the scalar geometry reference.  The
-                            # native wire object is not retained across the
-                            # later deletion and custom-creation steps.
-                            reference_bend_offset = candidate_offset
                 if not circuit_homerun_found:
                     raise ValueError(
                         "Revit created no resolvable homerun for the circuit."
                     )
                 successful_circuit_values.add(element_id_value(circuit.Id))
                 created_count += len(wire_list)
-                subtransaction.Commit()
             except Exception as error:
-                subtransaction.RollBack()
-                failures.append({
-                    "id": element_id_value(circuit.Id),
-                    "element": circuit,
-                    "reason": "Native circuit wiring failed: {}".format(error),
-                })
+                raise ValueError(
+                    "Native circuit {} wiring failed: {}".format(
+                        element_id_value(circuit.Id),
+                        error,
+                    )
+                )
 
         if not homerun_records:
-            transaction.Commit()
-            return created_count, [], failures, deleted_count
+            raise ValueError("Revit created no usable interconnect homeruns.")
 
         keeper = min(
             homerun_records,
@@ -2304,7 +2390,8 @@ def _run_native_interconnect(document, view, device_elements, settings):
         removed_count, removed_failures = _delete_wires(document, removed_wires)
         deleted_count += removed_count
         created_count = max(created_count - removed_count, 0)
-        failures.extend(removed_failures)
+        if removed_failures:
+            raise ValueError(removed_failures[0]["reason"])
 
         homerun_id = element_id_value(keeper["wire"].Id)
         selected_homerun_record = None
@@ -2326,29 +2413,59 @@ def _run_native_interconnect(document, view, device_elements, settings):
 
         if selected_homerun_record is not None:
             selected_element, selected_connector, selected_key = selected_homerun_record
+            del selected_key
             native_open_point = keeper["open_connector"].Origin
-            subtransaction = DB.SubTransaction(document)
-            subtransaction.Start()
             try:
-                document.Delete(keeper["wire"].Id)
-                custom_homerun = _custom_interconnect_homerun(
-                    document,
-                    view,
-                    wire_type_id,
-                    selected_element,
-                    selected_connector,
-                    settings,
-                    fallback_end=native_open_point,
-                )
+                same_owner = False
+                try:
+                    same_owner = selected_element.Id == keeper["owner"].Id
+                except Exception:
+                    pass
+                if not same_owner:
+                    try:
+                        same_owner = bool(
+                            selected_element.Id.Equals(keeper["owner"].Id)
+                        )
+                    except Exception:
+                        pass
+                if same_owner:
+                    custom_homerun = _replace_homerun_custom(
+                        document,
+                        view,
+                        keeper["wire"],
+                        wire_type_id,
+                        wiring_type_from_name(
+                            settings.get("homerun_wiring_type"),
+                            "Arc",
+                        ),
+                        settings.get("homerun_length", HOME_RUN_LENGTH),
+                        settings.get(
+                            "homerun_direction",
+                            HOMERUN_DIRECTION_PANEL,
+                        ),
+                        settings.get(
+                            "homerun_shape",
+                            HOMERUN_SHAPE_STRAIGHT,
+                        ),
+                        settings.get("bend_offset", 0.0),
+                    )
+                else:
+                    document.Delete(keeper["wire"].Id)
+                    custom_homerun = _custom_interconnect_homerun(
+                        document,
+                        view,
+                        wire_type_id,
+                        selected_element,
+                        selected_connector,
+                        settings,
+                        fallback_end=native_open_point,
+                    )
                 homerun_id = element_id_value(custom_homerun.Id)
-                subtransaction.Commit()
             except Exception as error:
-                subtransaction.RollBack()
-                failures.append({
-                    "id": element_id_value(selected_element.Id),
-                    "element": selected_element,
-                    "reason": "Selected-device homerun replacement failed: {}".format(error),
-                })
+                raise ValueError(
+                    "Selected-device homerun replacement failed for {}: {}"
+                    .format(element_id_value(selected_element.Id), error)
+                )
 
         # Use the native circuit network as each circuit's group.  The
         # selected-device homerun remains connected to its native circuit
@@ -2370,14 +2487,13 @@ def _run_native_interconnect(document, view, device_elements, settings):
             if circuit_records:
                 spatial_groups["circuit:{}".format(circuit_value)] = circuit_records
             else:
-                failures.append({
-                    "id": circuit_value,
-                    "element": circuit,
-                    "reason": "No usable member connector was found for spatial circuit bridging.",
-                })
+                raise ValueError(
+                    "Circuit {} has no usable member connector for spatial bridging."
+                    .format(circuit_value)
+                )
         bridge_edges = _spatial_group_mst(spatial_groups)
 
-        bend_offset = reference_bend_offset
+        bend_offset = settings.get("bend_offset", 0.0)
         for edge in bridge_edges:
             start_record = edge[3]
             end_record = edge[4]
@@ -2388,8 +2504,6 @@ def _run_native_interconnect(document, view, device_elements, settings):
             second_owner = getattr(previous_connector, "Owner", None)
             start_point = connector.Origin
             end_point = previous_connector.Origin
-            subtransaction = DB.SubTransaction(document)
-            subtransaction.Start()
             try:
                 if (isinstance(first_owner, DB.Electrical.Wire)
                         or isinstance(second_owner, DB.Electrical.Wire)):
@@ -2412,21 +2526,20 @@ def _run_native_interconnect(document, view, device_elements, settings):
                     end_connector=previous_connector,
                 )
                 created_count += 1
-                subtransaction.Commit()
             except Exception as error:
-                subtransaction.RollBack()
-                failures.append({
-                    "id": element_id_value(element.Id),
-                    "element": element,
-                    "reason": "Device-to-device interconnect failed: {}".format(error),
-                })
+                raise ValueError(
+                    "Device-to-device interconnect failed from {}: {}".format(
+                        element_id_value(element.Id),
+                        error,
+                    )
+                )
 
         transaction.Commit()
     except Exception:
         if transaction.GetStatus() == DB.TransactionStatus.Started:
             transaction.RollBack()
         raise
-    return created_count, [homerun_id], failures, deleted_count
+    return created_count, [homerun_id], [], deleted_count
 
 
 def run_interconnect(document, view, elements, settings):

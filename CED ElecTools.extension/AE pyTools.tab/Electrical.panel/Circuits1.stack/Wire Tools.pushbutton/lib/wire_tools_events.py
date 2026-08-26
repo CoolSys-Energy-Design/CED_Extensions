@@ -235,13 +235,21 @@ class WireToolsExternalEventGateway(object):
             active_view_id = element_id_value(active_view.Id)
             if active_view_id == self.last_active_view_id:
                 return
+            self.active_view_id = active_view_id
             self.last_active_view_id = active_view_id
+            self.device_ids = []
+            self.node_id = None
+            self.homerun_ids = []
+            # Discard any queued request captured against the previous view.
+            # If its ExternalEvent later executes, consume() safely returns
+            # None instead of applying stale payload state to the new target.
+            self.pending = None
             self.window.receive_result(
                 "lifecycle",
                 "active_view_changed",
                 {
-                    "refresh_available": is_supported_wire_view(active_view),
-                    "active_view_name": _view_name(active_view),
+                    "view_supported": is_supported_wire_view(active_view),
+                    "view_name": _view_name(active_view),
                 },
                 None,
             )
@@ -279,19 +287,6 @@ class WireToolsExternalEventGateway(object):
         if _document_key(document) != self.document_key:
             return ACTIVE_DOCUMENT_CHANGED_MESSAGE
         return None
-
-    def current_active_view_supported(self):
-        """Return whether the current active view can become the target view."""
-        if self.invalid_context or self.ui_application is None:
-            return False
-        if self.current_context_message() is not None:
-            return False
-        try:
-            ui_document = self.ui_application.ActiveUIDocument
-            return bool(ui_document is not None
-                        and is_supported_wire_view(ui_document.ActiveView))
-        except Exception:
-            return False
 
     def check_context(self):
         if self.invalid_context:
@@ -438,7 +433,6 @@ class _WireToolsHandler(UI.IExternalEventHandler):
         return {
             "view_supported": is_supported_wire_view(view),
             "view_name": _view_name(view),
-            "refresh_available": self.gateway.current_active_view_supported(),
             "wire_types": wire_type_choices(document),
             "tag_types": wire_tag_type_choices(document),
             "device_count": len(valid_devices),
@@ -532,32 +526,6 @@ class _WireToolsHandler(UI.IExternalEventHandler):
                     require_supported=False,
                 )
                 del ui_document
-                scheme = str(payload.get("scheme") or SCHEME_WIRE_BY_CIRCUIT)
-                settings = payload.get("settings") or {}
-                self._send(
-                    "ok",
-                    action_name,
-                    self._sync_result(
-                        document,
-                        view,
-                        scheme,
-                        settings.get("system_type_key"),
-                    ),
-                )
-                return
-
-            if action_name == "refresh_target_view":
-                ui_document, document = self._document_context(application)
-                view = ui_document.ActiveView
-                if not is_supported_wire_view(view):
-                    raise ValueError(
-                        "Switch to a floor plan or reflected ceiling plan before "
-                        "refreshing the target view."
-                    )
-                self.gateway.active_view_id = element_id_value(view.Id)
-                self.gateway.device_ids = []
-                self.gateway.node_id = None
-                self.gateway.homerun_ids = []
                 scheme = str(payload.get("scheme") or SCHEME_WIRE_BY_CIRCUIT)
                 settings = payload.get("settings") or {}
                 self._send(

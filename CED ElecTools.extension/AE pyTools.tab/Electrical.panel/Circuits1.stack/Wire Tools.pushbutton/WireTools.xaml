@@ -675,13 +675,6 @@
         <RowDefinition Height="Auto"/>
       </Grid.RowDefinitions>
       <Grid Grid.Row="0">
-        <Button Name="RefreshTargetViewButton"
-                Content="Refresh Target View"
-                Style="{DynamicResource CED.Button.Base}"
-                Width="132"
-                Height="30"
-                HorizontalAlignment="Left"
-                Click="refresh_target_view_clicked"/>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
           <Button Name="CloseButton" Content="Close" Style="{DynamicResource CED.Button.Base}" Width="100" Height="30" Margin="0,0,6,0" Click="close_clicked"/>
           <Button Name="RunButton" Content="Run Scheme" Style="{DynamicResource CED.Button.Apply}" Width="100" Height="30" Click="run_clicked"/>
