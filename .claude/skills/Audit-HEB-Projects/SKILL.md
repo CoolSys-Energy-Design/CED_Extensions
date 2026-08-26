@@ -54,9 +54,15 @@ scratchpad; never rely on the 60-second HTTP response for long operations (see R
      (that returns panel-fed systems only and falsely flags everything).
    - Power connector filter: `c.Domain == DomainElectrical and c.ElectricalSystemType in
      {PowerCircuit, PowerBalanced, PowerUnBalanced}` (capital B in UnBalanced, Revit 2024).
-3. **Case-controller neutral check** — circuits serving Mechanical Control Devices must list a
-   neutral: `CKT_Include Neutral_CED == 1` and `CKT_Wire Neutral Size_CEDT` not blank/`-`.
+3. **Case-controller neutral check** — circuits serving case controllers must list a neutral:
+   `CKT_Include Neutral_CED == 1` and `CKT_Wire Neutral Size_CEDT` not blank/`-`.
    Report panel/ckt/load name/wire callout for every circuit, PASS/FAIL.
+   - Case controllers are usually **Mechanical Control Devices**, BUT in some projects they are
+     modeled as **Electrical Fixtures** instead (Robson Ranch 2026-08-25: family
+     `EF-U_General Electrical Box-Unbalanced_CED-HEB`, type `Refrig Case - Case Controller`).
+     If the MCD pass finds 0 circuits, do NOT report N/A — search FamilySymbol names for
+     `CASE CONTROLLER` across Electrical Fixtures/Equipment, ask Reed to confirm the family if
+     ambiguous, and rerun the check against those instances.
 4. **Circuit Manager last calculation** — parse the JSON blob in each circuit's
    `Circuit Data_CED` text parameter; `last_calculation` is a UTC ISO timestamp. Only circuits
    recalculated since the timestamp feature shipped carry one — report the latest run plus the
@@ -108,9 +114,10 @@ For each headline finding, export the sheet from BOTH models and present side-by
 
 PDFs saved to the folder resolved in Phase 0 step 3 (default: the shared Teams library
 `%USERPROFILE%\CoolSys Inc\Teams-Coolsys - Tool Development - Documents\MEP AUTOMATION\HEB Project Audits`):
-- **"<Suspect> Audit Part 1.pdf"** — suspect-project audit with full ID/sheet tables.
-- **"<Suspect> Audit Part 2.pdf"** — standards comparison with side-by-side screenshots and a
-  separate expected-building-differences table.
+- **"<YYYYMMDD> - <Suspect> Audit Part 1.pdf"** — suspect-project audit with full ID/sheet
+  tables. Date prefix is the run date, e.g. "20260825 - Buda Audit Part 1.pdf" (Reed 2026-08-25).
+- **"<YYYYMMDD> - <Suspect> Audit Part 2.pdf"** — standards comparison with side-by-side
+  screenshots and a separate expected-building-differences table.
 Build as HTML (tables, red/green highlights, embedded `file:///` images downscaled to ~1500px)
 and convert: `msedge.exe --headless --disable-gpu --no-pdf-header-footer --print-to-pdf=...`.
 Verify circuit numbers and quoted strings against the dumped JSON before citing them.
