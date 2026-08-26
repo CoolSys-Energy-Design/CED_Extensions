@@ -46,7 +46,6 @@ class WireToolsWindow(forms.WPFWindow):
         self.selection_active = False
         self.invalid_context = False
         self.invalid_context_message = ""
-        self.refresh_target_available = False
         self.scheme = SCHEME_WIRE_BY_CIRCUIT
         self.device_count = 0
         self.invalid_device_count = 0
@@ -114,7 +113,6 @@ class WireToolsWindow(forms.WPFWindow):
         self.selection_instruction_panel = self.FindName("SelectionInstructionsPanel")
         self.selection_instruction_text = self.FindName("SelectionInstructionsText")
         self.run_button = self.FindName("RunButton")
-        self.refresh_target_view_button = self.FindName("RefreshTargetViewButton")
         self.status_text = self.FindName("StatusText")
         self.invalid_context_overlay = self.FindName("InvalidContextOverlay")
         self.invalid_context_message_text = self.FindName("InvalidContextMessageText")
@@ -520,26 +518,16 @@ class WireToolsWindow(forms.WPFWindow):
             SCHEME_WIRE_TO_NODE,
         )
         self.scheme_combo.IsEnabled = active
-        self.refresh_target_view_button.IsEnabled = (
-            not self.invalid_context
-            and not self.selection_active
-            and self.refresh_target_available
-        )
         self.select_devices_button.IsEnabled = active
         self.use_current_button.IsEnabled = active
         self.clear_devices_button.IsEnabled = active
-        connector_scheme = scheme in (
-            SCHEME_INTERCONNECT,
-            SCHEME_INDIVIDUAL_HOMERUN,
-            SCHEME_WIRE_TO_NODE,
-        )
         self.system_type_panel.Visibility = (
             Visibility.Visible
-            if connector_scheme and len(self.system_type_choices) > 1
+            if len(self.system_type_choices) > 1
             else Visibility.Collapsed
         )
-        self.system_type_panel.IsEnabled = active and connector_scheme
-        self.system_type_combo.IsEnabled = active and connector_scheme
+        self.system_type_panel.IsEnabled = active and bool(self.system_type_choices)
+        self.system_type_combo.IsEnabled = active and bool(self.system_type_choices)
         self.node_group.Visibility = (
             Visibility.Visible
             if node_options_visible
@@ -663,7 +651,6 @@ class WireToolsWindow(forms.WPFWindow):
 
     def _apply_sync(self, result):
         self.view_supported = bool(result.get("view_supported", False))
-        self.refresh_target_available = bool(result.get("refresh_available", False))
         self.target_view_text.Text = "Target View: {}".format(
             result.get("view_name", "(none)")
         )
@@ -727,9 +714,8 @@ class WireToolsWindow(forms.WPFWindow):
             self._set_selection_state(False, "")
             message = str(error) if error is not None else "Unknown Revit operation error."
             lower_message = message.lower()
-            if (action_name != "refresh_target_view"
-                    and ("floor plan" in lower_message
-                    or "reflected ceiling plan" in lower_message)):
+            if ("floor plan" in lower_message
+                    or "reflected ceiling plan" in lower_message):
                 self.view_supported = False
                 self._refresh_control_state()
             self._set_status(message)
@@ -740,8 +726,31 @@ class WireToolsWindow(forms.WPFWindow):
             )
             return
         if status == "lifecycle" and action_name == "active_view_changed":
-            self.refresh_target_available = bool(result.get("refresh_available", False))
+            self.view_supported = bool(result.get("view_supported", False))
+            view_name = result.get("view_name", "(none)")
+            self.target_view_text.Text = "Target View: {}".format(view_name)
+            self._set_selection_state(False, "")
+            self.suspend_option_events = True
+            try:
+                self._populate_system_types([], None)
+            finally:
+                self.suspend_option_events = False
+            self._set_device_counts(0, 0, selected_count=0)
+            self.node_id = None
+            self.node_connector_count = 0
+            self.node_info_text.Text = "No node selected."
+            self._set_homerun_count(0)
             self._refresh_control_state()
+            if self.view_supported:
+                self._set_status(
+                    "Target view changed to {}; saved selections were cleared."
+                    .format(view_name)
+                )
+            else:
+                self._set_status(
+                    "Wire Tools is disabled in {}. Switch to a floor plan or "
+                    "reflected ceiling plan.".format(view_name)
+                )
             return
         if status == "unavailable":
             self.view_supported = False
@@ -790,6 +799,7 @@ class WireToolsWindow(forms.WPFWindow):
                 )
             finally:
                 self.suspend_option_events = False
+            self._refresh_control_state()
             if result.get("node_excluded"):
                 self._set_status("Device selection updated; the picked node was excluded.")
             else:
@@ -799,10 +809,6 @@ class WireToolsWindow(forms.WPFWindow):
             self._populate_system_types([], None)
             self._set_device_counts(0, 0, selected_count=0)
             self._set_status("Device selection cleared.")
-            return
-        if action_name == "refresh_target_view":
-            self._apply_sync(result)
-            self._set_status("Target view refreshed; selections cleared.")
             return
         if action_name == "select_node":
             self._set_selection_state(False, "")
@@ -899,17 +905,6 @@ class WireToolsWindow(forms.WPFWindow):
         if self.invalid_context:
             return
         self.gateway.raise_action("clear_devices")
-
-    def refresh_target_view_clicked(self, sender, args):
-        del sender
-        del args
-        if self.invalid_context:
-            return
-        request = self._payload()
-        self.refresh_target_view_button.IsEnabled = False
-        self._set_status("Refreshing target view and clearing selections...")
-        if not self.gateway.raise_action("refresh_target_view", request):
-            self._refresh_control_state()
 
     def select_node_clicked(self, sender, args):
         if self.invalid_context:

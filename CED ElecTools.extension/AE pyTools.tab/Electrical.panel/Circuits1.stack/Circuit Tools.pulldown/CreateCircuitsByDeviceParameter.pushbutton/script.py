@@ -1,19 +1,26 @@
 # -*- coding: utf-8 -*-
 __title__ = "Create Circuits by Device Parameter"
-__doc__ = ("Gather every circuitable element (any family instance with a power "
-           "connector) - from the current selection if one exists, else the "
-           "whole model - group them by a parameter you choose, validate "
-           "voltage/pole compatibility, regroup, then create one native Revit "
-           "circuit per group. Group names containing DEDICATED create one "
-           "native circuit per effective member.")
+__doc__ = ("Modeless circuit grouping and creation by a selected device "
+           "parameter, with active-document tracking and model navigation.")
 
 import os
 import sys
 
+import clr
+
+for _asm in ("PresentationFramework", "PresentationCore", "WindowsBase"):
+    try:
+        clr.AddReference(_asm)
+    except Exception:
+        pass
+
+from Autodesk.Revit.UI import ExternalEvent, IExternalEventHandler
+from System.Collections.Generic import List
+from System.Windows import Application, WindowState
 from pyrevit import revit, forms, script, DB
+
 from Snippets import revit_helpers
 
-# make the sibling cg_* modules importable
 THIS_DIR = os.path.dirname(__file__)
 if THIS_DIR not in sys.path:
     sys.path.insert(0, THIS_DIR)
@@ -24,219 +31,361 @@ import cg_collect
 import cg_apply
 
 logger = script.get_logger()
-output = script.get_output()
 TITLE = "Create Circuits by Device Parameter"
+_WINDOW_MARKER = "_ae_circuit_grouper_window_persistent_v6"
+_LEGACY_WINDOW_MARKERS = (
+    "_ae_circuit_grouper_window_persistent_v5",
+    "_ae_circuit_grouper_window_persistent_v4",
+    "_ae_circuit_grouper_window_persistent_v3",
+    "_ae_circuit_grouper_window_persistent_v2",
+)
+_ACTIVE_SCOPE = object()
 
 
-def main():
-    doc = revit.doc
+def _id_value(item):
+    return revit_helpers.get_elementid_value(item)
+
+
+def _id_from(value):
+    return revit_helpers.elementid_from_value(value)
+
+
+def _document_key(doc):
     if doc is None:
-        forms.alert("No active document.", title=TITLE)
-        return
-
-    # If the user has a selection, operate only on those elements; otherwise
-    # scan the whole model. Either way only circuitable elements are kept.
-    sel_ids = None
-    scope_label = "model"
-    picked = list(revit.uidoc.Selection.GetElementIds())
-    if picked:
-        # Keep the Revit ElementId objects intact through collection. The
-        # collector only normalizes ids when it builds the UI data model.
-        sel_ids = picked
-        scope_label = "selection"
-    else:
-        # No selection -> whole-model scan. Warn before the (potentially slow)
-        # collection and let the user back out and select first.
-        proceed = forms.alert(
-            "Nothing is selected, so Create Circuits by Device Parameter will scan the ENTIRE "
-            "model for circuitable elements.\n\n"
-            "Run time may drastically increase - especially as you change the "
-            "parameter to group by, since every element is regrouped.\n\n"
-            "Select the elements you want to circuit first for a faster, more "
-            "focused run.\n\n"
-            "Scan the whole model anyway?",
-            title=TITLE, yes=True, no=True,
+        return ""
+    try:
+        return str(doc.GetHashCode())
+    except Exception:
+        return "{}|{}".format(
+            getattr(doc, "Title", "") or "",
+            getattr(doc, "PathName", "") or "",
         )
-        if not proceed:
-            return
 
-    rows_data = cg_collect.collect_devices(doc, sel_ids)
-    if not rows_data:
-        if sel_ids is not None:
-            forms.alert(
-                "None of the selected elements are circuitable "
-                "(no electrical power connector).",
-                title=TITLE,
+
+def _active_uidoc():
+    try:
+        return __revit__.ActiveUIDocument
+    except Exception:
+        return getattr(revit, "uidoc", None)
+
+
+def _active_doc():
+    uidoc = _active_uidoc()
+    return uidoc.Document if uidoc is not None else getattr(revit, "doc", None)
+
+
+def _snapshot(doc, stored_scope_id_values=_ACTIVE_SCOPE):
+    if doc is None:
+        raise Exception("No active document.")
+
+    if stored_scope_id_values is _ACTIVE_SCOPE:
+        # Revit selection APIs already return DB.ElementId objects. Keep them
+        # native here; the numeric-to-ElementId helper is only for IDs that
+        # crossed the modeless UI/external-event payload boundary.
+        uidoc = _active_uidoc()
+        picked = []
+        if uidoc is not None and uidoc.Document == doc:
+            try:
+                picked = list(uidoc.Selection.GetElementIds())
+            except Exception:
+                picked = []
+        if not picked:
+            raise Exception(
+                "Create Circuits by Device Parameter requires a selection."
             )
-        else:
-            forms.alert(
-                "No circuitable elements found in the model "
-                "(nothing has an electrical power connector).",
-                title=TITLE,
+        selected = picked
+    else:
+        if stored_scope_id_values is None:
+            raise Exception(
+                "Whole-model scope is disabled. Select circuitable devices first."
             )
-        return
+        selected = [
+            _id_from(value) for value in list(stored_scope_id_values or [])
+        ]
+        if not selected:
+            raise Exception(
+                "The saved target selection is empty. Select circuitable devices first."
+            )
+
+    rows_data = cg_collect.collect_devices(doc, selected)
+    selected_values = [_id_value(value) for value in selected]
+    scope_label = "selection ({} element{})".format(
+        len(selected_values),
+        "" if len(selected_values) == 1 else "s",
+    )
 
     parameter_options = cg_core.common_group_params(rows_data)
-    # Keep the two display/location groupings at the top of the Group By
-    # picker. The raw Identity Mark parameter remains available to Name By,
-    # while Group By uses the same concatenated identity shown in the grid.
     group_param_options = [
         cg_core.SPACE_GROUP_OPTION,
         cg_core.IDENTITY_GROUP_OPTION,
     ] + [p for p in parameter_options if p != "Identity Mark"]
-    default_group_param = cg_core.default_group_param(group_param_options)
-    # name-by offers the same common-parameter list, with its own default
-    default_name_param = cg_core.default_name_param(parameter_options)
-
-    logger.debug("Create Circuits by Device Parameter scope=%s, %d circuitable element(s)",
-                 scope_label, len(rows_data))
-
     panel_names, name_to_id, panel_info = cg_collect.collect_panels(doc)
 
-    plans, name_to_id = cg_window.show_window(
-        rows_data, panel_names, name_to_id, cg_core.RATING_OPTIONS,
-        group_param_options, default_group_param,
-        panel_info=panel_info,
-        name_param_options=parameter_options,
-        default_name_param=default_name_param,
-    )
+    empty_message = ""
+    if not rows_data:
+        empty_message = "No circuitable elements were found in the target selection."
 
-    if not plans:
-        return  # cancelled or nothing valid
+    return {
+        "document_key": _document_key(doc),
+        "document_title": getattr(doc, "Title", "-") or "-",
+        "scope_label": scope_label,
+        "scope_ids": selected_values,
+        "rows_data": rows_data,
+        "panel_names": panel_names,
+        "name_to_id": name_to_id,
+        "panel_info": panel_info,
+        "rating_options": cg_core.RATING_OPTIONS,
+        "group_param_options": group_param_options,
+        "default_group_param": cg_core.default_group_param(group_param_options),
+        "name_param_options": parameter_options,
+        "default_name_param": cg_core.default_name_param(parameter_options),
+        "empty_message": empty_message,
+    }
 
-    # Create the native circuits first, then pass the created circuits through
-    # the same Move Selected Circuits service used by the ribbon tool. That
-    # service owns the complete capacity workflow: fit_without/fit_with,
-    # removable default SPARE/SPACE evaluation, confirmation, temporary
-    # removal, assignment, and restoration/backfill.
-    workflow_group = DB.TransactionGroup(doc, "Create Circuits by Device Parameter")
-    workflow_group.Start()
-    try:
-        report = cg_apply.run(doc, plans, name_to_id, logger)
-        assignment = cg_apply.assign_created_circuits_to_panels(
-            doc, report.get("created_circuit_ids_by_panel", {}), name_to_id, logger)
-        report["panel_assignment"] = assignment
-        # Assignment failures are intentionally reported by Create Circuits by Device Parameter
-        # while preserving the created circuits. The outer group therefore
-        # assimilates the successful creation and any successful panel moves
-        # into one undo item.
-        workflow_group.Assimilate()
-    except Exception:
+
+class CircuitGrouperExternalEventGateway(object):
+    def __init__(self):
+        self._pending = None
+        self._handler = _CircuitGrouperExternalEventHandler(self)
+        self._event = ExternalEvent.Create(self._handler)
+
+    def is_busy(self):
         try:
-            workflow_group.RollBack()
+            event_pending = bool(self._event.IsPending)
+        except Exception:
+            event_pending = False
+        return self._pending is not None or event_pending
+
+    def _raise(self, op_name, payload=None, callback=None):
+        request = {
+            "op": str(op_name or ""),
+            "payload": dict(payload or {}),
+            "callback": callback,
+        }
+        # Window activation queues a cheap target-document sync. If the same
+        # click is also a real user command, let that command replace the sync
+        # already waiting in Revit's external-event queue.
+        if (self._pending is not None and
+                self._pending.get("op") == "sync" and
+                request["op"] != "sync"):
+            self._pending = request
+            return True
+        if self.is_busy():
+            return False
+        self._pending = request
+        try:
+            self._event.Raise()
+            return True
+        except Exception:
+            self._pending = None
+            return False
+
+    def raise_sync(self, document_key, callback):
+        return self._raise("sync", {"document_key": document_key}, callback)
+
+    def raise_refresh(self, document_key, scope_ids, callback):
+        return self._raise("refresh", {
+            "document_key": document_key,
+            "scope_ids": list(scope_ids) if scope_ids is not None else None,
+        }, callback)
+
+    def raise_navigate(self, document_key, element_ids, show, callback):
+        return self._raise("navigate", {
+            "document_key": document_key,
+            "element_ids": list(element_ids or []),
+            "show": bool(show),
+        }, callback)
+
+    def raise_run(self, document_key, plans, scope_ids, callback):
+        return self._raise("run", {
+            "document_key": document_key,
+            "plans": list(plans or []),
+            "scope_ids": list(scope_ids) if scope_ids is not None else None,
+        }, callback)
+
+    def _consume(self):
+        pending = self._pending
+        self._pending = None
+        return pending
+
+
+class _CircuitGrouperExternalEventHandler(IExternalEventHandler):
+    def __init__(self, gateway):
+        self._gateway = gateway
+
+    def Execute(self, application):  # noqa: N802
+        pending = self._gateway._consume()
+        if not pending:
+            return
+        op_name = pending.get("op")
+        payload = pending.get("payload") or {}
+        callback = pending.get("callback")
+        status, result, error = "ok", None, None
+        try:
+            uidoc = application.ActiveUIDocument
+            doc = uidoc.Document if uidoc is not None else None
+            current_key = _document_key(doc)
+            if op_name == "sync":
+                changed = current_key != str(payload.get("document_key") or "")
+                result = {
+                    "changed": changed,
+                    "snapshot": _snapshot(doc) if changed else None,
+                }
+            elif op_name == "refresh":
+                requested_key = str(payload.get("document_key") or "")
+                scope_ids = payload.get("scope_ids")
+                result = {
+                    "snapshot": _snapshot(
+                        doc, scope_ids if current_key == requested_key else _ACTIVE_SCOPE)
+                }
+            elif op_name == "navigate":
+                if current_key != str(payload.get("document_key") or ""):
+                    result = {"retarget_snapshot": _snapshot(doc)}
+                else:
+                    ids = List[DB.ElementId]()
+                    for value in payload.get("element_ids") or []:
+                        element_id = _id_from(value)
+                        if doc.GetElement(element_id) is not None:
+                            ids.Add(element_id)
+                    if ids.Count == 0:
+                        raise Exception("None of the chosen devices exist in the target document.")
+                    if bool(payload.get("show")):
+                        uidoc.ShowElements(ids)
+                    else:
+                        uidoc.Selection.SetElementIds(ids)
+                    result = {"count": ids.Count, "show": bool(payload.get("show"))}
+            elif op_name == "run":
+                if current_key != str(payload.get("document_key") or ""):
+                    result = {"retarget_snapshot": _snapshot(doc)}
+                else:
+                    plans = list(payload.get("plans") or [])
+                    logger.info("Circuit grouper Run: resolving target panels.")
+                    name_to_id = cg_collect.collect_target_panel_ids(
+                        doc,
+                        [plan.get("panel") for plan in plans],
+                    )
+                    workflow_group = DB.TransactionGroup(doc, TITLE)
+                    workflow_group.Start()
+                    try:
+                        logger.info("Circuit grouper Run: creating circuits.")
+                        report = cg_apply.run(doc, plans, name_to_id, logger)
+                        logger.info(
+                            "Circuit grouper Run: created %s circuit(s); assigning panels.",
+                            int(report.get("created") or 0),
+                        )
+                        assignment = cg_apply.assign_created_circuits_to_panels(
+                            doc, report.get("created_circuit_ids_by_panel", {}),
+                            name_to_id, logger)
+                        report["panel_assignment"] = assignment
+                        workflow_group.Assimilate()
+                        # Native ElementIds are only needed by the assignment
+                        # service inside this API callback. Do not retain them
+                        # in the modeless UI result payload.
+                        report.pop("created_circuit_ids_by_panel", None)
+                        logger.info("Circuit grouper Run: Revit changes committed.")
+                    except Exception:
+                        try:
+                            workflow_group.RollBack()
+                        except Exception:
+                            pass
+                        raise
+                    # Return only the write report. Recollecting every device
+                    # and all panel metadata here made Run pay the full Refresh
+                    # cost after the transaction had already succeeded.
+                    logger.info("Circuit grouper Run: complete.")
+                    result = report
+            else:
+                raise Exception("Unknown operation: {}".format(op_name))
+        except Exception as ex:
+            status, error = "error", ex
+            logger.exception("Circuit grouper external operation failed: %s", ex)
+        if callback is not None:
+            try:
+                callback(status, op_name, result, error)
+            except Exception:
+                logger.exception("Circuit grouper completion callback failed.")
+
+    def GetName(self):  # noqa: N802
+        return "CED Create Circuits by Device Parameter"
+
+
+def _find_existing_window():
+    app = Application.Current
+    if app is None:
+        return None
+    try:
+        windows = list(app.Windows)
+    except Exception:
+        windows = []
+    for window in windows:
+        try:
+            marker = str(getattr(window, "Tag", "") or "")
+            if marker == _WINDOW_MARKER:
+                return window
+            if marker in _LEGACY_WINDOW_MARKERS:
+                # A prior window/controller can retain an obsolete or inert
+                # ExternalEvent after reload. Close it instead of focusing a
+                # visually alive window backed by stale code.
+                window.Close()
         except Exception:
             pass
-        raise
+    return None
 
-    for event in list(assignment.get("buffered_events", []) or []):
-        if not event:
-            continue
-        if event[0] == "md":
-            output.print_md(event[1])
-        elif event[0] == "table":
-            output.print_table(event[1], event[2])
 
-    # -- report --------------------------------------------------------
-    output.print_md("## Create Circuits by Device Parameter - Results")
-    output.print_md("**Circuits created:** {}  |  **Members circuited:** {}".format(
-        report["created"], report["members_circuited"]))
-    if assignment.get("moved"):
-        output.print_md("Assigned {} created circuit(s) to their selected panels.".format(
-            assignment["moved"]))
-    if assignment.get("fallback_used"):
-        output.print_md(
-            "Move Selected Circuits used its default SPARE/SPACE replacement workflow.")
-    status_rows = list(assignment.get("circuit_status") or [])
-    if status_rows:
-        def _linkify_created_circuit(row):
-            label = row.get("circuit", "Created circuit")
-            try:
-                element_id = revit_helpers.elementid_from_value(
-                    int(row.get("element_id")))
-                return output.linkify(element_id, label)
-            except Exception:
-                return label
+def _focus_existing(window):
+    try:
+        window.refresh_ced_theme_from_config()
+    except Exception:
+        pass
+    try:
+        if window.WindowState == WindowState.Minimized:
+            window.WindowState = WindowState.Normal
+    except Exception:
+        pass
+    try:
+        window.Show()
+        window.Activate()
+        window.Focus()
+    except Exception:
+        pass
 
-        def _assignment_row_values(row):
-            return [
-                _linkify_created_circuit(row),
-                row.get("element_id", "-"),
-                row.get("target_panel", "-"),
-                row.get("actual_panel", "-"),
-                row.get("status", "-"),
-            ]
 
-        verified_count = sum(
-            1 for row in status_rows if row.get("status") == "ASSIGNED")
-        output.print_md("### Actual circuit assignment")
-        output.print_md(
-            "Verified on selected panel: {} of {}.".format(
-                verified_count, len(status_rows)))
-        output.print_table(
-            [_assignment_row_values(row) for row in status_rows],
-            ["Circuit", "Element ID", "Target panel", "Actual panel", "Result"],
+def main():
+    existing = _find_existing_window()
+    if existing is not None:
+        _focus_existing(existing)
+        return
+
+    doc = _active_doc()
+    if doc is None:
+        forms.alert("No active document.", title=TITLE)
+        return
+
+    uidoc = _active_uidoc()
+    picked = list(uidoc.Selection.GetElementIds()) if uidoc is not None else []
+    if not picked:
+        forms.alert(
+            "Create Circuits by Device Parameter requires a selection.\n\n"
+            "Select the circuitable devices you want to group, then run the tool again.",
+            title=TITLE,
+            warn_icon=True,
+            exitscript=True,
         )
-        unresolved_rows = [
-            row for row in status_rows if row.get("status") != "ASSIGNED"]
-        if unresolved_rows:
-            output.print_md("### Created circuits requiring manual resolution")
-            output.print_md(
-                "Select a linked circuit below to resolve its panel assignment manually.")
-            output.print_table(
-                [_assignment_row_values(row) for row in unresolved_rows],
-                ["Circuit", "Element ID", "Target panel", "Actual panel", "Result"],
-            )
-    if assignment.get("errors"):
-        output.print_md("### Panel assignment issues")
-        for panel, message in assignment["errors"]:
-            output.print_md("- `{}`: {}".format(panel, message))
+        return
 
-    if assignment.get("not_on_target") or assignment.get("errors"):
-        alert_lines = [
-            "Circuits were created, but some did not land on their selected panel.",
-            "",
-        ]
-        if assignment.get("not_on_target"):
-            alert_lines.append(
-                "{} circuit(s) did not land on the selected panel.".format(
-                    assignment["not_on_target"]))
-        if assignment.get("unassigned"):
-            alert_lines.append(
-                "{} of those circuit(s) have no panel assignment.".format(
-                    assignment["unassigned"]))
-        if assignment.get("errors"):
-            alert_lines.append("Panel assignment issues:")
-            for panel, message in assignment["errors"]:
-                alert_lines.append("- {}: {}".format(panel, message))
-        alert_lines.append("")
-        alert_lines.append(
-            "Created circuits were retained. See the actual assignment table in the pyRevit output.")
-        forms.alert("\n".join(alert_lines), title=TITLE)
+    # A non-empty initial selection is still native DB.ElementId data, so let
+    # _snapshot read it through the active-selection branch. None explicitly
+    # requests the whole-model scope after the user confirms the scan.
+    snapshot = _snapshot(doc)
+    if not snapshot.get("rows_data"):
+        forms.alert(snapshot.get("empty_message"), title=TITLE)
+        return
 
-    if report["lines"]:
-        output.print_md("### Circuit creation")
-    for line in report["lines"]:
-        output.print_md("- {}".format(line))
-
-    if report["skipped_no_connector"]:
-        output.print_md("### Skipped (no primary power connector)")
-        output.print_md("These element ids had no primary power connector, so "
-                        "the tool left them unchanged:")
-        output.print_md("`{}`".format(
-            ", ".join(str(i) for i in report["skipped_no_connector"])))
-
-    if report["skipped_unavailable_primary"]:
-        output.print_md("### Skipped (primary power connector already in use)")
-        output.print_md("These element ids already had a system on their primary "
-                        "power connector, so the tool left them unchanged:")
-        output.print_md("`{}`".format(
-            ", ".join(
-                str(i) for i in report["skipped_unavailable_primary"])))
-
-    if report["errors"]:
-        output.print_md("### Errors")
-        for key, msg in report["errors"]:
-            output.print_md("- `{}`: {}".format(key, msg))
+    logger.debug("%s scope=%s, %d circuitable element(s)",
+                 TITLE, snapshot.get("scope_label"),
+                 len(snapshot.get("rows_data") or []))
+    gateway = CircuitGrouperExternalEventGateway()
+    cg_window.show_modeless(snapshot, gateway, activate=True)
 
 
 main()

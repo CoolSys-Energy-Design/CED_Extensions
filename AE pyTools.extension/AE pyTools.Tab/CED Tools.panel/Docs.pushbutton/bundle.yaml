@@ -1,0 +1,14 @@
+title:
+  en_us: Docs
+tooltip:
+  en_us: >-
+    Search and read the CED tool user guide offline. Results include tool name,
+    extension, ribbon location, headings, keywords, and full page content.
+author: CED
+context: zero-doc
+
+engine:
+  persistent: true
+  full_frame: true
+
+is_beta: true

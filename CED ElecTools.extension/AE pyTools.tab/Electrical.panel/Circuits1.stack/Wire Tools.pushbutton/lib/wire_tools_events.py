@@ -107,6 +107,10 @@ def _system_type_status(invalid_devices, requested_system_type):
         item for item in list(invalid_devices or [])
         if item.get("category") == "ambiguous_connector"
     ])
+    no_circuit_count = len([
+        item for item in list(invalid_devices or [])
+        if item.get("category") == "no_circuit"
+    ])
     messages = []
     if missing_count:
         noun = "device" if missing_count == 1 else "devices"
@@ -122,6 +126,15 @@ def _system_type_status(invalid_devices, requested_system_type):
         messages.append(
             "{} selected {} have multiple matching {} connectors.".format(
                 ambiguous_count,
+                noun,
+                type_name,
+            )
+        )
+    if no_circuit_count:
+        noun = "device" if no_circuit_count == 1 else "devices"
+        messages.append(
+            "{} selected {} do not have a matching {} circuit.".format(
+                no_circuit_count,
                 noun,
                 type_name,
             )
@@ -222,13 +235,21 @@ class WireToolsExternalEventGateway(object):
             active_view_id = element_id_value(active_view.Id)
             if active_view_id == self.last_active_view_id:
                 return
+            self.active_view_id = active_view_id
             self.last_active_view_id = active_view_id
+            self.device_ids = []
+            self.node_id = None
+            self.homerun_ids = []
+            # Discard any queued request captured against the previous view.
+            # If its ExternalEvent later executes, consume() safely returns
+            # None instead of applying stale payload state to the new target.
+            self.pending = None
             self.window.receive_result(
                 "lifecycle",
                 "active_view_changed",
                 {
-                    "refresh_available": is_supported_wire_view(active_view),
-                    "active_view_name": _view_name(active_view),
+                    "view_supported": is_supported_wire_view(active_view),
+                    "view_name": _view_name(active_view),
                 },
                 None,
             )
@@ -266,19 +287,6 @@ class WireToolsExternalEventGateway(object):
         if _document_key(document) != self.document_key:
             return ACTIVE_DOCUMENT_CHANGED_MESSAGE
         return None
-
-    def current_active_view_supported(self):
-        """Return whether the current active view can become the target view."""
-        if self.invalid_context or self.ui_application is None:
-            return False
-        if self.current_context_message() is not None:
-            return False
-        try:
-            ui_document = self.ui_application.ActiveUIDocument
-            return bool(ui_document is not None
-                        and is_supported_wire_view(ui_document.ActiveView))
-        except Exception:
-            return False
 
     def check_context(self):
         if self.invalid_context:
@@ -377,12 +385,10 @@ class _WireToolsHandler(UI.IExternalEventHandler):
             )
 
     def _sync_result(self, document, view, scheme, requested_system_type=None):
-        type_choices = []
-        if scheme != SCHEME_WIRE_BY_CIRCUIT:
-            type_choices = system_type_choices(document, self.gateway.device_ids)
-            available_keys = [item.get("id") for item in type_choices]
-            if requested_system_type not in available_keys and type_choices:
-                requested_system_type = type_choices[0].get("id")
+        type_choices = system_type_choices(document, self.gateway.device_ids)
+        available_keys = [item.get("id") for item in type_choices]
+        if requested_system_type not in available_keys and type_choices:
+            requested_system_type = type_choices[0].get("id")
         valid_devices, invalid_devices = valid_device_ids(
             document,
             self.gateway.device_ids,
@@ -391,7 +397,11 @@ class _WireToolsHandler(UI.IExternalEventHandler):
         )
         circuit_count = 0
         if scheme == SCHEME_WIRE_BY_CIRCUIT:
-            circuit_count = len(circuits_from_elements(document, valid_devices))
+            circuit_count = len(circuits_from_elements(
+                document,
+                valid_devices,
+                requested_system_type=requested_system_type,
+            ))
         node_element = None
         node_connector_count = 0
         node_name = "-"
@@ -423,7 +433,6 @@ class _WireToolsHandler(UI.IExternalEventHandler):
         return {
             "view_supported": is_supported_wire_view(view),
             "view_name": _view_name(view),
-            "refresh_available": self.gateway.current_active_view_supported(),
             "wire_types": wire_type_choices(document),
             "tag_types": wire_tag_type_choices(document),
             "device_count": len(valid_devices),
@@ -457,12 +466,10 @@ class _WireToolsHandler(UI.IExternalEventHandler):
             raw_id for raw_id in raw_ids
             if node_value is None or element_id_value(raw_id) != node_value
         ]
-        type_choices = []
-        if scheme != SCHEME_WIRE_BY_CIRCUIT:
-            type_choices = system_type_choices(document, device_raw_ids)
-            available_keys = [item.get("id") for item in type_choices]
-            if requested_system_type not in available_keys and type_choices:
-                requested_system_type = type_choices[0].get("id")
+        type_choices = system_type_choices(document, device_raw_ids)
+        available_keys = [item.get("id") for item in type_choices]
+        if requested_system_type not in available_keys and type_choices:
+            requested_system_type = type_choices[0].get("id")
         diagnostics = []
         valid_elements, invalid_elements = valid_device_ids(
             document,
@@ -475,7 +482,11 @@ class _WireToolsHandler(UI.IExternalEventHandler):
         circuit_count = 0
         no_circuit_elements = []
         if scheme == SCHEME_WIRE_BY_CIRCUIT:
-            circuit_count = len(circuits_from_elements(document, valid_elements))
+            circuit_count = len(circuits_from_elements(
+                document,
+                valid_elements,
+                requested_system_type=requested_system_type,
+            ))
             no_circuit_elements = [
                 item for item in invalid_elements
                 if item.get("category") == "no_circuit"
@@ -515,32 +526,6 @@ class _WireToolsHandler(UI.IExternalEventHandler):
                     require_supported=False,
                 )
                 del ui_document
-                scheme = str(payload.get("scheme") or SCHEME_WIRE_BY_CIRCUIT)
-                settings = payload.get("settings") or {}
-                self._send(
-                    "ok",
-                    action_name,
-                    self._sync_result(
-                        document,
-                        view,
-                        scheme,
-                        settings.get("system_type_key"),
-                    ),
-                )
-                return
-
-            if action_name == "refresh_target_view":
-                ui_document, document = self._document_context(application)
-                view = ui_document.ActiveView
-                if not is_supported_wire_view(view):
-                    raise ValueError(
-                        "Switch to a floor plan or reflected ceiling plan before "
-                        "refreshing the target view."
-                    )
-                self.gateway.active_view_id = element_id_value(view.Id)
-                self.gateway.device_ids = []
-                self.gateway.node_id = None
-                self.gateway.homerun_ids = []
                 scheme = str(payload.get("scheme") or SCHEME_WIRE_BY_CIRCUIT)
                 settings = payload.get("settings") or {}
                 self._send(

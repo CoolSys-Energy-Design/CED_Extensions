@@ -9,3 +9,7 @@ tooltip: >-
 
 author: >-
   CED
+
+engine:
+  persistent: true
+  full_frame: false

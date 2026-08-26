@@ -1,0 +1,329 @@
+{
+  "schema_version": 1,
+  "released_extensions": [
+    "AE pyTools",
+    "CED ElecTools",
+    "CED MechTools",
+    "WM Tools"
+  ],
+  "released_bundle_roots": [
+    "AE pyTools.extension",
+    "CED ElecTools.extension",
+    "CED MechTools.extension",
+    "WM Tools.extension"
+  ],
+  "commands": [
+    {
+      "document_id": "ae-pytools-docs",
+      "bundle_path": "AE pyTools.extension/AE pyTools.Tab/CED Tools.panel/Docs.pushbutton"
+    },
+    {
+      "document_id": "ae-pytools-tag-behavior-settings",
+      "bundle_path": "AE pyTools.extension/AE pyTools.Tab/Orientation.panel/Tag Model Orientation.smartbutton"
+    },
+    {
+      "document_id": "ae-pytools-orient-and-rotate-elements",
+      "bundle_path": "AE pyTools.extension/AE pyTools.Tab/Orientation.panel/rotate2.stack/Orient Down.pushbutton"
+    },
+    {
+      "document_id": "ae-pytools-orient-and-rotate-elements",
+      "bundle_path": "AE pyTools.extension/AE pyTools.Tab/Orientation.panel/rotate1.stack/Orient Left.pushbutton"
+    },
+    {
+      "document_id": "ae-pytools-orient-and-rotate-elements",
+      "bundle_path": "AE pyTools.extension/AE pyTools.Tab/Orientation.panel/rotate2.stack/Orient Right.pushbutton"
+    },
+    {
+      "document_id": "ae-pytools-orient-and-rotate-elements",
+      "bundle_path": "AE pyTools.extension/AE pyTools.Tab/Orientation.panel/rotate1.stack/Orient Up.pushbutton"
+    },
+    {
+      "document_id": "ae-pytools-orient-and-rotate-elements",
+      "bundle_path": "AE pyTools.extension/AE pyTools.Tab/Orientation.panel/rotate2.stack/Rotate CW.pushbutton"
+    },
+    {
+      "document_id": "ae-pytools-orient-and-rotate-elements",
+      "bundle_path": "AE pyTools.extension/AE pyTools.Tab/Orientation.panel/rotate1.stack/Rotate CCW.pushbutton"
+    },
+    {
+      "document_id": "ae-pytools-tag-behavior-settings",
+      "bundle_path": "AE pyTools.extension/AE pyTools.Tab/Orientation.panel/Tag Position.smartbutton"
+    },
+    {
+      "document_id": "ae-pytools-tag-behavior-settings",
+      "bundle_path": "AE pyTools.extension/AE pyTools.Tab/Orientation.panel/Tag Rotation.smartbutton"
+    },
+    {
+      "document_id": "ae-pytools-discard-pinned-elements",
+      "bundle_path": "AE pyTools.extension/AE pyTools.Tab/Selection.panel/Filter Selection.splitpushbutton/Discard Pinned Elements.pushbutton"
+    },
+    {
+      "document_id": "ae-pytools-filter-selection-by-type",
+      "bundle_path": "AE pyTools.extension/AE pyTools.Tab/Selection.panel/Filter Selection.splitpushbutton/Filter Selection By Type.pushbutton"
+    },
+    {
+      "document_id": "ae-pytools-query-selection",
+      "bundle_path": "AE pyTools.extension/AE pyTools.Tab/Selection.panel/Selection1.stack/Query Selection.pushbutton"
+    },
+    {
+      "document_id": "ae-pytools-select-on-sheets-title-blocks",
+      "bundle_path": "AE pyTools.extension/AE pyTools.Tab/Selection.panel/Select.pulldown/SelectOnSheets_TitleBlocks.pushbutton"
+    },
+    {
+      "document_id": "ae-pytools-select-similar-category-in-model",
+      "bundle_path": "AE pyTools.extension/AE pyTools.Tab/Selection.panel/Select.pulldown/SelectSimilar_Category_InModel.pushbutton"
+    },
+    {
+      "document_id": "ae-pytools-select-similar-category-in-view",
+      "bundle_path": "AE pyTools.extension/AE pyTools.Tab/Selection.panel/Select.pulldown/SelectSimilar_Category_InView.pushbutton"
+    },
+    {
+      "document_id": "ae-pytools-select-similar-family-in-model",
+      "bundle_path": "AE pyTools.extension/AE pyTools.Tab/Selection.panel/Select.pulldown/SelectSimilar_Family_InModel.pushbutton"
+    },
+    {
+      "document_id": "ae-pytools-select-similar-family-in-view",
+      "bundle_path": "AE pyTools.extension/AE pyTools.Tab/Selection.panel/Select.pulldown/SelectSimilar_Family_InView.pushbutton"
+    },
+    {
+      "document_id": "ae-pytools-zoom-to-selection",
+      "bundle_path": "AE pyTools.extension/AE pyTools.Tab/Selection.panel/Selection1.stack/ZoomToSelection.pushbutton"
+    },
+    {
+      "document_id": "ae-pytools-edit-schedule-headers",
+      "bundle_path": "AE pyTools.extension/AE pyTools.Tab/Miscellaneous.panel/MiscTools1.stack/MiscTools.pulldown/Edit Schedule Headers.pushbutton"
+    },
+    {
+      "document_id": "ae-pytools-set-system-calculation-levels",
+      "bundle_path": "AE pyTools.extension/AE pyTools.Tab/Miscellaneous.panel/MiscTools1.stack/MiscTools.pulldown/TurnOffSystemCalculations.pushbutton"
+    },
+    {
+      "document_id": "ae-pytools-toggle-grid-bubbles",
+      "bundle_path": "AE pyTools.extension/AE pyTools.Tab/Miscellaneous.panel/MiscTools1.stack/Views.pulldown/ToggleGridBubbles.pushbutton"
+    },
+    {
+      "document_id": "ae-pytools-unhide-all-elements-in-active-view",
+      "bundle_path": "AE pyTools.extension/AE pyTools.Tab/Miscellaneous.panel/MiscTools1.stack/Views.pulldown/Unhide All in Active View.pushbutton"
+    },
+    {
+      "document_id": "ae-pytools-revision-cloud-issues-report",
+      "bundle_path": "AE pyTools.extension/AE pyTools.Tab/CED Tools.panel/Revisions.pulldown/ListRevCloudIssues.pushbutton"
+    },
+    {
+      "document_id": "ae-pytools-revision-report",
+      "bundle_path": "AE pyTools.extension/AE pyTools.Tab/CED Tools.panel/Revisions.pulldown/RevisionReport.pushbutton"
+    },
+    {
+      "document_id": "ae-pytools-clean-model-tags",
+      "bundle_path": "AE pyTools.extension/AE pyTools.Tab/Tags.Panel/Tags1.stack/CleanModelTags.pushbutton"
+    },
+    {
+      "document_id": "ae-pytools-navigate-tags-and-hosts",
+      "bundle_path": "AE pyTools.extension/AE pyTools.Tab/Tags.Panel/Tags1.stack/GetHostFromTags.pushbutton"
+    },
+    {
+      "document_id": "ae-pytools-navigate-tags-and-hosts",
+      "bundle_path": "AE pyTools.extension/AE pyTools.Tab/Tags.Panel/Tags1.stack/SelectHostedTags.pushbutton"
+    },
+    {
+      "document_id": "ced-electools-calculate-circuits",
+      "bundle_path": "CED ElecTools.extension/AE pyTools.tab/Electrical.panel/Circuits2.stack/Calculate Circuits.pushbutton"
+    },
+    {
+      "document_id": "ced-electools-electrical-system-check",
+      "bundle_path": "CED ElecTools.extension/AE pyTools.tab/Electrical.panel/Circuits1.stack/QC Check.pulldown/ElectricalSystemCheck.pushbutton"
+    },
+    {
+      "document_id": "ced-electools-find-circuited-elements",
+      "bundle_path": "CED ElecTools.extension/AE pyTools.tab/Electrical.panel/Circuits2.stack/Find Circuited Elements.pushbutton"
+    },
+    {
+      "document_id": "ced-electools-let-there-be-light",
+      "bundle_path": "CED ElecTools.extension/AE pyTools.tab/Electrical.panel/Let there be Light.pushbutton"
+    },
+    {
+      "document_id": "ced-electools-panel-report",
+      "bundle_path": "CED ElecTools.extension/AE pyTools.tab/Electrical.panel/Circuits1.stack/QC Check.pulldown/PanelBreakerList.pushbutton"
+    },
+    {
+      "document_id": "ced-electools-sync-one-line-data",
+      "bundle_path": "CED ElecTools.extension/AE pyTools.tab/Electrical.panel/Circuits2.stack/Sync One Line.pushbutton"
+    },
+    {
+      "document_id": "ced-electools-wire-tools",
+      "bundle_path": "CED ElecTools.extension/AE pyTools.tab/Electrical.panel/Circuits1.stack/Wire Tools.pushbutton"
+    },
+    {
+      "document_id": "ced-electools-batch-swap-circuits",
+      "bundle_path": "CED ElecTools.extension/AE pyTools.tab/Electrical.panel/Circuits1.stack/Circuit Tools.pulldown/BatchSwapCircuits.pushbutton"
+    },
+    {
+      "document_id": "ced-electools-create-dedicated-circuits",
+      "bundle_path": "CED ElecTools.extension/AE pyTools.tab/Electrical.panel/Circuits1.stack/Circuit Tools.pulldown/CreateDedicatedCircuits.pushbutton"
+    },
+    {
+      "document_id": "ced-electools-load-electrical-parameters",
+      "bundle_path": "CED ElecTools.extension/AE pyTools.tab/Electrical.panel/Circuits1.stack/Circuit Tools.pulldown/Load Electrical Parameters.pushbutton"
+    },
+    {
+      "document_id": "ced-electools-move-selected-circuits",
+      "bundle_path": "CED ElecTools.extension/AE pyTools.tab/Electrical.panel/Circuits1.stack/Circuit Tools.pulldown/MoveSelectedCircuits.pushbutton"
+    },
+    {
+      "document_id": "ced-mechtools-set-piping-system",
+      "bundle_path": "CED MechTools.extension/AE pyTools.tab/Mechanical.panel/SetPipeSystem.pushbutton"
+    },
+    {
+      "document_id": "ced-mechtools-connect-to",
+      "bundle_path": "CED MechTools.extension/AE pyTools.tab/Mechanical.panel/Piping1.stack/ConnectTo.pushbutton"
+    },
+    {
+      "document_id": "ced-mechtools-disconnect",
+      "bundle_path": "CED MechTools.extension/AE pyTools.tab/Mechanical.panel/Piping1.stack/DisConnect.pushbutton"
+    },
+    {
+      "document_id": "ced-mechtools-three-d-rotate",
+      "bundle_path": "CED MechTools.extension/AE pyTools.tab/Mechanical.panel/Piping1.stack/Utilities.pulldown/Element3DRotation.pushbutton"
+    },
+    {
+      "document_id": "ced-mechtools-make-parallel",
+      "bundle_path": "CED MechTools.extension/AE pyTools.tab/Mechanical.panel/Piping1.stack/Utilities.pulldown/MakeParallel.pushbutton"
+    },
+    {
+      "document_id": "ced-mechtools-transition",
+      "bundle_path": "CED MechTools.extension/AE pyTools.tab/Mechanical.panel/Piping1.stack/Utilities.pulldown/Transition.pushbutton"
+    },
+    {
+      "document_id": "ced-mechtools-name-piping-systems",
+      "bundle_path": "CED MechTools.extension/AE pyTools.tab/Mechanical.panel/Ref Ops.pulldown/Name Piping Systems.pushbutton"
+    },
+    {
+      "document_id": "ced-mechtools-place-all-coils",
+      "bundle_path": "CED MechTools.extension/AE pyTools.tab/Mechanical.panel/Ref Ops.pulldown/Place all Coils.pushbutton"
+    },
+    {
+      "document_id": "ced-mechtools-print-pipe-data",
+      "bundle_path": "CED MechTools.extension/AE pyTools.tab/Mechanical.panel/Ref Ops.pulldown/Print Pipe Data.pushbutton"
+    },
+    {
+      "document_id": "ced-mechtools-space-coils",
+      "bundle_path": "CED MechTools.extension/AE pyTools.tab/Mechanical.panel/Ref Ops.pulldown/Space Coils.pushbutton"
+    },
+    {
+      "document_id": "ced-mechtools-system-tagger",
+      "bundle_path": "CED MechTools.extension/AE pyTools.tab/Mechanical.panel/Ref Ops.pulldown/System Tagger.pushbutton"
+    },
+    {
+      "document_id": "ae-pytools-about",
+      "bundle_path": "AE pyTools.extension/AE pyTools.Tab/CED Tools.panel/About.pushbutton"
+    },
+    {
+      "document_id": "ae-pytools-designer-hub",
+      "bundle_path": "AE pyTools.extension/AE pyTools.Tab/CED Tools.panel/DesignerHub.urlbutton"
+    },
+    {
+      "document_id": "ae-pytools-theme",
+      "bundle_path": "AE pyTools.extension/AE pyTools.Tab/CED Tools.panel/Theme.pushbutton"
+    },
+    {
+      "document_id": "ae-pytools-acc-path-resolver",
+      "bundle_path": "AE pyTools.extension/AE pyTools.Tab/CED Tools.panel/Tools.stack/ADC Diagnostics.pushbutton"
+    },
+    {
+      "document_id": "ae-pytools-update-custom-dictionary",
+      "bundle_path": "AE pyTools.extension/AE pyTools.Tab/CED Tools.panel/Tools.stack/Custom Dic Update.pushbutton"
+    },
+    {
+      "document_id": "ae-pytools-refrigeration-plan-tag-text",
+      "bundle_path": "AE pyTools.extension/AE pyTools.Tab/Miscellaneous.panel/MiscTools1.stack/MiscTools.pulldown/Refr Tag TJ-SATX.pushbutton"
+    },
+    {
+      "document_id": "ae-pytools-quick-dimension",
+      "bundle_path": "AE pyTools.extension/AE pyTools.Tab/Miscellaneous.panel/MiscTools1.stack/QuickDimension.pushbutton"
+    },
+    {
+      "document_id": "ae-pytools-copy-vg-settings-to-view-templates",
+      "bundle_path": "AE pyTools.extension/AE pyTools.Tab/Miscellaneous.panel/MiscTools1.stack/Views.pulldown/Copy VG Settings to View.pushbutton"
+    },
+    {
+      "document_id": "ae-pytools-gray-x-bg-cad-layers",
+      "bundle_path": "AE pyTools.extension/AE pyTools.Tab/Miscellaneous.panel/MiscTools1.stack/Views.pulldown/XBG_GreyAllLayers.pushbutton"
+    },
+    {
+      "document_id": "ae-pytools-tag-by-example",
+      "bundle_path": "AE pyTools.extension/AE pyTools.Tab/Tags.Panel/Tag by Example.pushbutton"
+    },
+    {
+      "document_id": "ced-electools-alerts-manager",
+      "bundle_path": "CED ElecTools.extension/AE pyTools.tab/Electrical.panel/Alerts Manager.pushbutton"
+    },
+    {
+      "document_id": "ced-electools-circuit-manager",
+      "bundle_path": "CED ElecTools.extension/AE pyTools.tab/Electrical.panel/Circuit Manager.pushbutton"
+    },
+    {
+      "document_id": "ced-electools-add-spares-and-spaces",
+      "bundle_path": "CED ElecTools.extension/AE pyTools.tab/Electrical.panel/Circuits1.stack/Circuit Tools.pulldown/Add Spares and Spaces.pushbutton"
+    },
+    {
+      "document_id": "ced-electools-circuited-device-finder",
+      "bundle_path": "CED ElecTools.extension/AE pyTools.tab/Electrical.panel/Circuits1.stack/Circuit Tools.pulldown/Circuit Element Finder.pushbutton"
+    },
+    {
+      "document_id": "ced-electools-create-circuits-by-device-parameter",
+      "bundle_path": "CED ElecTools.extension/AE pyTools.tab/Electrical.panel/Circuits1.stack/Circuit Tools.pulldown/CreateCircuitsByDeviceParameter.pushbutton"
+    },
+    {
+      "document_id": "ced-electools-edit-circuit-properties",
+      "bundle_path": "CED ElecTools.extension/AE pyTools.tab/Electrical.panel/Circuits1.stack/Circuit Tools.pulldown/Edit Circuit Properties.pushbutton"
+    },
+    {
+      "document_id": "ced-electools-merge-circuits",
+      "bundle_path": "CED ElecTools.extension/AE pyTools.tab/Electrical.panel/Circuits1.stack/Circuit Tools.pulldown/MergeCircuits.pushbutton"
+    },
+    {
+      "document_id": "ced-electools-rename-circuits-by-device-parameter",
+      "bundle_path": "CED ElecTools.extension/AE pyTools.tab/Electrical.panel/Circuits1.stack/Circuit Tools.pulldown/RenameCircuitsByDeviceParameter.pushbutton"
+    },
+    {
+      "document_id": "ced-electools-color-circuits-by-panel",
+      "bundle_path": "CED ElecTools.extension/AE pyTools.tab/Electrical.panel/Circuits1.stack/QC Check.pulldown/Color Circuits by Panel.pushbutton"
+    },
+    {
+      "document_id": "ced-electools-color-circuits-check",
+      "bundle_path": "CED ElecTools.extension/AE pyTools.tab/Electrical.panel/Circuits1.stack/QC Check.pulldown/Color Circuits Check.pushbutton"
+    },
+    {
+      "document_id": "wm-tools-create-circuits-from-excel",
+      "bundle_path": "WM Tools.extension/AE pyTools.Tab/WM Tools.panel/WM Tools.pulldown/Create Circuits From Excel.pushbutton"
+    },
+    {
+      "document_id": "wm-tools-create-panels-from-excel",
+      "bundle_path": "WM Tools.extension/AE pyTools.Tab/WM Tools.panel/WM Tools.pulldown/Create Panels From Excel.pushbutton"
+    },
+    {
+      "document_id": "wm-tools-load-electrical-content",
+      "bundle_path": "WM Tools.extension/AE pyTools.Tab/WM Tools.panel/WM Tools.pulldown/Load Electrical Content.pushbutton"
+    },
+    {
+      "document_id": "wm-tools-place-power-groups",
+      "bundle_path": "WM Tools.extension/AE pyTools.Tab/WM Tools.panel/WM Tools.pulldown/Place Power Groups.pushbutton"
+    },
+    {
+      "document_id": "wm-tools-replace-existing-circuit",
+      "bundle_path": "WM Tools.extension/AE pyTools.Tab/WM Tools.panel/WM Tools.pulldown/Replace Existing Circuit.pushbutton"
+    },
+    {
+      "document_id": "wm-tools-select-connectors-by-case",
+      "bundle_path": "WM Tools.extension/AE pyTools.Tab/WM Tools.panel/WM Tools.pulldown/Select Connectors By Case.pushbutton"
+    },
+    {
+      "document_id": "wm-tools-toggle-connector-symbols",
+      "bundle_path": "WM Tools.extension/AE pyTools.Tab/WM Tools.panel/WM Tools.pulldown/Toggle Connector Symbols.pushbutton"
+    },
+    {
+      "document_id": "wm-tools-ungroup-power-groups",
+      "bundle_path": "WM Tools.extension/AE pyTools.Tab/WM Tools.panel/WM Tools.pulldown/Ungroup Power Groups.pushbutton"
+    }
+  ]
+}

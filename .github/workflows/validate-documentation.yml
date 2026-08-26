@@ -1,0 +1,41 @@
+name: Validate Documentation
+
+on:
+  pull_request:
+    paths:
+      - "docs/user-guide/**"
+      - "tools/docs/**"
+      - "**/*.pushbutton/**"
+      - "**/*.smartbutton/**"
+      - "**/*.pulldown/**"
+      - "**/*.panel/**"
+      - ".github/workflows/validate-documentation.yml"
+  push:
+    branches:
+      - develop
+      - main
+    paths:
+      - "docs/user-guide/**"
+      - "tools/docs/**"
+      - "**/*.pushbutton/**"
+      - "**/*.smartbutton/**"
+      - "**/*.pulldown/**"
+      - "**/*.panel/**"
+
+jobs:
+  validate-documentation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate Markdown source and released-command coverage
+        run: python3 tools/docs/validate_docs.py
+
+      - name: Generate catalog and require committed output to be current
+        run: |
+          python3 tools/docs/generate_catalog.py
+          git diff --exit-code -- docs/user-guide/catalog.json
+
+      - name: Run documentation runtime-independent tests
+        run: python3 -m unittest discover -s tools/docs/tests -v

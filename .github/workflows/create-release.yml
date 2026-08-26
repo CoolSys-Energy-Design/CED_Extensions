@@ -41,6 +41,12 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
+      - name: Validate documentation and catalog freshness
+        run: |
+          python3 tools/docs/validate_docs.py
+          python3 tools/docs/generate_catalog.py
+          git diff --exit-code -- docs/user-guide/catalog.json
+
       - name: Read version
         id: version
         run: |

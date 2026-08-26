@@ -168,13 +168,13 @@ def point_from_frame(origin, along, perp, along_dist, perp_dist, z_dist):
     )
 
 
-def get_wire_circuit_id(wire):
+def get_wire_circuit_id(wire, system_type=eu.POWER_CIRCUIT_SYSTEM_TYPE):
     # Preferred path for wires: GetMEPSystems()
     try:
         systems = wire.GetMEPSystems()
         if systems:
             for sys in systems:
-                if eu.is_circuit_eligible(sys):
+                if eu.is_circuit_eligible(sys, system_type=system_type):
                     return sys.Id
     except Exception:
         pass
@@ -182,7 +182,7 @@ def get_wire_circuit_id(wire):
     mep_system = getattr(wire, "MEPSystem", None)
     if (
         mep_system
-        and eu.is_circuit_eligible(mep_system)
+        and eu.is_circuit_eligible(mep_system, system_type=system_type)
     ):
         return mep_system.Id
 
@@ -191,13 +191,16 @@ def get_wire_circuit_id(wire):
             owner = getattr(ref, "Owner", None)
             if (
                 owner
-                and eu.is_circuit_eligible(owner)
+                and eu.is_circuit_eligible(owner, system_type=system_type)
             ):
                 return owner.Id
     return None
 
 
-def collect_active_view_wires_by_circuit(doc, view_id):
+def collect_active_view_wires_by_circuit(
+        doc,
+        view_id,
+        system_type=eu.POWER_CIRCUIT_SYSTEM_TYPE):
     wire_map = {}
     wires = (
         DB.FilteredElementCollector(doc, view_id)
@@ -206,7 +209,7 @@ def collect_active_view_wires_by_circuit(doc, view_id):
         .ToElements()
     )
     for wire in wires:
-        circuit_id = get_wire_circuit_id(wire)
+        circuit_id = get_wire_circuit_id(wire, system_type=system_type)
         if not circuit_id:
             continue
         key = _elid_value(circuit_id)
