@@ -39,6 +39,11 @@
 
     <StackPanel Grid.Row="0" Margin="0,0,0,8">
       <TextBlock Text="Tag by Example" Style="{DynamicResource CED.Text.Title}"/>
+      <TextBlock Name="TargetViewText"
+                 Text="Target View: (none)"
+                 HorizontalAlignment="Right"
+                 Style="{DynamicResource CED.Text.Secondary}"
+                 FontSize="11"/>
     </StackPanel>
 
     <Grid Grid.Row="1">

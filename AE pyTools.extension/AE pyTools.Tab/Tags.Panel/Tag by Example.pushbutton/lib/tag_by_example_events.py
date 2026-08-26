@@ -446,6 +446,27 @@ def _apply_tag_base_properties(created_tag, item, options):
     return warnings
 
 
+def _invalidate_leaderless_tag_head(created_tag, desired_head, view):
+    """Force Revit to recognize a leaderless tag-head position change.
+
+    Some IndependentTag families, notably detail-item tags, can retain stale
+    derived placement geometry after creation. A negligible move-and-restore
+    marks the head geometry dirty without changing its final position. The
+    caller regenerates once after the complete creation batch.
+    """
+    if desired_head is None:
+        raise RuntimeError("Tag head position could not be resolved.")
+    try:
+        current_head = created_tag.TagHeadPosition
+        nudge = view.RightDirection.Multiply(1e-6)
+        created_tag.TagHeadPosition = current_head.Add(nudge)
+        created_tag.TagHeadPosition = desired_head
+    except Exception as error:
+        raise RuntimeError(
+            "Tag head position could not be refreshed: {}".format(error)
+        )
+
+
 def _apply_tag_leader_properties(created_tag, item):
     """Apply leader geometry after the batch has been regenerated once."""
     warnings = []
@@ -513,6 +534,12 @@ def _create_tags(document, view, proposals, options, actions):
                     target_warnings = _apply_tag_base_properties(
                         created_tag, item, options
                     )
+                    if not has_leader:
+                        _invalidate_leaderless_tag_head(
+                            created_tag,
+                            item["points"].get("head"),
+                            view,
+                        )
                     warnings.extend([(target_id, warning)
                                      for warning in target_warnings])
                     subtransaction.Commit()
@@ -526,11 +553,12 @@ def _create_tags(document, view, proposals, options, actions):
                         "element": proposal["target"],
                         "reason": "Tag creation failed: {}".format(error),
                     })
-        if leader_jobs:
-            # Leader APIs can require the just-created tag's derived leader
-            # state. Regenerate once for the whole leader batch instead of
-            # once per tag; no-leader batches need no explicit regeneration.
+        if created:
+            # Both leader APIs and some leaderless detail-item tags require
+            # the just-created tag's derived geometry. Regenerate once for
+            # the complete batch rather than once per tag.
             document.Regenerate()
+        if leader_jobs:
             for target_id, created_tag, item in leader_jobs:
                 target_warnings = _apply_tag_leader_properties(
                     created_tag, item
@@ -563,6 +591,55 @@ def _selection_reference_list(document, values):
         except Exception:
             continue
     return result
+
+
+def _selected_example_ids(document, view, ui_document):
+    """Return supported selected tags only when they share one local host.
+
+    Model elements and unsupported annotations are ignored. A selection that
+    contains valid reference tags from multiple hosts deliberately returns an
+    empty list so PickObjects can collect an unambiguous reference set.
+    """
+    tag_ids = []
+    shared_host_id = None
+    try:
+        selected_ids = list(ui_document.Selection.GetElementIds())
+    except Exception:
+        selected_ids = []
+    for selected_id in selected_ids:
+        tag = document.GetElement(selected_id)
+        if not isinstance(tag, DB.IndependentTag):
+            continue
+        try:
+            unused_reference, host, unused_frame = validate_example_tag(
+                document,
+                view,
+                tag,
+            )
+            del unused_reference
+            del unused_frame
+        except Exception:
+            continue
+        host_id = host.Id
+        if shared_host_id is None:
+            shared_host_id = host_id
+        else:
+            same_host = False
+            try:
+                same_host = host_id == shared_host_id
+            except Exception:
+                pass
+            if not same_host:
+                try:
+                    same_host = bool(host_id.Equals(shared_host_id))
+                except Exception:
+                    pass
+            if not same_host:
+                return []
+        tag_ids.append(id_value(tag.Id))
+    if tag_ids:
+        return _unique_integer_values(tag_ids)
+    return []
 
 
 class TagByExampleExternalEventGateway(object):
@@ -804,6 +881,7 @@ class _TagByExampleHandler(UI.IExternalEventHandler):
                     "has_example": False,
                     "view_supported": True,
                     "view_changed": view_changed,
+                    "view_name": _safe_view_name(view),
                 })
                 return
             try:
@@ -816,6 +894,7 @@ class _TagByExampleHandler(UI.IExternalEventHandler):
                     "view_changed": view_changed,
                     "example_invalid": True,
                     "message": str(error),
+                    "view_name": _safe_view_name(view),
                 })
                 return
             self._result("ok", action_name, {
@@ -823,6 +902,7 @@ class _TagByExampleHandler(UI.IExternalEventHandler):
                 "view_supported": True,
                 "view_changed": view_changed,
                 "snapshot": self._snapshot(examples),
+                "view_name": _safe_view_name(view),
             })
             return
 
@@ -838,20 +918,23 @@ class _TagByExampleHandler(UI.IExternalEventHandler):
                         "Pick a reference in a floor plan, reflected ceiling plan, "
                         "or drafting view."
                     )
-                selection_filter = ExampleTagSelectionFilter(document, view)
-                try:
-                    picked_references = uidoc.Selection.PickObjects(
-                        ObjectType.Element,
-                        selection_filter,
-                        "Select one or more tags on the same host, then finish.",
-                    )
-                except OperationCanceledException:
-                    self._result("cancelled", action_name, None, None)
-                    return
-                picked_ids = _unique_integer_values([
-                    id_value(picked_reference.ElementId)
-                    for picked_reference in picked_references
-                ])
+                picked_ids = _selected_example_ids(document, view, uidoc)
+                used_preselection = bool(picked_ids)
+                if not picked_ids:
+                    selection_filter = ExampleTagSelectionFilter(document, view)
+                    try:
+                        picked_references = uidoc.Selection.PickObjects(
+                            ObjectType.Element,
+                            selection_filter,
+                            "Select one or more tags on the same host, then finish.",
+                        )
+                    except OperationCanceledException:
+                        self._result("cancelled", action_name, None, None)
+                        return
+                    picked_ids = _unique_integer_values([
+                        id_value(picked_reference.ElementId)
+                        for picked_reference in picked_references
+                    ])
                 if not picked_ids:
                     raise TagByExampleUserError(
                         "No reference tags were selected. Pick at least one reference tag to continue."
@@ -883,6 +966,8 @@ class _TagByExampleHandler(UI.IExternalEventHandler):
                 self._result("ok", action_name, {
                     "snapshot": self._snapshot(examples),
                     "target_count": 0,
+                    "view_name": _safe_view_name(view),
+                    "used_preselection": used_preselection,
                 })
                 return
 

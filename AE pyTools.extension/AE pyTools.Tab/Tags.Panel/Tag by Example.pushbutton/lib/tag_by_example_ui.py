@@ -41,6 +41,7 @@ class TagByExampleWindow(forms.WPFWindow):
         )
 
         self.example_type_text = self.FindName("ExampleTypeText")
+        self.target_view_text = self.FindName("TargetViewText")
         self.host_category_text = self.FindName("HostCategoryText")
         self.host_family_text = self.FindName("HostFamilyText")
         self.host_type_text = self.FindName("HostTypeText")
@@ -153,6 +154,11 @@ class TagByExampleWindow(forms.WPFWindow):
 
     def _set_status(self, text):
         self.status_text.Text = str(text or "")
+
+    def _set_target_view(self, view_name):
+        self.target_view_text.Text = "Target View: {}".format(
+            str(view_name or "(none)")
+        )
 
     def _stop_error_timer(self):
         timer = self._error_timer
@@ -272,6 +278,8 @@ class TagByExampleWindow(forms.WPFWindow):
 
     def _apply_result(self, status, action_name, result, error):
         result = result or {}
+        if "view_name" in result:
+            self._set_target_view(result.get("view_name"))
         if status == "unavailable":
             self._set_selection_state(False, "")
             self._set_enabled_for_view(False)
@@ -472,8 +480,8 @@ class TagByExampleWindow(forms.WPFWindow):
     def pick_example_clicked(self, sender, args):
         self._set_selection_state(
             True,
-            "Select one or more reference tags on the same host in Revit. "
-            "Finish or cancel the selection to return here.",
+            "Using compatible preselected tags when possible. Otherwise, select "
+            "one or more reference tags on the same host in Revit, then finish.",
         )
         if not self.gateway.raise_action("pick_example"):
             self._set_selection_state(False, "")

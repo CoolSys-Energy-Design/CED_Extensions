@@ -53,11 +53,12 @@ The Orientation Tools’ established intent—using insertion location, facing
 orientation, and view-relative tag movement—was reviewed. Their
 `_rotateutils.py` implementation uses a global offset rotated around Z, which
 is not sufficient for a host-relative tag-copy operation, so it was left
-unchanged. The new shared frame module uses the Revit instance transform
-(`GetTotalTransform`, with `GetTransform` fallback) directly. Rotation and
-mirror state already represented by that transform is not applied again;
-facing, hand, and mirrored flags are retained for reporting while all three
-flip conditions are handled by the host frame automatically.
+unchanged. The new shared frame module prefers a point-based host's
+`LocationPoint` for its origin and rotation. It uses the Revit instance
+transform (`GetTotalTransform`, with `GetTransform` fallback) for the frame
+axes, mirror state, and as an origin fallback when no `LocationPoint` is
+available. Facing, hand, and mirrored flags are retained for reporting while
+all three flip conditions are handled by the host frame automatically.
 
 ## Revit compatibility decisions
 

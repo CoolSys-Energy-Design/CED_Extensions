@@ -67,15 +67,28 @@ def _view_normal(view, fallback):
         return fallback
 
 
-def _location_origin(host, transform):
-    try:
-        return transform.Origin
-    except Exception:
-        pass
+def _location_point(host):
     try:
         location = host.Location
-        if hasattr(location, "Point"):
-            return location.Point
+        if isinstance(location, DB.LocationPoint):
+            return location
+    except Exception:
+        pass
+    return None
+
+
+def _location_origin(location_point, transform):
+    if location_point is not None:
+        try:
+            return location_point.Point
+        except Exception:
+            pass
+
+    # TODO: Keep the transform-origin fallback until host-specific origin
+    # policies are introduced; some FamilyInstances do not expose a
+    # LocationPoint, and this also leaves a straightforward rollback path.
+    try:
+        return transform.Origin
     except Exception:
         pass
     raise ValueError("Host has no resolvable placement origin.")
@@ -84,10 +97,11 @@ def _location_origin(host, transform):
 def get_host_placement_frame(host, view):
     """Build a placement frame for a point-based FamilyInstance host.
 
-    Revit's instance transform already includes rotation and mirror state, so
-    the returned basis is used directly.  Facing/hand flags are retained as
-    metadata for reporting and future adapter-specific behavior; they are not
-    manually applied a second time.
+    A LocationPoint supplies the preferred origin and rotation.  Revit's
+    instance transform supplies the placement axes (including mirror state)
+    and remains the origin fallback for hosts without a LocationPoint.
+    Facing/hand flags are retained as metadata for reporting and future
+    adapter-specific behavior; they are not manually applied a second time.
     """
     if host is None or not isinstance(host, DB.FamilyInstance):
         raise ValueError("Only FamilyInstance hosts are supported in Phase 1.")
@@ -105,7 +119,8 @@ def get_host_placement_frame(host, view):
 
     fallback_z = DB.XYZ.BasisZ
     normal = _view_normal(view, fallback_z)
-    origin = _location_origin(host, transform)
+    location_point = _location_point(host)
+    origin = _location_origin(location_point, transform)
 
     raw_x = _safe_xyz(getattr(transform, "BasisX", None), DB.XYZ.BasisX)
     raw_y = _safe_xyz(getattr(transform, "BasisY", None), DB.XYZ.BasisY)
@@ -145,12 +160,11 @@ def get_host_placement_frame(host, view):
     except Exception:
         pass
 
-    try:
-        location = host.Location
-        if hasattr(location, "Rotation"):
-            rotation = float(location.Rotation)
-    except Exception:
-        pass
+    if location_point is not None:
+        try:
+            rotation = float(location_point.Rotation)
+        except Exception:
+            pass
 
     return HostPlacementFrame(
         origin=origin,
