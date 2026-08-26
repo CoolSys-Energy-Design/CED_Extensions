@@ -210,6 +210,18 @@ def run(doc, plans, name_to_id, logger=None):
                     if amps is not None:
                         _set_double(el, cg_collect.PARAM_RATING, amps)
 
+                # Preserve all requested circuit data before panel assignment.
+                # This leaves a useful, fully described circuit for a manual
+                # move when Revit cannot assign it to the requested panel.
+                _set_text(system, cg_collect.PARAM_PANEL, panel_name)
+                _set_double(system, cg_collect.PARAM_RATING, amps)
+                _set_text(system, cg_collect.PARAM_LOAD_NAME, load_name)
+                _set_text(
+                    system,
+                    cg_collect.PARAM_SCHEDULE_NOTES,
+                    schedule_notes,
+                )
+
                 # rating + load name on the native circuit
                 try:
                     if amps is not None:
@@ -450,6 +462,45 @@ def _record_assignment_status(result, status_rows):
             result["unassigned"] += 1
 
 
+def _reconcile_assigned_panel_metadata(doc, status_rows):
+    """Mirror an actual assignment without erasing an unassigned target.
+
+    An unassigned circuit intentionally retains its requested panel metadata so
+    a user can identify the correct manual destination. Once Revit assigns a
+    circuit, however, the shared circuit/device panel value must describe the
+    panel that actually owns it.
+    """
+    assigned_rows = [
+        row for row in list(status_rows or [])
+        if row.get("status") in ("ASSIGNED", "ON OTHER PANEL")
+        and str(row.get("actual_panel") or "").strip()
+    ]
+    if not assigned_rows:
+        return 0
+
+    updated = 0
+    with _CircuitTransaction(
+            doc,
+            "Create Circuits by Device Parameter - Reconcile Panel Metadata"):
+        for row in assigned_rows:
+            circuit_id = revit_helpers.elementid_from_value(
+                row.get("circuit_id")
+            )
+            circuit = doc.GetElement(circuit_id)
+            if circuit is None:
+                continue
+            actual_panel = str(row.get("actual_panel") or "").strip()
+            _set_text(circuit, cg_collect.PARAM_PANEL, actual_panel)
+            try:
+                members = list(circuit.Elements)
+            except Exception:
+                members = []
+            for member in members:
+                _set_text(member, cg_collect.PARAM_PANEL, actual_panel)
+            updated += 1
+    return updated
+
+
 def _assign_created_to_unscheduled_panel(doc, circuits, target_panel):
     """Assign new, unassigned circuits without schedule-capacity analysis.
 
@@ -525,6 +576,7 @@ def assign_created_circuits_to_panels(doc, created_by_panel, name_to_id,
         "circuit_status": [],
         "not_on_target": 0,
         "unassigned": 0,
+        "panel_metadata_reconciled": 0,
     }
     if not created_by_panel:
         return result
@@ -615,6 +667,7 @@ def assign_created_circuits_to_panels(doc, created_by_panel, name_to_id,
                     buffered,
                     allow_unassigned_partial=True,
                     consolidate_fallback_transaction=True,
+                    defer_schedule_analysis=True,
                 )
             move_result = move_result if isinstance(move_result, dict) else {}
             moved = list(move_result.get("moved") or [])
@@ -651,4 +704,25 @@ def assign_created_circuits_to_panels(doc, created_by_panel, name_to_id,
             status_rows = _assignment_status_rows(
                 doc, circuits, panel, panel_name)
             _record_assignment_status(result, status_rows)
+    try:
+        result["panel_metadata_reconciled"] = _reconcile_assigned_panel_metadata(
+            doc,
+            result["circuit_status"],
+        )
+    except Exception as ex:
+        # Panel metadata is secondary to keeping the fully described circuits
+        # that were already created. Report reconciliation trouble without
+        # causing the enclosing workflow group to roll the circuits back.
+        result["errors"].append((
+            "Panel metadata",
+            "Could not reconcile actual panel metadata: {}".format(ex),
+        ))
+        if logger is not None:
+            try:
+                logger.exception(
+                    "Create Circuits by Device Parameter panel metadata reconciliation failed: %s",
+                    ex,
+                )
+            except Exception:
+                pass
     return result

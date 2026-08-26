@@ -25,14 +25,21 @@ def move_circuits_to_panel(
         doc,
         output,
         allow_unassigned_partial=False,
-        consolidate_fallback_transaction=False):
+        consolidate_fallback_transaction=False,
+        defer_schedule_analysis=False):
     """Move circuits using the established workflow.
 
     The optional flags are intentionally opt-in. Existing callers retain the
     original behavior; Circuit Grouper uses them because it creates circuits
     that do not have an original panel and owns a surrounding transaction
-    group.
+    group. ``defer_schedule_analysis`` adds an optimistic native SelectPanel
+    attempt before the existing schedule-aware fallback.
     """
+    # TODO: Revisit this operation for all callers. The full schedule analysis
+    # is still intentionally the default, but it should eventually be made
+    # incremental/cached without requiring each tool to opt into a separate
+    # execution mode.
+    defer_schedule_analysis = bool(defer_schedule_analysis)
     if not design_options.is_main_model_element(target_panel):
         raise Exception("Target panel must be in the main model.")
     circuits = eu.filter_circuits(circuits)
@@ -156,7 +163,7 @@ def move_circuits_to_panel(
 
         planner_available = None
         planner_slot_order = []
-        if target_option is not None:
+        if target_option is not None and not defer_schedule_analysis:
             planner_slot_order = [int(x) for x in list(ps_repo.get_option_slot_order(target_option, include_excess=False) or []) if int(x) > 0]
             planner_available = set([int(x) for x in list(_collect_empty_slots(target_option) or []) if int(x) > 0])
 
@@ -188,12 +195,13 @@ def move_circuits_to_panel(
         target_id = _panel_id(target_panel)
         try:
             logger.info(
-                "[MoveSelectedCircuits] SelectPanel phase=%s start requested=%s allow_partial=%s sort_by_poles=%s regenerate=%s",
+                "[MoveSelectedCircuits] SelectPanel phase=%s start requested=%s allow_partial=%s sort_by_poles=%s regenerate=%s deferred_analysis=%s",
                 phase_name,
                 int(len(move_list)),
                 bool(allow_partial),
                 bool(sort_by_poles),
                 False,
+                bool(defer_schedule_analysis),
             )
         except Exception:
             pass
@@ -820,14 +828,7 @@ def move_circuits_to_panel(
                 continue
         return int(added)
 
-    schedule_view = _get_panel_schedule_view(target_panel)
-    target_option = _get_target_option(target_panel, schedule_view)
     target_panel_id = int(_panel_id(target_panel))
-    panel_option_lookup = {}
-    if target_option is not None and target_panel_id > 0:
-        panel_option_lookup[int(target_panel_id)] = target_option
-    psm = PanelScheduleManager(doc, panel_option_lookup=panel_option_lookup, logger=logger)
-    default_entries = _collect_default_special_rows(target_panel, schedule_view)
     requested_moves, skipped_rows = _partition_requested_circuits()
     circuits = list(requested_moves)
     if not circuits:
@@ -838,6 +839,31 @@ def move_circuits_to_panel(
             "partial": False,
             "fallback_used": False,
         }
+
+    # In deferred mode, do not resolve the schedule or build the target
+    # equipment option before the optimistic move. Both operations can become
+    # expensive for populated scheduled panels. The complete schedule context
+    # is loaded only after native SelectPanel fails and its transaction rolls
+    # back.
+    schedule_view = None
+    target_option = None
+    panel_option_lookup = {}
+    psm = None
+    default_entries = []
+    if not defer_schedule_analysis:
+        schedule_view = _get_panel_schedule_view(target_panel)
+        target_option = _get_target_option(target_panel, schedule_view)
+        if target_option is not None and target_panel_id > 0:
+            panel_option_lookup[int(target_panel_id)] = target_option
+        psm = PanelScheduleManager(
+            doc,
+            panel_option_lookup=panel_option_lookup,
+            logger=logger,
+        )
+        default_entries = _collect_default_special_rows(
+            target_panel,
+            schedule_view,
+        )
     tx_group = DB.TransactionGroup(doc, "Move Selected Circuits")
     tx_group.Start()
     try:
@@ -904,6 +930,25 @@ def move_circuits_to_panel(
                 except Exception:
                     pass
                 raise
+
+        if defer_schedule_analysis:
+            # The native move failed, so promote this invocation to the
+            # existing schedule-aware workflow. This work is deliberately
+            # after the rollback so the optimistic path remains cheap.
+            defer_schedule_analysis = False
+            schedule_view = _get_panel_schedule_view(target_panel)
+            target_option = _get_target_option(target_panel, schedule_view)
+            if target_option is not None and target_panel_id > 0:
+                panel_option_lookup[int(target_panel_id)] = target_option
+            psm = PanelScheduleManager(
+                doc,
+                panel_option_lookup=panel_option_lookup,
+                logger=logger,
+            )
+            default_entries = _collect_default_special_rows(
+                target_panel,
+                schedule_view,
+            )
 
         capacity = _capacity_plan(schedule_view, default_entries)
         required = int(capacity.get("required", 0) or 0)

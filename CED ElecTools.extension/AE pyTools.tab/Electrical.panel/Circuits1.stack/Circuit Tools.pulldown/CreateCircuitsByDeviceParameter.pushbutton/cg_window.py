@@ -497,10 +497,12 @@ class CircuitGrouperWindow(CEDWindowBase):
         self._drag_target = None
         self._suppress_regroup = True
         self._checkbox_bulk_edit_in_progress = False
+        self._suppress_grid_selection_summary = False
         self._view_refresh_depth = 0
         self._view_refresh_pending = False
         self._view_defer = None
         self._members_by_group = {}
+        self._validation_state = {}
 
         # which parameter the circuits are grouped on (user-switchable)
         self._group_param = default_group_param or (
@@ -663,12 +665,63 @@ class CircuitGrouperWindow(CEDWindowBase):
                              else Visibility.Collapsed)
 
     def window_preview_key_down(self, sender, args):
-        """Keep Escape from closing the modeless tool or leaking to Revit."""
+        """Handle window-level shortcuts without stealing text input."""
         try:
             if args.Key == Key.Escape or args.SystemKey == Key.Escape:
                 args.Handled = True
+                return
+            if (args.Key == Key.A and
+                    bool(Keyboard.Modifiers & ModifierKeys.Control) and
+                    not self._is_text_input_source(args.OriginalSource)):
+                if self._select_all_for_current_context():
+                    args.Handled = True
         except Exception:
             pass
+
+    def _is_text_input_source(self, source):
+        """Return True when Ctrl+A should remain a native text-box shortcut."""
+        node = source
+        while node is not None:
+            if isinstance(node, (TextBox, ComboBox)):
+                return True
+            try:
+                node = VisualTreeHelper.GetParent(node)
+            except Exception:
+                return False
+        return False
+
+    def _select_all_for_current_context(self):
+        """Select all circuit rows or all members of the selected group(s)."""
+        groups = self._selected_groups()
+        if groups:
+            self._clear_grid_selection()
+            for group in self._groups:
+                group.set_selected(True)
+            self._last_group_selection = None
+            self._update_group_selection_summary()
+            return True
+
+        selected_rows = self._selected_rows()
+        if not selected_rows:
+            return False
+
+        groups = []
+        for row in selected_rows:
+            group = getattr(row, "group", None)
+            if group is not None and group not in groups:
+                groups.append(group)
+        rows = []
+        for group in groups:
+            for row in self._members_by_group.get(group, []):
+                if row not in rows:
+                    rows.append(row)
+        if not rows:
+            return False
+
+        self._clear_group_selection()
+        self._replace_grid_selection(rows, primary=rows[0])
+        self._grid_anchor_item = rows[0]
+        return True
 
     def window_activated(self, sender, args):
         """Retarget after the user switches Revit documents.
@@ -954,9 +1007,11 @@ class CircuitGrouperWindow(CEDWindowBase):
                 compatible.append(name)
         return compatible
 
-    def _refresh_group_panel_options(self, members_by_group=None):
-        members_by_group = members_by_group or self._members_by_group
-        for group in list(self._groups):
+    def _refresh_group_panel_options(self, members_by_group=None, groups=None):
+        if members_by_group is None:
+            members_by_group = self._members_by_group
+        groups = self._groups if groups is None else groups
+        for group in list(groups):
             members = members_by_group.get(group, [])
             options = self._compatible_panel_names(members)
             group.set_panel_options(options)
@@ -1170,14 +1225,52 @@ class CircuitGrouperWindow(CEDWindowBase):
             pass
         self._update_grid_selection_summary()
 
-    def _update_grid_selection_summary(self):
-        if getattr(self, "GridSelectionText", None) is None:
-            return
-        count = 0
+    def _selected_item_count(self):
+        if self.Grid is None:
+            return 0
         try:
-            count = len(list(self.Grid.SelectedItems or []))
+            return int(self.Grid.SelectedItems.Count)
         except Exception:
-            pass
+            try:
+                return len(self.Grid.SelectedItems)
+            except Exception:
+                return 0
+
+    def _selected_items_contains(self, item):
+        if self.Grid is None:
+            return False
+        try:
+            return bool(self.Grid.SelectedItems.Contains(item))
+        except Exception:
+            try:
+                return item in self.Grid.SelectedItems
+            except Exception:
+                return False
+
+    def _replace_grid_selection(self, items, primary=None):
+        """Replace selected rows while emitting one summary update."""
+        self._suppress_grid_selection_summary = True
+        try:
+            self._clear_grid_selection()
+            for item in (items or []):
+                try:
+                    self.Grid.SelectedItems.Add(item)
+                except Exception:
+                    pass
+            if primary is not None:
+                try:
+                    self.Grid.SelectedItem = primary
+                except Exception:
+                    pass
+        finally:
+            self._suppress_grid_selection_summary = False
+        self._update_grid_selection_summary()
+
+    def _update_grid_selection_summary(self):
+        if (getattr(self, "GridSelectionText", None) is None or
+                self._suppress_grid_selection_summary):
+            return
+        count = self._selected_item_count()
         self.GridSelectionText.Text = "{} element row(s) selected".format(count)
 
     def grid_selection_changed(self, sender, args):
@@ -1188,6 +1281,13 @@ class CircuitGrouperWindow(CEDWindowBase):
         for group in self._groups:
             if group is not keep:
                 group.set_selected(False)
+        self._update_group_selection_summary()
+
+    def _restore_group_selection(self, groups):
+        """Restore a circuit-row selection after focus or popup changes."""
+        wanted = set(groups or [])
+        for group in self._groups:
+            group.set_selected(group in wanted)
         self._update_group_selection_summary()
 
     def _ordered_groups(self):
@@ -1265,34 +1365,13 @@ class CircuitGrouperWindow(CEDWindowBase):
         args.Handled = True
 
     def window_mouse_down(self, sender, args):
-        """Clicking outside the member grid clears both selection models."""
-        if self.Grid is None:
-            return
-        if not self._is_within(args.OriginalSource, self.Grid):
-            # PreviewMouseDown runs before Button.Click. Preserve the member
-            # selection for the one toolbar command that consumes it.
-            if self._is_selection_command_source(args.OriginalSource):
-                return
-            self._clear_grid_selection()
-            self._clear_group_selection()
-            self._grid_anchor_item = None
-            self._last_group_selection = None
+        """Keep row selections when focus moves to toolbar or popup controls.
 
-    def _is_selection_command_source(self, source):
-        """Return True for toolbar commands that consume member selection."""
-        node = source
-        while node is not None:
-            if isinstance(node, Button):
-                return getattr(node, "Name", "") in (
-                    "NewGroupButton", "DedicatedGroupButton", "BulkSetButton",
-                    "SelectDeviceButton", "ShowDeviceButton",
-                    "SelectGroupButton", "ShowGroupButton",
-                )
-            try:
-                node = VisualTreeHelper.GetParent(node)
-            except Exception:
-                return False
-        return False
+        Selection is changed explicitly by clicking another grid row/header.
+        Clearing it during the window's tunneling mouse event made the bulk
+        editor race its Click handler and could discard the intended groups.
+        """
+        return
 
     def _find_group_from_source(self, source):
         node = source
@@ -1326,59 +1405,82 @@ class CircuitGrouperWindow(CEDWindowBase):
             pass
 
     # -- validation -------------------------------------------------------
-    def _revalidate(self):
+    def _revalidate_group(self, group, members):
+        # Per-row status only changes for members of this group. Keeping this
+        # separate lets checkbox edits avoid walking unrelated groups.
+        for row in members:
+            if row.already_circuited:
+                row.set_status("Element already circuited", self._status_brushes["info"])
+            elif not row.include:
+                row.set_status("Excluded", self._status_brushes["off"])
+            else:
+                row.set_status("", self._status_brushes["ready"])
+
+        effective = cg_core.effective_rows(members)
+        if not effective:
+            if members and all(row.already_circuited for row in members):
+                group.set_status("Element already circuited", self._status_brushes["info"])
+            else:
+                group.set_status("No items selected", self._status_brushes["off"])
+            group.set_warning(False)
+            return 0, 0, ""
+
+        problems = cg_core.validate_members(effective)
+        if not (group.panel or "").strip():
+            problems.append("Panel is not selected")
+            if group.panel_note:
+                problems.append(group.panel_note)
+        amps, valid, standard = cg_core.parse_rating(group.rating)
+        label = group.load_name or group.key
+        if problems:
+            detail = "; ".join(problems)
+            group.set_status(u"⚠ " + detail, self._status_brushes["bad"])
+            group.set_warning(False)
+            return 0, 1, u"'{}': {}".format(label, detail)
+        if not valid:
+            group.set_status("Invalid rating - not ready", self._status_brushes["bad"])
+            group.set_warning(False)
+            return 0, 1, u"'{}': invalid breaker rating '{}'".format(label, group.rating)
+
+        group.set_status("Ready", self._status_brushes["ready"])
+        group.set_warning(not standard)
+        if not standard:
+            return 1, 0, u"'{}': non-standard breaker size ({} A)".format(
+                label, cg_core.format_amps_number(amps))
+        return 1, 0, ""
+
+    def _revalidate(self, affected_groups=None):
         members_by_group = self._members_by_group
         self._groups = [g for g in self._groups if g in members_by_group]
+
+        # Full validation remains the safe path for regrouping, refreshes, and
+        # edits that can affect several groups. Checkbox edits pass only the
+        # groups whose effective members changed.
+        if affected_groups is None or any(
+                group not in self._validation_state for group in self._groups):
+            self._validation_state = {}
+            groups_to_update = list(self._groups)
+            self._refresh_group_panel_options(members_by_group)
+        else:
+            affected = set(affected_groups or [])
+            groups_to_update = [
+                group for group in self._groups if group in affected]
+            self._refresh_group_panel_options(
+                members_by_group, groups=groups_to_update)
+
+        for group in groups_to_update:
+            self._validation_state[group] = self._revalidate_group(
+                group, members_by_group.get(group, []))
 
         ready = 0
         not_ready = 0
         lines = []
-        self._refresh_group_panel_options(members_by_group)
-
-        for g in self._groups:
-            members = members_by_group.get(g, [])
-            # per-row status
-            for r in members:
-                if r.already_circuited:
-                    r.set_status("Element already circuited", self._status_brushes["info"])
-                elif not r.include:
-                    r.set_status("Excluded", self._status_brushes["off"])
-                else:
-                    r.set_status("", self._status_brushes["ready"])
-
-            eff = cg_core.effective_rows(members)
-            if not eff:
-                if members and all(r.already_circuited for r in members):
-                    g.set_status("Element already circuited", self._status_brushes["info"])
-                else:
-                    g.set_status("No items selected", self._status_brushes["off"])
-                g.set_warning(False)
-                continue
-
-            problems = cg_core.validate_members(eff)
-            if not (g.panel or "").strip():
-                problems.append("Panel is not selected")
-                if g.panel_note:
-                    problems.append(g.panel_note)
-            amps, valid, standard = cg_core.parse_rating(g.rating)
-            label = g.load_name or g.key
-            if problems:
-                g.set_status(u"⚠ " + "; ".join(problems), self._status_brushes["bad"])
-                g.set_warning(False)
-                not_ready += 1
-                lines.append(u"'{}': {}".format(label, "; ".join(problems)))
-            elif not valid:
-                g.set_status("Invalid rating - not ready", self._status_brushes["bad"])
-                g.set_warning(False)
-                not_ready += 1
-                lines.append(u"'{}': invalid breaker rating '{}'".format(label, g.rating))
-            else:
-                g.set_status("Ready", self._status_brushes["ready"])
-                g.set_warning(not standard)
-                ready += 1
-                if not standard:
-                    lines.append(u"'{}': non-standard breaker size ({} A)".format(
-                        label, cg_core.format_amps_number(amps)))
+        for group in self._groups:
+            state = self._validation_state.get(group, (0, 0, ""))
+            ready += state[0]
+            not_ready += state[1]
+            if state[2]:
+                lines.append(state[2])
         if ready and not_ready:
             summary = "{} circuit{} ready | {} circuit{} {} attention".format(
                 ready, "" if ready == 1 else "s",
@@ -1519,7 +1621,12 @@ class CircuitGrouperWindow(CEDWindowBase):
             self._checkbox_bulk_edit_in_progress = True
             for target in targets:
                 target.set_include(new_value)
-            self._revalidate()
+            affected_groups = []
+            for target in targets:
+                group = getattr(target, "group", None)
+                if group is not None and group not in affected_groups:
+                    affected_groups.append(group)
+            self._revalidate(affected_groups=affected_groups)
         finally:
             self._checkbox_bulk_edit_in_progress = False
             self._pending_checkbox_selection = []
@@ -1698,6 +1805,7 @@ class CircuitGrouperWindow(CEDWindowBase):
             self._set_action_status("Bulk Set controls are unavailable.")
             return
         self._bulk_target_groups = list(groups)
+        self._restore_group_selection(self._bulk_target_groups)
         self.bulk_popup_reset_clicked(None, None)
         self.BulkValuesPopup.IsOpen = True
         try:
@@ -1722,8 +1830,16 @@ class CircuitGrouperWindow(CEDWindowBase):
         self.BulkPopupIncrement.IsChecked = False
 
     def bulk_popup_cancel_clicked(self, sender, args):
+        self._restore_group_selection(self._bulk_target_groups)
         self.BulkValuesPopup.IsOpen = False
         self._bulk_target_groups = []
+
+    def bulk_popup_closed(self, sender, args):
+        """Restore the captured circuit selection if the popup is dismissed."""
+        groups = list(self._bulk_target_groups)
+        if groups:
+            self._restore_group_selection(groups)
+            self._bulk_target_groups = []
 
     def bulk_popup_apply_clicked(self, sender, args):
         values = {
@@ -1734,10 +1850,11 @@ class CircuitGrouperWindow(CEDWindowBase):
             "increment_load_name": bool(self.BulkPopupIncrement.IsChecked),
         }
         groups = list(self._bulk_target_groups)
-        self.BulkValuesPopup.IsOpen = False
-        self._bulk_target_groups = []
         if groups:
             self._apply_bulk_values(groups, values)
+            self._restore_group_selection(groups)
+        self._bulk_target_groups = []
+        self.BulkValuesPopup.IsOpen = False
 
     def _apply_bulk_values(self, groups, values):
 
@@ -1902,7 +2019,15 @@ class CircuitGrouperWindow(CEDWindowBase):
             self._pending_checkbox_selection = []
             return
 
-        current_selection = list(self.Grid.SelectedItems or [])
+        selected_count = self._selected_item_count()
+        item_selected = self._selected_items_contains(item)
+        if item_selected:
+            current_selection = (
+                list(self.Grid.SelectedItems or [])
+                if selected_count > 1 else [item]
+            )
+        else:
+            current_selection = []
         checkbox = self._find_control(args.OriginalSource, CheckBox)
         if checkbox is not None:
             # Preserve a multi-row selection while a selected row's checkbox is
@@ -1912,9 +2037,8 @@ class CircuitGrouperWindow(CEDWindowBase):
                 and item in current_selection
                 and not bool(Keyboard.Modifiers & (ModifierKeys.Control | ModifierKeys.Shift))
             ):
-                saved = list(current_selection)
-                self._pending_checkbox_selection = saved
-                self._checkbox_selection_restore = saved
+                self._pending_checkbox_selection = current_selection
+                self._checkbox_selection_restore = current_selection
             return
 
         self._clear_group_selection()
@@ -1934,14 +2058,24 @@ class CircuitGrouperWindow(CEDWindowBase):
                 anchor_index = ordered_rows.index(self._grid_anchor_item)
                 current_index = ordered_rows.index(item)
                 lo, hi = sorted((anchor_index, current_index))
-                if not ctrl_down:
-                    self._clear_grid_selection()
-                for target in ordered_rows[lo:hi + 1]:
-                    try:
-                        if target not in self.Grid.SelectedItems:
-                            self.Grid.SelectedItems.Add(target)
-                    except Exception:
-                        pass
+                try:
+                    selected_items = set(list(self.Grid.SelectedItems or []))
+                except Exception:
+                    selected_items = set()
+                self._suppress_grid_selection_summary = True
+                try:
+                    if not ctrl_down:
+                        self._clear_grid_selection()
+                        selected_items = set()
+                    for target in ordered_rows[lo:hi + 1]:
+                        if target not in selected_items:
+                            try:
+                                self.Grid.SelectedItems.Add(target)
+                                selected_items.add(target)
+                            except Exception:
+                                pass
+                finally:
+                    self._suppress_grid_selection_summary = False
                 self._update_grid_selection_summary()
                 args.Handled = True
                 return
@@ -2013,21 +2147,11 @@ class CircuitGrouperWindow(CEDWindowBase):
             and not self._drag_started
             and self._mouse_down_item is not None
         ):
-            self._clear_grid_selection()
-            try:
-                self.Grid.SelectedItems.Add(self._mouse_down_item)
-                self.Grid.SelectedItem = self._mouse_down_item
-            except Exception:
-                pass
+            self._replace_grid_selection(
+                [self._mouse_down_item], primary=self._mouse_down_item)
 
         if self._checkbox_selection_restore:
-            saved = list(self._checkbox_selection_restore)
-            self._clear_grid_selection()
-            for item in saved:
-                try:
-                    self.Grid.SelectedItems.Add(item)
-                except Exception:
-                    pass
+            self._replace_grid_selection(self._checkbox_selection_restore)
 
         self._checkbox_selection_restore = []
         self._set_drag_target(None)

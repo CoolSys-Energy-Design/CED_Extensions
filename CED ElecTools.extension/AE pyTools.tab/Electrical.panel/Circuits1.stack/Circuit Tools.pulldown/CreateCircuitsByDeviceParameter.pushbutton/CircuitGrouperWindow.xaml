@@ -600,7 +600,8 @@
            Placement="Bottom"
            VerticalOffset="4"
            AllowsTransparency="True"
-           StaysOpen="False">
+           StaysOpen="False"
+           Closed="bulk_popup_closed">
       <Border Background="{DynamicResource CED.Brush.ListItemBackground}"
               BorderBrush="{DynamicResource CED.Brush.CardBorder}"
               BorderThickness="1"

@@ -78,7 +78,6 @@ def _snapshot(doc, stored_scope_id_values=_ACTIVE_SCOPE):
     if doc is None:
         raise Exception("No active document.")
 
-    selected = None
     if stored_scope_id_values is _ACTIVE_SCOPE:
         # Revit selection APIs already return DB.ElementId objects. Keep them
         # native here; the numeric-to-ElementId helper is only for IDs that
@@ -90,20 +89,30 @@ def _snapshot(doc, stored_scope_id_values=_ACTIVE_SCOPE):
                 picked = list(uidoc.Selection.GetElementIds())
             except Exception:
                 picked = []
-        if picked:
-            selected = picked
-    elif stored_scope_id_values is not None:
+        if not picked:
+            raise Exception(
+                "Create Circuits by Device Parameter requires a selection."
+            )
+        selected = picked
+    else:
+        if stored_scope_id_values is None:
+            raise Exception(
+                "Whole-model scope is disabled. Select circuitable devices first."
+            )
         selected = [
             _id_from(value) for value in list(stored_scope_id_values or [])
         ]
+        if not selected:
+            raise Exception(
+                "The saved target selection is empty. Select circuitable devices first."
+            )
 
     rows_data = cg_collect.collect_devices(doc, selected)
-    selected_values = (
-        [_id_value(value) for value in selected] if selected is not None else None)
-    scope_label = (
-        "selection ({} element{})".format(
-            len(selected_values), "" if len(selected_values) == 1 else "s")
-        if selected_values is not None else "entire model")
+    selected_values = [_id_value(value) for value in selected]
+    scope_label = "selection ({} element{})".format(
+        len(selected_values),
+        "" if len(selected_values) == 1 else "s",
+    )
 
     parameter_options = cg_core.common_group_params(rows_data)
     group_param_options = [
@@ -114,10 +123,7 @@ def _snapshot(doc, stored_scope_id_values=_ACTIVE_SCOPE):
 
     empty_message = ""
     if not rows_data:
-        empty_message = (
-            "No circuitable elements were found in the target selection."
-            if selected is not None else
-            "No circuitable elements were found in the target document.")
+        empty_message = "No circuitable elements were found in the target selection."
 
     return {
         "document_key": _document_key(doc),
@@ -358,19 +364,19 @@ def main():
     uidoc = _active_uidoc()
     picked = list(uidoc.Selection.GetElementIds()) if uidoc is not None else []
     if not picked:
-        proceed = forms.alert(
-            "Nothing is selected, so the tool will scan the ENTIRE model for circuitable elements.\n\n"
-            "Run time may increase on a large model. Select devices first for a focused scope.\n\n"
-            "Scan the whole model anyway?",
-            title=TITLE, yes=True, no=True,
+        forms.alert(
+            "Create Circuits by Device Parameter requires a selection.\n\n"
+            "Select the circuitable devices you want to group, then run the tool again.",
+            title=TITLE,
+            warn_icon=True,
+            exitscript=True,
         )
-        if not proceed:
-            return
+        return
 
     # A non-empty initial selection is still native DB.ElementId data, so let
     # _snapshot read it through the active-selection branch. None explicitly
     # requests the whole-model scope after the user confirms the scan.
-    snapshot = _snapshot(doc) if picked else _snapshot(doc, None)
+    snapshot = _snapshot(doc)
     if not snapshot.get("rows_data"):
         forms.alert(snapshot.get("empty_message"), title=TITLE)
         return
