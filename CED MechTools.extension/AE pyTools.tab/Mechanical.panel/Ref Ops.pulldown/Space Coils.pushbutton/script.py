@@ -52,6 +52,132 @@ def _get_bbox(elem):
     return bbox
 
 
+MINOR_SOLID_VOLUME_RATIO = 0.1
+
+
+def _tight_geometry_bbox(elem):
+    """Bounding box of the element's main visible body.
+
+    Family bounding boxes include invisible solids (clearance envelopes,
+    reference geometry) and small visible protrusions (the connector nub on
+    the back of the evaporator coil families), which inflates the box and
+    makes wall offsets land wider than requested. Only visible solids whose
+    volume is a meaningful fraction of the largest solid count, so the
+    offset is measured to the long part of the coil body.
+    """
+    try:
+        opts = DB.Options()
+        opts.IncludeNonVisibleObjects = False
+        opts.DetailLevel = DB.ViewDetailLevel.Fine
+        geom = elem.get_Geometry(opts)
+    except Exception:
+        return None
+    if not geom:
+        return None
+
+    solids = []  # (volume, [min_x, min_y, min_z], [max_x, max_y, max_z])
+    mesh_pts = []
+
+    def _solid_extents(solid):
+        try:
+            volume = solid.Volume
+            if volume <= 1e-9:
+                return
+            bb = solid.GetBoundingBox()
+        except Exception:
+            return
+        if not bb:
+            return
+        t = bb.Transform
+        mn = None
+        mx = None
+        for x in (bb.Min.X, bb.Max.X):
+            for y in (bb.Min.Y, bb.Max.Y):
+                for z in (bb.Min.Z, bb.Max.Z):
+                    pt = t.OfPoint(DB.XYZ(x, y, z))
+                    if mn is None:
+                        mn = [pt.X, pt.Y, pt.Z]
+                        mx = [pt.X, pt.Y, pt.Z]
+                    else:
+                        mn[0] = min(mn[0], pt.X)
+                        mn[1] = min(mn[1], pt.Y)
+                        mn[2] = min(mn[2], pt.Z)
+                        mx[0] = max(mx[0], pt.X)
+                        mx[1] = max(mx[1], pt.Y)
+                        mx[2] = max(mx[2], pt.Z)
+        if mn is not None:
+            solids.append((volume, mn, mx))
+
+    def _walk(geo):
+        for obj in geo:
+            if isinstance(obj, DB.Solid):
+                _solid_extents(obj)
+            elif isinstance(obj, DB.Mesh):
+                try:
+                    for v in obj.Vertices:
+                        mesh_pts.append((v.X, v.Y, v.Z))
+                except Exception:
+                    pass
+            elif isinstance(obj, DB.GeometryInstance):
+                try:
+                    _walk(obj.GetInstanceGeometry())
+                except Exception:
+                    pass
+
+    try:
+        _walk(geom)
+    except Exception:
+        return None
+
+    mn = None
+    mx = None
+
+    def _merge(pmin, pmax):
+        if mn is None:
+            return list(pmin), list(pmax)
+        return (
+            [min(mn[i], pmin[i]) for i in range(3)],
+            [max(mx[i], pmax[i]) for i in range(3)],
+        )
+
+    if solids:
+        # Keep only the dominant solids; drop small protrusions like the
+        # connector nub so they don't count toward the wall offset.
+        max_volume = max(s[0] for s in solids)
+        for volume, smin, smax in solids:
+            if volume >= max_volume * MINOR_SOLID_VOLUME_RATIO:
+                mn, mx = _merge(smin, smax)
+    elif mesh_pts:
+        for x, y, z in mesh_pts:
+            mn, mx = _merge((x, y, z), (x, y, z))
+
+    if mn is None:
+        return None
+    bbox = DB.BoundingBoxXYZ()
+    bbox.Min = DB.XYZ(mn[0], mn[1], mn[2])
+    bbox.Max = DB.XYZ(mx[0], mx[1], mx[2])
+    return bbox
+
+
+def _measure_bbox(elem):
+    bbox = _tight_geometry_bbox(elem)
+    if bbox:
+        raw = _get_bbox(elem)
+        if raw:
+            pad = max(
+                bbox.Min.X - raw.Min.X, raw.Max.X - bbox.Max.X,
+                bbox.Min.Y - raw.Min.Y, raw.Max.Y - bbox.Max.Y,
+            )
+            if pad > 1.0 / 48.0:
+                logger.info(
+                    "Coil %s: raw bbox is up to %.2f in larger than visible "
+                    "geometry; measuring from visible geometry.",
+                    _elid_value(elem.Id), pad * 12.0,
+                )
+        return bbox
+    return _get_bbox(elem)
+
+
 def _bbox_center(bbox):
     return (bbox.Min + bbox.Max) * 0.5
 
@@ -370,6 +496,16 @@ def _wall_midpoint(line):
     return (p0 + p1) * 0.5
 
 
+def _wall_half_width(wall):
+    try:
+        width = wall.Width
+        if width and width > 0:
+            return width * 0.5
+    except Exception:
+        pass
+    return 0.0
+
+
 def _classify_wall(line):
     direction = line.Direction
     if abs(direction.X) >= abs(direction.Y):
@@ -399,26 +535,30 @@ def _bounds_from_walls(center, direction):
         if not line:
             continue
         mid = _wall_midpoint(line)
+        half = _wall_half_width(wall)
         if _classify_wall(line) == "H":
-            horiz.append((line, mid))
+            horiz.append((line, mid, half))
         else:
-            vert.append((line, mid))
+            vert.append((line, mid, half))
 
     if direction in ("North", "South"):
         candidates = []
-        for line, mid in horiz:
+        for line, mid, half in horiz:
             if direction == "North" and mid.Y >= center.Y:
-                candidates.append((line, mid))
+                candidates.append((line, mid, half))
             elif direction == "South" and mid.Y <= center.Y:
-                candidates.append((line, mid))
+                candidates.append((line, mid, half))
         if not candidates:
             return None
-        line, mid = max(candidates, key=lambda c: c[0].Length)
+        line, mid, half = max(candidates, key=lambda c: c[0].Length)
         p0 = line.GetEndPoint(0)
         p1 = line.GetEndPoint(1)
         left = min(p0.X, p1.X)
         right = max(p0.X, p1.X)
+        # Location curve is the wall centerline; offset must be measured
+        # from the interior face, so pull in by half the wall thickness.
         wall_coord = (p0.Y + p1.Y) * 0.5
+        wall_coord = wall_coord - half if direction == "North" else wall_coord + half
         return {
             "axis": "X",
             "perp": "Y",
@@ -428,19 +568,20 @@ def _bounds_from_walls(center, direction):
         }
 
     candidates = []
-    for line, mid in vert:
+    for line, mid, half in vert:
         if direction == "East" and mid.X >= center.X:
-            candidates.append((line, mid))
+            candidates.append((line, mid, half))
         elif direction == "West" and mid.X <= center.X:
-            candidates.append((line, mid))
+            candidates.append((line, mid, half))
     if not candidates:
         return None
-    line, mid = max(candidates, key=lambda c: c[0].Length)
+    line, mid, half = max(candidates, key=lambda c: c[0].Length)
     p0 = line.GetEndPoint(0)
     p1 = line.GetEndPoint(1)
     left = min(p0.Y, p1.Y)
     right = max(p0.Y, p1.Y)
     wall_coord = (p0.X + p1.X) * 0.5
+    wall_coord = wall_coord - half if direction == "East" else wall_coord + half
     return {
         "axis": "Y",
         "perp": "X",
@@ -462,29 +603,32 @@ def _bounds_from_walls_extreme(center, direction):
         if not line:
             continue
         mid = _wall_midpoint(line)
+        half = _wall_half_width(wall)
         if _classify_wall(line) == "H":
-            horiz.append((line, mid))
+            horiz.append((line, mid, half))
         else:
-            vert.append((line, mid))
+            vert.append((line, mid, half))
 
     if direction in ("North", "South"):
         candidates = []
-        for line, mid in horiz:
+        for line, mid, half in horiz:
             if direction == "North" and mid.Y >= center.Y:
-                candidates.append((line, mid))
+                candidates.append((line, mid, half))
             elif direction == "South" and mid.Y <= center.Y:
-                candidates.append((line, mid))
+                candidates.append((line, mid, half))
         if not candidates:
             return None
         if direction == "North":
-            line, mid = max(candidates, key=lambda c: (c[1].Y, c[0].Length))
+            line, mid, half = max(candidates, key=lambda c: (c[1].Y, c[0].Length))
         else:
-            line, mid = min(candidates, key=lambda c: (c[1].Y, -c[0].Length))
+            line, mid, half = min(candidates, key=lambda c: (c[1].Y, -c[0].Length))
         p0 = line.GetEndPoint(0)
         p1 = line.GetEndPoint(1)
         left = min(p0.X, p1.X)
         right = max(p0.X, p1.X)
+        # Location curve is the wall centerline; measure from the interior face.
         wall_coord = (p0.Y + p1.Y) * 0.5
+        wall_coord = wall_coord - half if direction == "North" else wall_coord + half
         return {
             "axis": "X",
             "perp": "Y",
@@ -494,22 +638,23 @@ def _bounds_from_walls_extreme(center, direction):
         }
 
     candidates = []
-    for line, mid in vert:
+    for line, mid, half in vert:
         if direction == "East" and mid.X >= center.X:
-            candidates.append((line, mid))
+            candidates.append((line, mid, half))
         elif direction == "West" and mid.X <= center.X:
-            candidates.append((line, mid))
+            candidates.append((line, mid, half))
     if not candidates:
         return None
     if direction == "East":
-        line, mid = max(candidates, key=lambda c: (c[1].X, c[0].Length))
+        line, mid, half = max(candidates, key=lambda c: (c[1].X, c[0].Length))
     else:
-        line, mid = min(candidates, key=lambda c: (c[1].X, -c[0].Length))
+        line, mid, half = min(candidates, key=lambda c: (c[1].X, -c[0].Length))
     p0 = line.GetEndPoint(0)
     p1 = line.GetEndPoint(1)
     left = min(p0.Y, p1.Y)
     right = max(p0.Y, p1.Y)
     wall_coord = (p0.X + p1.X) * 0.5
+    wall_coord = wall_coord - half if direction == "East" else wall_coord + half
     return {
         "axis": "Y",
         "perp": "X",
@@ -627,7 +772,7 @@ def _rotate_to_facing(elem, target_vec):
 def _build_item_data(coils, axis, direction):
     items = []
     for coil in coils:
-        bbox = _get_bbox(coil)
+        bbox = _measure_bbox(coil)
         if not bbox:
             logger.warning("Skipping coil {}: no bounding box".format(_elid_value(coil.Id)))
             continue
@@ -650,13 +795,12 @@ def _build_item_data(coils, axis, direction):
 
 
 def _coil_bbox_data(coil):
-    bbox = None
-    try:
-        bbox = coil.get_BoundingBox(revit.active_view)
-    except Exception:
-        bbox = None
+    bbox = _measure_bbox(coil)
     if not bbox:
-        bbox = _get_bbox(coil)
+        try:
+            bbox = coil.get_BoundingBox(revit.active_view)
+        except Exception:
+            bbox = None
     if not bbox:
         return None
     center = _bbox_center(bbox)
@@ -766,6 +910,11 @@ def _place_wall_distribution(coils):
     left = bounds["left"]
     right = bounds["right"]
     wall = bounds["wall"]
+
+    logger.info(
+        "Wall distribution: dir=%s source=%s wall_face=%.4f ft offset=%.2f in",
+        direction, bounds.get("source"), wall, offset_ft * 12.0,
+    )
 
     target_facing = _target_facing(direction)
 
