@@ -1,0 +1,908 @@
+{
+ "bcs-bed": {
+  "truth": 7,
+  "recr": 7,
+  "m2": 7,
+  "m6": 7,
+  "type_ok": 7,
+  "panel_ok": 7,
+  "worst": [
+   [
+    0.4,
+    "HYBRID TANNER - 103D",
+    [
+     239.1,
+     -302.7
+    ]
+   ],
+   [
+    0.4,
+    "TANNING BED - 103K",
+    [
+     226.5,
+     -290.5
+    ]
+   ],
+   [
+    0.4,
+    "RED WAVE - 103B",
+    [
+     219.3,
+     -302.7
+    ]
+   ]
+  ]
+ },
+ "bcs-chairs": {
+  "truth": 5,
+  "recr": 5,
+  "m2": 3,
+  "m6": 4,
+  "type_ok": 5,
+  "panel_ok": 5,
+  "worst": [
+   [
+    9.1,
+    "HYPERICE EQUIP. & CHAIRS",
+    [
+     224.3,
+     -267.7
+    ]
+   ],
+   [
+    2.6,
+    "HYPERICE EQUIP. & CHAIRS",
+    [
+     221.0,
+     -267.7
+    ]
+   ],
+   [
+    0.2,
+    "MASSAGE CHAIRS - 103",
+    [
+     255.7,
+     -272.4
+    ]
+   ]
+  ]
+ },
+ "bcs-cryo": {
+  "truth": 4,
+  "recr": 4,
+  "m2": 4,
+  "m6": 4,
+  "type_ok": 4,
+  "panel_ok": 4,
+  "worst": [
+   [
+    0.7,
+    "CRYOLOUNGE",
+    [
+     269.5,
+     -286.2
+    ]
+   ],
+   [
+    0.5,
+    "POLARWAVE",
+    [
+     269.5,
+     -302.8
+    ]
+   ],
+   [
+    0.2,
+    "CRYOLOUNGE",
+    [
+     269.5,
+     -280.0
+    ]
+   ]
+  ]
+ },
+ "bcs-hydro-120": {
+  "truth": 4,
+  "recr": 4,
+  "m2": 4,
+  "m6": 4,
+  "type_ok": 4,
+  "panel_ok": 4,
+  "worst": [
+   [
+    0.5,
+    "HYDROMASSAGE RCPTS - 103A",
+    [
+     197.4,
+     -292.4
+    ]
+   ],
+   [
+    0.3,
+    "HYDROMASSAGE RCPTS - 103A",
+    [
+     197.4,
+     -285.2
+    ]
+   ],
+   [
+    0.1,
+    "HYDROMASSAGE RCPTS - 103A",
+    [
+     197.4,
+     -278.0
+    ]
+   ]
+  ]
+ },
+ "bcs-hydro-240": {
+  "truth": 4,
+  "recr": 4,
+  "m2": 4,
+  "m6": 4,
+  "type_ok": 4,
+  "panel_ok": 4,
+  "worst": [
+   [
+    0.4,
+    "HYDROMASSAGE - 103A",
+    [
+     197.4,
+     -293.4
+    ]
+   ],
+   [
+    0.2,
+    "HYDROMASSAGE - 103A",
+    [
+     197.4,
+     -300.5
+    ]
+   ],
+   [
+    0.2,
+    "HYDROMASSAGE - 103A",
+    [
+     197.4,
+     -286.2
+    ]
+   ]
+  ]
+ },
+ "bcs-maint": {
+  "truth": 14,
+  "recr": 14,
+  "m2": 7,
+  "m6": 12,
+  "type_ok": 12,
+  "panel_ok": 13,
+  "worst": [
+   [
+    7.7,
+    "BCS MAINT. RCPTS",
+    [
+     236.7,
+     -295.9
+    ]
+   ],
+   [
+    4.2,
+    "BCS MAINT. RCPTS",
+    [
+     244.2,
+     -296.4
+    ]
+   ],
+   [
+    3.4,
+    "BCS MAINT. RCPTS",
+    [
+     214.6,
+     -296.4
+    ]
+   ]
+  ]
+ },
+ "bcs-sauna": {
+  "truth": 1,
+  "recr": 1,
+  "m2": 1,
+  "m6": 1,
+  "type_ok": 1,
+  "panel_ok": 1,
+  "worst": [
+   [
+    0.7,
+    "SAUNA - 103H",
+    [
+     243.6,
+     -285.1
+    ]
+   ]
+  ]
+ },
+ "bcs-sauna-timer": {
+  "truth": 1,
+  "recr": 1,
+  "m2": 1,
+  "m6": 1,
+  "type_ok": 1,
+  "panel_ok": 1,
+  "worst": [
+   [
+    0.7,
+    "SAUNA TIMER CONTROL - 103J",
+    [
+     243.6,
+     -284.0
+    ]
+   ]
+  ]
+ },
+ "bcs-spray": {
+  "truth": 1,
+  "recr": 1,
+  "m2": 1,
+  "m6": 1,
+  "type_ok": 1,
+  "panel_ok": 1,
+  "worst": [
+   [
+    0.2,
+    "SPARY TAN - 130J",
+    [
+     243.2,
+     -289.9
+    ]
+   ]
+  ]
+ },
+ "bigfan": {
+  "truth": 2,
+  "recr": 2,
+  "m2": 1,
+  "m6": 2,
+  "type_ok": 2,
+  "panel_ok": 2,
+  "worst": [
+   [
+    2.7,
+    "BIG FAN",
+    [
+     175.0,
+     -250.9
+    ]
+   ],
+   [
+    0.6,
+    "BIG FAN",
+    [
+     139.0,
+     -250.9
+    ]
+   ]
+  ]
+ },
+ "boh-rooms": {
+  "truth": 17,
+  "recr": 18,
+  "m2": 3,
+  "m6": 11,
+  "type_ok": 16,
+  "panel_ok": 16,
+  "worst": [
+   [
+    12.6,
+    "OFFICE - 108B RCPTS",
+    [
+     61.4,
+     -73.0
+    ]
+   ],
+   [
+    12.1,
+    "BREAK & MECH RM RCPTS",
+    [
+     190.6,
+     -287.7
+    ]
+   ],
+   [
+    12.0,
+    "STORAGE ROOM RCPTS",
+    [
+     189.7,
+     -288.1
+    ]
+   ]
+  ]
+ },
+ "cardio": {
+  "truth": 56,
+  "recr": 56,
+  "m2": 56,
+  "m6": 56,
+  "type_ok": 56,
+  "panel_ok": 56,
+  "worst": [
+   [
+    0.3,
+    "TREADMILL",
+    [
+     113.6,
+     -241.0
+    ]
+   ],
+   [
+    0.3,
+    "TREADMILL",
+    [
+     123.8,
+     -241.0
+    ]
+   ],
+   [
+    0.3,
+    "TREADMILL",
+    [
+     134.1,
+     -241.0
+    ]
+   ]
+  ]
+ },
+ "fans": {
+  "truth": 4,
+  "recr": 4,
+  "m2": 4,
+  "m6": 4,
+  "type_ok": 4,
+  "panel_ok": 4,
+  "worst": [
+   [
+    0.1,
+    "IT ROOM & BCS FANS",
+    [
+     258.0,
+     -275.2
+    ]
+   ],
+   [
+    0.1,
+    "IT ROOM & BCS FANS",
+    [
+     257.6,
+     -289.4
+    ]
+   ],
+   [
+    0.1,
+    "LOCKER RM FANS EF-1 & 2",
+    [
+     128.8,
+     -290.7
+    ]
+   ]
+  ]
+ },
+ "foh-desk": {
+  "truth": 8,
+  "recr": 8,
+  "m2": 7,
+  "m6": 7,
+  "type_ok": 8,
+  "panel_ok": 8,
+  "worst": [
+   [
+    13.2,
+    "BACKWRAP RCPTS",
+    [
+     247.4,
+     -262.0
+    ]
+   ],
+   [
+    0.1,
+    "BACKWRAP RCPTS",
+    [
+     250.6,
+     -263.5
+    ]
+   ],
+   [
+    0.1,
+    "BACKWRAP RCPTS",
+    [
+     256.2,
+     -263.5
+    ]
+   ]
+  ]
+ },
+ "foh-it": {
+  "truth": 2,
+  "recr": 2,
+  "m2": 2,
+  "m6": 2,
+  "type_ok": 2,
+  "panel_ok": 2,
+  "worst": [
+   [
+    0.4,
+    "I.T. RACK",
+    [
+     266.0,
+     -278.2
+    ]
+   ],
+   [
+    0.4,
+    "I.T. RACK",
+    [
+     268.2,
+     -278.2
+    ]
+   ]
+  ]
+ },
+ "foh-tablets": {
+  "truth": 6,
+  "recr": 6,
+  "m2": 4,
+  "m6": 6,
+  "type_ok": 6,
+  "panel_ok": 6,
+  "worst": [
+   [
+    3.0,
+    "CHECK-IN TABLETS",
+    [
+     235.2,
+     -247.1
+    ]
+   ],
+   [
+    2.5,
+    "CHECK-IN TABLETS",
+    [
+     232.4,
+     -248.8
+    ]
+   ],
+   [
+    1.8,
+    "CHECK-IN TABLETS",
+    [
+     232.4,
+     -252.1
+    ]
+   ]
+  ]
+ },
+ "maint": {
+  "truth": 45,
+  "recr": 55,
+  "m2": 15,
+  "m6": 24,
+  "type_ok": 28,
+  "panel_ok": 21,
+  "worst": [
+   [
+    12.0,
+    "BOH - MAINT. RCPTS",
+    [
+     61.7,
+     -222.3
+    ]
+   ],
+   [
+    11.7,
+    "GYM MAINT. RCPTS",
+    [
+     229.4,
+     -189.7
+    ]
+   ],
+   [
+    11.5,
+    "RECEPTION MAINT. RCTPS",
+    [
+     258.3,
+     -245.5
+    ]
+   ]
+  ]
+ },
+ "mech": {
+  "truth": 3,
+  "recr": 3,
+  "m2": 3,
+  "m6": 3,
+  "type_ok": 3,
+  "panel_ok": 3,
+  "worst": [
+   [
+    0.0,
+    "P-1 - CIRC. PUMP",
+    [
+     199.0,
+     -273.6
+    ]
+   ],
+   [
+    0.0,
+    "ECH-1",
+    [
+     265.6,
+     -242.2
+    ]
+   ],
+   [
+    0.0,
+    "HWH-1 - WATER HEATER",
+    [
+     197.6,
+     -272.1
+    ]
+   ]
+  ]
+ },
+ "mezz": {
+  "truth": 6,
+  "recr": 6,
+  "m2": 6,
+  "m6": 6,
+  "type_ok": 6,
+  "panel_ok": 6,
+  "worst": [
+   [
+    0.0,
+    "MEZZ RCPTS",
+    [
+     -25.1,
+     -231.8
+    ]
+   ],
+   [
+    0.0,
+    "MEZZ RCPTS",
+    [
+     -11.8,
+     -183.2
+    ]
+   ],
+   [
+    0.0,
+    "MEZZ RCPTS",
+    [
+     -11.8,
+     -208.2
+    ]
+   ]
+  ]
+ },
+ "other": {
+  "truth": 16,
+  "recr": 16,
+  "m2": 14,
+  "m6": 14,
+  "type_ok": 14,
+  "panel_ok": 14,
+  "worst": [
+   [
+    1.5,
+    null,
+    [
+     105.3,
+     -221.6
+    ]
+   ],
+   [
+    0.7,
+    "RTU-2",
+    [
+     77.4,
+     -259.2
+    ]
+   ],
+   [
+    0.5,
+    "(E)RTU-8",
+    [
+     172.9,
+     -291.0
+    ]
+   ]
+  ]
+ },
+ "roof-maint": {
+  "truth": 12,
+  "recr": 12,
+  "m2": 12,
+  "m6": 12,
+  "type_ok": 12,
+  "panel_ok": 12,
+  "worst": [
+   [
+    0.1,
+    "ROOFTOP MAINT. RCPTS",
+    [
+     77.4,
+     -261.7
+    ]
+   ],
+   [
+    0.1,
+    "ROOFTOP MAINT. RCPTS",
+    [
+     257.1,
+     -276.1
+    ]
+   ],
+   [
+    0.1,
+    "ROOFTOP MAINT. RCPTS",
+    [
+     68.1,
+     -218.9
+    ]
+   ]
+  ]
+ },
+ "rr-dryer": {
+  "truth": 4,
+  "recr": 4,
+  "m2": 3,
+  "m6": 4,
+  "type_ok": 4,
+  "panel_ok": 4,
+  "worst": [
+   [
+    2.0,
+    "MENS HAND DRYER",
+    [
+     123.9,
+     -287.6
+    ]
+   ],
+   [
+    2.0,
+    "WOMENS HAND DRYER",
+    [
+     144.7,
+     -287.6
+    ]
+   ],
+   [
+    1.8,
+    "WOMENS HAND DRYER",
+    [
+     158.7,
+     -287.6
+    ]
+   ]
+  ]
+ },
+ "rr-ewc": {
+  "truth": 1,
+  "recr": 1,
+  "m2": 1,
+  "m6": 1,
+  "type_ok": 1,
+  "panel_ok": 1,
+  "worst": [
+   [
+    0.1,
+    "EWC",
+    [
+     141.3,
+     -268.6
+    ]
+   ]
+  ]
+ },
+ "rr-sink": {
+  "truth": 6,
+  "recr": 6,
+  "m2": 6,
+  "m6": 6,
+  "type_ok": 6,
+  "panel_ok": 6,
+  "worst": [
+   [
+    1.1,
+    "MENS SINK RCPTS",
+    [
+     129.0,
+     -285.6
+    ]
+   ],
+   [
+    1.1,
+    "WOMENS SINK RCPTS",
+    [
+     149.7,
+     -285.6
+    ]
+   ],
+   [
+    0.9,
+    "WOMENS SINK RCPTS",
+    [
+     153.7,
+     -285.6
+    ]
+   ]
+  ]
+ },
+ "rr-vanity": {
+  "truth": 8,
+  "recr": 8,
+  "m2": 6,
+  "m6": 8,
+  "type_ok": 8,
+  "panel_ok": 8,
+  "worst": [
+   [
+    3.1,
+    "WOMENS VANITY RCPTS",
+    [
+     170.5,
+     -269.8
+    ]
+   ],
+   [
+    3.0,
+    "MENS VANITY RCPTS",
+    [
+     118.3,
+     -268.7
+    ]
+   ],
+   [
+    1.8,
+    "MENS VANITY RCPTS",
+    [
+     127.0,
+     -286.6
+    ]
+   ]
+  ]
+ },
+ "signs": {
+  "truth": 3,
+  "recr": 3,
+  "m2": 3,
+  "m6": 3,
+  "type_ok": 3,
+  "panel_ok": 3,
+  "worst": [
+   [
+    0.1,
+    "STORE SIGN",
+    [
+     270.8,
+     -243.0
+    ]
+   ],
+   [
+    0.0,
+    "PF CLOCK",
+    [
+     131.1,
+     -190.2
+    ]
+   ],
+   [
+    0.0,
+    "FUTURE SIGN",
+    [
+     163.7,
+     -189.6
+    ]
+   ]
+  ]
+ },
+ "tv-truss": {
+  "truth": 20,
+  "recr": 20,
+  "m2": 20,
+  "m6": 20,
+  "type_ok": 20,
+  "panel_ok": 20,
+  "worst": [
+   [
+    1.1,
+    "TV TRUSS",
+    [
+     203.2,
+     -222.1
+    ]
+   ],
+   [
+    1.0,
+    "TV TRUSS",
+    [
+     193.2,
+     -222.1
+    ]
+   ],
+   [
+    0.9,
+    "TV TRUSS",
+    [
+     183.2,
+     -222.1
+    ]
+   ]
+  ]
+ },
+ "tv-wall": {
+  "truth": 7,
+  "recr": 6,
+  "m2": 5,
+  "m6": 5,
+  "type_ok": 6,
+  "panel_ok": 4,
+  "worst": [
+   [
+    9.7,
+    "TV & RADIANCE MONITOR - CHECK-IN 102",
+    [
+     253.1,
+     -263.5
+    ]
+   ],
+   [
+    1.5,
+    "WOMENS LOCKRM TV",
+    [
+     182.7,
+     -285.0
+    ]
+   ],
+   [
+    1.4,
+    "MENS LOCKRM TV",
+    [
+     99.8,
+     -285.0
+    ]
+   ]
+  ]
+ },
+ "vending": {
+  "truth": 3,
+  "recr": 3,
+  "m2": 0,
+  "m6": 3,
+  "type_ok": 3,
+  "panel_ok": 3,
+  "worst": [
+   [
+    5.9,
+    "VENDING MACHINE",
+    [
+     211.6,
+     -270.1
+    ]
+   ],
+   [
+    4.3,
+    "VENDING MACHINE",
+    [
+     213.5,
+     -271.7
+    ]
+   ],
+   [
+    3.3,
+    "VENDING MACHINE",
+    [
+     214.9,
+     -270.1
+    ]
+   ]
+  ]
+ }
+}

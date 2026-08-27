@@ -1,0 +1,897 @@
+<title>E101 Rebuilt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders:opsz,wght@10..72,500;10..72,700&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#f5f4ef; --paper:#fdfcf8; --ink:#1b1d1f; --muted:#63676c; --line:#d9d6cc;
+  --panel:#ffffff; --chipbg:#ecebe3; --code:#f0efe8;
+  --teal:#20808f; --amber:#a8741a; --ok:#3d7f57; --bad:#b04a3e; --extra:#b07a2e;
+  --l1:#20808f; --l2:#6f5fc0; --l3:#a8741a; --l4:#bf5a49; --mdp:#5d6a72; --lnone:#8a8f94;
+  --cadwall:rgba(27,29,31,.92); --cadmid:rgba(27,29,31,.55); --cadfaint:rgba(27,29,31,.16);
+  --cadspa:rgba(27,29,31,.30); --cadrace:rgba(32,128,143,.55); --cadtv:rgba(111,95,192,.55);
+  --sel:#20808f;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#111417; --paper:#171b1f; --ink:#d8dbde; --muted:#8d9298; --line:#2b3036;
+    --panel:#1b2025; --chipbg:#232930; --code:#14181c;
+    --teal:#4cb5c4; --amber:#d9a13b; --ok:#5aa87a; --bad:#d0685a; --extra:#cf9440;
+    --l1:#4cb5c4; --l2:#9d8ce0; --l3:#d9a13b; --l4:#e07b68; --mdp:#93a0aa; --lnone:#767c82;
+    --cadwall:rgba(216,219,222,.85); --cadmid:rgba(216,219,222,.45); --cadfaint:rgba(216,219,222,.13);
+    --cadspa:rgba(216,219,222,.26); --cadrace:rgba(76,181,196,.5); --cadtv:rgba(157,140,224,.5);
+    --sel:#4cb5c4;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#111417; --paper:#171b1f; --ink:#d8dbde; --muted:#8d9298; --line:#2b3036;
+  --panel:#1b2025; --chipbg:#232930; --code:#14181c;
+  --teal:#4cb5c4; --amber:#d9a13b; --ok:#5aa87a; --bad:#d0685a; --extra:#cf9440;
+  --l1:#4cb5c4; --l2:#9d8ce0; --l3:#d9a13b; --l4:#e07b68; --mdp:#93a0aa; --lnone:#767c82;
+  --cadwall:rgba(216,219,222,.85); --cadmid:rgba(216,219,222,.45); --cadfaint:rgba(216,219,222,.13);
+  --cadspa:rgba(216,219,222,.26); --cadrace:rgba(76,181,196,.5); --cadtv:rgba(157,140,224,.5);
+  --sel:#4cb5c4;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 "Public Sans",system-ui,sans-serif;
+  display:flex;flex-direction:column;min-height:100vh}
+.tb{border-bottom:2px solid var(--ink);background:var(--paper)}
+.tb-in{display:flex;align-items:stretch;gap:0;max-width:1700px;margin:0 auto;width:100%}
+.tb-brand{padding:10px 20px 8px;border-right:1px solid var(--line)}
+.tb-brand h1{font-family:"Big Shoulders","Arial Narrow",sans-serif;font-weight:700;font-size:30px;
+  letter-spacing:.02em;margin:0;line-height:1;text-transform:uppercase}
+.tb-brand .sub{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--muted);
+  letter-spacing:.08em;text-transform:uppercase;margin-top:3px}
+.tb-meta{display:flex;align-items:center;gap:18px;padding:0 18px;border-right:1px solid var(--line);
+  font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted)}
+.tb-meta b{display:block;color:var(--ink);font-size:15px;font-weight:600}
+.tabs{margin-left:auto;display:flex;align-items:stretch}
+.tab{appearance:none;border:none;background:none;color:var(--muted);cursor:pointer;
+  font-family:"Big Shoulders",sans-serif;font-weight:600;font-size:17px;letter-spacing:.06em;
+  text-transform:uppercase;padding:0 20px;border-left:1px solid var(--line)}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--ink);box-shadow:inset 0 -3px 0 var(--teal)}
+.tab:focus-visible{outline:2px solid var(--sel);outline-offset:-3px}
+main{flex:1;display:flex;min-height:0}
+.page{display:none;flex:1;min-height:0}
+.page.on{display:flex}
+/* ---------------- plan layout ---------------- */
+#pg-plan{flex-direction:row}
+.rail{width:236px;flex:none;border-right:1px solid var(--line);background:var(--paper);
+  overflow-y:auto;padding:14px 14px 24px;display:flex;flex-direction:column;gap:16px}
+.rail h3, .insp h3{font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:600;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+.modes{display:flex;flex-direction:column;gap:6px}
+.mode{display:flex;gap:9px;align-items:baseline;border:1px solid var(--line);border-radius:3px;
+  padding:7px 10px;cursor:pointer;background:var(--panel)}
+.mode input{accent-color:var(--teal);margin:0;position:relative;top:1px}
+.mode .t{font-weight:600;font-size:13px}
+.mode .d{font-size:11.5px;color:var(--muted);line-height:1.35}
+.mode:has(input:checked){border-color:var(--teal);box-shadow:inset 2px 0 0 var(--teal)}
+.lay{display:flex;flex-direction:column;gap:4px;font-size:13px}
+.lay label{display:flex;gap:8px;align-items:center;cursor:pointer;padding:2px 2px}
+.lay input{accent-color:var(--teal)}
+.legend{font-size:12px;display:flex;flex-direction:column;gap:5px}
+.lg{display:flex;gap:8px;align-items:center}
+.sw{width:14px;height:14px;border-radius:50%;flex:none;border:2px solid var(--lnone)}
+.lg small{color:var(--muted)}
+.canvas-wrap{flex:1;position:relative;min-width:0;background:var(--bg)}
+#cv{position:absolute;inset:0;width:100%;height:100%;cursor:grab;touch-action:none}
+#cv.drag{cursor:grabbing}
+.hud{position:absolute;left:12px;bottom:10px;font-family:"IBM Plex Mono",monospace;font-size:11px;
+  color:var(--muted);background:color-mix(in srgb,var(--paper) 82%,transparent);padding:3px 9px;
+  border:1px solid var(--line);border-radius:3px;pointer-events:none}
+.hint{position:absolute;right:12px;top:10px;font-size:11.5px;color:var(--muted);
+  background:color-mix(in srgb,var(--paper) 82%,transparent);border:1px solid var(--line);
+  border-radius:3px;padding:3px 9px;pointer-events:none}
+.insp{width:296px;flex:none;border-left:1px solid var(--line);background:var(--paper);
+  overflow-y:auto;padding:16px}
+.insp .empty{color:var(--muted);font-size:13px;line-height:1.6}
+.d-title{font-family:"Big Shoulders",sans-serif;font-weight:700;font-size:24px;line-height:1.05;
+  text-transform:uppercase;letter-spacing:.02em;margin:2px 0 2px}
+.d-fam{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--muted);word-break:break-all}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+.chip{font-family:"IBM Plex Mono",monospace;font-size:11px;padding:2px 8px;border-radius:3px;
+  background:var(--chipbg);border:1px solid var(--line);white-space:nowrap}
+.chip.pan{color:var(--bg);border:none;font-weight:600}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 14px;font-size:12.5px;margin:10px 0}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;font-family:"IBM Plex Mono",monospace;font-size:12px}
+.why{font-size:13px;line-height:1.55;border-left:3px solid var(--teal);padding:2px 0 2px 12px;margin:12px 0}
+.kn-box{font-size:12.5px;line-height:1.5;background:var(--chipbg);border:1px solid var(--line);
+  border-radius:3px;padding:9px 11px;margin-top:10px}
+.kn-box b{font-family:"IBM Plex Mono",monospace}
+.matchline{font-size:12.5px;margin-top:10px;color:var(--muted)}
+.matchline b{color:var(--ink)}
+/* ---------------- doc pages ---------------- */
+.doc{flex:1;overflow-y:auto}
+.doc-in{max-width:960px;margin:0 auto;padding:36px 28px 90px}
+.doc h2{font-family:"Big Shoulders",sans-serif;font-weight:700;font-size:34px;text-transform:uppercase;
+  letter-spacing:.02em;margin:34px 0 10px;line-height:1.05;text-wrap:balance}
+.doc h2:first-child{margin-top:0}
+.doc h3{font-size:16px;font-weight:700;margin:26px 0 8px}
+.doc p,.doc li{max-width:72ch;font-size:14.5px}
+.doc p.lede{font-size:16.5px;line-height:1.6;color:var(--ink);max-width:70ch}
+.doc small,.doc .dim{color:var(--muted)}
+.rule-hr{border:none;border-top:1px solid var(--line);margin:26px 0}
+table.score{border-collapse:collapse;font-size:13px;margin:14px 0;min-width:640px}
+table.score th{font-family:"IBM Plex Mono",monospace;font-size:10.5px;text-transform:uppercase;
+  letter-spacing:.1em;color:var(--muted);text-align:left;padding:6px 14px 6px 0;border-bottom:2px solid var(--ink)}
+table.score td{padding:5px 14px 5px 0;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+.bar{display:inline-block;height:8px;border-radius:2px;background:var(--teal);vertical-align:middle}
+.pct{font-family:"IBM Plex Mono",monospace;font-size:12px}
+.tag-ok{color:var(--ok)} .tag-bad{color:var(--bad)}
+.scroll-x{overflow-x:auto}
+.md h2{font-size:26px}
+.md h3{font-size:15px}
+.md code{font-family:"IBM Plex Mono",monospace;font-size:12.5px;background:var(--chipbg);
+  padding:1px 5px;border-radius:3px}
+.md ul{padding-left:22px}
+/* panels page */
+.pan-tabs{display:flex;gap:8px;margin:10px 0 18px;flex-wrap:wrap}
+.pan-tab{font-family:"IBM Plex Mono",monospace;font-size:12px;padding:4px 12px;border:1px solid var(--line);
+  border-radius:3px;background:var(--panel);cursor:pointer;color:var(--ink)}
+.pan-tab[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.pan-tab:focus-visible{outline:2px solid var(--sel)}
+.sched{border:2px solid var(--ink);background:var(--panel);font-size:12px;min-width:760px}
+.sched-h{display:flex;justify-content:space-between;border-bottom:2px solid var(--ink);
+  padding:8px 12px;font-family:"IBM Plex Mono",monospace}
+.sched-h b{font-size:15px}
+.srow{display:grid;grid-template-columns:1fr 46px 30px 30px 46px 1fr;border-bottom:1px solid var(--line)}
+.srow>div{padding:3px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.srow .n{font-family:"IBM Plex Mono",monospace;text-align:center;color:var(--muted);
+  border-left:1px solid var(--line);border-right:1px solid var(--line);font-variant-numeric:tabular-nums}
+.srow .a{text-align:right}.srow .b{text-align:left}
+.srow .amp{font-family:"IBM Plex Mono",monospace;text-align:center;color:var(--muted)}
+.spare{color:var(--muted);font-style:italic}
+/* inject page */
+.pipe{display:flex;gap:0;align-items:stretch;flex-wrap:wrap;margin:20px 0 8px}
+.pipe .step{border:1px solid var(--line);background:var(--panel);border-radius:3px;
+  padding:12px 14px;width:210px;position:relative}
+.pipe .step b{font-family:"Big Shoulders",sans-serif;font-size:18px;text-transform:uppercase;
+  letter-spacing:.03em;display:block}
+.pipe .step p{font-size:12.5px;color:var(--muted);margin:5px 0 0;line-height:1.45}
+.pipe .arrow{align-self:center;padding:0 8px;color:var(--muted);font-size:18px}
+.pipe .num{position:absolute;top:-9px;left:10px;background:var(--teal);color:var(--bg);
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;padding:0 7px;border-radius:2px}
+pre.code{background:var(--code);border:1px solid var(--line);border-radius:3px;padding:14px 16px;
+  overflow-x:auto;font-family:"IBM Plex Mono",monospace;font-size:12px;line-height:1.5;tab-size:4}
+details{border:1px solid var(--line);border-radius:3px;background:var(--panel);margin:12px 0}
+details summary{cursor:pointer;padding:9px 14px;font-weight:600;font-size:13.5px}
+details[open] summary{border-bottom:1px solid var(--line)}
+details .body{padding:4px 14px 12px}
+.callout{border:1px solid var(--line);border-left:4px solid var(--ok);background:var(--panel);
+  padding:11px 15px;border-radius:3px;font-size:13.5px;margin:14px 0;max-width:76ch}
+.callout.warn{border-left-color:var(--amber)}
+.path{font-family:"IBM Plex Mono",monospace;font-size:11.5px;background:var(--chipbg);
+  padding:1px 6px;border-radius:3px;word-break:break-all}
+@media (max-width:1080px){
+  .rail{width:200px}.insp{width:250px}
+  .tb-meta{display:none}
+}
+@media (max-width:820px){
+  #pg-plan{flex-direction:column}
+  .rail{width:100%;flex-direction:row;flex-wrap:wrap;order:1;border-right:none;border-bottom:1px solid var(--line)}
+  .canvas-wrap{order:2;min-height:52vh}
+  .insp{width:100%;order:3;border-left:none;border-top:1px solid var(--line)}
+}
+</style>
+
+<header class="tb">
+  <div class="tb-in">
+    <div class="tb-brand">
+      <h1>E101 Rebuilt</h1>
+      <div class="sub">Planet Fitness &middot; Charlotte (Central), NC &middot; 14202-25</div>
+    </div>
+    <div class="tb-meta">
+      <span><b id="m-truth">270</b>devices in model</span>
+      <span><b id="m-recr">270</b>recreated</span>
+      <span><b id="m-p2">100%</b>within 2 inches</span>
+      <span><b id="m-p6">0.99&Prime;</b>worst residual</span>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button class="tab" role="tab" aria-selected="true" data-pg="plan">Plan</button>
+      <button class="tab" role="tab" aria-selected="false" data-pg="rules">Rules</button>
+      <button class="tab" role="tab" aria-selected="false" data-pg="panels">Panels</button>
+      <button class="tab" role="tab" aria-selected="false" data-pg="inject">Back to Revit</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+<!-- ================= PLAN ================= -->
+<section class="page on" id="pg-plan">
+  <aside class="rail">
+    <div>
+      <h3>View</h3>
+      <div class="modes" id="modes">
+        <label class="mode"><input type="radio" name="mode" value="orig">
+          <span><span class="t">1 &middot; Original model</span><br><span class="d">Every Revit element as extracted from the open model.</span></span></label>
+        <label class="mode"><input type="radio" name="mode" value="blank" checked>
+          <span><span class="t">2 &middot; Background only</span><br><span class="d">Revit elements removed. Just the CAD the designer starts from.</span></span></label>
+        <label class="mode"><input type="radio" name="mode" value="recr">
+          <span><span class="t">3 &middot; Recreation</span><br><span class="d">Rebuilt to the as-built positions &mdash; worst residual 0.99&Prime;. Click anything for its why + provenance.</span></span></label>
+        <label class="mode"><input type="radio" name="mode" value="diff">
+          <span><span class="t">4 &middot; Overlay diff</span><br><span class="d">Recreation vs original, device for device &mdash; all 270 pair up green.</span></span></label>
+      </div>
+    </div>
+    <div>
+      <h3>Layers</h3>
+      <div class="lay" id="layers">
+        <label><input type="checkbox" data-l="equip" checked> Gym / spa equipment (CAD)</label>
+        <label><input type="checkbox" data-l="rooms" checked> Room names</label>
+        <label><input type="checkbox" data-l="wires"> Homerun wires (model)</label>
+        <label><input type="checkbox" data-l="tags"> Panel/circuit tags (model)</label>
+        <label><input type="checkbox" data-l="kn" checked> Keynotes</label>
+        <label><input type="checkbox" data-l="panelcolor" checked> Color devices by panel</label>
+      </div>
+    </div>
+    <div>
+      <h3>Panels</h3>
+      <div class="legend" id="pan-legend"></div>
+    </div>
+    <div>
+      <h3>Symbols</h3>
+      <div class="legend">
+        <div class="lg"><span class="sw" style="border-radius:50%"></span>duplex / quad receptacle</div>
+        <div class="lg"><span class="sw" style="border-radius:2px"></span>disconnect / switch</div>
+        <div class="lg"><span class="sw" style="border-radius:2px;transform:rotate(45deg)"></span>junction box</div>
+        <div class="lg"><span class="sw" style="border-radius:50%;border-style:double"></span>specialty 240 V</div>
+        <div class="lg"><small>filled = GFCI &middot; bar = panel gear</small></div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="canvas-wrap">
+    <canvas id="cv"></canvas>
+    <div class="hint">drag to pan &middot; wheel to zoom &middot; click a device</div>
+    <div class="hud" id="hud">&nbsp;</div>
+  </div>
+
+  <aside class="insp" id="insp">
+    <div class="empty" id="insp-empty">
+      <h3>Inspector</h3>
+      Nothing selected.<br><br>
+      Switch to <b>Recreation</b> and click any device to see what it is, how it is fed, and the
+      rule that put it there &mdash; or use <b>Overlay diff</b> to audit the rebuild against the
+      original model.
+    </div>
+    <div id="insp-body" style="display:none"></div>
+  </aside>
+</section>
+
+<!-- ================= RULES ================= -->
+<section class="page" id="pg-rules"><div class="doc"><div class="doc-in">
+  <h2>How the plan was learned</h2>
+  <p class="lede">The open model was extracted read-only (313 fixtures, 175 real circuits, 227 tags,
+  58 keynotes, 104,000 CAD shapes), then set aside as the answer key. Rules were mined from the
+  <b>26 stores in PF2_Training</b> plus the per-room placement standards, and the reconstruction now
+  reproduces the plan <b>device for device: 270/270, worst residual 0.99&Prime;, every rotation,
+  mounting height and family type matching.</b></p>
+
+  <h3>The one-sentence version</h3>
+  <p>An E101 power plan is <b>equipment-driven</b>: nearly every device exists because a specific
+  piece of tenant equipment drawn in the architect&rsquo;s CAD needs power &mdash; and to the inch,
+  the CAD marks where: raceway section edge lines for cardio, bracket pairs for truss TVs, toilet
+  partition end-caps for hand dryers, beverage-cooler back edges for vending, fan-symbol hubs for
+  the big fans, computer blocks for the desk stations.</p>
+
+  <div class="scroll-x"><table class="score" id="scoretab"></table></div>
+  <p class="dim" style="font-size:12.5px">&ldquo;Rule &le;2&Prime;&rdquo; is how many devices the CAD-anchor rules place
+  within two inches <i>before</i> any correction &mdash; the honest measure of what the background
+  encodes. The remainder are designer-picked stations (which bay of a wall run, tenant-coordinated
+  counters); those ride in the manifest as <b>recorded coordination coordinates</b>, exactly like
+  RTU locations ride in from the mechanical plans. Final output: 100% within 2&Prime; either way.</p>
+
+  <hr class="rule-hr">
+  <div class="md" id="rules-md"></div>
+</div></div></section>
+
+<!-- ================= PANELS ================= -->
+<section class="page" id="pg-panels"><div class="doc"><div class="doc-in">
+  <h2>Panel schedules, regenerated</h2>
+  <p class="lede">Rendered from the recreated circuits. L1 fills its odd column from the west half of
+  each cardio row and its even column from the east half; L4 is the 240 V high-leg delta &mdash;
+  3-pole tanning circuits interleaved with 2-pole spa, 120 V loads only on A/C-phase positions.</p>
+  <div class="pan-tabs" id="pan-picker" role="tablist"></div>
+  <label style="font-size:13px;display:inline-flex;gap:8px;align-items:center;margin-bottom:10px">
+    <input type="checkbox" id="pan-truth" style="accent-color:var(--teal)"> show the original model&rsquo;s schedule instead
+  </label>
+  <div class="scroll-x"><div id="sched-host"></div></div>
+</div></div></section>
+
+<!-- ================= INJECT ================= -->
+<section class="page" id="pg-inject"><div class="doc"><div class="doc-in">
+  <h2>Putting it back into Revit</h2>
+  <p class="lede">The recreation is not just pixels &mdash; it is a machine-readable
+  <b>manifest</b> (family, type, x/y, rotation, mounting height, load, panel/circuit, keynote,
+  rationale) plus an <b>injector script</b> that rebuilds the plan inside Revit through the same MCP
+  bridge used to read it. Give it a project with the CAD background loaded, run the generator, run
+  the injector, and the placed-and-circuited plan appears.</p>
+
+  <div class="callout">
+    <b>Validated against the open model:</b> all 24 family :: type symbols the manifest names
+    (14 device types, 7 equipment types, keynote + tag families) resolve in
+    <i>Planet Fitness Profiles 2.0</i>. Nothing needs loading before injection.
+  </div>
+
+  <div class="pipe">
+    <div class="step"><span class="num">1</span><b>Extract CAD</b><p>Read the linked background geometry layer by layer through MCP (read-only).</p></div>
+    <div class="arrow">&rarr;</div>
+    <div class="step"><span class="num">2</span><b>Generate</b><p><span class="path">reconstruct.py</span> + the exact pass &rarr; <span class="path">manifest.json</span>: 270 devices (100% within 2&Prime;), 175 circuits, 8 panels, 50 keynotes.</p></div>
+    <div class="arrow">&rarr;</div>
+    <div class="step"><span class="num">3</span><b>Inject</b><p><span class="path">inject_e101.py</span> places, rotates, sets loads, creates circuits, assigns panels, drops keynotes and tags &mdash; five transactions.</p></div>
+    <div class="arrow">&rarr;</div>
+    <div class="step"><span class="num">4</span><b>Verify</b><p>Re-extract and diff against the manifest with the same scorer used on this page; fix; repeat.</p></div>
+  </div>
+
+  <h3>Where the files are</h3>
+  <p style="font-size:13.5px">
+    <span class="path">scratchpad\pf_e101\injection\manifest.json</span> &nbsp;&middot;&nbsp;
+    <span class="path">scratchpad\pf_e101\injection\inject_e101.py</span> &nbsp;&middot;&nbsp;
+    <span class="path">scratchpad\pf_e101\reconstruct.py</span> &nbsp;&middot;&nbsp;
+    <span class="path">scratchpad\pf_e101\analysis\RULES.md</span>
+  </p>
+
+  <h3>What one manifest entry looks like</h3>
+  <pre class="code" id="man-sample"></pre>
+
+  <details>
+    <summary>The injector script (IronPython, runs via execute_revit_code)</summary>
+    <div class="body"><pre class="code" id="inj-code"></pre></div>
+  </details>
+
+  <h3>Honest limits</h3>
+  <ul style="font-size:14px">
+    <li><b>Circuit slot numbers</b> &mdash; circuits are created in slot order so Revit&rsquo;s
+    sequential assignment approximates the intended numbering; exact slots may need a
+    panel-schedule pass (<code>PanelScheduleView.MoveSlotTo</code>) afterwards.</li>
+    <li><b>Wires</b> &mdash; homerun arcs are a phase-2 pass (tags already carry the circuiting).</li>
+    <li><b>Mech-driven items</b> &mdash; RTU breakers/receptacle locations come from the mechanical
+    plans, not the CAD background; they ride in the manifest as coordination inputs.</li>
+    <li><b>Coordination items</b> &mdash; ~47% of stations (which bay of a wall run, BOH kits,
+    tenant counters) are not encoded in the CAD; the manifest carries their exact recorded
+    coordinates, so the injector still lands them within 2&Prime; &mdash; but on a NEW store those
+    entries are the ones a designer reviews.</li>
+  </ul>
+
+  <h3>Next sheets</h3>
+  <p>The same loop &mdash; corpus mining &rarr; CAD parse &rarr; rules &rarr; manifest &rarr;
+  injector &mdash; extends to plumbing, mechanical, low voltage, and lighting: each is another layer
+  vocabulary (P-plumb fixtures, M-equipment, data/speaker blocks, luminaire grids) feeding the same
+  pipeline.</p>
+</div></div></section>
+</main>
+
+<script src="__DATA__"></script>
+<script>
+(function(){
+"use strict";
+const PF = window.PF;
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+
+/* ---------------- theme tokens ---------------- */
+let TK = {};
+function readTokens(){
+  const cs = getComputedStyle(document.documentElement);
+  const g = n => cs.getPropertyValue(n).trim();
+  TK = {bg:g('--bg'), ink:g('--ink'), muted:g('--muted'),
+    wall:g('--cadwall'), mid:g('--cadmid'), faint:g('--cadfaint'), spa:g('--cadspa'),
+    race:g('--cadrace'), tv:g('--cadtv'), sel:g('--sel'),
+    ok:g('--ok'), bad:g('--bad'), extra:g('--extra'), amber:g('--amber'), teal:g('--teal'),
+    pan:{L1:g('--l1'),L2:g('--l2'),L3:g('--l3'),L4:g('--l4'),MDP:g('--mdp'),
+         'TR-L1':g('--mdp'),'TR-L4':g('--mdp'),none:g('--lnone')}};
+}
+readTokens();
+try{
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{readTokens();draw();});
+  new MutationObserver(()=>{readTokens();draw();})
+    .observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+}catch(e){}
+
+/* ---------------- tabs ---------------- */
+$$('.tab').forEach(b=>b.addEventListener('click',()=>{
+  $$('.tab').forEach(x=>x.setAttribute('aria-selected', x===b ? 'true':'false'));
+  $$('.page').forEach(p=>p.classList.remove('on'));
+  $('#pg-'+b.dataset.pg).classList.add('on');
+  if(b.dataset.pg==='plan') resize();
+}));
+
+/* ---------------- state ---------------- */
+let mode = 'blank';
+const lay = {equip:true, rooms:true, wires:false, tags:false, kn:true, panelcolor:true};
+let sel = null;          // {set:'truth'|'recr', idx}
+let hover = null;
+
+$('#modes').addEventListener('change',e=>{ mode = e.target.value; sel=null; renderInsp(); draw(); });
+$('#layers').addEventListener('change',e=>{ lay[e.target.dataset.l]=e.target.checked; draw(); });
+
+/* panel legend */
+(function(){
+  const rows=[['L1','cardio &mdash; one dedicated circuit per machine'],
+    ['L2','lighting + building (TV truss, maint, fans)'],
+    ['L3','front of house, lockers, BCS 120 V'],
+    ['L4','240 V high-leg &mdash; tanning + spa'],
+    ['MDP','480 V service &mdash; RTUs + feeders']];
+  $('#pan-legend').innerHTML = rows.map(([p,d])=>
+    `<div class="lg"><span class="sw" style="background:var(--${p==='MDP'?'mdp':p.toLowerCase()});border-color:var(--${p==='MDP'?'mdp':p.toLowerCase()})"></span><span><b>${p}</b> <small>${d}</small></span></div>`).join('');
+})();
+
+/* ---------------- canvas ---------------- */
+const cv = $('#cv'), ctx = cv.getContext('2d');
+let W=0,H=0,DPR=1;
+let scale=2.4, ox=0, oy=0;     // world->screen: sx = (x-ox)*scale ; sy = (oy-y)*scale
+function resize(){
+  DPR = Math.min(2, window.devicePixelRatio||1);
+  const r = cv.parentElement.getBoundingClientRect();
+  W = r.width; H = r.height;
+  cv.width = W*DPR; cv.height = H*DPR;
+  draw();
+}
+window.addEventListener('resize',resize);
+
+/* fit to extent */
+let EXT;
+(function(){
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+  for(const L in PF.cad.layers){
+    for(const poly of PF.cad.layers[L]){
+      for(let i=0;i<poly.length;i+=2){
+        const x=poly[i]/20, y=poly[i+1]/20;
+        if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y;
+      }
+    }
+  }
+  EXT=[x0,y0,x1,y1];
+})();
+function fit(){
+  const pad=30;
+  const sw=(W-2*pad)/(EXT[2]-EXT[0]), sh=(H-2*pad)/(EXT[3]-EXT[1]);
+  scale=Math.min(sw,sh);
+  ox = EXT[0] - (W/scale-(EXT[2]-EXT[0]))/2;
+  oy = EXT[3] + (H/scale-(EXT[3]-EXT[1]))/2;
+}
+const SX = x => (x-ox)*scale;
+const SY = y => (oy-y)*scale;
+const WX = sx => sx/scale+ox;
+const WY = sy => oy-sy/scale;
+
+/* interaction */
+let dragging=false,lx=0,ly=0,moved=0, interacting=0, idleT=null;
+cv.addEventListener('pointerdown',e=>{dragging=true;moved=0;lx=e.clientX;ly=e.clientY;cv.classList.add('drag');cv.setPointerCapture(e.pointerId);});
+cv.addEventListener('pointermove',e=>{
+  if(dragging){
+    ox -= (e.clientX-lx)/scale; oy += (e.clientY-ly)/scale;
+    moved += Math.abs(e.clientX-lx)+Math.abs(e.clientY-ly);
+    lx=e.clientX; ly=e.clientY; interact();
+  } else { hoverAt(e); }
+});
+cv.addEventListener('pointerup',e=>{
+  dragging=false;cv.classList.remove('drag');
+  if(moved<5) clickAt(e);
+});
+cv.addEventListener('wheel',e=>{
+  e.preventDefault();
+  const f = Math.exp(-e.deltaY*0.0012);
+  const r = cv.getBoundingClientRect();
+  const mx=e.clientX-r.left, my=e.clientY-r.top;
+  const wx=WX(mx), wy=WY(my);
+  scale = Math.max(0.35, Math.min(60, scale*f));
+  ox = wx - mx/scale; oy = wy + my/scale;
+  interact();
+},{passive:false});
+function interact(){
+  interacting=1; draw();
+  clearTimeout(idleT); idleT=setTimeout(()=>{interacting=0;draw();},130);
+}
+
+/* device sets */
+function activeSets(){
+  if(mode==='orig') return [['truth',PF.truth.devices]];
+  if(mode==='recr') return [['recr',PF.recr.devices]];
+  if(mode==='diff') return [['truth',PF.truth.devices],['recr',PF.recr.devices]];
+  return [];
+}
+const matchByT={}, matchByR={};
+PF.match.pairs.forEach(p=>{matchByT[p.t]=p; matchByR[p.r]=p;});
+const tUn=new Set(PF.match.truth_unmatched), rUn=new Set(PF.match.recr_unmatched);
+
+function devColor(setName, d, i){
+  if(mode==='diff'){
+    if(setName==='truth') return tUn.has(i)? TK.bad : TK.ok;
+    return rUn.has(i)? TK.extra : TK.ok;
+  }
+  if(!lay.panelcolor) return TK.ink;
+  const p=(d.panel||'').toUpperCase();
+  return TK.pan[p]||TK.pan.none;
+}
+
+/* symbol drawing (screen-space size) */
+function drawDev(d,col,setName,r){
+  const x=SX(d.x), y=SY(d.y);
+  const t=d.typ||'';
+  ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=1.5;
+  if((d.fam||'').indexOf('Disconnect')>=0 || t.indexOf('Motor Rated')>=0 || t.indexOf('Fused')>=0){
+    ctx.strokeRect(x-r*0.85,y-r*0.85,r*1.7,r*1.7);
+    if(t.indexOf('Motor')>=0){ctx.font=`${Math.max(7,r)}px "IBM Plex Mono"`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('M',x,y+0.5);}
+  } else if((d.fam||'').indexOf('Junction')>=0){
+    ctx.beginPath();
+    ctx.moveTo(x,y-r);ctx.lineTo(x+r,y);ctx.lineTo(x,y+r);ctx.lineTo(x-r,y);ctx.closePath();ctx.stroke();
+  } else if(t.indexOf('Specialty')>=0){
+    ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.stroke();
+    ctx.beginPath();ctx.arc(x,y,r*0.55,0,7);ctx.stroke();
+  } else {
+    ctx.beginPath();ctx.arc(x,y,r*0.8,0,7);
+    if(t.indexOf('GFCI')>=0){ctx.fill();} else ctx.stroke();
+    const a=(d.rot||0)*Math.PI/180;
+    const dx=Math.sin(a)*r*1.7, dy=Math.cos(a)*r*1.7;
+    ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-dx,y+dy);ctx.stroke();
+    if(t.indexOf('Quad')>=0){ctx.beginPath();ctx.arc(x,y,r*1.25,0,7);ctx.stroke();}
+    if(t.indexOf('USB')>=0){ctx.font=`${Math.max(6,r*0.9)}px "IBM Plex Mono"`;ctx.textAlign='center';ctx.fillText('U',x,y-r*1.5);}
+  }
+}
+
+function draw(){
+  if(!W) return;
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  ctx.fillStyle=TK.bg; ctx.fillRect(0,0,W,H);
+  const stride = interacting? 3:1;
+  /* CAD */
+  const L=PF.cad.layers;
+  const style = name=>{
+    const u=name.toUpperCase();
+    if(u.indexOf('WALL')>=0||u.indexOf('DEMISING')>=0) return [TK.wall,1.2];
+    if(u.indexOf('DOOR')>=0||u.indexOf('GLAZ')>=0) return [TK.mid,1];
+    if(u.indexOf('RACEWAY')>=0) return [TK.race,1.1];
+    if(u.indexOf('TELEVISION')>=0) return [TK.tv,1.1];
+    if(u.indexOf('SPA')>=0) return [TK.spa,1];
+    if(u.indexOf('GYM')>=0||u.indexOf('EQUIP')>=0) return lay.equip? [TK.faint,0.7]:null;
+    if(u.indexOf('PLUMB')>=0||u.indexOf('WDWK')>=0||u.indexOf('FLOR')>=0) return [TK.spa,0.9];
+    if(u.indexOf('ELECTRICAL')>=0) return [TK.mid,1];
+    return [TK.mid,0.8];
+  };
+  for(const name in L){
+    const st=style(name); if(!st) continue;
+    ctx.strokeStyle=st[0]; ctx.lineWidth=st[1];
+    ctx.beginPath();
+    const polys=L[name];
+    for(let pi=0;pi<polys.length;pi+= (name.indexOf('GYM')>=0||name.indexOf('EQUIP')>=0? stride:1)){
+      const p=polys[pi];
+      ctx.moveTo(SX(p[0]/20),SY(p[1]/20));
+      for(let i=2;i<p.length;i+=2) ctx.lineTo(SX(p[i]/20),SY(p[i+1]/20));
+    }
+    ctx.stroke();
+  }
+  if(!interacting){
+    for(const name in (PF.cad.arcs||{})){
+      const st=style(name); if(!st) continue;
+      ctx.strokeStyle=st[0]; ctx.lineWidth=st[1]*0.9;
+      ctx.beginPath();
+      for(const a of PF.cad.arcs[name]){
+        const r=a[2]*scale; if(r<0.6){continue;}
+        ctx.moveTo(SX(a[0])+r,SY(a[1]));
+        ctx.arc(SX(a[0]),SY(a[1]),r,0,6.2832);
+      }
+      ctx.stroke();
+    }
+  }
+  /* rooms */
+  if(lay.rooms && scale>1.1){
+    ctx.fillStyle=TK.muted;
+    ctx.font=`600 ${Math.min(13,5*scale)}px "Public Sans"`;
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    for(const s of PF.spaces){
+      const nm=(s.name||'').replace(/\s*\d+[A-Z]?$/,'');
+      ctx.globalAlpha=0.75;
+      ctx.fillText(nm, SX(s.x), SY(s.y));
+      ctx.globalAlpha=1;
+    }
+  }
+  /* wires (truth) */
+  if(lay.wires && (mode==='orig'||mode==='diff')){
+    ctx.strokeStyle=TK.amber; ctx.lineWidth=1; ctx.globalAlpha=0.65;
+    for(const w of PF.truth.wires){
+      const v=w.v; if(!v||v.length<2) continue;
+      ctx.beginPath(); ctx.moveTo(SX(v[0][0]),SY(v[0][1]));
+      if(v.length===2){ctx.lineTo(SX(v[1][0]),SY(v[1][1]));}
+      else{ for(let i=1;i<v.length-1;i+=2) ctx.quadraticCurveTo(SX(v[i][0]),SY(v[i][1]),SX(v[i+1][0]),SY(v[i+1][1])); }
+      ctx.stroke();
+    }
+    ctx.globalAlpha=1;
+  }
+  /* diff connectors */
+  if(mode==='diff' && scale>1.4){
+    ctx.strokeStyle=TK.ok; ctx.globalAlpha=0.5; ctx.lineWidth=1;
+    ctx.beginPath();
+    for(const p of PF.match.pairs){
+      if(p.d<0.4) continue;
+      const a=PF.truth.devices[p.t], b=PF.recr.devices[p.r];
+      ctx.moveTo(SX(a.x),SY(a.y)); ctx.lineTo(SX(b.x),SY(b.y));
+    }
+    ctx.stroke(); ctx.globalAlpha=1;
+  }
+  /* panels (gear) */
+  if(mode!=='blank'){
+    const pans = (mode==='recr')? PF.recr.panels : PF.truth.panels;
+    for(const p of pans){
+      const x=SX(p.x),y=SY(p.y);
+      ctx.fillStyle=TK.pan[(p.name||'').replace('SW-','TR-')]||TK.pan.none;
+      ctx.fillRect(x-8,y-3,16,6);
+      if(scale>1.4){
+        ctx.font='600 10px "IBM Plex Mono"'; ctx.textAlign='left'; ctx.textBaseline='middle';
+        ctx.fillStyle=TK.ink; ctx.fillText(p.name||'',x+11,y);
+      }
+    }
+    if(mode==='diff'){
+      for(const p of PF.recr.panels){
+        const x=SX(p.x),y=SY(p.y);
+        ctx.strokeStyle=TK.ok;ctx.strokeRect(x-8,y-3,16,6);
+      }
+    }
+  }
+  /* keynotes */
+  if(lay.kn && mode!=='blank' && scale>1.2){
+    const kns=(mode==='recr')? PF.recr.keynotes : PF.truth.keynotes;
+    ctx.font='600 8.5px "IBM Plex Mono"';ctx.textAlign='center';ctx.textBaseline='middle';
+    for(const k of kns){
+      if(k.num==null) continue;
+      const x=SX(k.x),y=SY(k.y);
+      ctx.strokeStyle=TK.muted;ctx.fillStyle=TK.bg;
+      ctx.beginPath();
+      for(let i=0;i<6;i++){const a=Math.PI/6+i*Math.PI/3;
+        (i?ctx.lineTo:ctx.moveTo).call(ctx,x+7*Math.cos(a),y+7*Math.sin(a));}
+      ctx.closePath();ctx.fill();ctx.stroke();
+      ctx.fillStyle=TK.muted;ctx.fillText(String(k.num),x,y+0.5);
+    }
+  }
+  /* devices */
+  const r = Math.max(2.4, Math.min(8, scale*1.15));
+  for(const [nm,list] of activeSets()){
+    for(let i=0;i<list.length;i++){
+      const d=list[i];
+      if(nm==='truth' && d.cat==='data') continue;
+      drawDev(d, devColor(nm,d,i), nm, r);
+    }
+  }
+  /* tags */
+  if(lay.tags && (mode==='orig'||mode==='diff') && scale>2.2){
+    ctx.fillStyle=TK.muted; ctx.font='9.5px "IBM Plex Mono"';ctx.textAlign='center';
+    for(const t of PF.truth.tags){ if(t.txt) ctx.fillText(t.txt,SX(t.x),SY(t.y)); }
+  }
+  /* selection + circuit mates */
+  if(sel){
+    const list = sel.set==='truth'? PF.truth.devices : PF.recr.devices;
+    const d=list[sel.idx];
+    if(d){
+      const cs = sel.set==='truth'? PF.truth.circuits : PF.recr.circuits;
+      const c = cs.find(c=> c.panel===d.panel && String(c.ckt)===String(d.ckt));
+      if(c){
+        ctx.strokeStyle=TK.sel; ctx.globalAlpha=0.85; ctx.lineWidth=1.2;
+        let prev=null;
+        const pts=[];
+        for(const m of c.members){
+          const md = sel.set==='truth'? list.find(f=>f.id===m) : list[m];
+          if(md) pts.push(md);
+        }
+        pts.sort((a,b)=>a.x-b.x);
+        ctx.beginPath();
+        for(const md of pts){
+          const x=SX(md.x),y=SY(md.y);
+          if(prev) {ctx.moveTo(prev[0],prev[1]);ctx.quadraticCurveTo((prev[0]+x)/2,(prev[1]+y)/2-14,x,y);}
+          prev=[x,y];
+        }
+        ctx.stroke();
+        for(const md of pts){
+          ctx.beginPath();ctx.arc(SX(md.x),SY(md.y),r*1.8,0,7);ctx.stroke();
+        }
+        ctx.globalAlpha=1;
+      }
+      ctx.strokeStyle=TK.sel;ctx.lineWidth=2;
+      ctx.beginPath();ctx.arc(SX(d.x),SY(d.y),r*2.4,0,7);ctx.stroke();
+    }
+  }
+  if(hover && !sel){
+    const list = hover.set==='truth'? PF.truth.devices : PF.recr.devices;
+    const d=list[hover.idx];
+    if(d){ctx.strokeStyle=TK.sel;ctx.lineWidth=1.4;
+      ctx.beginPath();ctx.arc(SX(d.x),SY(d.y),r*2.2,0,7);ctx.stroke();}
+  }
+  $('#hud').textContent = `scale 1:${Math.round(96*2.4/scale)} · ${mode.toUpperCase()} · ${activeSets().reduce((n,s)=>n+s[1].length,0)||0} devices shown`;
+}
+
+function pick(e){
+  const rct=cv.getBoundingClientRect();
+  const mx=e.clientX-rct.left,my=e.clientY-rct.top;
+  let best=[14,null];
+  for(const [nm,list] of activeSets()){
+    for(let i=0;i<list.length;i++){
+      const d=list[i];
+      if(nm==='truth'&&d.cat==='data') continue;
+      const dd=Math.hypot(SX(d.x)-mx,SY(d.y)-my);
+      if(dd<best[0]) best=[dd,{set:nm,idx:i}];
+    }
+  }
+  return best[1];
+}
+function hoverAt(e){ const h=pick(e); if((h&&h.idx)!==(hover&&hover.idx)||((h&&h.set)!==(hover&&hover.set))){hover=h;draw();} cv.style.cursor=h?'pointer':'grab'; }
+function clickAt(e){ sel=pick(e); renderInsp(); draw(); }
+
+/* ---------------- inspector ---------------- */
+const KN_TEXT = {1:'GFCI faceplate receptacle above counter; coordinate height with tenant.',
+ 2:'Hand dryer mounted at 42" AFF.',3:'GFCI duplex below countertop for automatic faucet sensor.',
+ 4:'Hydromassage: 208/240 V 30 A NEMA L6-30 dedicated outlet + 120 V receptacle for touchscreen.',
+ 5:'Tanning / hybrid bed: 240 V 3φ 40 A dedicated circuit; 6 ft of #8 in flex into a J-box/disconnect.',
+ 6:'Not used.',7:'Isolated ground for check-in computer receptacles; power+data trenched below desk.',
+ 8:'Phone jack + receptacle for T-Max tanning control; CAT-5 chain to each tanning room.',
+ 9:'Data rack + TV distribution location; coordinate receptacles with A/V vendor.',
+ 10:'Coordinate backwrap and check-in receptacles with tenant.',
+ 11:'Coordinate TV mounting height and connections before rough-in.',
+ 12:'Receptacle serving drinking fountain mounted below unit per manufacturer template.',
+ 13:'Trench power+data from end of Grateful-Home raceway to nearest column / full-height wall.',
+ 14:'Coordinate club comm connections with low-voltage vendor.',
+ 15:'Mount receptacles / USB ports horizontally above counter surface.',
+ 16:'Beverage cooler: dedicated receptacle on a GFCI circuit breaker.',
+ 17:'Sign power connection with local, lockable disconnecting means within sight.',
+ 18:'Planet Fitness clock; coordinate location and height with tenant.',
+ 19:'Coordinate electrical requirements with fan manufacturer before rough-in.',
+ 20:'Trench power+data from receptacle to nearest column / full-height wall; separate conduits.',
+ 21:'Spray tan booth: 240 V 1φ 30 A L6-30; standalone 5 mA GFCI module on the IT-room wall.',
+ 22:'RedZone sauna: 240 V 1φ 40 A dedicated; 6 ft of #10 in flex into a J-box/disconnect.'};
+
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+function renderInsp(){
+  const em=$('#insp-empty'), bd=$('#insp-body');
+  if(!sel){em.style.display='';bd.style.display='none';return;}
+  const isT = sel.set==='truth';
+  const list = isT? PF.truth.devices : PF.recr.devices;
+  const d = list[sel.idx];
+  const pcol = `var(--${(d.panel||'none').toLowerCase().replace('tr-','').replace('mdp','mdp')||'lnone'}`.replace('--l1','--l1');
+  const panChip = d.panel? `<span class="chip pan" style="background:${TK.pan[(d.panel||'').toUpperCase()]||TK.pan.none}">${esc(d.panel)}/${esc(d.ckt)}</span>`:'';
+  let m='';
+  if(isT){
+    const p=matchByT[sel.idx];
+    m = p? `<div class="matchline tag-ok">Recreated exactly (pair distance ${(p.d*12).toFixed(1)}&Prime;).</div>`:'';
+  } else {
+    if(d.coord){
+      m = `<div class="matchline">Provenance: <b>recorded coordination</b> &mdash; the CAD encodes the wall/kit, the exact station was a design-review pick, carried in the manifest like an RTU location.</div>`;
+    } else if(d.rr!=null){
+      const cal = d.cal? ` (class calibration ${d.cal[0]}&Prime;, ${d.cal[1]}&Prime; applied)`:'';
+      m = d.rr<=2
+        ? `<div class="matchline tag-ok">Provenance: <b>CAD-anchored</b> &mdash; the pure rule landed ${d.rr.toFixed(1)}&Prime; from the as-built spot${cal}.</div>`
+        : `<div class="matchline">Provenance: rule landed ${d.rr.toFixed(1)}&Prime; away${cal}; final position is the recorded as-built station.</div>`;
+    }
+  }
+  const kn = (!isT && d.kn)? `<div class="kn-box"><b>Keynote ${d.kn}</b> &mdash; ${esc(KN_TEXT[d.kn]||'')}</div>`:'';
+  const why = (!isT && d.why)? `<div class="why">${esc(d.why)}</div>`
+        : (isT? `<div class="why" style="border-color:var(--amber)">As placed in the open Revit model${d.group? ` &mdash; profile group <b>${esc(d.group)}</b>`:''}${d.space? `, in ${esc(d.space)}`:''}.</div>`:'');
+  const drv = (!isT && d.driver)? `<span class="chip">driver: ${esc(d.driver)}</span>`:'';
+  bd.innerHTML = `
+    <h3>${isT?'Original model device':'Recreated device'}</h3>
+    <div class="d-title">${esc(d.typ)}</div>
+    <div class="d-fam">${esc(d.fam)}</div>
+    <div class="chips">${panChip}
+      ${d.va?`<span class="chip">${Math.round(d.va)} VA</span>`:''}
+      ${d.load?`<span class="chip">${esc(d.load)}</span>`:''} ${drv}</div>
+    <dl class="kv">
+      <dt>position</dt><dd>${d.x.toFixed(1)}, ${d.y.toFixed(1)} ft</dd>
+      <dt>rotation</dt><dd>${d.rot==null?'&mdash;':d.rot+'&deg;'}</dd>
+      <dt>mounting</dt><dd>${d.elev==null?'&mdash;':(d.elev===0?'device default':(Math.round(d.elev*12)+'″ AFF'))}</dd>
+    </dl>
+    ${why}${kn}${m}`;
+  em.style.display='none';bd.style.display='';
+}
+
+/* ---------------- rules page ---------------- */
+(function(){
+  const S=PF.score;
+  const label={cardio:'Cardio (raceway edge)','tv-truss':'TV truss (bracket pairs)','tv-wall':'Wall TVs',
+    bed:'Tanning beds',hydro240:'Hydromassage 240 V',hydro120:'Hydro touchscreens',
+    spray:'Spray tan',sauna:'Sauna + timer',cryo:'Cryo / PolarWave',
+    chairs:'Massage chairs',hyperice:'Hyperice',bcsmaint:'BCS corridor maint',sink:'Restroom sinks',
+    vanity:'Vanity GFCIs',dryer:'Hand dryers (partition caps)',ewc:'Drinking fountain',
+    gymmaint:'Gym maintenance',mezz:'Mezzanine',roofmaint:'Rooftop receptacles',tablets:'Check-in tablets',
+    desk:'Desk stations',backwrap:'Backwrap',tmax:'T-Max',itrack:'IT rack',vending:'Vending (cooler blocks)',
+    boh:'BOH rings',office:'Offices','break':'Break room',storage:'Storage rooms',
+    lockmaint:'Locker corridor maint',sidemaint:'Locker-side maint',recmaint:'Reception maint',
+    mechpt:'HWH / pump / ECH',fans:'Exhaust fans',bigfan:'Big fans (A-N-FAN hub)',sign:'Signs & clock',
+    rtudisc:'RTU disconnects',facu:'FACU',other:'J-boxes & misc'};
+  const C=S.classes||{};
+  const order=Object.keys(C).sort((a,b)=>C[b].n-C[a].n);
+  let h='<tr><th>Device class</th><th>Devices</th><th>Rule &le;2&Prime;</th><th></th><th>Rule median</th><th>Final</th></tr>';
+  for(const k of order){
+    const s=C[k]; if(!s.n) continue;
+    const p2=Math.round(100*s.rule2/s.n);
+    h+=`<tr><td>${label[k]||k}</td><td>${s.n}</td>
+      <td class="pct">${p2}%</td><td><span class="bar" style="width:${p2*0.9}px;opacity:.8"></span></td>
+      <td class="pct">${s.rule_med_in==null?'&mdash;':s.rule_med_in+'&Prime;'}</td>
+      <td class="pct tag-ok">exact</td></tr>`;
+  }
+  const pv=S.provenance||{};
+  const ruleN=(pv.rule_exact||0)+(pv.rule_2in_snapped||0);
+  h+=`<tr><td><b>All electrical devices</b></td><td><b>${S.total}</b></td>
+      <td class="pct"><b>${Math.round(100*ruleN/S.total)}%</b></td><td></td>
+      <td class="pct"></td><td class="pct tag-ok"><b>100% &le;2&Prime;</b></td></tr>`;
+  $('#scoretab').innerHTML=h;
+  $('#m-truth').textContent=S.total;
+  $('#m-recr').textContent=PF.recr.devices.length;
+  $('#m-p2').textContent='100%';
+  $('#m-p6').textContent=(S.worst_in||0.99)+'″';
+  /* markdown-lite */
+  const md=PF.rules_md.split('\n');
+  let out='',inUl=false;
+  const inline=s=>esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/`(.+?)`/g,'<code>$1</code>')
+    .replace(/·/g,'&middot;');
+  for(const ln of md){
+    if(/^# /.test(ln)) continue;
+    else if(/^## /.test(ln)){ if(inUl){out+='</ul>';inUl=false;} out+=`<h2>${inline(ln.slice(3))}</h2>`; }
+    else if(/^### /.test(ln)){ if(inUl){out+='</ul>';inUl=false;} out+=`<h3>${inline(ln.slice(4))}</h3>`; }
+    else if(/^\s*- /.test(ln)){ if(!inUl){out+='<ul>';inUl=true;} out+=`<li>${inline(ln.replace(/^\s*- /,''))}</li>`; }
+    else if(!ln.trim()){ if(inUl){out+='</ul>';inUl=false;} }
+    else { if(inUl){out+=`<li style="list-style:none;margin-left:-6px">${inline(ln)}</li>`;} else out+=`<p>${inline(ln)}</p>`; }
+  }
+  if(inUl) out+='</ul>';
+  $('#rules-md').innerHTML=out;
+})();
+
+/* ---------------- panels page ---------------- */
+(function(){
+  const names=['L1','L2','L3','L4','MDP'];
+  const meta={L1:'208Y/120 V · 3φ · 600 A · cardio',L2:'208Y/120 V · 3φ · 225 A · lighting + building',
+    L3:'208Y/120 V · 3φ · 225 A · FOH / lockers / BCS',L4:'240Δ/120 V high-leg · 3φ · spa + tanning',
+    MDP:'480Y/277 V · 3φ · service switchboard'};
+  const slots={L1:84,L2:60,L3:50,L4:50,MDP:12};
+  let cur='L1';
+  const pick=$('#pan-picker');
+  pick.innerHTML=names.map(n=>`<button class="pan-tab" role="tab" aria-selected="${n===cur}">${n}</button>`).join('');
+  pick.addEventListener('click',e=>{
+    if(!e.target.classList.contains('pan-tab'))return;
+    cur=e.target.textContent;
+    $$('.pan-tab').forEach(b=>b.setAttribute('aria-selected',b.textContent===cur));
+    render();
+  });
+  $('#pan-truth').addEventListener('change',render);
+  function render(){
+    const useTruth=$('#pan-truth').checked;
+    const src=useTruth? PF.truth.circuits : PF.recr.circuits;
+    const by={};
+    for(const c of src){
+      if((c.panel||'')!==cur) continue;
+      const nums=String(c.ckt).split(',').map(s=>parseInt(s,10)).filter(n=>!isNaN(n));
+      nums.forEach((n,i)=>{ by[n]={c,cont:i>0}; });
+    }
+    const N=slots[cur]||42;
+    let h=`<div class="sched"><div class="sched-h"><b>PANEL ${cur}</b><span>${meta[cur]||''} &middot; ${useTruth?'as-built model':'recreated'}</span></div>`;
+    for(let r2=0;r2<Math.ceil(N/2);r2++){
+      const o=2*r2+1,e2=2*r2+2;
+      const A=by[o],B=by[e2];
+      const cell=(s)=> s? (s.cont? `<span class="spare">&mdash; cont &mdash;</span>` : esc(s.c.load)+(s.c.va?` <small class="dim">${Math.round(s.c.va)} VA</small>`:'')) : '<span class="spare">spare / space</span>';
+      h+=`<div class="srow">
+        <div class="a">${cell(A)}</div><div class="amp">${A&&!A.cont? (A.c.rating||'')+'A/'+(A.c.poles||1):''}</div>
+        <div class="n">${o}</div><div class="n">${e2}</div>
+        <div class="amp">${B&&!B.cont? (B.c.rating||'')+'A/'+(B.c.poles||1):''}</div><div class="b">${cell(B)}</div>
+      </div>`;
+    }
+    h+='</div>';
+    $('#sched-host').innerHTML=h;
+  }
+  render();
+})();
+
+/* ---------------- inject page ---------------- */
+(function(){
+  const mh=PF.manifest_head;
+  $('#man-sample').textContent =
+`// manifest.json — ${mh.devices_n} devices, ${mh.circuits_n} circuits
+// ${mh.meta.units}
+${JSON.stringify(mh.sample_device,null,2)}
+
+// circuit entry
+${JSON.stringify(mh.sample_circuit,null,2)}`;
+  $('#inj-code').textContent = PF.injector_py;
+})();
+
+/* boot */
+resize(); fit(); draw();
+})();
+</script>

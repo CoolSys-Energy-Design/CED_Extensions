@@ -1,0 +1,111 @@
+{
+ "device_types": [
+  [
+   "EF-U_Receptacle_CED",
+   "Duplex Wall",
+   153
+  ],
+  [
+   "EF-U_Receptacle_CED",
+   "Duplex Wall - GFCI",
+   34
+  ],
+  [
+   "EF-U_Receptacle_CED",
+   "Quad Wall - TV",
+   20
+  ],
+  [
+   "EF-U_Disconnect Switch_CED",
+   "Non-Fused - 60A",
+   16
+  ],
+  [
+   "EF-U_Receptacle_CED",
+   "Duplex Wall - TV",
+   7
+  ],
+  [
+   "EF-U_Junction Box_CED",
+   "Wall - With Stem",
+   7
+  ],
+  [
+   "EF-U_Receptacle_CED",
+   "Duplex Wall - USB",
+   6
+  ],
+  [
+   "EF-U_Receptacle_CED",
+   "Specialty Wall - 240V/1Ph",
+   5
+  ],
+  [
+   "EF-U_Motor Rated Switch_CED",
+   "Motor Rated Switch - 120V, 1 Pole",
+   5
+  ],
+  [
+   "EF-U_Disconnect Switch_CED",
+   "Non-Fused - 30A",
+   4
+  ],
+  [
+   "EF-U_Junction Box_CED",
+   "Floor",
+   4
+  ],
+  [
+   "EF-U_Junction Box_CED",
+   "Ceiling",
+   4
+  ],
+  [
+   "EF-U_Receptacle_CED",
+   "Duplex Floor",
+   3
+  ],
+  [
+   "EF-U_Receptacle_CED",
+   "Quad Wall",
+   2
+  ]
+ ],
+ "panel_types": [
+  [
+   "EE-U_Panelboard_CED",
+   "Panelboard - 208V/3Ph, 125A",
+   2
+  ],
+  [
+   "EE-U_Switchboard_CED",
+   "Switchboard - 480V/3Ph, I-Line Type",
+   1
+  ],
+  [
+   "EE-U_Transformer_CED",
+   "Dry-Type - 150 KVA",
+   1
+  ],
+  [
+   "EE-U_Panelboard_CED",
+   "Panelboard - 208V/3Ph, 600A",
+   1
+  ],
+  [
+   "EE-U_Panelboard_CED",
+   "L4_Panelboard - 240V/3Ph",
+   1
+  ],
+  [
+   "EE-U_Transformer_CED",
+   "Dry-Type - 150 KVA - 240V",
+   1
+  ],
+  [
+   "EE-U_Equipment Switch_CED",
+   "Fused - 200A",
+   1
+  ]
+ ]
+}

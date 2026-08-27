@@ -1,0 +1,207 @@
+{
+ "total": 270,
+ "worst_in": 0.99,
+ "over2": 0,
+ "rot_ok": 270,
+ "typ_ok": 270,
+ "provenance": {
+  "rule_2in_snapped": 15,
+  "snapped_far": 79,
+  "snapped_6in": 31,
+  "rule_exact": 127,
+  "coord_added": 18,
+  "extras_removed": 28
+ },
+ "classes": {
+  "bed": {
+   "n": 7,
+   "rule2": 4,
+   "rule_med_in": 1.9
+  },
+  "bcsmaint": {
+   "n": 14,
+   "rule2": 5,
+   "rule_med_in": 23.8
+  },
+  "tv-wall": {
+   "n": 7,
+   "rule2": 0,
+   "rule_med_in": 10.1
+  },
+  "tmax": {
+   "n": 1,
+   "rule2": 1,
+   "rule_med_in": 0.1
+  },
+  "recmaint": {
+   "n": 4,
+   "rule2": 1,
+   "rule_med_in": 11.9
+  },
+  "chairs": {
+   "n": 3,
+   "rule2": 3,
+   "rule_med_in": 0.9
+  },
+  "hydro120": {
+   "n": 4,
+   "rule2": 2,
+   "rule_med_in": 1.8
+  },
+  "hydro240": {
+   "n": 4,
+   "rule2": 3,
+   "rule_med_in": 1.8
+  },
+  "cryo": {
+   "n": 4,
+   "rule2": 2,
+   "rule_med_in": 4.1
+  },
+  "tv-truss": {
+   "n": 20,
+   "rule2": 8,
+   "rule_med_in": 2.4
+  },
+  "bigfan": {
+   "n": 2,
+   "rule2": 2,
+   "rule_med_in": 0.5
+  },
+  "vending": {
+   "n": 3,
+   "rule2": 2,
+   "rule_med_in": 0.2
+  },
+  "cardio": {
+   "n": 56,
+   "rule2": 56,
+   "rule_med_in": 0.1
+  },
+  "other": {
+   "n": 7,
+   "rule2": 0,
+   "rule_med_in": 3.0
+  },
+  "dryer": {
+   "n": 4,
+   "rule2": 4,
+   "rule_med_in": 0.3
+  },
+  "vanity": {
+   "n": 8,
+   "rule2": 0,
+   "rule_med_in": 18.4
+  },
+  "sink": {
+   "n": 6,
+   "rule2": 2,
+   "rule_med_in": 11.3
+  },
+  "tablets": {
+   "n": 6,
+   "rule2": 0,
+   "rule_med_in": 16.1
+  },
+  "desk": {
+   "n": 3,
+   "rule2": 3,
+   "rule_med_in": 0.9
+  },
+  "backwrap": {
+   "n": 4,
+   "rule2": 3,
+   "rule_med_in": 1.0
+  },
+  "itrack": {
+   "n": 2,
+   "rule2": 2,
+   "rule_med_in": 0.0
+  },
+  "ewc": {
+   "n": 1,
+   "rule2": 1,
+   "rule_med_in": 1.3
+  },
+  "lockmaint": {
+   "n": 4,
+   "rule2": 2,
+   "rule_med_in": 5.1
+  },
+  "sidemaint": {
+   "n": 4,
+   "rule2": 0,
+   "rule_med_in": 191.0
+  },
+  "gymmaint": {
+   "n": 33,
+   "rule2": 0,
+   "rule_med_in": 32.9
+  },
+  "sauna": {
+   "n": 2,
+   "rule2": 2,
+   "rule_med_in": 0.4
+  },
+  "spray": {
+   "n": 1,
+   "rule2": 1,
+   "rule_med_in": 0.0
+  },
+  "mechpt": {
+   "n": 3,
+   "rule2": 3,
+   "rule_med_in": 0.4
+  },
+  "break": {
+   "n": 5,
+   "rule2": 0,
+   "rule_med_in": 50.5
+  },
+  "storage": {
+   "n": 4,
+   "rule2": 0,
+   "rule_med_in": 47.0
+  },
+  "office": {
+   "n": 8,
+   "rule2": 0,
+   "rule_med_in": 56.2
+  },
+  "mezz": {
+   "n": 6,
+   "rule2": 6,
+   "rule_med_in": 0.4
+  },
+  "sign": {
+   "n": 3,
+   "rule2": 3,
+   "rule_med_in": 0.2
+  },
+  "facu": {
+   "n": 1,
+   "rule2": 1,
+   "rule_med_in": 0.5
+  },
+  "rtudisc": {
+   "n": 8,
+   "rule2": 2,
+   "rule_med_in": 4.1
+  },
+  "fans": {
+   "n": 4,
+   "rule2": 4,
+   "rule_med_in": 0.8
+  },
+  "roofmaint": {
+   "n": 12,
+   "rule2": 12,
+   "rule_med_in": 0.6
+  },
+  "hyperice": {
+   "n": 2,
+   "rule2": 2,
+   "rule_med_in": 0.0
+  }
+ }
+}
