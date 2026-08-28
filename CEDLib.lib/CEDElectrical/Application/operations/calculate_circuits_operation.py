@@ -197,6 +197,7 @@ class CalculateCircuitsOperation(object):
                 continue
 
             circuit_data_payload = self._read_circuit_data_payload(circuit)
+            is_first_calculation = not bool(circuit_data_payload)
             existing_alert_payload_by_id[cid] = circuit_data_payload
             current_existing_values = self._collect_existing_preview_values(circuit)
             current_existing_values_by_id[cid] = current_existing_values
@@ -204,7 +205,7 @@ class CalculateCircuitsOperation(object):
                 supplied_existing_values_by_id.get(cid)
                 or current_existing_values
             )
-            existing_values_by_id[cid]['_is_first_calculation'] = not bool(circuit_data_payload)
+            existing_values_by_id[cid]['_is_first_calculation'] = is_first_calculation
             preview_values = dict(staged_preview_values_by_id.get(cid) or {})
             if cid in force_auto_for_ids:
                 preview_values['CKT_User Override_CED'] = 0
@@ -216,6 +217,7 @@ class CalculateCircuitsOperation(object):
             )
             if cid in force_auto_for_ids:
                 branch._calc_preview_force_auto = True
+            branch._calc_first_calculation = is_first_calculation
             if not branch.is_power_circuit:
                 continue
 
@@ -1687,7 +1689,10 @@ class CalculateCircuitsOperation(object):
         }
         if bool(getattr(branch, '_calc_preview_keep_existing', False)):
             values['CKT_User Override_CED'] = 1
-        elif bool(getattr(branch, '_calc_preview_force_auto', False)):
+        elif (
+                bool(getattr(branch, '_calc_preview_force_auto', False))
+                or bool(getattr(branch, '_calc_first_calculation', False))
+        ):
             values['CKT_User Override_CED'] = 0
         return values
 

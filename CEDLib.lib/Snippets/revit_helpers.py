@@ -149,6 +149,16 @@ def parameter_matches_value(parameter, desired, double_tolerance=PARAMETER_DOUBL
     except Exception:
         return False
 
+    # Revit returns the storage-type default from AsInteger/AsDouble even
+    # when a newly bound parameter has never been assigned.  That is not an
+    # equal value for an explicit write such as a first-calculation Yes/No
+    # initialization.  None still means "leave an already-unset value clear."
+    try:
+        if not bool(parameter.HasValue):
+            return desired is None
+    except Exception:
+        pass
+
     try:
         if storage_type == DB.StorageType.String:
             current = parameter.AsString()

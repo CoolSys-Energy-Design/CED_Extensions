@@ -162,6 +162,7 @@ HELPERS, CALCULATE = _load_backend_modules()
 
 class _ElementIdParameter(object):
     StorageType = _StorageType.ElementId
+    HasValue = True
 
     def __init__(self, value):
         self.value = value
@@ -176,6 +177,24 @@ class _ElementIdParameter(object):
         return True
 
 
+class _IntegerParameter(object):
+    StorageType = _StorageType.Integer
+
+    def __init__(self, value=0, has_value=True):
+        self.value = int(value)
+        self.HasValue = bool(has_value)
+        self.writes = []
+
+    def AsInteger(self):
+        return self.value
+
+    def Set(self, value):
+        self.value = int(value)
+        self.HasValue = True
+        self.writes.append(int(value))
+        return True
+
+
 def test_cleared_elementid_is_a_noop_and_native_elementids_are_supported():
     cleared = _ElementIdParameter(_ElementId.InvalidElementId)
     assert HELPERS.parameter_matches_value(cleared, None)
@@ -187,6 +206,65 @@ def test_cleared_elementid_is_a_noop_and_native_elementids_are_supported():
     assert HELPERS.set_parameter_if_changed(changed, desired)
     assert changed.writes == [desired]
     assert HELPERS.parameter_matches_value(changed, 9)
+
+
+def test_unset_yesno_is_written_even_when_asinteger_returns_zero():
+    parameter = _IntegerParameter(value=0, has_value=False)
+    assert not HELPERS.parameter_matches_value(parameter, 0)
+    assert HELPERS.set_parameter_if_changed(parameter, 0)
+    assert parameter.writes == [0]
+    assert parameter.HasValue
+
+
+def test_first_calculation_explicitly_disables_user_override():
+    operation = CALCULATE.CalculateCircuitsOperation.__new__(
+        CALCULATE.CalculateCircuitsOperation
+    )
+
+    class _FirstCalculationBranch(object):
+        is_special = False
+        _calc_first_calculation = True
+        _calc_preview_keep_existing = False
+        _calc_preview_force_auto = False
+        neutral_wire_quantity = 1
+        isolated_ground_wire_quantity = 0
+        branch_type = "BRANCH"
+        panel = "P1"
+        circuit_number = "1"
+        load_name = "LOAD"
+        rating = 20
+        frame = 20
+        length = 10
+        circuit_notes = ""
+        voltage_drop_percentage = 1.0
+        hot_wire_size = "12"
+        number_of_wires = 3
+        number_of_sets = 1
+        hot_wire_quantity = 1
+        ground_wire_size = "12"
+        ground_wire_quantity = 1
+        neutral_wire_size = "12"
+        isolated_ground_wire_size = ""
+        wire_material = "CU"
+        wire_temp_rating = "75"
+        wire_insulation = "THHN"
+        conduit_size = '3/4"'
+        conduit_type = "EMT"
+        conduit_fill_percentage = 0.2
+        circuit_load_current = 10
+        circuit_base_ampacity = 20
+        wire_length_makeup = 0
+
+        def get_wire_size_callout(self):
+            return "3#12"
+
+        def get_conduit_and_wire_size(self):
+            return '3#12, 1#12G; 3/4" EMT'
+
+    values = operation._collect_shared_param_values(_FirstCalculationBranch())
+    assert values["CKT_User Override_CED"] == 0
+    assert values["CKT_Include Neutral_CED"] == 1
+    assert values["CKT_Include Isolated Ground_CED"] == 0
 
 
 def test_compound_preview_requires_original_operation_rerun():
