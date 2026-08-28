@@ -9,6 +9,13 @@ class ICircuitWriter(object):
         """Write calculated parameter map to circuit."""
         raise NotImplementedError
 
-    def write_connected_elements(self, branch, param_values, settings, locked_ids=None):
+    def write_connected_elements(
+            self,
+            branch,
+            param_values,
+            settings,
+            locked_ids=None,
+            connected_elements=None,
+    ):
         """Write calculated parameter map to connected elements."""
         raise NotImplementedError

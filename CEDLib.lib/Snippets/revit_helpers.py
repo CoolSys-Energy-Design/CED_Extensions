@@ -5,6 +5,9 @@ import Autodesk.Revit.DB as DB
 from System import Int64
 
 
+PARAMETER_DOUBLE_TOLERANCE = 1e-9
+
+
 def get_elementid_value(item, default=0):
     """Return an ElementId numeric value across Revit API versions."""
     if item is None:
@@ -15,6 +18,26 @@ def get_elementid_value(item, default=0):
         pass
     try:
         return int(getattr(item, "IntegerValue"))
+    except Exception:
+        return int(default or 0)
+
+
+def coerce_elementid_value(value, default=0):
+    """Normalize a native ElementId or boundary numeric value to an int."""
+    if value is None:
+        return int(default or 0)
+    try:
+        if isinstance(value, DB.ElementId):
+            return get_elementid_value(value, default=default)
+    except Exception:
+        pass
+    try:
+        if hasattr(value, "Value") or hasattr(value, "IntegerValue"):
+            return get_elementid_value(value, default=default)
+    except Exception:
+        pass
+    try:
+        return int(value)
     except Exception:
         return int(default or 0)
 
@@ -109,6 +132,101 @@ def get_parameter_value(parameter, default=None):
     except Exception:
         return default
     return default
+
+
+def parameter_matches_value(parameter, desired, double_tolerance=PARAMETER_DOUBLE_TOLERANCE):
+    """Return whether a parameter already contains the desired value.
+
+    Comparison is performed in the parameter's native storage type.  None
+    represents the normal cleared value for that storage type.  This helper is
+    intentionally read-only; callers can use the same parameter instance for
+    a subsequent Set when the value does not match.
+    """
+    if parameter is None:
+        return False
+    try:
+        storage_type = parameter.StorageType
+    except Exception:
+        return False
+
+    try:
+        if storage_type == DB.StorageType.String:
+            current = parameter.AsString()
+            current = "" if current is None else str(current)
+            expected = "" if desired is None else str(desired)
+            return current == expected
+
+        if storage_type == DB.StorageType.Integer:
+            if isinstance(desired, DB.ElementId):
+                return False
+            expected = 0 if desired is None else int(desired)
+            return parameter.AsInteger() == expected
+
+        if storage_type == DB.StorageType.Double:
+            if isinstance(desired, DB.ElementId):
+                return False
+            expected = 0.0 if desired is None else float(desired)
+            current = parameter.AsDouble()
+            if current is None:
+                return expected == 0.0
+            difference = abs(float(current) - expected)
+            scale = max(1.0, abs(float(current)), abs(expected))
+            return difference <= max(float(double_tolerance), float(double_tolerance) * scale)
+
+        if storage_type == DB.StorageType.ElementId:
+            if desired is None:
+                expected = get_elementid_value(DB.ElementId.InvalidElementId, default=-1)
+            elif isinstance(desired, DB.ElementId):
+                expected = get_elementid_value(desired)
+            elif isinstance(desired, (int, float)):
+                expected = int(desired)
+            else:
+                # Numeric values are useful for comparison at a DTO boundary,
+                # but are never passed to ElementId.Set by this helper.
+                expected = get_elementid_value(desired)
+            return get_elementid_value(parameter.AsElementId()) == expected
+    except Exception:
+        return False
+
+    return False
+
+
+def set_parameter_if_changed(parameter, desired, double_tolerance=PARAMETER_DOUBLE_TOLERANCE):
+    """Set a Revit parameter only when its native value differs.
+
+    Returns True when Set was attempted successfully and False for a no-op,
+    unsupported value, or failed write. ElementId parameters always receive a
+    native DB.ElementId instance.
+    """
+    if parameter is None or parameter_matches_value(parameter, desired, double_tolerance):
+        return False
+
+    try:
+        storage_type = parameter.StorageType
+        value = desired
+        if storage_type == DB.StorageType.String:
+            value = "" if desired is None else str(desired)
+        elif storage_type == DB.StorageType.Integer:
+            if isinstance(desired, DB.ElementId):
+                return False
+            value = 0 if desired is None else int(desired)
+        elif storage_type == DB.StorageType.Double:
+            if isinstance(desired, DB.ElementId):
+                return False
+            value = 0.0 if desired is None else float(desired)
+        elif storage_type == DB.StorageType.ElementId:
+            if desired is None:
+                value = DB.ElementId.InvalidElementId
+            elif isinstance(desired, DB.ElementId):
+                value = desired
+            else:
+                return False
+        else:
+            return False
+        parameter.Set(value)
+        return True
+    except Exception:
+        return False
 
 
 def get_parameter_text(element, name, include_type=False, case_insensitive=True, doc=None, default=""):

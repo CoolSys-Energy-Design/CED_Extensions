@@ -610,19 +610,7 @@ def _create_binding(app, category_set, is_instance):
 
 
 def _clear_param(param):
-    try:
-        st = param.StorageType
-        if st == DB.StorageType.String:
-            param.Set("")
-        elif st == DB.StorageType.Integer:
-            param.Set(0)
-        elif st == DB.StorageType.Double:
-            param.Set(0.0)
-        elif st == DB.StorageType.ElementId:
-            param.Set(DB.ElementId.InvalidElementId)
-        return True
-    except Exception:
-        return False
+    return revit_helpers.set_parameter_if_changed(param, None)
 
 
 def clear_downstream_results(doc, clear_equipment=False, clear_fixtures=False, logger=None, check_ownership=True):

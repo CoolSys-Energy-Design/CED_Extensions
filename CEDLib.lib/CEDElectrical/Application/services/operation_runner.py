@@ -4,7 +4,10 @@
 from CEDElectrical.Application.operations.autosize_breaker_and_recalculate_operation import (
     AutosizeBreakerAndRecalculateOperation,
 )
-from CEDElectrical.Application.operations.calculate_circuits_operation import CalculateCircuitsOperation
+from CEDElectrical.Application.operations.calculate_circuits_operation import (
+    ApplyCalculatedCircuitsOperation,
+    CalculateCircuitsOperation,
+)
 from CEDElectrical.Application.operations.calculate_circuits_preview_operation import (
     CalculateCircuitsPreviewOperation,
 )
@@ -47,6 +50,7 @@ def build_default_runner(alert_parameter_name='Circuit Data_CED'):
 
     calc_operation = CalculateCircuitsOperation(repository, writer, alert_store)
     registry.register(calc_operation)
+    registry.register(ApplyCalculatedCircuitsOperation(calc_operation))
     registry.register(CalculateCircuitsPreviewOperation(repository))
     registry.register(SetHiddenAlertTypesOperation(repository, alert_store))
     registry.register(EditCircuitPropertiesAndRecalculateOperation(calculate_operation=calc_operation))

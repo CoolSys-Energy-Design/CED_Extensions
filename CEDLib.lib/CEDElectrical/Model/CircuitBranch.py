@@ -271,11 +271,16 @@ class ConduitRun(object):
 # CircuitBranch main class
 # ---------------------------------------------------------------------
 class CircuitBranch(object):
-    def __init__(self, circuit, settings=None, preview_values=None):
+    def __init__(self, circuit, settings=None, preview_values=None, connected_elements=None):
         if not eu.is_circuit_eligible(circuit):
             raise ValueError("CircuitBranch only supports main-model power circuits.")
         self.circuit = circuit
         self._native_circuit_type_label = get_native_circuit_type_label(circuit)
+        self._connected_elements = (
+            list(connected_elements)
+            if connected_elements is not None
+            else None
+        )
         self.settings = settings if settings else CircuitSettings()
         self._preview_values_raw = dict(preview_values or {})
         self._preview_values_by_guid = self._build_preview_value_map(preview_values)
@@ -598,10 +603,20 @@ class CircuitBranch(object):
     def is_power_circuit(self):
         return eu.is_circuit_eligible(self.circuit)
 
+    @property
+    def connected_elements(self):
+        """Return connected elements collected for this execution only."""
+        if self._connected_elements is None:
+            try:
+                self._connected_elements = list(self.circuit.Elements)
+            except Exception:
+                self._connected_elements = []
+        return self._connected_elements
+
     def _detect_feeder(self):
         """Looks at connected elements' PART_TYPE to decide if feeder."""
         try:
-            for el in self.circuit.Elements:
+            for el in self.connected_elements:
                 if not design_options.is_main_model_element(el):
                     continue
                 if isinstance(el, DB.FamilyInstance):
@@ -1178,7 +1193,7 @@ class CircuitBranch(object):
         """Returns Neutral qty if LN voltage is found on the downstream equipments distribution system """
         doc = revit.doc
         try:
-            for el in self.circuit.Elements:
+            for el in self.connected_elements:
                 if not design_options.is_main_model_element(el):
                     continue
                 if isinstance(el, DB.FamilyInstance):
@@ -2356,7 +2371,7 @@ class CircuitBranch(object):
 
     def get_downstream_demand_current(self):
         try:
-            for el in self.circuit.Elements:
+            for el in self.connected_elements:
                 if not design_options.is_main_model_element(el):
                     continue
                 if self._is_transformer_primary:
