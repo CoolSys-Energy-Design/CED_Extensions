@@ -1,0 +1,16 @@
+title: Sheet Visibility QC
+tooltip: >-
+  Scan checked model categories against all non-drafting views placed on a chosen
+  sheet set. Select sheets with checkboxes, search or group them using the current
+  browser organization, and exclude electrical circuits. Search categories, save
+  category choices to user config, multi-select result rows to select or show
+  them in Revit, apply review-status tags, filter results, and find additional
+  view coverage. Export machine-readable JSON for later import/recheck and a
+  human-readable HTML report. Design-option elements are excluded by the
+  collector. Closing during a scan cancels queued work; the current Revit API
+  call may finish first. The view-scoped collector is a graphics candidate test;
+  crop-region edge cases and occlusion can still require visual review.
+author: CoolSys Energy Design
+engine:
+  persistent: true
+  full_frame: false
