@@ -23,7 +23,7 @@ from System import EventHandler, Action
 from System.Collections.Generic import List
 from System.Collections.ObjectModel import ObservableCollection
 
-from System.Windows import GridLength, GridUnitType, HorizontalAlignment, Thickness, Visibility
+from System.Windows import FontWeights, GridLength, GridUnitType, HorizontalAlignment, Size, Thickness, Visibility
 from System.Windows.Controls import (
     ContextMenu,
     ColumnDefinition,
@@ -37,6 +37,7 @@ from System.Windows.Controls import (
     RowDefinition,
     ScrollViewer,
     ScrollBarVisibility,
+    TextBlock,
 )
 from System.Windows.Input import Keyboard, ModifierKeys, Key
 from System.Windows.Media import BrushConverter, Stretch, VisualTreeHelper
@@ -75,6 +76,7 @@ from Snippets._elecutils import (
 from UIClasses import Resources as UIResources
 from UIClasses import pathing as ui_pathing
 from UIClasses import resource_loader
+from UIClasses import SearchFilterDefinition, StructuredSearchBox
 from UIClasses.revit_theme_bridge import DOCK_PANE_FRAME_DARK, DOCK_PANE_FRAME_LIGHT, RevitThemeBridge
 
 LIB_ROOT = ui_pathing.ensure_lib_root_on_syspath(_THIS_DIR)
@@ -127,7 +129,7 @@ BLOCKED_BRANCH_TYPES = set(['N/A', 'SPACE', 'SPARE', 'CONDUIT ONLY'])
 IG_BREAKER_ALLOWED_TYPES = set(['BRANCH', 'FEEDER', 'XFMR PRI', 'XFMR SEC'])
 
 ACCENT_BRUSH_KEY_MAP = dict(resource_loader.ACCENT_BRUSH_KEY_MAP)
-VALID_THEME_MODES = ("light", "dark", "dark_alt")
+VALID_THEME_MODES = tuple(resource_loader.VALID_THEME_MODES)
 VALID_ACCENT_MODES = ("blue", "neutral")
 CIRCUIT_TYPE_TAG_STYLES = {
     "BRANCH": ("CED.Brush.BadgeStd01Background", "CED.Brush.BadgeStd01Text"),
@@ -260,17 +262,6 @@ def _fmt_amp(value, digits=0):
     return "{} A".format(round(numeric, digits))
 
 
-def _clip_with_ellipsis(value, max_chars):
-    text = str(value or "")
-    try:
-        limit = int(max_chars or 0)
-    except Exception:
-        limit = 0
-    if limit <= 3 or len(text) <= limit:
-        return text
-    return "{}...".format(text[: max(0, limit - 3)])
-
-
 def _parse_whole_amps(value):
     if value is None:
         return None
@@ -341,28 +332,6 @@ def _find_visual_descendant(start, target_type):
             except Exception:
                 continue
     return None
-
-
-def _find_visual_descendants(start, target_type):
-    if start is None:
-        return []
-    results = []
-    queue = [start]
-    while queue:
-        current = queue.pop(0)
-        try:
-            child_count = int(VisualTreeHelper.GetChildrenCount(current) or 0)
-        except Exception:
-            child_count = 0
-        for idx in range(child_count):
-            try:
-                child = VisualTreeHelper.GetChild(current, idx)
-            except Exception:
-                continue
-            if isinstance(child, target_type):
-                results.append(child)
-            queue.append(child)
-    return results
 
 
 def _to_brush(value, fallback=None):
@@ -741,6 +710,59 @@ def _derive_branch_type(circuit):
     return "BRANCH"
 
 
+def matches_panel(item, value):
+    requested = str(value or "").strip().lower()
+    panel = str(getattr(item, "panel", "") or "").strip().lower()
+    return panel == requested
+
+
+def matches_poles(item, value):
+    try:
+        requested = int(str(value or "").strip())
+    except (TypeError, ValueError):
+        return False
+    return int(getattr(item, "sort_poles", 0) or 0) == requested
+
+
+def matches_rating(item, value):
+    requested_text = str(value or "").strip().lower()
+    if requested_text.endswith("a"):
+        requested_text = requested_text[:-1].strip()
+    try:
+        requested = int(requested_text)
+    except (TypeError, ValueError):
+        return False
+    actual = getattr(item, "rating_amps", None)
+    try:
+        return actual is not None and int(actual) == requested
+    except (TypeError, ValueError):
+        return False
+
+
+def _parse_boolean_filter(value):
+    normalized = str(value or "").strip().lower()
+    if normalized in ("yes", "true"):
+        return True
+    if normalized in ("no", "false"):
+        return False
+    return None
+
+
+def matches_neutral(item, value):
+    requested = _parse_boolean_filter(value)
+    return requested is not None and bool(getattr(item, "has_neutral", False)) == requested
+
+
+def matches_ig(item, value):
+    requested = _parse_boolean_filter(value)
+    return requested is not None and bool(getattr(item, "has_ig", False)) == requested
+
+
+def matches_free_text(item, value):
+    needle = str(value or "").strip().lower()
+    return not needle or needle in str(item.search_name or "").lower()
+
+
 def _is_yes(value):
     try:
         return int(value) == 1
@@ -763,8 +785,6 @@ class CircuitListItem(object):
 
         self.circuit_number = getattr(circuit, "CircuitNumber", "") or ""
         self.load_name = getattr(circuit, "LoadName", "") or ""
-        self.load_name_display = self.load_name
-        self.load_name_visibility = "Visible"
         self.sort_panel = str(self.panel or "").lower()
         self.sort_circuit_slot = getattr(circuit, "StartSlot", 0) or 0
         self.sort_load_name = str(self.load_name or "").lower()
@@ -785,6 +805,7 @@ class CircuitListItem(object):
                 rating_value = int(round(circuit.Rating, 0))
             except Exception:
                 rating_value = None
+        self.rating_amps = rating_value
         self.sort_rating = float(rating_value) if rating_value is not None else 999999.0
 
         try:
@@ -852,8 +873,10 @@ class CircuitListItem(object):
 
         neutral_qty = _lookup_param_value(circuit, "CKT_Wire Neutral Quantity_CED")
         ig_qty = _lookup_param_value(circuit, "CKT_Wire Isolated Ground Quantity_CED")
-        self.neutral_badge_visibility = "Visible" if (neutral_qty or 0) > 0 else "Collapsed"
-        self.ig_badge_visibility = "Visible" if (ig_qty or 0) > 0 else "Collapsed"
+        self.has_neutral = (neutral_qty or 0) > 0
+        self.has_ig = (ig_qty or 0) > 0
+        self.neutral_badge_visibility = "Visible" if self.has_neutral else "Collapsed"
+        self.ig_badge_visibility = "Visible" if self.has_ig else "Collapsed"
 
         payload = _read_alert_payload(circuit)
         self.alert_rows = _alert_rows_from_payload(payload)
@@ -872,8 +895,6 @@ class CircuitListItem(object):
         self.sync_blocked = bool(sync_blocked)
         self.sync_lock_badge_visibility = "Visible" if sync_blocked else "Collapsed"
         self.sync_lock_tooltip = sync_tooltip
-        self.item_max_width = 100000.0
-
         self.search_name = "{} {} {} {} {} {}".format(
             self.panel,
             self.circuit_number,
@@ -892,138 +913,6 @@ class AlertRow(object):
         self.message = str(message or "")
         self.is_hidden = bool(is_hidden)
         self.can_hide = bool(can_hide)
-
-
-class CircuitAlertsWindow(forms.WPFWindow):
-    def __init__(self, circuit_label, rows, theme_mode="light", accent_mode="blue"):
-        xaml = os.path.abspath(os.path.join(_THIS_DIR, "CircuitAlertsWindow.xaml"))
-        self._theme_mode = theme_mode or "light"
-        self._accent_mode = accent_mode or "blue"
-        forms.WPFWindow.__init__(self, xaml)
-        _try_apply_theme(self)
-        self._rows = list(rows or [])
-        self.updated_hidden_ids = None
-        self.Topmost = True
-
-        title_text = self.FindName("CircuitText")
-        count_text = self.FindName("CountText")
-        active_list = self.FindName("ActiveAlertsList")
-        hidden_list = self.FindName("HiddenAlertsList")
-
-        if title_text is not None:
-            title_text.Text = circuit_label
-        self._count_text = count_text
-        self._active_list = active_list
-        self._hidden_list = hidden_list
-        self._tabs = self.FindName("AlertsTabs")
-        self._hide_btn = self.FindName("HideTypeButton")
-        self._unhide_btn = self.FindName("UnhideTypeButton")
-        if self._tabs is not None:
-            self._tabs.SelectionChanged += self.tabs_selection_changed
-        self._refresh_lists()
-        self._sync_action_buttons()
-
-    def _refresh_lists(self):
-        active = [x for x in self._rows if not x.is_hidden]
-        hidden = [x for x in self._rows if x.is_hidden]
-
-        if self._count_text is not None:
-            self._count_text.Text = "Alerts: {} | Active: {} | Hidden: {}".format(len(self._rows), len(active), len(hidden))
-        if self._active_list is not None:
-            self._active_list.ItemsSource = ObservableCollection[AlertRow](active)
-        if self._hidden_list is not None:
-            self._hidden_list.ItemsSource = ObservableCollection[AlertRow](hidden)
-
-    def _sync_action_buttons(self):
-        if self._tabs is None:
-            return
-        selected_index = self._tabs.SelectedIndex
-        if self._hide_btn is not None:
-            self._hide_btn.Visibility = Visibility.Visible if selected_index == 0 else Visibility.Collapsed
-        if self._unhide_btn is not None:
-            self._unhide_btn.Visibility = Visibility.Visible if selected_index == 1 else Visibility.Collapsed
-
-    def tabs_selection_changed(self, sender, args):
-        self._sync_action_buttons()
-
-    def window_preview_mouse_down(self, sender, args):
-        source = getattr(args, "OriginalSource", None)
-        if source is None:
-            return
-        if _find_visual_ancestor(source, Button) is not None:
-            return
-        if self._active_list is not None and _is_descendant_of_control(source, self._active_list):
-            return
-        if self._hidden_list is not None and _is_descendant_of_control(source, self._hidden_list):
-            return
-        try:
-            if self._active_list is not None:
-                self._active_list.SelectedItem = None
-            if self._hidden_list is not None:
-                self._hidden_list.SelectedItem = None
-        except Exception:
-            pass
-
-    def alerts_list_preview_mouse_down(self, sender, args):
-        source = getattr(args, "OriginalSource", None)
-        if source is None:
-            return
-        if _find_visual_ancestor(source, ListViewItem) is not None:
-            return
-        if _find_visual_ancestor(source, DataGridRow) is not None:
-            return
-        try:
-            sender.SelectedItem = None
-        except Exception:
-            pass
-
-    def hide_type_clicked(self, sender, args):
-        if self._active_list is None:
-            return
-        row = getattr(self._active_list, "SelectedItem", None)
-        if row is None:
-            forms.alert("Select an active alert type first.", title="Circuit Alerts")
-            return
-        if not row.definition_id or row.definition_id == "-":
-            forms.alert("Only mapped alert types can be hidden.", title="Circuit Alerts")
-            return
-        if not getattr(row, "can_hide", False):
-            forms.alert("This alert type can not be hidden.", title="Circuit Alerts")
-            return
-        for r in self._rows:
-            if r.definition_id == row.definition_id:
-                r.is_hidden = True
-        self._refresh_lists()
-
-    def unhide_type_clicked(self, sender, args):
-        if self._hidden_list is None:
-            return
-        row = getattr(self._hidden_list, "SelectedItem", None)
-        if row is None:
-            forms.alert("Select a hidden alert type first.", title="Circuit Alerts")
-            return
-        if not row.definition_id or row.definition_id == "-":
-            return
-        for r in self._rows:
-            if r.definition_id == row.definition_id:
-                r.is_hidden = False
-        self._refresh_lists()
-
-    def apply_clicked(self, sender, args):
-        hidden_ids = sorted(
-            list(
-                {
-                    x.definition_id
-                    for x in self._rows
-                    if x.is_hidden and x.can_hide and x.definition_id and x.definition_id != "-"
-                }
-            )
-        )
-        self.updated_hidden_ids = hidden_ids
-        self.Close()
-
-    def close_clicked(self, sender, args):
-        self.Close()
 
 
 class LockedRow(object):
@@ -2636,20 +2525,91 @@ class CircuitBrowserPanel(forms.WPFPanel):
         self._lock_repository = RevitCircuitRepository()
 
         self._list = self.FindName("CircuitList")
+        self._shared_row_width = 0.0
         self._list_scrollviewer = None
         self._list_scrollviewer_hooked = False
-        self._uniform_item_width = 0.0
+        self._item_text_width_cache = {}
+        self._item_text_measure_probe = None
+        self._full_compact_content_width_with_badges = 0.0
+        self._full_compact_content_width_without_badges = 0.0
+        self._full_card_content_width = 0.0
         self._compress_item_width = False
         self._is_refreshing_list = False
-        self._list_layout_refresh_pending = False
+        self._shared_row_width_update_pending = False
         self._browser_compress_item = None
         self._applying_scroll_policy = False
         self._edit_properties_reselect_ids = []
         if self._list is not None:
+            # Auto-size until the ScrollViewer reports its first real viewport.
+            self._list.DataContext = float("nan")
             self._list.ItemsSource = self._visible_items
-        self._search = self.FindName("SearchBox")
-        self._search_placeholder = self.FindName("SearchPlaceholderText")
-        self._search_clear = self.FindName("ClearSearchButton")
+        self._search_host = self.FindName("SearchHost")
+        self._search = StructuredSearchBox(
+            filter_definitions=(
+                SearchFilterDefinition(
+                    "panel",
+                    "Panel",
+                    matcher=matches_panel,
+                    placeholder="Enter panel",
+                    value_hint="Exact panel name",
+                    allow_multiple=True,
+                    token_style_key="CED.SearchBox.Token.Panel",
+                    selected_token_style_key="CED.SearchBox.Token.Selected.Panel",
+                    token_text_brush_key="CED.Brush.BadgeStd02Text",
+                ),
+                SearchFilterDefinition(
+                    "poles",
+                    "Poles",
+                    matcher=matches_poles,
+                    placeholder="Enter poles",
+                    value_hint="1, 2, or 3",
+                    allow_multiple=True,
+                    token_style_key="CED.SearchBox.Token.Poles",
+                    selected_token_style_key="CED.SearchBox.Token.Selected.Poles",
+                    token_text_brush_key="CED.Brush.BadgeStd07Text",
+                ),
+                SearchFilterDefinition(
+                    "rating",
+                    "Rating",
+                    matcher=matches_rating,
+                    placeholder="Enter rating",
+                    value_hint="e.g. 20 or 20A",
+                    allow_multiple=True,
+                    token_style_key="CED.SearchBox.Token.Rating",
+                    selected_token_style_key="CED.SearchBox.Token.Selected.Rating",
+                    token_text_brush_key="CED.Brush.BadgeStd06Text",
+                ),
+                SearchFilterDefinition(
+                    "neutral",
+                    "Has Neutral",
+                    matcher=matches_neutral,
+                    placeholder="yes/no",
+                    value_hint="yes or no",
+                    token_style_key="CED.SearchBox.Token.Neutral",
+                    selected_token_style_key="CED.SearchBox.Token.Selected.Neutral",
+                    token_text_brush_key="CED.Brush.BadgeStd01Text",
+                ),
+                SearchFilterDefinition(
+                    "ig",
+                    "Has IG",
+                    matcher=matches_ig,
+                    placeholder="yes/no",
+                    value_hint="yes or no",
+                    token_style_key="CED.SearchBox.Token.IG",
+                    selected_token_style_key="CED.SearchBox.Token.Selected.IG",
+                    token_text_brush_key="CED.Brush.BadgeStd05Text",
+                ),
+            ),
+            placeholder="Search",
+            active_placeholder="Type / to add a search field",
+        )
+        if self._search_host is not None:
+            self._search_host.Children.Add(self._search)
+            self._search.refresh_resources(self)
+        self._search.add_query_changed_handler(self._structured_search_changed)
+        self._search_query = self._search.Query
+        self._alert_popup = self.FindName("AlertInfoPopup")
+        self._alert_popup_content = self.FindName("AlertPopupContent")
         self._status = self.FindName("StatusText")
         self._doc_name_text = self.FindName("DocumentNameText")
         self._toggle = self.FindName("ToggleViewButton")
@@ -2678,9 +2638,8 @@ class CircuitBrowserPanel(forms.WPFPanel):
         self._calculate_label = self.FindName("CalculateLabel")
         self._calculate_controls = self.FindName("CalculateControls")
         self._apply_revit_frame_background(is_dark=False)
-        self._surface_item_style = _try_find_resource(self, "CED.ListViewItem.SurfaceBehavior")
+        self._shared_width_item_style = _try_find_resource(self, "CircuitManager.ListViewItem.SharedWidth")
         self._apply_list_interaction_mode()
-        self._update_search_chrome()
         self._sync_calc_preview_toggle()
         self._update_toggle_button_visual()
 
@@ -2741,8 +2700,8 @@ class CircuitBrowserPanel(forms.WPFPanel):
         self._apply_compact_toolbar_mode(width < self._COMPACT_TOOLBAR_BREAKPOINT)
         self._apply_action_card_layout(width < self._ACTION_CARD_STACK_BREAKPOINT)
         self._apply_mini_toolbar_mode(width < self._MINI_TOOLBAR_BREAKPOINT)
-        if getattr(self, "_list", None) is not None and hasattr(self, "_list_layout_refresh_pending"):
-            self._schedule_list_layout_refresh()
+        if getattr(self, "_list", None) is not None and hasattr(self, "_shared_row_width_update_pending"):
+            self._schedule_shared_row_width_update()
 
     def _apply_action_card_layout(self, stacked):
         """Put action labels above their controls when the dock is narrow."""
@@ -3175,6 +3134,7 @@ class CircuitBrowserPanel(forms.WPFPanel):
         if doc is None:
             self._all_items = []
             self._item_index = {}
+            self._rebuild_full_content_widths()
             self._last_visible_ids = []
             try:
                 self._visible_items.Clear()
@@ -3268,23 +3228,6 @@ class CircuitBrowserPanel(forms.WPFPanel):
             if self._filter_active_mark is not None:
                 self._filter_active_mark.Visibility = Visibility.Collapsed
 
-    def _update_search_chrome(self):
-        text = ""
-        try:
-            text = (self._search.Text or "")
-        except Exception:
-            text = ""
-        has_text = bool(text.strip())
-        has_focus = False
-        try:
-            has_focus = bool(self._search.IsKeyboardFocused)
-        except Exception:
-            has_focus = False
-        if self._search_placeholder is not None:
-            self._search_placeholder.Visibility = Visibility.Collapsed if (has_text or has_focus) else Visibility.Visible
-        if self._search_clear is not None:
-            self._search_clear.Visibility = Visibility.Visible if has_text else Visibility.Collapsed
-
     def _update_toggle_button_visual(self):
         if self._toggle is None:
             return
@@ -3304,13 +3247,9 @@ class CircuitBrowserPanel(forms.WPFPanel):
     def _apply_list_interaction_mode(self):
         if self._list is None:
             return
-        if self._use_surface_item_states:
-            self._list.Tag = "surface"
-            if self._surface_item_style is not None:
-                self._list.ItemContainerStyle = self._surface_item_style
-        else:
-            self._list.Tag = None
-            self._list.ItemContainerStyle = None
+        self._list.Tag = "surface" if self._use_surface_item_states else None
+        if self._shared_width_item_style is not None:
+            self._list.ItemContainerStyle = self._shared_width_item_style
         try:
             self._list.Items.Refresh()
         except Exception:
@@ -3347,68 +3286,117 @@ class CircuitBrowserPanel(forms.WPFPanel):
         self._list_scrollviewer_hooked = False
         self._list_scrollviewer = None
 
-    def _compute_uniform_item_width(self):
-        viewer = self._get_list_scrollviewer()
-        if viewer is None or self._list is None:
-            return 0.0
+    def _measure_browser_text(self, value, bold=False, font_size=12.0):
+        text = str(value or "")
+        key = (text, bool(bold), float(font_size))
+        cached = self._item_text_width_cache.get(key)
+        if cached is not None:
+            return float(cached)
+        width = 0.0
         try:
-            self._list.UpdateLayout()
+            probe = self._item_text_measure_probe
+            if probe is None:
+                probe = TextBlock()
+                self._item_text_measure_probe = probe
+            probe.FontSize = float(font_size)
+            probe.FontWeight = FontWeights.Bold if bool(bold) else FontWeights.Normal
+            probe.Text = text
+            probe.Measure(Size(float("inf"), float("inf")))
+            width = float(getattr(probe.DesiredSize, "Width", 0.0) or 0.0)
         except Exception:
-            pass
-        try:
-            viewer.UpdateLayout()
-        except Exception:
-            pass
-        try:
-            extent_width = float(getattr(viewer, "ExtentWidth", 0.0) or 0.0)
-        except Exception:
-            extent_width = 0.0
-        try:
-            viewport_width = float(getattr(viewer, "ViewportWidth", 0.0) or 0.0)
-        except Exception:
-            viewport_width = 0.0
-        realized_max = 0.0
-        for row in _find_visual_descendants(self._list, ListViewItem):
-            if row is None:
-                continue
-            try:
-                width = float(getattr(row, "ActualWidth", 0.0) or 0.0)
-            except Exception:
-                width = 0.0
-            if width > realized_max:
-                realized_max = width
-        base_width = max(extent_width, viewport_width, realized_max)
-        return float(base_width)
+            width = float(len(text)) * (7.2 if float(font_size) >= 12.0 else 6.2)
+            if bool(bold):
+                width *= 1.06
+        self._item_text_width_cache[key] = float(width)
+        return float(width)
 
-    def _compute_compressed_item_width(self):
-        viewer = self._get_list_scrollviewer()
-        if viewer is not None:
-            try:
-                viewport = float(getattr(viewer, "ViewportWidth", 0.0) or 0.0)
-            except Exception:
-                viewport = 0.0
-        else:
-            viewport = 0.0
-        if viewport <= 0.0:
-            try:
-                viewport = float(getattr(self._list, "ActualWidth", 0.0) or 0.0)
-            except Exception:
-                viewport = 0.0
-        if viewport <= 0.0:
-            return 0.0
-        return max(0.0, float(viewport - 2.0))
+    @staticmethod
+    def _item_part_visible(item, property_name):
+        return str(getattr(item, property_name, "Collapsed") or "Collapsed").lower() == "visible"
 
-    def _compute_load_name_char_limit(self):
-        viewport = self._compute_list_viewport_width()
-        if viewport <= 0.0:
-            return 24
+    def _compute_compact_intrinsic_width(self, item, show_type_badge):
+        identity_width = (
+            self._measure_browser_text(getattr(item, "panel", ""), bold=True)
+            + self._measure_browser_text("/ ")
+            + self._measure_browser_text(getattr(item, "circuit_number", ""), bold=True)
+        )
+        if bool(show_type_badge):
+            identity_width += 31.0
+        load_width = self._measure_browser_text(getattr(item, "load_name", ""))
+        middle_width = identity_width + 4.0 + load_width
+
+        right_width = 78.0
+        if self._item_part_visible(item, "neutral_badge_visibility"):
+            right_width += 22.0
+        if self._item_part_visible(item, "ig_badge_visibility"):
+            right_width += 24.0
+        if self._item_part_visible(item, "override_badge_visibility"):
+            right_width += 20.0
+        if self._item_part_visible(item, "sync_lock_badge_visibility"):
+            right_width += 20.0
+        if self._item_part_visible(item, "alert_visibility"):
+            right_width += 24.0
+
+        # Border/padding, checkbox column, template margins, and a small layout
+        # allowance are fixed. Text is measured once and cached per distinct value.
+        return float(2.0 + 8.0 + 19.0 + middle_width + right_width + 12.0)
+
+    def _compute_card_intrinsic_width(self, item):
+        identity_width = (
+            self._measure_browser_text(getattr(item, "panel", ""), bold=True)
+            + self._measure_browser_text("/ ")
+            + self._measure_browser_text(getattr(item, "circuit_number", ""), bold=True)
+        )
+        load_name_width = self._measure_browser_text(getattr(item, "load_name", ""))
+        first_row_width = 19.0 + identity_width + 4.0 + load_name_width + 78.0
+        if self._item_part_visible(item, "neutral_badge_visibility"):
+            first_row_width += 22.0
+        if self._item_part_visible(item, "ig_badge_visibility"):
+            first_row_width += 24.0
+        if self._item_part_visible(item, "override_badge_visibility"):
+            first_row_width += 20.0
+        if self._item_part_visible(item, "sync_lock_badge_visibility"):
+            first_row_width += 20.0
+        if self._item_part_visible(item, "alert_visibility"):
+            first_row_width += 24.0
+
+        type_width = self._measure_browser_text(
+            getattr(item, "type_tag_text", ""),
+            bold=True,
+            font_size=10.0,
+        ) + 10.0
+        left_detail_width = max(
+            type_width,
+            self._measure_browser_text(getattr(item, "wire_line", "")),
+        )
+        right_detail_width = max(
+            self._measure_browser_text(getattr(item, "load_line", "")),
+            self._measure_browser_text(getattr(item, "device_line", "")),
+        )
+        second_row_width = 22.0 + left_detail_width + right_detail_width
+        return float(2.0 + 10.0 + max(first_row_width, second_row_width) + 12.0)
+
+    def _rebuild_full_content_widths(self):
+        compact_with_badges = 0.0
+        compact_without_badges = 0.0
+        card_width = 0.0
+        for item in list(self._all_items or []):
+            with_badges = self._compute_compact_intrinsic_width(item, True)
+            without_badges = self._compute_compact_intrinsic_width(item, False)
+            item_card_width = self._compute_card_intrinsic_width(item)
+            compact_with_badges = max(compact_with_badges, with_badges)
+            compact_without_badges = max(compact_without_badges, without_badges)
+            card_width = max(card_width, item_card_width)
+        self._full_compact_content_width_with_badges = float(compact_with_badges)
+        self._full_compact_content_width_without_badges = float(compact_without_badges)
+        self._full_card_content_width = float(card_width)
+
+    def _full_content_width(self):
         if bool(self._is_card_view):
-            fixed_budget = 214.0
-        else:
-            fixed_budget = 196.0 if bool(self._compact_show_type_badges) else 166.0
-        available = max(24.0, float(viewport - fixed_budget))
-        approx_chars = int(available / 6.7)
-        return max(6, min(approx_chars, 96))
+            return float(self._full_card_content_width or 0.0)
+        if bool(self._compact_show_type_badges):
+            return float(self._full_compact_content_width_with_badges or 0.0)
+        return float(self._full_compact_content_width_without_badges or 0.0)
 
     def _compute_list_viewport_width(self):
         viewer = self._get_list_scrollviewer()
@@ -3454,55 +3442,19 @@ class CircuitBrowserPanel(forms.WPFPanel):
         if self._use_compact_compress_mode():
             self._reset_horizontal_offset_for_compress(viewer)
 
-    def _apply_uniform_item_width_to_realized_rows(self):
-        if self._list is None:
-            return
-        if self._use_compact_compress_mode():
-            return
-        width_value = float(self._uniform_item_width or 0.0)
-        use_uniform = width_value > 0.0
-        for row in _find_visual_descendants(self._list, ListViewItem):
-            if row is None:
-                continue
-            if use_uniform:
-                try:
-                    row.MinWidth = width_value
-                except Exception:
-                    pass
-                try:
-                    row.Width = width_value
-                except Exception:
-                    pass
-            else:
-                try:
-                    row.MinWidth = 0.0
-                except Exception:
-                    pass
-                try:
-                    row.Width = float("nan")
-                except Exception:
-                    pass
-
-    def _apply_item_width_mode(self, items):
-        records = list(items or [])
+    def _apply_shared_row_width(self):
         use_compress = self._use_compact_compress_mode()
-        char_limit = 0
-        max_item_width = 100000.0
+        viewport_width = self._compute_list_viewport_width()
+        available_width = max(0.0, float(viewport_width - 2.0))
         if use_compress:
-            viewport_width = self._compute_list_viewport_width()
-            char_limit = 0 if bool(self._is_card_view) else self._compute_load_name_char_limit()
-            max_item_width = max(0.0, float(viewport_width - 2.0))
-        for item in records:
-            full_name = str(getattr(item, "load_name", "") or "")
-            if use_compress and char_limit > 0:
-                # Keep the load-name field visible in compressed mode.  The
-                # star-sized XAML column and TextTrimming handle the remaining
-                # width, avoiding direction-dependent collapse state.
-                item.load_name_display = _clip_with_ellipsis(full_name, char_limit)
-            else:
-                item.load_name_display = full_name
-            item.load_name_visibility = "Visible"
-            item.item_max_width = max_item_width if use_compress else 100000.0
+            content_width = available_width
+        else:
+            content_width = max(available_width, self._full_content_width())
+        if abs(float(content_width) - float(self._shared_row_width or 0.0)) < 0.25:
+            return
+        self._shared_row_width = float(content_width)
+        if self._list is not None:
+            self._list.DataContext = float(content_width)
 
     def list_scroll_changed(self, sender, args):
         viewer = sender if isinstance(sender, ScrollViewer) else self._get_list_scrollviewer()
@@ -3510,29 +3462,16 @@ class CircuitBrowserPanel(forms.WPFPanel):
             return
         try:
             viewport_width_changed = abs(float(getattr(args, "ViewportWidthChange", 0.0) or 0.0)) > 0.0
-            extent_width_changed = abs(float(getattr(args, "ExtentWidthChange", 0.0) or 0.0)) > 0.0
         except Exception:
             viewport_width_changed = False
-            extent_width_changed = False
-        if not viewport_width_changed and not extent_width_changed:
-            return
-        if self._use_compact_compress_mode():
-            self._applying_scroll_policy = True
-            try:
-                if viewport_width_changed:
-                    self._apply_item_width_mode(self._visible_items)
-                    self._refresh_visible_items()
-                self._uniform_item_width = 0.0
-                self._apply_uniform_item_width_to_realized_rows()
-                self._apply_horizontal_scroll_policy(viewer)
-                self._reset_horizontal_offset_for_compress(viewer)
-            finally:
-                self._applying_scroll_policy = False
+        if not viewport_width_changed:
             return
         self._applying_scroll_policy = True
         try:
-            self._uniform_item_width = self._compute_uniform_item_width()
-            self._apply_uniform_item_width_to_realized_rows()
+            self._apply_shared_row_width()
+            self._apply_horizontal_scroll_policy(viewer)
+            if self._use_compact_compress_mode():
+                self._reset_horizontal_offset_for_compress(viewer)
         finally:
             self._applying_scroll_policy = False
 
@@ -3640,40 +3579,29 @@ class CircuitBrowserPanel(forms.WPFPanel):
             if self._list is not None:
                 self._list.ItemsSource = self._visible_items
 
-    def _schedule_list_layout_refresh(self):
-        if bool(self._list_layout_refresh_pending):
+    def _schedule_shared_row_width_update(self):
+        if bool(self._shared_row_width_update_pending):
             return
-        self._list_layout_refresh_pending = True
+        self._shared_row_width_update_pending = True
 
         def _finalize_layout():
-            self._list_layout_refresh_pending = False
+            self._shared_row_width_update_pending = False
             if bool(self._is_refreshing_list) or self._list is None:
                 return
             self._applying_scroll_policy = True
             try:
                 viewer = self._get_list_scrollviewer()
-                self._apply_item_width_mode(self._visible_items)
+                self._apply_shared_row_width()
                 self._apply_horizontal_scroll_policy(viewer)
                 if self._use_compact_compress_mode():
-                    self._uniform_item_width = 0.0
-                    self._refresh_visible_items()
-                    self._apply_uniform_item_width_to_realized_rows()
                     self._reset_horizontal_offset_for_compress(viewer)
-                else:
-                    self._uniform_item_width = self._compute_uniform_item_width()
-                    self._apply_uniform_item_width_to_realized_rows()
             finally:
                 self._applying_scroll_policy = False
 
         _invoke_later(self, _finalize_layout)
 
     def _refresh_list(self):
-        query = ""
-        try:
-            query = (self._search.Text or "").strip().lower()
-        except Exception:
-            query = ""
-
+        query = self._search_query
         items = list(self._all_items)
         if self._warnings_only:
             items = [x for x in items if int(getattr(x, "alert_count", 0) or 0) > 0]
@@ -3690,13 +3618,16 @@ class CircuitBrowserPanel(forms.WPFPanel):
             items = [x for x in items if bool(getattr(x, "is_checked", False))]
         else:
             items = [x for x in items if x.branch_type in self._active_type_filters]
-        if query:
-            items = [x for x in items if query in x.search_name]
+        if query is not None and not query.is_empty:
+            items = [
+                item for item in items
+                if query.matches(item, matches_free_text)
+            ]
         items = self._sort_browser_items(items)
         for item in items:
             item.show_type_tag = bool(self._compact_show_type_badges)
             item.type_tag_visibility = "Visible" if item.show_type_tag else "Collapsed"
-        self._apply_item_width_mode(items)
+        self._apply_shared_row_width()
 
         self._set_visible_items(items)
         if bool(self._is_refreshing_list):
@@ -3705,12 +3636,7 @@ class CircuitBrowserPanel(forms.WPFPanel):
         viewer = self._get_list_scrollviewer()
         self._apply_horizontal_scroll_policy(viewer)
         if self._use_compact_compress_mode():
-            self._uniform_item_width = 0.0
-            self._apply_uniform_item_width_to_realized_rows()
             self._reset_horizontal_offset_for_compress(viewer)
-        else:
-            self._uniform_item_width = self._compute_uniform_item_width()
-            self._apply_uniform_item_width_to_realized_rows()
         self._set_status("Showing {} of {} circuits".format(len(items), len(self._all_items)))
 
     def _sort_browser_items(self, items):
@@ -3749,22 +3675,6 @@ class CircuitBrowserPanel(forms.WPFPanel):
         ))
         return sorted_items
 
-    def list_size_changed(self, sender, args):
-        if not self._use_compact_compress_mode():
-            return
-        if bool(self._applying_scroll_policy):
-            return
-        self._applying_scroll_policy = True
-        try:
-            self._apply_item_width_mode(self._visible_items)
-            self._refresh_visible_items()
-            viewer = self._get_list_scrollviewer()
-            self._apply_horizontal_scroll_policy(viewer)
-            self._apply_uniform_item_width_to_realized_rows()
-            self._reset_horizontal_offset_for_compress(viewer)
-        finally:
-            self._applying_scroll_policy = False
-
     def _collect_sorted_circuits(self, doc):
         circuits = get_all_circuits(doc)
         circuits.sort(key=lambda c: (
@@ -3792,6 +3702,7 @@ class CircuitBrowserPanel(forms.WPFPanel):
             refreshed_index[int(item.circuit_id)] = item
         self._all_items = refreshed_items
         self._item_index = refreshed_index
+        self._rebuild_full_content_widths()
         self._rebuild_filter_options()
         self._refresh_list()
 
@@ -3815,6 +3726,7 @@ class CircuitBrowserPanel(forms.WPFPanel):
         removed = len(existing_index)
         self._all_items = refreshed_items
         self._item_index = refreshed_index
+        self._rebuild_full_content_widths()
         self._rebuild_filter_options()
         self._refresh_list()
         if added or removed:
@@ -3831,7 +3743,7 @@ class CircuitBrowserPanel(forms.WPFPanel):
                 self._load_items_full(circuits)
         finally:
             self._is_refreshing_list = False
-        self._schedule_list_layout_refresh()
+        self._schedule_shared_row_width_update()
 
     def _target_items(self):
         checked = [x for x in self._all_items if x.is_checked]
@@ -3910,6 +3822,7 @@ class CircuitBrowserPanel(forms.WPFPanel):
         if removed_count:
             self._all_items = valid_all
             self._item_index = {int(getattr(x, "circuit_id", 0) or 0): x for x in list(valid_all or [])}
+            self._rebuild_full_content_widths()
             self._rebuild_filter_options()
             self._refresh_list()
             self.selection_changed(None, None)
@@ -4177,6 +4090,11 @@ class CircuitBrowserPanel(forms.WPFPanel):
     def panel_unloaded(self, sender, args):
         self._detach_list_scrollviewer()
         self._detach_event_handlers()
+        try:
+            if self._alert_popup is not None:
+                self._alert_popup.IsOpen = False
+        except Exception:
+            pass
 
     def panel_visibility_changed(self, sender, args):
         if not self._is_pane_visible():
@@ -4192,24 +4110,8 @@ class CircuitBrowserPanel(forms.WPFPanel):
         else:
             self._set_doc_banner(doc)
 
-    def search_changed(self, sender, args):
-        self._update_search_chrome()
-        self._refresh_list()
-
-    def search_got_focus(self, sender, args):
-        self._update_search_chrome()
-
-    def search_lost_focus(self, sender, args):
-        self._update_search_chrome()
-
-    def clear_search_clicked(self, sender, args):
-        try:
-            if self._search is not None:
-                self._search.Text = ""
-                self._search.Focus()
-        except Exception:
-            pass
-        self._update_search_chrome()
+    def _structured_search_changed(self, sender, args):
+        self._search_query = args.query
         self._refresh_list()
 
     def refresh_clicked(self, sender, args):
@@ -4286,36 +4188,22 @@ class CircuitBrowserPanel(forms.WPFPanel):
         theme_menu = MenuItem()
         _set_if_resource(self, theme_menu, "Style", "CED.MenuItem.Base")
         theme_menu.Header = "Theme"
-        light_item = MenuItem()
-        _set_if_resource(self, light_item, "Style", "CED.MenuItem.Base")
-        light_item.Header = "Light"
-        light_item.IsCheckable = True
-        light_item.IsChecked = (self._theme_mode == "light")
-        light_item.StaysOpenOnClick = True
-        light_item.Tag = "light"
-        light_item.Click += self.browser_theme_clicked
-        theme_menu.Items.Add(light_item)
-        self._browser_theme_items["light"] = light_item
-        dark_item = MenuItem()
-        _set_if_resource(self, dark_item, "Style", "CED.MenuItem.Base")
-        dark_item.Header = "Dark"
-        dark_item.IsCheckable = True
-        dark_item.IsChecked = (self._theme_mode == "dark")
-        dark_item.StaysOpenOnClick = True
-        dark_item.Tag = "dark"
-        dark_item.Click += self.browser_theme_clicked
-        theme_menu.Items.Add(dark_item)
-        self._browser_theme_items["dark"] = dark_item
-        dark_alt_item = MenuItem()
-        _set_if_resource(self, dark_alt_item, "Style", "CED.MenuItem.Base")
-        dark_alt_item.Header = "Dark Alt"
-        dark_alt_item.IsCheckable = True
-        dark_alt_item.IsChecked = (self._theme_mode == "dark_alt")
-        dark_alt_item.StaysOpenOnClick = True
-        dark_alt_item.Tag = "dark_alt"
-        dark_alt_item.Click += self.browser_theme_clicked
-        theme_menu.Items.Add(dark_alt_item)
-        self._browser_theme_items["dark_alt"] = dark_alt_item
+        for descriptor in resource_loader.theme_descriptors():
+            mode = resource_loader.theme_descriptor_mode(descriptor, "light")
+            item = MenuItem()
+            _set_if_resource(self, item, "Style", "CED.MenuItem.Base")
+            item.Header = resource_loader.theme_descriptor_value(
+                descriptor,
+                "Label",
+                mode,
+            )
+            item.IsCheckable = True
+            item.IsChecked = (self._theme_mode == mode)
+            item.StaysOpenOnClick = True
+            item.Tag = mode
+            item.Click += self.browser_theme_clicked
+            theme_menu.Items.Add(item)
+            self._browser_theme_items[mode] = item
         menu.Items.Add(theme_menu)
 
         accent_menu = MenuItem()
@@ -4427,12 +4315,13 @@ class CircuitBrowserPanel(forms.WPFPanel):
 
     def _apply_theme_visual_state(self, refresh_visible_items=True):
         _try_apply_theme(self)
-        self._surface_item_style = _try_find_resource(self, "CED.ListViewItem.SurfaceBehavior")
+        self._shared_width_item_style = _try_find_resource(self, "CircuitManager.ListViewItem.SharedWidth")
         self._clear_type_tag_brush_cache()
         self._apply_type_tag_brushes()
         self._apply_list_interaction_mode()
         self._update_filter_button_style()
-        self._update_search_chrome()
+        if self._search is not None:
+            self._search.refresh_resources()
         self._update_toggle_button_visual()
         if bool(refresh_visible_items):
             self._refresh_visible_items()
@@ -4623,6 +4512,7 @@ class CircuitBrowserPanel(forms.WPFPanel):
 
         self._all_items = refreshed_items
         self._item_index = refreshed_index
+        self._rebuild_full_content_widths()
         self._rebuild_filter_options()
         self._refresh_list()
         self._reselect_rows_by_ids(reselect_ids or [])
@@ -6096,9 +5986,9 @@ class CircuitBrowserPanel(forms.WPFPanel):
         if self._search is None:
             return
         try:
-            self._search.Focus()
-            self._search.SelectAll()
-            args.Handled = True
+            if self._search.focus_input():
+                self._search.select_all()
+                args.Handled = True
         except Exception:
             pass
 
@@ -6499,6 +6389,37 @@ class CircuitBrowserPanel(forms.WPFPanel):
     def alert_button_mouse_leave(self, sender, args):
         self._set_alert_hover_state(sender, False)
 
+    def _show_alert_popup(self, sender, rows):
+        popup = self._alert_popup
+        content = self._alert_popup_content
+        if popup is None or content is None:
+            return
+
+        active = [row for row in rows if not bool(getattr(row, "is_hidden", False))]
+        hidden = [row for row in rows if bool(getattr(row, "is_hidden", False))]
+        content.Children.Clear()
+
+        sections = (("Active", active), ("Hidden", hidden))
+        for section_index, (label, section_rows) in enumerate(sections):
+            header = TextBlock()
+            header.Text = "{} ({})".format(label, len(section_rows))
+            _set_if_resource(self, header, "Style", "CED.Text.CaptionStrong")
+            header.Margin = Thickness(0, 6 if section_index else 0, 0, 3)
+            content.Children.Add(header)
+
+            for row in section_rows:
+                definition_id = str(getattr(row, "definition_id", "") or "-")
+                if definition_id == "-":
+                    definition_id = "Unmapped alert"
+                alert_text = TextBlock()
+                alert_text.Text = definition_id
+                _set_if_resource(self, alert_text, "Style", "CED.Text.Primary")
+                alert_text.Margin = Thickness(8, 0, 0, 1)
+                content.Children.Add(alert_text)
+
+        popup.PlacementTarget = sender
+        popup.IsOpen = True
+
     def alert_tag_clicked(self, sender, args):
         self._set_alert_hover_state(sender, False)
         item = None
@@ -6511,43 +6432,13 @@ class CircuitBrowserPanel(forms.WPFPanel):
 
         rows = list(getattr(item, "alert_rows", []) or [])
         if not rows:
-            forms.alert("No alerts stored for this circuit.", title=TITLE)
-            return
-
-        header = "{} / {} - {}".format(item.panel, item.circuit_number, item.load_name)
-        try:
-            window = CircuitAlertsWindow(
-                header,
-                rows,
-                theme_mode=self._theme_mode,
-                accent_mode=self._accent_mode,
-            )
             try:
-                window.ShowDialog()
+                if self._alert_popup is not None:
+                    self._alert_popup.IsOpen = False
             except Exception:
-                window.Show()
-                try:
-                    window.Activate()
-                except Exception:
-                    pass
-        except Exception as ex:
-            forms.alert("Failed to open alerts window:\n\n{}".format(ex), title=TITLE)
+                pass
             return
-        hidden_ids = getattr(window, "updated_hidden_ids", None)
-        if hidden_ids is None:
-            return
-
-        if self._operation_gateway.is_busy():
-            forms.alert("An operation is already running. Please wait.", title=TITLE)
-            return
-        self._set_status("Updating alert visibility...")
-        self._operation_gateway.raise_operation(
-            operation_key="set_hidden_alert_types",
-            circuit_ids=[_elid_value(item.circuit.Id)],
-            source="pane",
-            options={"hidden_definition_ids": list(hidden_ids)},
-            callback=self._on_alert_visibility_saved,
-        )
+        self._show_alert_popup(sender, rows)
 
 
 def ensure_panel_visible():
