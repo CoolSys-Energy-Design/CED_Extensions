@@ -156,6 +156,15 @@ class SetIncludeAndRecalculateOperation(object):
                     existing = list(calc_result.get('locked_rows') or [])
                     calc_result['locked_rows'] = existing + locked_rows
                 return calc_result
+            if str(calc_result.get('status') or '').strip().lower() == 'stale':
+                try:
+                    tg.RollBack()
+                except Exception:
+                    pass
+                if locked_rows:
+                    existing = list(calc_result.get('locked_rows') or [])
+                    calc_result['locked_rows'] = existing + locked_rows
+                return calc_result
             tg.Assimilate()
         except Exception:
             try:
@@ -175,10 +184,7 @@ class SetIncludeAndRecalculateOperation(object):
         mapping = {}
         for row in list(updates or []):
             item = dict(row or {})
-            try:
-                cid = int(item.get('circuit_id') or 0)
-            except Exception:
-                cid = 0
+            cid = revit_helpers.coerce_elementid_value(item.get('circuit_id'))
             if cid <= 0:
                 continue
             try:

@@ -129,6 +129,16 @@ class EditCircuitPropertiesAndRecalculateOperation(object):
                     calc_result["locked_rows"] = existing + locked_rows
                 calc_result["edited_circuits"] = len(changed_ids)
                 return calc_result
+            if str(calc_result.get("status") or "").strip().lower() == "stale":
+                try:
+                    tg.RollBack()
+                except Exception:
+                    pass
+                if locked_rows:
+                    existing = list(calc_result.get("locked_rows") or [])
+                    calc_result["locked_rows"] = existing + locked_rows
+                calc_result["edited_circuits"] = len(changed_ids)
+                return calc_result
             tg.Assimilate()
         except Exception:
             try:
@@ -148,10 +158,7 @@ class EditCircuitPropertiesAndRecalculateOperation(object):
         for row in list(updates or []):
             if not isinstance(row, dict):
                 continue
-            try:
-                cid = int(row.get("circuit_id") or 0)
-            except Exception:
-                cid = 0
+            cid = revit_helpers.coerce_elementid_value(row.get("circuit_id"))
             if cid <= 0:
                 continue
             param_values = dict(row.get("param_values") or {})

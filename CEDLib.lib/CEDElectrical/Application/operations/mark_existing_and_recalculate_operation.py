@@ -46,10 +46,7 @@ class MarkExistingAndRecalculateOperation(object):
         for raw in raw_updates:
             if not isinstance(raw, dict):
                 continue
-            try:
-                cid = int(raw.get('circuit_id') or 0)
-            except Exception:
-                cid = 0
+            cid = revit_helpers.coerce_elementid_value(raw.get('circuit_id'))
             if cid <= 0:
                 continue
             mode_val = str(raw.get('mode', 'existing') or 'existing').strip().lower()
@@ -181,6 +178,15 @@ class MarkExistingAndRecalculateOperation(object):
                     calc_result['locked_rows'] = existing + locked_rows
                 return calc_result
             if str(calc_result.get('status') or '').strip().lower() == 'preview_required':
+                try:
+                    tg.RollBack()
+                except Exception:
+                    pass
+                if locked_rows:
+                    existing = list(calc_result.get('locked_rows') or [])
+                    calc_result['locked_rows'] = existing + locked_rows
+                return calc_result
+            if str(calc_result.get('status') or '').strip().lower() == 'stale':
                 try:
                     tg.RollBack()
                 except Exception:

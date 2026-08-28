@@ -162,10 +162,11 @@ def main():
         "calc_preview_enabled": _load_calc_preview_enabled(False),
     }
     runner = build_default_runner(alert_parameter_name=ALERT_DATA_PARAM)
+    operation_key = "calculate_circuits"
 
     while True:
         request = OperationRequest(
-            operation_key="calculate_circuits",
+            operation_key=operation_key,
             circuit_ids=circuit_ids,
             source="ribbon",
             options=dict(options),
@@ -178,9 +179,27 @@ def main():
             window.ShowDialog()
             decision = getattr(window, "decision", None)
             if decision in ("keep_new", "keep_existing", "skip"):
-                options["calc_preview_decision"] = decision
+                staged = result.get("staged_calculation")
+                if isinstance(staged, dict):
+                    options = {
+                        "show_output": True,
+                        "calc_preview_decision": decision,
+                        "staged_calculation": staged,
+                    }
+                    operation_key = "apply_calculated_circuits"
+                else:
+                    # Compatibility with older backend payloads.
+                    options["calc_preview_decision"] = decision
+                    operation_key = "calculate_circuits"
                 continue
             logger.info("Calculate circuits request ended: %s", result)
+            return
+        if result.get("status") == "stale":
+            forms.alert(
+                "The calculation preview is stale because the model changed. "
+                "Run Calculate Circuits again to refresh the result.",
+                title=TITLE,
+            )
             return
         if result.get("status") != "ok":
             logger.info("Calculate circuits request ended: %s", result)
