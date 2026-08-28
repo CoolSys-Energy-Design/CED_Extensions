@@ -71,4 +71,151 @@
       </Setter.Value>
     </Setter>
   </Style>
+
+  <!-- Token styles are used by StructuredSearchBox.  They deliberately use
+       existing semantic theme brushes so the control follows light/dark and
+       accent changes made by its host. -->
+  <Style x:Key="CED.SearchBox.Token" TargetType="Border">
+    <Setter Property="Background" Value="{DynamicResource CED.Brush.InfoAccentBackground}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource CED.Brush.InfoAccentBorder}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="CornerRadius" Value="{DynamicResource CED.CornerRadius.Badge}"/>
+    <Setter Property="Padding" Value="4,0"/>
+    <Setter Property="Margin" Value="0,2,4,2"/>
+    <Setter Property="MinHeight" Value="18"/>
+  </Style>
+
+  <Style x:Key="CED.SearchBox.Token.Selected" TargetType="Border" BasedOn="{StaticResource CED.SearchBox.Token}">
+    <Setter Property="Background" Value="{DynamicResource CED.Brush.BadgeInfoBackground}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource CED.Brush.Accent}"/>
+  </Style>
+
+  <!-- Field variants keep chips scannable without hard-coding colors in the
+       reusable control.  Selected variants retain the field tint and add the
+       shared accent outline. -->
+  <Style x:Key="CED.SearchBox.Token.Panel" TargetType="Border" BasedOn="{StaticResource CED.SearchBox.Token}">
+    <Setter Property="Background" Value="{DynamicResource CED.Brush.BadgeStd02Background}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource CED.Brush.BadgeStd02Border}"/>
+  </Style>
+  <Style x:Key="CED.SearchBox.Token.Selected.Panel" TargetType="Border" BasedOn="{StaticResource CED.SearchBox.Token.Panel}">
+    <Setter Property="BorderBrush" Value="{DynamicResource CED.Brush.Accent}"/>
+  </Style>
+
+  <Style x:Key="CED.SearchBox.Token.Neutral" TargetType="Border" BasedOn="{StaticResource CED.SearchBox.Token}">
+    <Setter Property="Background" Value="{DynamicResource CED.Brush.BadgeStd01Background}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource CED.Brush.BadgeStd01Border}"/>
+  </Style>
+  <Style x:Key="CED.SearchBox.Token.Selected.Neutral" TargetType="Border" BasedOn="{StaticResource CED.SearchBox.Token.Neutral}">
+    <Setter Property="BorderBrush" Value="{DynamicResource CED.Brush.Accent}"/>
+  </Style>
+
+  <Style x:Key="CED.SearchBox.Token.IG" TargetType="Border" BasedOn="{StaticResource CED.SearchBox.Token}">
+    <Setter Property="Background" Value="{DynamicResource CED.Brush.BadgeStd05Background}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource CED.Brush.BadgeStd05Border}"/>
+  </Style>
+  <Style x:Key="CED.SearchBox.Token.Selected.IG" TargetType="Border" BasedOn="{StaticResource CED.SearchBox.Token.IG}">
+    <Setter Property="BorderBrush" Value="{DynamicResource CED.Brush.Accent}"/>
+  </Style>
+
+  <Style x:Key="CED.SearchBox.Token.Rating" TargetType="Border" BasedOn="{StaticResource CED.SearchBox.Token}">
+    <Setter Property="Background" Value="{DynamicResource CED.Brush.BadgeStd06Background}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource CED.Brush.BadgeStd06Border}"/>
+  </Style>
+  <Style x:Key="CED.SearchBox.Token.Selected.Rating" TargetType="Border" BasedOn="{StaticResource CED.SearchBox.Token.Rating}">
+    <Setter Property="BorderBrush" Value="{DynamicResource CED.Brush.Accent}"/>
+  </Style>
+
+  <Style x:Key="CED.SearchBox.Token.Poles" TargetType="Border" BasedOn="{StaticResource CED.SearchBox.Token}">
+    <Setter Property="Background" Value="{DynamicResource CED.Brush.BadgeStd07Background}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource CED.Brush.BadgeStd07Border}"/>
+  </Style>
+  <Style x:Key="CED.SearchBox.Token.Selected.Poles" TargetType="Border" BasedOn="{StaticResource CED.SearchBox.Token.Poles}">
+    <Setter Property="BorderBrush" Value="{DynamicResource CED.Brush.Accent}"/>
+  </Style>
+
+  <!-- Keep this style self-contained.  SearchBox.xaml is loaded as its own
+       merged dictionary, so a cross-dictionary StaticResource BasedOn can
+       make the whole dictionary fail to load in Revit's WPF host. -->
+  <Style x:Key="CED.SearchBox.CommandItem" TargetType="ListBoxItem">
+    <Setter Property="Foreground" Value="{DynamicResource CED.Brush.PrimaryText}"/>
+    <Setter Property="Background" Value="{DynamicResource CED.Brush.ListItemBackground}"/>
+    <Setter Property="BorderBrush" Value="Transparent"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+    <Setter Property="VerticalContentAlignment" Value="Center"/>
+    <Setter Property="Padding" Value="6,2"/>
+    <Setter Property="MinHeight" Value="0"/>
+    <Setter Property="FontSize" Value="11"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type ListBoxItem}">
+          <Border x:Name="Root"
+                  Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="4"
+                  SnapsToDevicePixels="True">
+            <Grid>
+              <ContentPresenter Margin="{TemplateBinding Padding}"
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+              <Border x:Name="StateOverlay"
+                      Background="Transparent"
+                      CornerRadius="4"
+                      IsHitTestVisible="False"/>
+            </Grid>
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsSelected" Value="True">
+              <Setter TargetName="Root" Property="Background" Value="{DynamicResource CED.Brush.CircuitItemSelectedBackground}"/>
+              <Setter TargetName="Root" Property="BorderBrush" Value="{DynamicResource CED.Brush.Accent}"/>
+            </Trigger>
+            <Trigger Property="IsKeyboardFocused" Value="True">
+              <Setter TargetName="Root" Property="BorderBrush" Value="{DynamicResource CED.Brush.Accent}"/>
+            </Trigger>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="StateOverlay" Property="Background" Value="{DynamicResource CED.Brush.ButtonStateOverlayHover}"/>
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <Style x:Key="CED.SearchBox.TokenOperator" TargetType="TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource CED.Brush.SecondaryText}"/>
+    <Setter Property="FontSize" Value="10"/>
+    <Setter Property="VerticalAlignment" Value="Center"/>
+    <Setter Property="Margin" Value="2,0,2,0"/>
+  </Style>
+
+  <Style x:Key="CED.SearchBox.TokenText" TargetType="TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource CED.Brush.BadgeInfoText}"/>
+    <Setter Property="FontSize" Value="11"/>
+    <Setter Property="VerticalAlignment" Value="Center"/>
+  </Style>
+
+  <Style x:Key="CED.SearchBox.TokenInput" TargetType="TextBox">
+    <Setter Property="Foreground" Value="{DynamicResource CED.Brush.BadgeInfoText}"/>
+    <Setter Property="CaretBrush" Value="{DynamicResource CED.Brush.BadgeInfoText}"/>
+    <Setter Property="FontSize" Value="11"/>
+    <Setter Property="MinWidth" Value="18"/>
+    <Setter Property="Height" Value="18"/>
+    <Setter Property="Padding" Value="0"/>
+    <Setter Property="BorderThickness" Value="0"/>
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="VerticalContentAlignment" Value="Center"/>
+  </Style>
+
+  <Style x:Key="CED.SearchBox.TokenButton" TargetType="Button">
+    <Setter Property="Foreground" Value="{DynamicResource CED.Brush.BadgeInfoText}"/>
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderBrush" Value="Transparent"/>
+    <Setter Property="BorderThickness" Value="0"/>
+    <Setter Property="Padding" Value="0"/>
+    <Setter Property="MinWidth" Value="0"/>
+    <Setter Property="MinHeight" Value="0"/>
+    <Setter Property="Focusable" Value="False"/>
+    <Setter Property="Cursor" Value="Hand"/>
+  </Style>
 </ResourceDictionary>

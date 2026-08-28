@@ -25,7 +25,12 @@ from System.Data import DataTable
 
 from pyrevit import forms, script
 
-from UIClasses import CEDWindowBase, resource_loader
+from UIClasses import (
+    CEDWindowBase,
+    FALLBACK_LAST_VALID,
+    FilterableComboBox,
+    resource_loader,
+)
 from UIClasses import (
     THEME_CONFIG_ACCENT_KEY,
     THEME_CONFIG_SECTION,
@@ -36,12 +41,6 @@ from UIClasses import (
 THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 XAML_PATH = os.path.join(THIS_DIR, "ThemeWindow.xaml")
 
-
-THEME_LABELS = {
-    "light": "Light",
-    "dark": "Dark",
-    "dark_alt": "Dark Alt",
-}
 
 _CIRCUIT_MANAGER_MODULE_NAME = "ced_electools_circuit_manager_panel"
 
@@ -110,11 +109,15 @@ class ThemePickerWindow(CEDWindowBase):
         self.theme_picker = self.FindName("ThemePicker")
         self.preview_title = self.FindName("PreviewTitle")
         self.preview_slider = self.FindName("PreviewSlider")
+        self.preview_filter_combo = self.FindName("PreviewFilterCombo")
+        self.preview_filter_status = self.FindName("PreviewFilterStatus")
         self.preview_data_grid = self.FindName("PreviewDataGrid")
         self.preview_alternating_toggle = self.FindName("PreviewAlternatingToggle")
         self.current_theme_text = self.FindName("CurrentThemeText")
         self.apply_button = self.FindName("ApplyButton")
 
+        self._load_theme_options()
+        self._load_filterable_combo()
         self._load_preview_grid()
         self._apply_preview_grid_mode()
         self._select_current_theme()
@@ -127,13 +130,46 @@ class ThemePickerWindow(CEDWindowBase):
         self.apply_button.Click += self._apply_theme_clicked
         self._is_loading = False
 
+    def _load_theme_options(self):
+        """Populate the selector from the shared loader-owned descriptors."""
+        self.theme_picker.ItemsSource = resource_loader.theme_descriptors()
+
+    def _load_filterable_combo(self):
+        """Load a realistic option set into the editable filter demo."""
+        self.preview_filter_combo.ItemsSource = [
+            "Lighting - Pendant",
+            "Lighting - Recessed",
+            "Lighting - Wall Sconce",
+            "Power - Duplex Receptacle",
+            "Power - Floor Box",
+            "Mechanical - Return Grille",
+            "Mechanical - Supply Diffuser",
+            "Security - Card Reader",
+        ]
+        self.preview_filter_combo.SelectedIndex = -1
+        self._filterable_combo = FilterableComboBox(
+            self.preview_filter_combo,
+            on_filter_changed=self._on_filterable_combo_changed,
+            allow_custom_values=False,
+            fallback=FALLBACK_LAST_VALID,
+        )
+        self.preview_filter_status.Text = "8 choices available. Type to filter."
+
+    def _on_filterable_combo_changed(self, behavior, query, count):
+        if query:
+            self.preview_filter_status.Text = (
+                "Showing {0} match{1} for \"{2}\"."
+                .format(count, "" if count == 1 else "es", query)
+            )
+        else:
+            self.preview_filter_status.Text = (
+                "{0} choices available. Type to filter.".format(count)
+            )
+
     def _select_current_theme(self):
         selected = None
         for item in self.theme_picker.Items:
-            mode = resource_loader.normalize_theme_mode(
-                getattr(item, "Tag", None),
-                "light",
-            )
+            mode = resource_loader.theme_descriptor_mode(item, "light")
             if mode == self._theme_mode:
                 selected = item
                 break
@@ -142,10 +178,7 @@ class ThemePickerWindow(CEDWindowBase):
 
     def _selected_theme_mode(self):
         selected = self.theme_picker.SelectedItem
-        return resource_loader.normalize_theme_mode(
-            getattr(selected, "Tag", None),
-            self._theme_mode,
-        )
+        return resource_loader.theme_descriptor_mode(selected, self._theme_mode)
 
     def _load_preview_grid(self):
         """Supply representative shared cell and row states for the live swatch."""
@@ -219,7 +252,10 @@ class ThemePickerWindow(CEDWindowBase):
             pass
 
     def _refresh_labels(self):
-        label = THEME_LABELS.get(self._theme_mode, self._theme_mode)
+        label = resource_loader.theme_descriptor_label(
+            self._theme_mode,
+            self._theme_mode,
+        )
         self.preview_title.Text = "{} theme preview".format(label)
         if (
             self._theme_mode == self._saved_theme_mode

@@ -10,6 +10,7 @@ clr.AddReference("PresentationFramework")
 
 from System.Windows import Visibility
 from System.Windows import FontStyles
+from System.Windows.Controls import ComboBoxItem
 from System.Windows.Media import Brushes
 
 from pyrevit import DB, forms, revit, script
@@ -103,6 +104,7 @@ class CircuitSettingsWindow(forms.WPFWindow):
         self._is_normalizing = False
         self._is_loading_ui = True
 
+        self._load_theme_options()
         self._bind_events()
         self._load_defaults_panel()
         self._load_values()
@@ -129,6 +131,19 @@ class CircuitSettingsWindow(forms.WPFWindow):
             self._secondary_text_brush = None
 
     # ------------- UI wiring -----------------
+    def _load_theme_options(self):
+        """Populate the theme selector from the shared loader descriptors."""
+        self.theme_mode_cb.Items.Clear()
+        for descriptor in resource_loader.theme_descriptors():
+            item = ComboBoxItem()
+            item.Content = resource_loader.theme_descriptor_value(
+                descriptor,
+                "Label",
+                resource_loader.theme_descriptor_mode(descriptor, "light"),
+            )
+            item.Tag = resource_loader.theme_descriptor_mode(descriptor, "light")
+            self.theme_mode_cb.Items.Add(item)
+
     def _bind_events(self):
         self.save_btn.Click += self._on_save
         self.cancel_btn.Click += self._on_cancel
@@ -380,11 +395,10 @@ class CircuitSettingsWindow(forms.WPFWindow):
         }.get(value, value)
 
     def _describe_theme_mode(self, value):
-        return {
-            "light": "Light",
-            "dark": "Dark",
-            "dark_alt": "Dark Alt",
-        }.get(str(value or "").strip().lower(), value)
+        return resource_loader.theme_descriptor_label(
+            value,
+            value,
+        )
 
     def _describe_accent_mode(self, value):
         return {
@@ -444,9 +458,11 @@ class CircuitSettingsWindow(forms.WPFWindow):
                 '3/4"': u"Selected: 3/4\"",
             },
             'theme_mode': {
-                'light': "[Light] Uses the light CED theme.",
-                'dark': "[Dark] Uses the dark CED theme.",
-                'dark_alt': "[Dark Alt] Uses the alternate dark CED theme.",
+                descriptor.Mode: "[{}] {}.".format(
+                    descriptor.Label,
+                    descriptor.Description,
+                )
+                for descriptor in resource_loader.theme_descriptors()
             },
             'accent_mode': {
                 'blue': "[Blue] Uses blue as the tool accent color.",

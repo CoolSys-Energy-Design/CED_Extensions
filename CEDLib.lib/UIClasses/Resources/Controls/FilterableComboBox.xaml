@@ -1,0 +1,16 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- Shared item surface used by FilterableComboBox.  The Python behavior
+       replaces the TextBlock inlines with Runs so only matching text receives
+       the Docs search highlight colors. -->
+  <Style x:Key="CED.Input.ComboBox.FilterableItemText" TargetType="TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource CED.Brush.PrimaryText}"/>
+    <Setter Property="VerticalAlignment" Value="Center"/>
+    <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+  </Style>
+
+  <DataTemplate x:Key="CED.Input.ComboBox.FilterableItemTemplate">
+    <TextBlock Text="{Binding}"
+               Style="{DynamicResource CED.Input.ComboBox.FilterableItemText}"/>
+  </DataTemplate>
+</ResourceDictionary>

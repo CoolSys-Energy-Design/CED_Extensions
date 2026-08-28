@@ -14,6 +14,42 @@ for _wpf_asm in ("PresentationFramework", "PresentationCore", "WindowsBase"):
 
 from System.Windows import DependencyProperty, ResourceDictionary
 
+
+class ThemeDescriptor(object):
+    """Metadata for one theme option and the dictionaries it loads."""
+
+    def __init__(self, mode, label, description, relative_paths):
+        self.Mode = mode
+        self.Label = label
+        self.Description = description
+        self.RelativePaths = tuple(relative_paths or ())
+
+    @property
+    def mode(self):
+        return self.Mode
+
+    @property
+    def label(self):
+        return self.Label
+
+    @property
+    def description(self):
+        return self.Description
+
+    @property
+    def relative_paths(self):
+        return self.RelativePaths
+
+    def __getitem__(self, key):
+        values = {
+            "mode": self.Mode,
+            "label": self.Label,
+            "description": self.Description,
+            "relative_paths": self.RelativePaths,
+        }
+        return values[key]
+
+
 DEFAULT_BASE_RESOURCE_RELATIVE_PATHS = (
     os.path.join("Themes", "CED.Sizes.xaml"),
     os.path.join("Themes", "CED.Colors.xaml"),
@@ -32,22 +68,47 @@ DEFAULT_BASE_RESOURCE_RELATIVE_PATHS = (
     os.path.join("Templates", "WindowChrome.xaml"),
     os.path.join("Templates", "ControlPrimitives.xaml"),
     os.path.join("Controls", "SearchBox.xaml"),
+    os.path.join("Controls", "FilterableComboBox.xaml"),
 )
 
-THEME_RELATIVE_PATHS = {
-    "light": (
-        os.path.join("Themes", "CEDTheme.Light.xaml"),
+THEME_DESCRIPTORS = (
+    ThemeDescriptor(
+        "light",
+        "Light",
+        "Bright workspace",
+        (os.path.join("Themes", "CEDTheme.Light.xaml"),),
     ),
-    "dark": (
-        os.path.join("Themes", "CEDTheme.Dark.xaml"),
-        os.path.join("Themes", "CEDTheme.Light.xaml"),
+    ThemeDescriptor(
+        "dark",
+        "Dark",
+        "Deep blue-gray",
+        (
+            os.path.join("Themes", "CEDTheme.Dark.xaml"),
+            os.path.join("Themes", "CEDTheme.Light.xaml"),
+        ),
     ),
-    "dark_alt": (
-        os.path.join("Themes", "CEDTheme.DarkAlt.xaml"),
-        os.path.join("Themes", "CEDTheme.Dark.xaml"),
-        os.path.join("Themes", "CEDTheme.Light.xaml"),
+    ThemeDescriptor(
+        "dark_alt",
+        "Dark Alt",
+        "Neutral dark",
+        (
+            os.path.join("Themes", "CEDTheme.DarkAlt.xaml"),
+            os.path.join("Themes", "CEDTheme.Dark.xaml"),
+            os.path.join("Themes", "CEDTheme.Light.xaml"),
+        ),
     ),
-}
+    ThemeDescriptor(
+        "cursed",
+        "Cursed",
+        "Neon goblin mode",
+        (os.path.join("Themes", "CEDTheme.Cursed.xaml"),),
+    ),
+)
+
+THEME_RELATIVE_PATHS = dict(
+    (descriptor.Mode, descriptor.RelativePaths)
+    for descriptor in THEME_DESCRIPTORS
+)
 
 ACCENT_BRUSH_KEY_MAP = {
     "blue": "CED.Brush.AccentBlue",
@@ -56,6 +117,38 @@ ACCENT_BRUSH_KEY_MAP = {
 
 VALID_THEME_MODES = tuple(sorted(THEME_RELATIVE_PATHS.keys()))
 VALID_ACCENT_MODES = tuple(sorted(ACCENT_BRUSH_KEY_MAP.keys()))
+
+
+def theme_descriptors():
+    """Return the loader-owned theme metadata consumed by tool selectors."""
+    return THEME_DESCRIPTORS
+
+
+def theme_descriptor_value(descriptor, attribute, fallback=None):
+    """Read a descriptor attribute while tolerating simple mapping objects."""
+    value = getattr(descriptor, attribute, None)
+    if value is not None:
+        return value
+    key = attribute[:1].lower() + attribute[1:]
+    try:
+        return descriptor[key]
+    except Exception:
+        return fallback
+
+
+def theme_descriptor_mode(descriptor, fallback="light"):
+    return normalize_theme_mode(
+        theme_descriptor_value(descriptor, "Mode", fallback),
+        fallback,
+    )
+
+
+def theme_descriptor_label(mode, fallback=None):
+    normalized = normalize_theme_mode(mode, "light")
+    for descriptor in THEME_DESCRIPTORS:
+        if descriptor.Mode == normalized:
+            return descriptor.Label
+    return fallback if fallback is not None else normalized
 
 
 def normalize_theme_mode(value, fallback="light"):
@@ -102,10 +195,12 @@ def _resource_source_path(dictionary):
 
 def _is_theme_resource_dictionary(dictionary):
     source_text = _resource_source_path(dictionary)
-    return (
-        source_text.endswith("/cedtheme.light.xaml")
-        or source_text.endswith("/cedtheme.dark.xaml")
-        or source_text.endswith("/cedtheme.darkalt.xaml")
+    return any(
+        source_text.endswith(
+            "/{}".format(os.path.basename(path).lower())
+        )
+        for descriptor in THEME_DESCRIPTORS
+        for path in descriptor.RelativePaths
     )
 
 

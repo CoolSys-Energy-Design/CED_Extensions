@@ -10,6 +10,18 @@
         Background="{DynamicResource CED.Brush.WindowBackground}"
         Foreground="{DynamicResource CED.Brush.PrimaryText}"
         FontFamily="Segoe UI">
+  <Window.Resources>
+    <DataTemplate x:Key="CED.Theme.OptionTemplate">
+      <StackPanel>
+        <TextBlock Text="{Binding Label}"
+                   Style="{DynamicResource CED.Text.Body}"
+                   FontWeight="SemiBold"/>
+        <TextBlock Text="{Binding Description}"
+                   Style="{DynamicResource CED.Text.Caption}"
+                   Margin="0,2,0,0"/>
+      </StackPanel>
+    </DataTemplate>
+  </Window.Resources>
   <Grid Margin="18">
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="*"/>
@@ -53,6 +65,8 @@
             <Grid.RowDefinitions>
               <RowDefinition Height="30"/>
               <RowDefinition Height="30"/>
+              <RowDefinition Height="30"/>
+              <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <TextBlock Text="Text box" Grid.Row="0" VerticalAlignment="Center" Style="{DynamicResource CED.Text.Body}"/>
             <TextBox Grid.Row="0" Grid.Column="1" Text="Preview text" IsReadOnly="True" Style="{DynamicResource CED.Input.TextBox}"/>
@@ -61,6 +75,18 @@
               <ComboBoxItem Content="Selected option"/>
               <ComboBoxItem Content="Another option"/>
             </ComboBox>
+            <TextBlock Text="Filterable picker" Grid.Row="2" VerticalAlignment="Center" Style="{DynamicResource CED.Text.Body}"/>
+            <ComboBox x:Name="PreviewFilterCombo"
+                      Grid.Row="2"
+                      Grid.Column="1"
+                      Style="{DynamicResource CED.Input.ComboBox.Flat.Compact.Editable}"
+                      ToolTip="Type to filter choices, or click the arrow to browse all choices."/>
+            <TextBlock x:Name="PreviewFilterStatus"
+                       Grid.Row="3"
+                       Grid.Column="1"
+                       Style="{DynamicResource CED.Text.Caption}"
+                       TextWrapping="Wrap"
+                       Margin="0,1,0,0"/>
           </Grid>
 
           <StackPanel Orientation="Horizontal" Margin="0,5,0,5">
@@ -206,26 +232,8 @@
 
       <ListBox x:Name="ThemePicker"
                Grid.Row="1"
-               Style="{DynamicResource CED.ListBox}">
-        <ListBoxItem Tag="light">
-          <StackPanel>
-            <TextBlock Text="Light" Style="{DynamicResource CED.Text.Body}" FontWeight="SemiBold"/>
-            <TextBlock Text="Bright workspace" Style="{DynamicResource CED.Text.Caption}" Margin="0,2,0,0"/>
-          </StackPanel>
-        </ListBoxItem>
-        <ListBoxItem Tag="dark">
-          <StackPanel>
-            <TextBlock Text="Dark" Style="{DynamicResource CED.Text.Body}" FontWeight="SemiBold"/>
-            <TextBlock Text="Deep blue-gray" Style="{DynamicResource CED.Text.Caption}" Margin="0,2,0,0"/>
-          </StackPanel>
-        </ListBoxItem>
-        <ListBoxItem Tag="dark_alt">
-          <StackPanel>
-            <TextBlock Text="Dark Alt" Style="{DynamicResource CED.Text.Body}" FontWeight="SemiBold"/>
-            <TextBlock Text="Neutral dark" Style="{DynamicResource CED.Text.Caption}" Margin="0,2,0,0"/>
-          </StackPanel>
-        </ListBoxItem>
-      </ListBox>
+               Style="{DynamicResource CED.ListBox}"
+               ItemTemplate="{DynamicResource CED.Theme.OptionTemplate}"/>
 
       <StackPanel Grid.Row="2" Margin="0,12,0,0">
         <TextBlock x:Name="CurrentThemeText"
