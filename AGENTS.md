@@ -35,3 +35,20 @@ For new Revit code and newly added imports, favor:
 These conventions are prospective. Do not revise, normalize, or reorganize
 existing codebase imports or other existing code solely to conform to them
 unless the user specifically requests a refactor.
+
+## FamilySymbol/type-name access — mandatory for new Revit code
+
+- Do not rely on `element.Name` or `family_symbol.Name` in IronPython; the
+  CLR property binding is not reliable in Revit 2024.
+- Use the shared `revit_helpers.get_family_symbol_name()` helper for display
+  type names. Its first attempt must be `DB.Element.Name.__get__(family_symbol)`.
+- For a `FamilySymbol` fallback, read
+  `DB.BuiltInParameter.SYMBOL_NAME_PARAM` as `AsString()` or
+  `AsValueString()`. `SYMBOL_NAME_PARAM` is a type-name fallback only; it is
+  not the instance type-reference parameter.
+- For a `FamilyInstance`, resolve its FamilySymbol first. If that path fails,
+  use `DB.BuiltInParameter.ELEM_TYPE_PARAM` on the instance, preferring
+  `AsValueString()` and otherwise resolving its native `ElementId` through the
+  active document. `ELEM_TYPE_PARAM` is not available on a FamilySymbol.
+- Keep the `ElementId` native while resolving it through Revit. Convert it to
+  a numeric value only at serialization, logging, or other DTO boundaries.

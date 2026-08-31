@@ -257,31 +257,120 @@ def get_parameter_text(element, name, include_type=False, case_insensitive=True,
         return default
 
 
+def _is_family_symbol(element):
+    """Return whether an element is a FamilySymbol without assuming the class exists."""
+    family_symbol_type = getattr(DB, "FamilySymbol", None)
+    if family_symbol_type is None or element is None:
+        return False
+    try:
+        return isinstance(element, family_symbol_type)
+    except Exception:
+        return False
+
+
+def _element_name_descriptor_value(element):
+    """Read Element.Name through the CLR descriptor, bypassing IronPython Name binding."""
+    if element is None:
+        return ""
+    try:
+        name = DB.Element.Name.__get__(element)
+        if name:
+            return str(name)
+    except Exception:
+        pass
+    return ""
+
+
+def _builtin_parameter(element, parameter_name):
+    """Return a built-in parameter when the current Revit version exposes it."""
+    if element is None:
+        return None
+    try:
+        built_in = getattr(DB.BuiltInParameter, parameter_name)
+    except Exception:
+        return None
+    try:
+        return element.get_Parameter(built_in)
+    except Exception:
+        return None
+
+
+def _parameter_display_text(parameter):
+    """Read a parameter as display text across string/value-string storage."""
+    if parameter is None:
+        return ""
+    for method_name in ("AsString", "AsValueString"):
+        try:
+            value = getattr(parameter, method_name)()
+            if value:
+                return str(value)
+        except Exception:
+            pass
+    return ""
+
+
+def _family_symbol_type_name(family_symbol):
+    """Resolve a FamilySymbol type name using Revit 2024-safe access order."""
+    if family_symbol is None:
+        return ""
+    name = _element_name_descriptor_value(family_symbol)
+    if name:
+        return name
+    # SYMBOL_NAME_PARAM is a FamilySymbol fallback.  It is not the instance
+    # type-reference parameter and should not be queried on FamilyInstance.
+    return _parameter_display_text(
+        _builtin_parameter(family_symbol, "SYMBOL_NAME_PARAM")
+    )
+
+
+def _instance_type_parameter_name(instance, doc=None):
+    """Resolve an instance type through ELEM_TYPE_PARAM when needed."""
+    parameter = _builtin_parameter(instance, "ELEM_TYPE_PARAM")
+    if parameter is None:
+        return ""
+
+    # Revit may expose the type reference directly as a formatted value.
+    name = _parameter_display_text(parameter)
+    if name:
+        return name
+
+    # Otherwise it is an ElementId.  Keep it native while resolving it in the
+    # document, then use the FamilySymbol resolver above.
+    try:
+        type_id = parameter.AsElementId()
+    except Exception:
+        type_id = None
+    if type_id is None or doc is None:
+        return ""
+    try:
+        type_element = doc.GetElement(type_id)
+    except Exception:
+        type_element = None
+    if _is_family_symbol(type_element):
+        return _family_symbol_type_name(type_element)
+    return _element_name_descriptor_value(type_element)
+
+
 def get_family_symbol_name(element, doc=None, fallback=""):
-    """Return a family/type display name for an element."""
+    """Return a FamilySymbol type name using IronPython-safe Revit access."""
     if element is None:
         return fallback
-    type_element = get_type_element(element, doc=doc)
-    for candidate in (type_element, element):
-        if candidate is None:
-            continue
-        try:
-            name = getattr(candidate, "Name", None)
-            if name:
-                return str(name)
-        except Exception:
-            pass
-        try:
-            family_name = get_parameter_text(
-                candidate,
-                "Type Name",
-                include_type=False,
-                case_insensitive=True,
-                doc=doc,
-                default="",
-            )
-            if family_name:
-                return family_name
-        except Exception:
-            pass
-    return fallback
+
+    is_symbol = _is_family_symbol(element)
+    family_symbol = element if is_symbol else get_type_element(element, doc=doc)
+    if family_symbol is not None:
+        name = _family_symbol_type_name(family_symbol)
+        if name:
+            return name
+
+    # ELEM_TYPE_PARAM belongs to instances, not FamilySymbols.  Use it only
+    # after the resolved FamilySymbol path has failed.
+    if not is_symbol:
+        name = _instance_type_parameter_name(element, doc=doc)
+        if name:
+            return name
+
+    # Preserve a useful fallback for non-FamilySymbol ElementType callers
+    # (for example tag types) without relying on IronPython's .Name property.
+    name = _element_name_descriptor_value(element)
+    return name or fallback

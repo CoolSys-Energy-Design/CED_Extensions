@@ -48,15 +48,10 @@ class RevitCircuitWriter(object):
             return fixture_count, equipment_count
 
         doc = getattr(circuit, 'Document', None)
-        fixture_category_values = set(
-            [
-                category_utils.category_id_value(bic)
-                for bic in category_utils.get_fixture_device_categories(doc=doc)
-            ]
+        fixture_categories = set(
+            category_utils.get_fixture_device_categories(doc=doc)
         )
-        equipment_category_values = category_utils.category_id_values(
-            category_utils.get_equipment_category_ids()
-        )
+        equipment_category = DB.BuiltInCategory.OST_ElectricalEquipment
 
         if connected_elements is None:
             try:
@@ -78,9 +73,9 @@ class RevitCircuitWriter(object):
             if not cat:
                 continue
 
-            cat_id_value = category_utils.category_id_value(cat.Id)
-            is_fixture = cat_id_value in fixture_category_values
-            is_equipment = cat_id_value in equipment_category_values
+            built_in_category = category_utils.get_built_in_category(cat)
+            is_fixture = built_in_category in fixture_categories
+            is_equipment = built_in_category == equipment_category
 
             if not (is_fixture or is_equipment):
                 continue
