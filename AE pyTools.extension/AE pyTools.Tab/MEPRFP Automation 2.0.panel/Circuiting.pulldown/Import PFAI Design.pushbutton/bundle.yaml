@@ -1,0 +1,8 @@
+title: "Import\nPFAI Design"
+tooltip: |
+  Place, parameterise, circuit, keynote and tag a whole PFAI power plan
+  from an Excel workbook. Four sheets: Panels, Devices, Circuits,
+  Keynotes. Keynotes are always GA_Keynote Symbol_CED - any other family
+  in the workbook is refused. Four transactions in one undo step;
+  everything is stamped PFAI so a re-import replaces its own work.
+is_beta: false
