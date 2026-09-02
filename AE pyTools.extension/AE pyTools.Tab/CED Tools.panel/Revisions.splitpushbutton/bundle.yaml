@@ -1,0 +1,4 @@
+layout:
+  - RevisionManager
+  - RevisionReport
+  - ListRevCloudIssues
