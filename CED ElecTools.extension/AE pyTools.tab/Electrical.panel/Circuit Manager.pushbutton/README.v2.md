@@ -1,3 +1,29 @@
+# Guided Tour ("Show Me Around")
+
+New to Circuit Manager? **Right-click the Circuit Manager button on the ribbon
+and choose Tutorial.** (Shift+Click the button does the same thing.)
+
+The Colonel walks you through the tool end to end in 24 steps, and each step
+puts a spotlight on the actual control in the live pane, so you are reading
+about the button you are looking at. Use Next / Back, or the chapter dropdown
+to jump straight to a topic. The tour is read-only - it never touches the model.
+
+Files behind it, all next to this README:
+
+| File | Purpose |
+| --- | --- |
+| `tutorial_content.py` | The narration. Plain data - edit this to change what the tour says. |
+| `tutorial_guide.py` | Tour window + the spotlight overlay drawn inside the pane. |
+| `TutorialGuideWindow.xaml` | Tour window layout. |
+| `colonel_mascot.svg` | Mascot artwork, source of truth. |
+| `ColonelMascot.xaml` | WPF mirror of the SVG (`CED.Colonel.Image`, `CED.Colonel.Glyph`). |
+| `ribbon_context_menu.py` | The right-click hook; installed from the extension `startup.py`. |
+| `config.py` | Shift+Click entry point. |
+
+To add or reword a step, edit `tutorial_content.py` only. `target` is the
+`Name` of an element in `CircuitBrowserPanel.xaml`; a name that does not
+resolve degrades to a narration-only step rather than failing.
+
 # Circuit Browser (User Guide)
 
 ## What This Tool Does

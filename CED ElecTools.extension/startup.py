@@ -156,16 +156,19 @@ def _seed_runtime_paths():
         pass
 
 
-def _find_circuit_manager_panel_path():
+def _circuit_manager_button_dir():
     return os.path.abspath(
         os.path.join(
             _extension_root(),
             "AE pyTools.tab",
             "Electrical.panel",
             "Circuit Manager.pushbutton",
-            "CircuitBrowserPanel.py",
         )
     )
+
+
+def _find_circuit_manager_panel_path():
+    return os.path.join(_circuit_manager_button_dir(), "CircuitBrowserPanel.py")
 
 
 def _register_circuit_manager_panel():
@@ -202,5 +205,29 @@ def _register_circuit_manager_panel():
         logger.warning("Failed to register Circuit Manager panel: %s", exc)
 
 
+def _install_circuit_manager_tutorial_menu():
+    """Wire the right-click "Tutorial" item onto the Circuit Manager button.
+
+    The ribbon does not exist yet at startup - pyRevit builds it after the
+    startup scripts run - so the hook attaches to the AdWindows RibbonControl
+    and resolves the button lazily on each right-click.
+    """
+    logger = script.get_logger()
+    module_path = os.path.join(_circuit_manager_button_dir(), "ribbon_context_menu.py")
+    if not os.path.exists(module_path):
+        logger.warning("Circuit Manager tutorial menu module not found: %s", module_path)
+        return
+    try:
+        menu_module = imp.load_source(
+            "ced_electools_circuit_manager_ribbon_menu",
+            module_path,
+        )
+        menu_module.install(_circuit_manager_button_dir())
+        logger.info("Circuit Manager tutorial right-click menu installed.")
+    except Exception as exc:
+        logger.warning("Circuit Manager tutorial right-click menu failed: %s", exc)
+
+
 _seed_runtime_paths()
 _register_circuit_manager_panel()
+_install_circuit_manager_tutorial_menu()
