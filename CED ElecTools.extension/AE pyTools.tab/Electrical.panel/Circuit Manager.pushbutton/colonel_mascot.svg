@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  CED Circuit Manager tutorial mascot - "The Colonel".
+  Original artwork. Source of truth for ColonelMascot.xaml: the path data in
+  this file is copied verbatim into the WPF GeometryDrawing entries there,
+  so edit here first, then mirror the "d" strings across.
+
+  The head is an ellipse centred (100,92) with radii 44 x 50, so it spans
+  x 56..144 and y 42..142. Everything else is positioned against that.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 220" width="200" height="220">
+  <g id="colonel">
+    <!-- neck -->
+    <path d="M87,146 C87,162 87,172 86,178 C90,183 110,183 114,178 C113,172 113,162 113,146 Z" fill="#E3AE85"/>
+    <!-- white jacket -->
+    <path d="M100,174 C76,176 54,186 44,200 C38,209 34,215 34,220 L166,220 C166,215 162,209 156,200 C146,186 124,176 100,174 Z" fill="#FBFBF8" stroke="#D2D2CB" stroke-width="2"/>
+    <!-- lapels -->
+    <path d="M87,180 L73,187 L81,220 L100,209 Z" fill="#EDEDE7"/>
+    <path d="M113,180 L127,187 L119,220 L100,209 Z" fill="#EDEDE7"/>
+    <!-- shirt front -->
+    <path d="M100,178 L87,184 L100,209 L113,184 Z" fill="#FFFFFF" stroke="#DCDCD5" stroke-width="1.5"/>
+    <!-- string tie -->
+    <path d="M100,188 L85,181 L83,197 Z" fill="#1E1E1E"/>
+    <path d="M100,188 L115,181 L117,197 Z" fill="#1E1E1E"/>
+    <path d="M95.5,188 A4.5,4.5 0 1 0 104.5,188 A4.5,4.5 0 1 0 95.5,188 Z" fill="#1E1E1E"/>
+    <!-- hair: one horseshoe band drawn BEHIND the head, so only the fringe and
+         the sideburns show around the face silhouette -->
+    <path d="M50,126 C44,96 46,60 68,44 C78,36 88,30 100,30 C112,30 122,36 132,44 C154,60 156,96 150,126 C147,136 141,140 137,138 C142,120 143,92 138,74 C132,58 118,52 100,52 C82,52 68,58 62,74 C57,92 58,120 63,138 C59,140 53,136 50,126 Z" fill="#F6F6F3" stroke="#DCDCD6" stroke-width="1.5"/>
+    <!-- head -->
+    <path d="M56,92 A44,50 0 1 0 144,92 A44,50 0 1 0 56,92 Z" fill="#F5C7A2"/>
+    <!-- brows -->
+    <path d="M67,77 C74,71 86,70 93,75" fill="none" stroke="#ECECE6" stroke-width="5" stroke-linecap="round"/>
+    <path d="M133,77 C126,71 114,70 107,75" fill="none" stroke="#ECECE6" stroke-width="5" stroke-linecap="round"/>
+    <!-- nose -->
+    <path d="M100,99 C96,108 94,114 97,117 C99,119 101,119 103,117 C106,114 104,108 100,99 Z" fill="#E9B58C"/>
+    <!-- eyes -->
+    <path d="M75,94 A4,4 0 1 0 83,94 A4,4 0 1 0 75,94 Z" fill="#2B2B2B"/>
+    <path d="M117,94 A4,4 0 1 0 125,94 A4,4 0 1 0 117,94 Z" fill="#2B2B2B"/>
+    <!-- spectacles -->
+    <path d="M63,93 A15,15 0 1 0 93,93 A15,15 0 1 0 63,93 Z" fill="#FFFFFF" fill-opacity="0.15" stroke="#4A4A4A" stroke-width="3"/>
+    <path d="M107,93 A15,15 0 1 0 137,93 A15,15 0 1 0 107,93 Z" fill="#FFFFFF" fill-opacity="0.15" stroke="#4A4A4A" stroke-width="3"/>
+    <path d="M93,91 C97,87 103,87 107,91" fill="none" stroke="#4A4A4A" stroke-width="3"/>
+    <path d="M63,91 L52,87" fill="none" stroke="#4A4A4A" stroke-width="3"/>
+    <path d="M137,91 L148,87" fill="none" stroke="#4A4A4A" stroke-width="3"/>
+    <!-- moustache -->
+    <path d="M100,118 C93,112 80,113 73,121 C80,130 93,131 100,125 C107,131 120,130 127,121 C120,113 107,112 100,118 Z" fill="#F6F6F3" stroke="#DCDCD6" stroke-width="1.5"/>
+    <!-- mouth -->
+    <path d="M93,134 C96,138 104,138 107,134" fill="none" stroke="#C4885F" stroke-width="2.5" stroke-linecap="round"/>
+    <!-- goatee -->
+    <path d="M100,138 C90,141 86,149 88,158 C90,168 100,172 100,172 C100,172 110,168 112,158 C114,149 110,141 100,138 Z" fill="#F6F6F3" stroke="#DCDCD6" stroke-width="1.5"/>
+  </g>
+</svg>
