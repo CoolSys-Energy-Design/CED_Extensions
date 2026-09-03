@@ -11,7 +11,7 @@ audience: [all]
 model_impact: Creates tag elements in the active view.
 keywords: [tags, example, placement, leaders, rotation, family instances]
 aliases: []
-last_verified: "2026-08-24"
+last_verified: "2026-08-31"
 ---
 
 # Tag by Example
@@ -34,9 +34,11 @@ Choose how the target components are collected:
 | **All visible elements of the same type** | Visible components with the reference host's exact Revit type. | Standardizing a repeated equipment or fixture type. |
 | **All visible elements of the same family** | Visible components in the same family, including other types. | Applying a consistent convention across a family. |
 | **All visible elements of the same category** | Visible components in the same category. | Broad category-level tagging. |
-| **User selection** | A set you create with **New**, adjust with **Edit**, and inspect with **Preview Selection**. | Exception cases or an intentionally limited group. |
+| **User selection** | A set you create with **New** or capture from Revit with **Use Current Selection**. Use **Clear** to reset it. | Exception cases or an intentionally limited group. |
 
 Automatic modes search only the active view. The original reference host, hidden components, unsupported hosts, and incompatible targets are excluded. **Include nested family instances** adds visible, independently referenceable nested components, but some nested families cannot be tagged reliably.
+
+In **User selection** mode, **Use Current Selection** evaluates everything currently selected in Revit. Elements matching the reference host category and the supported host rules are valid targets. Other elements remain visible in the selected/valid/invalid counts but are excluded from tag creation. **Clear** resets the tool's saved manual targets without changing the active Revit selection.
 
 ## Control placement and leaders
 

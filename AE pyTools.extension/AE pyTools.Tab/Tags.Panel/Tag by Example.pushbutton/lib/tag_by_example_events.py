@@ -6,7 +6,6 @@ import math
 from Autodesk.Revit.Exceptions import OperationCanceledException
 from Autodesk.Revit.UI.Selection import ObjectType
 from System import EventHandler
-from System.Collections.Generic import List
 from pyrevit import revit, DB, UI, script
 
 from Snippets import revit_helpers
@@ -97,9 +96,8 @@ def _unique_integer_values(values):
     result = []
     seen_values = set()
     for value in list(values or []):
-        try:
-            integer_value = int(value)
-        except Exception:
+        integer_value = revit_helpers.coerce_elementid_value(value, default=0)
+        if integer_value <= 0:
             continue
         if integer_value not in seen_values:
             seen_values.add(integer_value)
@@ -180,7 +178,8 @@ def _resolve_reference_set(document, gateway):
     return examples
 
 
-def _candidate_ids(document, view, example_data, mode, include_nested, manual_ids):
+def _candidate_ids(document, view, example_data, mode, include_nested, manual_ids,
+                   require_host_category=False):
     candidates = []
     skipped = []
     seen_ids = set()
@@ -188,8 +187,7 @@ def _candidate_ids(document, view, example_data, mode, include_nested, manual_id
     allow_any_family = any([
         bool(example_item.get("is_multi_category", False))
         for example_item in example_data
-    ])
-
+    ]) and not bool(require_host_category)
     if mode == "manual":
         source_elements = []
         for value in list(manual_ids or []):
@@ -573,26 +571,6 @@ def _create_tags(document, view, proposals, options, actions):
     return created, duplicates, existing_skips, failures, warnings
 
 
-def _selection_id_list(values):
-    result = List[DB.ElementId]()
-    for value in _unique_integer_values(values):
-        result.Add(_element_id(value))
-    return result
-
-
-def _selection_reference_list(document, values):
-    result = List[DB.Reference]()
-    for value in _unique_integer_values(values):
-        element = document.GetElement(_element_id(value))
-        if element is None:
-            continue
-        try:
-            result.Add(DB.Reference(element))
-        except Exception:
-            continue
-    return result
-
-
 def _selected_example_ids(document, view, ui_document):
     """Return supported selected tags only when they share one local host.
 
@@ -652,6 +630,7 @@ class TagByExampleExternalEventGateway(object):
         self.example_tag_ids = _unique_integer_values(initial_tag_ids or [])
         self.example_tag_id = self.example_tag_ids[0] if self.example_tag_ids else None
         self.manual_target_ids = []
+        self.manual_require_host_category = False
         self.pending = None
         self.ui_application = ui_application
         self.show_output_report = bool(show_output_report)
@@ -725,6 +704,7 @@ class TagByExampleExternalEventGateway(object):
                 return
             self.active_view_id = active_view_id
             self.manual_target_ids = []
+            self.manual_require_host_category = False
             self.window.receive_result("lifecycle", "view_activated", {
                 "view_supported": is_supported_tag_view(active_view),
                 "view_name": _safe_view_name(active_view),
@@ -781,11 +761,13 @@ class TagByExampleExternalEventGateway(object):
         self.example_tag_id = self.example_tag_ids[0] if self.example_tag_ids else None
         self.owner_view_id = id_value(owner_view_id)
         self.manual_target_ids = []
+        self.manual_require_host_category = False
 
     def clear_examples(self):
         self.example_tag_ids = []
         self.example_tag_id = None
         self.manual_target_ids = []
+        self.manual_require_host_category = False
 
     def raise_action(self, action_name, payload=None):
         try:
@@ -830,6 +812,7 @@ class _TagByExampleHandler(UI.IExternalEventHandler):
         if view_changed:
             self.gateway.active_view_id = id_value(view.Id)
             self.gateway.manual_target_ids = []
+            self.gateway.manual_require_host_category = False
         if require_supported and not is_supported_tag_view(view):
             raise ValueError(
                 "Tag by Example is available only in floor plan, reflected ceiling "
@@ -974,9 +957,8 @@ class _TagByExampleHandler(UI.IExternalEventHandler):
             examples = self._examples(document)
 
             if action_name == "pick_targets":
-                selection_mode = str(payload.get("selection_mode") or "new")
-                if selection_mode == "new":
-                    self.gateway.manual_target_ids = []
+                self.gateway.manual_target_ids = []
+                self.gateway.manual_require_host_category = False
                 include_nested = bool(payload.get("options", {}).get(
                     "include_nested", False
                 ))
@@ -985,39 +967,18 @@ class _TagByExampleHandler(UI.IExternalEventHandler):
                     view,
                     examples[0]["host"],
                     include_nested,
-                    allow_any_family=any([
-                        bool(example_item.get("is_multi_category", False))
-                        for example_item in examples
-                    ]),
-                )
-                preselected = _selection_reference_list(
-                    document,
-                    self.gateway.manual_target_ids if selection_mode == "edit" else [],
                 )
                 try:
-                    if selection_mode == "edit" and preselected.Count > 0:
-                        try:
-                            picked_references = uidoc.Selection.PickObjects(
-                                ObjectType.Element,
-                                target_filter,
-                                "Edit targets: add or remove compatible elements, then finish.",
-                                preselected,
-                            )
-                        except TypeError:
-                            picked_references = uidoc.Selection.PickObjects(
-                                ObjectType.Element,
-                                target_filter,
-                                "Edit targets: select the final compatible target set, then finish.",
-                            )
-                    else:
-                        picked_references = uidoc.Selection.PickObjects(
-                            ObjectType.Element,
-                            target_filter,
-                            "Select compatible targets, then finish.",
-                        )
+                    picked_references = uidoc.Selection.PickObjects(
+                        ObjectType.Element,
+                        target_filter,
+                        "Select compatible targets, then finish.",
+                    )
                 except OperationCanceledException:
                     self._result("cancelled", action_name, {
                         "count": len(self.gateway.manual_target_ids),
+                        "invalid_count": 0,
+                        "selected_count": len(self.gateway.manual_target_ids),
                         "target_ids": list(self.gateway.manual_target_ids),
                     }, None)
                     return
@@ -1026,19 +987,58 @@ class _TagByExampleHandler(UI.IExternalEventHandler):
                     for picked_reference in picked_references
                 ])
                 self.gateway.manual_target_ids = picked_ids
+                targets, skipped = _candidate_ids(
+                    document,
+                    view,
+                    examples,
+                    "manual",
+                    include_nested,
+                    picked_ids,
+                )
                 self._result("ok", action_name, {
-                    "count": len(picked_ids),
+                    "count": len(targets),
+                    "invalid_count": len(skipped),
+                    "selected_count": len(picked_ids),
                     "target_ids": list(picked_ids),
-                    "selection_mode": selection_mode,
                 })
                 return
 
-            if action_name == "preview_selection":
-                uidoc.Selection.SetElementIds(
-                    _selection_id_list(self.gateway.manual_target_ids)
+            if action_name == "use_current_selection":
+                selected_ids = list(uidoc.Selection.GetElementIds())
+                selected_values = _unique_integer_values([
+                    revit_helpers.get_elementid_value(selected_id)
+                    for selected_id in selected_ids
+                ])
+                self.gateway.manual_target_ids = selected_values
+                self.gateway.manual_require_host_category = True
+                include_nested = bool(payload.get("options", {}).get(
+                    "include_nested", False
+                ))
+                targets, skipped = _candidate_ids(
+                    document,
+                    view,
+                    examples,
+                    "manual",
+                    include_nested,
+                    selected_values,
+                    require_host_category=True,
                 )
                 self._result("ok", action_name, {
-                    "count": len(self.gateway.manual_target_ids),
+                    "count": len(targets),
+                    "invalid_count": len(skipped),
+                    "selected_count": len(selected_values),
+                    "target_ids": list(selected_values),
+                })
+                return
+
+            if action_name == "clear_targets":
+                self.gateway.manual_target_ids = []
+                self.gateway.manual_require_host_category = False
+                self._result("ok", action_name, {
+                    "count": 0,
+                    "invalid_count": 0,
+                    "selected_count": 0,
+                    "target_ids": [],
                 })
                 return
 
@@ -1054,11 +1054,21 @@ class _TagByExampleHandler(UI.IExternalEventHandler):
                 mode,
                 bool(options.get("include_nested", False)),
                 manual_ids,
+                require_host_category=(
+                    mode == "manual"
+                    and self.gateway.manual_require_host_category
+                ),
             )
             if action_name == "refresh_targets":
                 self._result("ok", action_name, {
                     "count": len(targets),
                     "skipped_count": len(skipped),
+                    "invalid_count": len(skipped) if mode == "manual" else 0,
+                    "selected_count": (
+                        len(_unique_integer_values(manual_ids))
+                        if mode == "manual"
+                        else len(targets)
+                    ),
                 })
                 return
 
