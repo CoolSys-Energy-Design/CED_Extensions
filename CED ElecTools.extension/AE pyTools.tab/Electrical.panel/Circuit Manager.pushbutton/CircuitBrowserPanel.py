@@ -111,7 +111,7 @@ CALC_SETTINGS_XAML_PATH = os.path.abspath(
     )
 )
 CURRENT_THEME_MODE = "light"
-CURRENT_ACCENT_MODE = "blue"
+CURRENT_ACCENT_MODE = "neutral"
 THEME_CONFIG_SECTION = "AE-pyTools-Theme"
 THEME_CONFIG_THEME_KEY = "theme_mode"
 THEME_CONFIG_ACCENT_KEY = "accent_mode"
@@ -178,12 +178,12 @@ def _elid_from_value(value):
     return revit_helpers.elementid_from_value(value)
 
 
-def _normalize_accent_mode(value, fallback="blue"):
+def _normalize_accent_mode(value, fallback="neutral"):
     mode = str(value or fallback).strip().lower()
     return mode if mode in VALID_ACCENT_MODES else fallback
 
 
-def _load_theme_state_from_config(default_theme="light", default_accent="blue"):
+def _load_theme_state_from_config(default_theme="light", default_accent="neutral"):
     from UIClasses import load_theme_state_from_config
 
     return load_theme_state_from_config(
@@ -201,7 +201,7 @@ def _save_theme_state_to_config(theme_mode, accent_mode):
         if cfg is None:
             return
         cfg.set_option(THEME_CONFIG_THEME_KEY, _normalize_theme_mode(theme_mode, "light"))
-        cfg.set_option(THEME_CONFIG_ACCENT_KEY, _normalize_accent_mode(accent_mode, "blue"))
+        cfg.set_option(THEME_CONFIG_ACCENT_KEY, _normalize_accent_mode(accent_mode, "neutral"))
         script.save_config()
     except Exception:
         pass
@@ -353,7 +353,7 @@ def _try_apply_theme(owner):
             owner,
             resources_root=UI_RESOURCES_ROOT,
             theme_mode=getattr(owner, "_theme_mode", "light"),
-            accent_mode=getattr(owner, "_accent_mode", "blue"),
+            accent_mode=getattr(owner, "_accent_mode", "neutral"),
         )
     )
 
@@ -943,10 +943,10 @@ class CalculationPreviewRow(object):
 
 
 class CalculationPreviewWindow(forms.WPFWindow):
-    def __init__(self, preview_rows, theme_mode="light", accent_mode="blue"):
+    def __init__(self, preview_rows, theme_mode="light", accent_mode="neutral"):
         xaml = os.path.abspath(os.path.join(_THIS_DIR, "CircuitCalculationPreviewWindow.xaml"))
         self._theme_mode = theme_mode or "light"
-        self._accent_mode = accent_mode or "blue"
+        self._accent_mode = accent_mode or "neutral"
         self.decision = None
         forms.WPFWindow.__init__(self, xaml)
         _try_apply_theme(self)
@@ -976,10 +976,10 @@ class CalculationPreviewWindow(forms.WPFWindow):
 
 
 class CircuitRunSummaryWindow(forms.WPFWindow):
-    def __init__(self, locked_rows, runtime_rows, theme_mode="light", accent_mode="blue"):
+    def __init__(self, locked_rows, runtime_rows, theme_mode="light", accent_mode="neutral"):
         xaml = os.path.abspath(os.path.join(_THIS_DIR, "CircuitRunSummaryWindow.xaml"))
         self._theme_mode = theme_mode or "light"
-        self._accent_mode = accent_mode or "blue"
+        self._accent_mode = accent_mode or "neutral"
         forms.WPFWindow.__init__(self, xaml)
         _try_apply_theme(self)
         locked = [
@@ -1130,10 +1130,10 @@ class NeutralIGActionRow(object):
 
 
 class NeutralIGActionWindow(forms.WPFWindow):
-    def __init__(self, title, rows, preview_callback, apply_callback, theme_mode="light", accent_mode="blue"):
+    def __init__(self, title, rows, preview_callback, apply_callback, theme_mode="light", accent_mode="neutral"):
         xaml = os.path.abspath(os.path.join(_THIS_DIR, "CircuitNeutralIGActionWindow.xaml"))
         self._theme_mode = theme_mode or "light"
-        self._accent_mode = accent_mode or "blue"
+        self._accent_mode = accent_mode or "neutral"
         forms.WPFWindow.__init__(self, xaml)
         _try_apply_theme(self)
         self._rows = list(rows or [])
@@ -1479,10 +1479,10 @@ class BreakerActionRow(object):
 
 
 class BreakerActionWindow(forms.WPFWindow):
-    def __init__(self, rows, preview_apply_callback, apply_callback, theme_mode="light", accent_mode="blue"):
+    def __init__(self, rows, preview_apply_callback, apply_callback, theme_mode="light", accent_mode="neutral"):
         xaml = os.path.abspath(os.path.join(_THIS_DIR, "CircuitBreakerActionWindow.xaml"))
         self._theme_mode = theme_mode or "light"
-        self._accent_mode = accent_mode or "blue"
+        self._accent_mode = accent_mode or "neutral"
         forms.WPFWindow.__init__(self, xaml)
         _try_apply_theme(self)
         self._rows = list(rows or [])
@@ -1936,10 +1936,10 @@ class MarkExistingActionRow(object):
 
 
 class MarkExistingActionWindow(forms.WPFWindow):
-    def __init__(self, rows, preview_callback, apply_callback, theme_mode="light", accent_mode="blue"):
+    def __init__(self, rows, preview_callback, apply_callback, theme_mode="light", accent_mode="neutral"):
         xaml = os.path.abspath(os.path.join(_THIS_DIR, "CircuitMarkExistingActionWindow.xaml"))
         self._theme_mode = theme_mode or "light"
-        self._accent_mode = accent_mode or "blue"
+        self._accent_mode = accent_mode or "neutral"
         forms.WPFWindow.__init__(self, xaml)
         _try_apply_theme(self)
         self._rows = list(rows or [])
@@ -4368,7 +4368,7 @@ class CircuitBrowserPanel(forms.WPFPanel):
 
     def browser_accent_clicked(self, sender, args):
         global CURRENT_ACCENT_MODE
-        mode = str(getattr(sender, "Tag", "blue")).lower()
+        mode = str(getattr(sender, "Tag", "neutral")).lower()
         if mode not in ACCENT_BRUSH_KEY_MAP:
             return
         if self._accent_mode == mode:

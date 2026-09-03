@@ -20,8 +20,11 @@ for _assembly in (
     except Exception:
         pass
 
-from System import Action, Boolean, Int32
+from System import Action, Boolean, Int32, TimeSpan
 from System.Data import DataTable
+from System.Windows import Duration, UIElement, Visibility
+from System.Windows.Input import InputManager, Keyboard, KeyEventArgs
+from System.Windows.Media.Animation import DoubleAnimation
 
 from pyrevit import forms, script
 
@@ -30,6 +33,7 @@ from UIClasses import (
     FALLBACK_LAST_VALID,
     FilterableComboBox,
     resource_loader,
+    theme_manager,
 )
 from UIClasses import (
     THEME_CONFIG_ACCENT_KEY,
@@ -56,7 +60,7 @@ def _save_theme_state(theme_mode, accent_mode):
     )
     cfg.set_option(
         THEME_CONFIG_ACCENT_KEY,
-        resource_loader.normalize_accent_mode(accent_mode, "blue"),
+        resource_loader.normalize_accent_mode(accent_mode, "neutral"),
     )
     script.save_config()
     return True
@@ -99,7 +103,7 @@ class ThemePickerWindow(CEDWindowBase):
 
     theme_aware = True
     default_theme_mode = "light"
-    default_accent_mode = "blue"
+    default_accent_mode = "neutral"
 
     def __init__(self):
         CEDWindowBase.__init__(self, xaml_source=XAML_PATH, theme_aware=True)
@@ -115,6 +119,16 @@ class ThemePickerWindow(CEDWindowBase):
         self.preview_alternating_toggle = self.FindName("PreviewAlternatingToggle")
         self.current_theme_text = self.FindName("CurrentThemeText")
         self.apply_button = self.FindName("ApplyButton")
+        self.unlock_sequence_text = self.FindName("UnlockSequenceTextBox")
+        self.start_unlock_button = self.FindName("StartUnlockButton")
+        self.clear_unlock_button = self.FindName("ClearUnlockButton")
+        self.unlock_toast = self.FindName("UnlockToast")
+        self.unlock_toast_message = self.FindName("UnlockToastMessage")
+        self._unlock_toast_animation = None
+        self._unlock_keys = []
+        self._unlock_key_debouncer = theme_manager.UnlockKeyDebouncer()
+        self._unlock_listening = False
+        self._unlock_input_attached = False
 
         self._load_theme_options()
         self._load_filterable_combo()
@@ -128,11 +142,141 @@ class ThemePickerWindow(CEDWindowBase):
         self.preview_alternating_toggle.Unchecked += self._on_alternating_rows_changed
         self.preview_slider.PreviewMouseLeftButtonDown += self._on_preview_slider_mouse_down
         self.apply_button.Click += self._apply_theme_clicked
+        self.start_unlock_button.Click += self._start_unlock_capture
+        self.clear_unlock_button.Click += self._clear_unlock_capture
+        self.Closed += self._on_window_closed
         self._is_loading = False
 
     def _load_theme_options(self):
         """Populate the selector from the shared loader-owned descriptors."""
+        selected_mode = getattr(self, "_theme_mode", "light")
         self.theme_picker.ItemsSource = resource_loader.theme_descriptors()
+        selected = None
+        for item in self.theme_picker.Items:
+            if resource_loader.theme_descriptor_mode(item, "light") == selected_mode:
+                selected = item
+                break
+        if selected is not None:
+            self.theme_picker.SelectedItem = selected
+
+    def _attach_unlock_input(self):
+        if self._unlock_input_attached:
+            return
+        InputManager.Current.PreProcessInput += self._on_unlock_input
+        self._unlock_input_attached = True
+
+    def _detach_unlock_input(self):
+        if not self._unlock_input_attached:
+            return
+        try:
+            InputManager.Current.PreProcessInput -= self._on_unlock_input
+        except Exception:
+            pass
+        self._unlock_input_attached = False
+
+    def _start_unlock_capture(self, sender, args):
+        """Begin window-scoped key capture without exposing known codes."""
+        self._unlock_keys = []
+        self._unlock_key_debouncer.reset()
+        self.unlock_sequence_text.Text = ""
+        self._unlock_listening = True
+        self.start_unlock_button.Content = "◆"
+        self._attach_unlock_input()
+        try:
+            self.unlock_sequence_text.Focus()
+        except Exception:
+            pass
+
+    def _clear_unlock_capture(self, sender, args):
+        """Clear the displayed attempt while leaving active capture running."""
+        self._unlock_keys = []
+        self._unlock_key_debouncer.reset()
+        self.unlock_sequence_text.Text = ""
+
+    def _on_unlock_input(self, sender, args):
+        if not self._unlock_listening or not bool(getattr(self, "IsActive", False)):
+            return
+        try:
+            input_event = args.StagingItem.Input
+        except Exception:
+            return
+        if not isinstance(input_event, KeyEventArgs):
+            return
+        key_value = getattr(input_event, "Key", None)
+        if str(key_value) == "System":
+            key_value = getattr(input_event, "SystemKey", key_value)
+        routed_event = getattr(input_event, "RoutedEvent", None)
+        if routed_event == Keyboard.KeyUpEvent:
+            self._unlock_key_debouncer.release(key_value)
+            return
+        if routed_event != Keyboard.KeyDownEvent:
+            return
+        key = self._unlock_key_debouncer.press(
+            key_value,
+            is_repeat=bool(getattr(input_event, "IsRepeat", False)),
+        )
+        if not key:
+            return
+        self._unlock_keys.append(key)
+        self.unlock_sequence_text.Text = " ".join(
+            theme_manager.display_unlock_key(item)
+            for item in self._unlock_keys
+        )
+        code = theme_manager.match_unlock_code(self._unlock_keys)
+        if code is None:
+            return
+        try:
+            input_event.Handled = True
+        except Exception:
+            pass
+        self._unlock_listening = False
+        self._unlock_key_debouncer.reset()
+        self.start_unlock_button.Content = "◇"
+        self._detach_unlock_input()
+        self.Dispatcher.BeginInvoke(Action(lambda: self._complete_theme_unlock(code)))
+
+    def _complete_theme_unlock(self, code):
+        """Persist and display an unlock after WPF finishes routing the key event."""
+        descriptor = theme_manager.unlock_theme(code)
+        if descriptor is None:
+            forms.alert(
+                "The theme code was recognized, but the unlock could not be saved.",
+                title="CED Tool Theme",
+                warn_icon=True,
+            )
+            return
+        self._is_loading = True
+        self._load_theme_options()
+        self._is_loading = False
+        self._show_unlock_toast(code.SuccessMessage)
+
+    def _show_unlock_toast(self, message):
+        """Overlay a themed success message, then fade it away in place."""
+        try:
+            self.unlock_toast.BeginAnimation(UIElement.OpacityProperty, None)
+        except Exception:
+            pass
+        self.unlock_toast_message.Text = str(message or "Theme unlocked.")
+        self.unlock_toast.Visibility = Visibility.Visible
+        self.unlock_toast.Opacity = 1.0
+
+        fade = DoubleAnimation()
+        fade.From = 1.0
+        fade.To = 0.0
+        fade.BeginTime = TimeSpan.FromSeconds(2.0)
+        fade.Duration = Duration(TimeSpan.FromMilliseconds(500.0))
+        fade.Completed += self._hide_unlock_toast
+        self._unlock_toast_animation = fade
+        self.unlock_toast.BeginAnimation(UIElement.OpacityProperty, fade)
+
+    def _hide_unlock_toast(self, sender, args):
+        self.unlock_toast.Visibility = Visibility.Collapsed
+        self._unlock_toast_animation = None
+
+    def _on_window_closed(self, sender, args):
+        self._unlock_listening = False
+        self._unlock_key_debouncer.reset()
+        self._detach_unlock_input()
 
     def _load_filterable_combo(self):
         """Load a realistic option set into the editable filter demo."""

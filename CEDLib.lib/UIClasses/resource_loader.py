@@ -14,40 +14,9 @@ for _wpf_asm in ("PresentationFramework", "PresentationCore", "WindowsBase"):
 
 from System.Windows import DependencyProperty, ResourceDictionary
 
+from UIClasses import theme_manager
 
-class ThemeDescriptor(object):
-    """Metadata for one theme option and the dictionaries it loads."""
-
-    def __init__(self, mode, label, description, relative_paths):
-        self.Mode = mode
-        self.Label = label
-        self.Description = description
-        self.RelativePaths = tuple(relative_paths or ())
-
-    @property
-    def mode(self):
-        return self.Mode
-
-    @property
-    def label(self):
-        return self.Label
-
-    @property
-    def description(self):
-        return self.Description
-
-    @property
-    def relative_paths(self):
-        return self.RelativePaths
-
-    def __getitem__(self, key):
-        values = {
-            "mode": self.Mode,
-            "label": self.Label,
-            "description": self.Description,
-            "relative_paths": self.RelativePaths,
-        }
-        return values[key]
+ThemeDescriptor = theme_manager.ThemeDescriptor
 
 
 DEFAULT_BASE_RESOURCE_RELATIVE_PATHS = (
@@ -71,39 +40,7 @@ DEFAULT_BASE_RESOURCE_RELATIVE_PATHS = (
     os.path.join("Controls", "FilterableComboBox.xaml"),
 )
 
-THEME_DESCRIPTORS = (
-    ThemeDescriptor(
-        "light",
-        "Light",
-        "Bright workspace",
-        (os.path.join("Themes", "CEDTheme.Light.xaml"),),
-    ),
-    ThemeDescriptor(
-        "dark",
-        "Dark",
-        "Deep blue-gray",
-        (
-            os.path.join("Themes", "CEDTheme.Dark.xaml"),
-            os.path.join("Themes", "CEDTheme.Light.xaml"),
-        ),
-    ),
-    ThemeDescriptor(
-        "dark_alt",
-        "Dark Alt",
-        "Neutral dark",
-        (
-            os.path.join("Themes", "CEDTheme.DarkAlt.xaml"),
-            os.path.join("Themes", "CEDTheme.Dark.xaml"),
-            os.path.join("Themes", "CEDTheme.Light.xaml"),
-        ),
-    ),
-    ThemeDescriptor(
-        "cursed",
-        "Cursed",
-        "Neon goblin mode",
-        (os.path.join("Themes", "CEDTheme.Cursed.xaml"),),
-    ),
-)
+THEME_DESCRIPTORS = theme_manager.ALL_THEME_DESCRIPTORS
 
 THEME_RELATIVE_PATHS = dict(
     (descriptor.Mode, descriptor.RelativePaths)
@@ -120,8 +57,13 @@ VALID_ACCENT_MODES = tuple(sorted(ACCENT_BRUSH_KEY_MAP.keys()))
 
 
 def theme_descriptors():
-    """Return the loader-owned theme metadata consumed by tool selectors."""
-    return THEME_DESCRIPTORS
+    """Return selectable theme metadata consumed by existing tool selectors."""
+    return theme_manager.theme_descriptors()
+
+
+def all_theme_descriptors():
+    """Return loader metadata, including themes hidden behind unlock codes."""
+    return theme_manager.all_theme_descriptors()
 
 
 def theme_descriptor_value(descriptor, attribute, fallback=None):
@@ -159,12 +101,12 @@ def normalize_theme_mode(value, fallback="light"):
     return fb if fb in THEME_RELATIVE_PATHS else "light"
 
 
-def normalize_accent_mode(value, fallback="blue"):
+def normalize_accent_mode(value, fallback=theme_manager.DEFAULT_ACCENT_MODE):
     mode = str(value or fallback).strip().lower()
     if mode in ACCENT_BRUSH_KEY_MAP:
         return mode
-    fb = str(fallback or "blue").strip().lower()
-    return fb if fb in ACCENT_BRUSH_KEY_MAP else "blue"
+    fb = str(fallback or theme_manager.DEFAULT_ACCENT_MODE).strip().lower()
+    return fb if fb in ACCENT_BRUSH_KEY_MAP else theme_manager.DEFAULT_ACCENT_MODE
 
 
 def _normalize_path(path):
@@ -291,11 +233,11 @@ def apply_accent(owner, accent_mode):
         resources = getattr(owner, "Resources", None)
         if resources is None:
             return False
-        mode = normalize_accent_mode(accent_mode, "blue")
-        key = ACCENT_BRUSH_KEY_MAP.get(mode) or ACCENT_BRUSH_KEY_MAP.get("blue")
+        mode = normalize_accent_mode(accent_mode, theme_manager.DEFAULT_ACCENT_MODE)
+        key = ACCENT_BRUSH_KEY_MAP.get(mode) or ACCENT_BRUSH_KEY_MAP.get(theme_manager.DEFAULT_ACCENT_MODE)
         brush = try_find_resource(owner, key)
         if brush is None:
-            brush = try_find_resource(owner, ACCENT_BRUSH_KEY_MAP.get("blue"))
+            brush = try_find_resource(owner, ACCENT_BRUSH_KEY_MAP.get(theme_manager.DEFAULT_ACCENT_MODE))
         if brush is None:
             return False
         resources["CED.Brush.Accent"] = brush
@@ -304,10 +246,11 @@ def apply_accent(owner, accent_mode):
         return False
 
 
-def apply_theme(owner, resources_root, theme_mode="light", accent_mode="blue", base_relative_paths=None):
+def apply_theme(owner, resources_root, theme_mode="light", accent_mode=theme_manager.DEFAULT_ACCENT_MODE, base_relative_paths=None):
     try:
         ensure_base_resources(owner, resources_root, base_relative_paths)
-        dictionary = _load_theme_dictionary(resources_root, normalize_theme_mode(theme_mode, "light"))
+        available_mode = theme_manager.available_theme_mode(theme_mode, "light")
+        dictionary = _load_theme_dictionary(resources_root, available_mode)
         if dictionary is None:
             return False
         resources = getattr(owner, "Resources", None)
@@ -328,7 +271,7 @@ def apply_theme(owner, resources_root, theme_mode="light", accent_mode="blue", b
                     pass
         merged.Add(dictionary)
         owner._ced_theme_dictionary = dictionary
-        apply_accent(owner, normalize_accent_mode(accent_mode, "blue"))
+        apply_accent(owner, normalize_accent_mode(accent_mode, theme_manager.DEFAULT_ACCENT_MODE))
         return True
     except Exception:
         return False

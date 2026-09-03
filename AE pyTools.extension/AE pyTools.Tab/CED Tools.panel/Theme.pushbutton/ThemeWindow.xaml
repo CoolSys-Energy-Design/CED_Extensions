@@ -22,6 +22,7 @@
       </StackPanel>
     </DataTemplate>
   </Window.Resources>
+  <Grid>
   <Grid Margin="18">
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="*"/>
@@ -31,17 +32,17 @@
     <!-- One live swatch only. It redraws when a theme is picked at right. -->
     <Border Grid.Column="0"
             Margin="0,0,16,0"
-            Padding="16"
+            Padding="0"
             Background="{DynamicResource CED.Brush.Surface}"
             BorderBrush="{DynamicResource CED.Brush.CardBorder}"
             BorderThickness="1"
             CornerRadius="7">
       <ScrollViewer Style="{DynamicResource CED.ScrollViewer.Themed}"
                     Background="Transparent"
-                    Padding="0,0,4,0"
+                    Padding="0"
                     HorizontalScrollBarVisibility="Disabled"
                     VerticalScrollBarVisibility="Auto">
-        <StackPanel>
+      <StackPanel Margin="16,16,8,16">
           <TextBlock x:Name="PreviewTitle"
                      Text="Theme preview"
                      Style="{DynamicResource CED.Text.SectionHeader}"/>
@@ -67,6 +68,7 @@
               <RowDefinition Height="30"/>
               <RowDefinition Height="30"/>
               <RowDefinition Height="Auto"/>
+              <RowDefinition Height="34"/>
             </Grid.RowDefinitions>
             <TextBlock Text="Text box" Grid.Row="0" VerticalAlignment="Center" Style="{DynamicResource CED.Text.Body}"/>
             <TextBox Grid.Row="0" Grid.Column="1" Text="Preview text" IsReadOnly="True" Style="{DynamicResource CED.Input.TextBox}"/>
@@ -87,6 +89,38 @@
                        Style="{DynamicResource CED.Text.Caption}"
                        TextWrapping="Wrap"
                        Margin="0,1,0,0"/>
+            <TextBlock Text="Read Only"
+                       Grid.Row="4"
+                       VerticalAlignment="Center"
+                       Style="{DynamicResource CED.Text.Body}"/>
+            <Grid Grid.Row="4" Grid.Column="1" Margin="0,4,0,0">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="6"/>
+                <ColumnDefinition Width="28"/>
+                <ColumnDefinition Width="4"/>
+                <ColumnDefinition Width="28"/>
+              </Grid.ColumnDefinitions>
+              <TextBox x:Name="UnlockSequenceTextBox"
+                       IsReadOnly="True"
+                       Style="{DynamicResource CED.Input.TextBox.ReadOnly}"/>
+              <Button x:Name="StartUnlockButton"
+                      Grid.Column="2"
+                      Content="◇"
+                      Padding="0"
+                      Style="{DynamicResource CED.Button.Base}"/>
+              <Button x:Name="ClearUnlockButton"
+                      Grid.Column="4"
+                      Height="24"
+                      Padding="0"
+                      Style="{DynamicResource CED.Button.IconSmall}">
+                <Path Data="{DynamicResource CED.Icon.Close}"
+                      Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                      Width="11"
+                      Height="11"
+                      Stretch="Uniform"/>
+              </Button>
+            </Grid>
           </Grid>
 
           <StackPanel Orientation="Horizontal" Margin="0,5,0,5">
@@ -100,8 +134,17 @@
               <ColumnDefinition Width="86"/>
               <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <TextBlock Text="Slider" VerticalAlignment="Center" Style="{DynamicResource CED.Text.Body}"/>
-            <Slider x:Name="PreviewSlider" Grid.Column="1" Minimum="0" Maximum="100" Value="58" Style="{DynamicResource CED.Input.Slider}"/>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="30"/>
+              <RowDefinition Height="30"/>
+            </Grid.RowDefinitions>
+            <TextBlock Text="Slider" Grid.Row="0" VerticalAlignment="Center" Style="{DynamicResource CED.Text.Body}"/>
+            <Slider x:Name="PreviewSlider" Grid.Row="0" Grid.Column="1" Minimum="0" Maximum="100" Value="58" Style="{DynamicResource CED.Input.Slider}"/>
+            <TextBlock Text="Toggle" Grid.Row="1" VerticalAlignment="Center" Style="{DynamicResource CED.Text.Body}"/>
+            <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+              <CheckBox IsChecked="True" Style="{DynamicResource CED.Input.ToggleSwitch}"/>
+              <TextBlock Text="Enabled" Style="{DynamicResource CED.Text.Body}" VerticalAlignment="Center" Margin="8,0,0,0"/>
+            </StackPanel>
           </Grid>
 
           <Border Height="1" Background="{DynamicResource CED.Brush.SectionDivider}" Margin="0,0,0,12"/>
@@ -119,7 +162,7 @@
                       Style="{DynamicResource CED.Input.CheckBox}"/>
           </Grid>
           <DataGrid x:Name="PreviewDataGrid"
-                    Height="188"
+                    Height="154"
                     Margin="0,6,0,13"
                     AutoGenerateColumns="False"
                     HeadersVisibility="Column"
@@ -168,21 +211,6 @@
                      TextWrapping="Wrap"
                      Margin="0,-7,0,12"/>
 
-          <TextBlock Text="Other controls" Style="{DynamicResource CED.Text.Body}" FontWeight="SemiBold"/>
-          <Grid Margin="0,7,0,13">
-            <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="86"/>
-              <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-            <TextBlock Text="Toggle" VerticalAlignment="Center" Style="{DynamicResource CED.Text.Body}"/>
-            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-              <CheckBox IsChecked="True" Style="{DynamicResource CED.Input.ToggleSwitch}"/>
-              <TextBlock Text="Enabled" Style="{DynamicResource CED.Text.Body}" VerticalAlignment="Center" Margin="8,0,0,0"/>
-            </StackPanel>
-          </Grid>
-
-          <Border Height="1" Background="{DynamicResource CED.Brush.SectionDivider}" Margin="0,0,0,12"/>
-
           <TextBlock Text="Alerts" Style="{DynamicResource CED.Text.Body}" FontWeight="SemiBold" Margin="0,0,0,4"/>
           <Border Style="{DynamicResource CED.Alert.Success}" Margin="0,3">
             <Grid>
@@ -212,7 +240,7 @@
               <TextBlock Grid.Column="1" Text="Error — action could not finish" Style="{DynamicResource CED.Alert.Text.Error}" Margin="7,0,0,0"/>
             </Grid>
           </Border>
-        </StackPanel>
+      </StackPanel>
       </ScrollViewer>
     </Border>
 
@@ -245,5 +273,31 @@
                 Margin="0,10,0,0"/>
       </StackPanel>
     </Grid>
+  </Grid>
+
+  <Border x:Name="UnlockToast"
+          Width="360"
+          Margin="18,14,18,0"
+          HorizontalAlignment="Center"
+          VerticalAlignment="Top"
+          Panel.ZIndex="20"
+          IsHitTestVisible="False"
+          Opacity="0"
+          Visibility="Collapsed"
+          Style="{DynamicResource CED.Alert.Success}">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="24"/>
+        <ColumnDefinition Width="*"/>
+      </Grid.ColumnDefinitions>
+      <Path Data="{DynamicResource CED.Icon.Alert.Success}"
+            Style="{DynamicResource CED.Alert.Icon.Success}"/>
+      <TextBlock x:Name="UnlockToastMessage"
+                 Grid.Column="1"
+                 Margin="8,0,0,0"
+                 VerticalAlignment="Center"
+                 Style="{DynamicResource CED.Alert.Text.Success}"/>
+    </Grid>
+  </Border>
   </Grid>
 </Window>

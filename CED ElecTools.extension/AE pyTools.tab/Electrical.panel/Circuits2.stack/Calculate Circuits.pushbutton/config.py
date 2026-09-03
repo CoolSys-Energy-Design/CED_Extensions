@@ -49,7 +49,7 @@ UI_RESOURCES_ROOT = ui_pathing.resolve_ui_resources_root(LIB_ROOT)
 THEME_CONFIG_SECTION = "AE-pyTools-Theme"
 THEME_CONFIG_THEME_KEY = "theme_mode"
 THEME_CONFIG_ACCENT_KEY = "accent_mode"
-def _load_theme_state(default_theme="light", default_accent="blue"):
+def _load_theme_state(default_theme="light", default_accent="neutral"):
     from UIClasses import load_theme_state_from_config
 
     return load_theme_state_from_config(
@@ -63,7 +63,7 @@ def _save_theme_state(theme_mode, accent_mode):
     if cfg is None:
         return
     cfg.set_option(THEME_CONFIG_THEME_KEY, resource_loader.normalize_theme_mode(theme_mode, "light"))
-    cfg.set_option(THEME_CONFIG_ACCENT_KEY, resource_loader.normalize_accent_mode(accent_mode, "blue"))
+    cfg.set_option(THEME_CONFIG_ACCENT_KEY, resource_loader.normalize_accent_mode(accent_mode, "neutral"))
     script.save_config()
 
 
@@ -81,7 +81,7 @@ def _verify_project_parameters(doc, app, settings=None):
 class CircuitSettingsWindow(forms.WPFWindow):
     def __init__(self):
         forms.WPFWindow.__init__(self, XAML_PATH)
-        self._theme_mode, self._accent_mode = _load_theme_state("light", "blue")
+        self._theme_mode, self._accent_mode = _load_theme_state("light", "neutral")
         self._apply_theme()
         self._refresh_theme_brushes()
         self.doc = revit.doc

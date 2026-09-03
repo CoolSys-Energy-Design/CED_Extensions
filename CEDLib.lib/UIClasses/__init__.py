@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """UIClasses package exports."""
 
-from UIClasses import Resources, pathing, resource_loader
+from UIClasses import Resources, pathing, theme_manager, resource_loader
 from UIClasses.structured_search import (
     SearchFilter,
     SearchFilterDefinition,
@@ -46,6 +46,7 @@ __all__ = [
     "RevitThemeBridge",
     "pathing",
     "resource_loader",
+    "theme_manager",
     "SearchFilter",
     "SearchFilterDefinition",
     "SearchFilterToken",
