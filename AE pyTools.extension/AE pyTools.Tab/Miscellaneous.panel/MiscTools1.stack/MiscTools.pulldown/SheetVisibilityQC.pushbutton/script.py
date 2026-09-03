@@ -539,18 +539,12 @@ def _collect_ids_from_view(doc, view, category_filter, target_values=None, warni
     # iteration even though they are valid views on a sheet.  Use Revit's own
     # validity test before constructing the view-scoped collector.
     validity_check = getattr(DB.FilteredElementCollector, "IsViewValidForElementIteration", None)
-    if validity_check is not None:
-        try:
-            if not bool(validity_check(view.Id)):
-                warning_list.append(
-                    "Skipped {} because Revit does not support drawn-element "
-                    "iteration for this view type.".format(_view_name(view))
-                )
-                return set()
-        except Exception:
-            # Older Revit versions may not implement this check consistently;
-            # let the collector provide the definitive result in that case.
-            pass
+    if validity_check is not None and not bool(validity_check(doc, view.Id)):
+        warning_list.append(
+            "Skipped {} because Revit does not support drawn-element "
+            "iteration for this view type.".format(_view_name(view))
+        )
+        return set()
 
     collector = DB.FilteredElementCollector(doc, view.Id)
     filter_to_apply = category_filter
