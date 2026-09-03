@@ -3,6 +3,7 @@
 import os
 
 import clr
+import Autodesk.Revit.DB.Electrical as DBE
 
 for _wpf_asm in ("PresentationFramework", "PresentationCore", "WindowsBase"):
     try:
@@ -78,6 +79,7 @@ from Snippets.circuit_ui_actions import (
 )
 from UIClasses import resource_loader
 from alerts_browser_services import build_snapshot
+from alerts_browser_services import get_document_key
 from alerts_browser_services import recalculate_and_snapshot
 from alerts_browser_services import update_hidden_alert_types_and_snapshot
 
@@ -98,8 +100,9 @@ def _active_doc():
 
 
 class AlertsBrowserExternalEventGateway(object):
-    def __init__(self, logger=None):
+    def __init__(self, document_key="", logger=None):
         self._logger = logger
+        self._document_key = str(document_key or "")
         self._pending = None
         self._handler = _AlertsBrowserExternalEventHandler(self)
         self._event = ExternalEvent.Create(self._handler)
@@ -112,6 +115,14 @@ class AlertsBrowserExternalEventGateway(object):
 
     def is_busy(self):
         return self._pending is not None or self._is_event_pending()
+
+    def bind_document_key(self, document_key):
+        self._document_key = str(document_key or "")
+
+    def _bound_payload(self, payload=None):
+        data = dict(payload or {})
+        data["doc_key"] = self._document_key
+        return data
 
     def _raise(self, op_name, payload=None, callback=None):
         if self._pending is not None or self._is_event_pending():
@@ -134,21 +145,24 @@ class AlertsBrowserExternalEventGateway(object):
         return self._raise("refresh", callback=callback)
 
     def raise_recalculate(self, circuit_id, callback):
-        return self._raise("recalculate", payload={"circuit_id": int(circuit_id)}, callback=callback)
+        payload = self._bound_payload({
+            "circuit_id": revit_helpers.coerce_elementid_value(circuit_id),
+        })
+        return self._raise("recalculate", payload=payload, callback=callback)
 
     def raise_select(self, mode, circuit_id, callback=None):
         payload = {
             "mode": str(mode or ""),
-            "circuit_id": int(circuit_id or 0),
+            "circuit_id": revit_helpers.coerce_elementid_value(circuit_id),
         }
-        return self._raise("select", payload=payload, callback=callback)
+        return self._raise("select", payload=self._bound_payload(payload), callback=callback)
 
     def raise_set_hidden(self, circuit_id, hidden_definition_ids, callback):
         payload = {
-            "circuit_id": int(circuit_id or 0),
+            "circuit_id": revit_helpers.coerce_elementid_value(circuit_id),
             "hidden_definition_ids": list(hidden_definition_ids or []),
         }
-        return self._raise("set_hidden", payload=payload, callback=callback)
+        return self._raise("set_hidden", payload=self._bound_payload(payload), callback=callback)
 
     def _consume_pending(self):
         pending = self._pending
@@ -156,9 +170,36 @@ class AlertsBrowserExternalEventGateway(object):
         return pending
 
 
+class _DocumentContextChanged(Exception):
+    pass
+
+
 class _AlertsBrowserExternalEventHandler(IExternalEventHandler):
     def __init__(self, gateway):
         self._gateway = gateway
+
+    def _require_bound_document(self, doc, payload):
+        expected_key = str((payload or {}).get("doc_key") or "")
+        active_key = get_document_key(doc)
+        if (
+            doc is None
+            or not expected_key
+            or active_key != expected_key
+            or self._gateway._document_key != expected_key
+        ):
+            raise _DocumentContextChanged(
+                "The active document changed. Alerts Manager refreshed the active model; review the list and retry."
+            )
+        return doc
+
+    def _require_circuit(self, doc, payload):
+        circuit_id = revit_helpers.coerce_elementid_value((payload or {}).get("circuit_id"))
+        if circuit_id <= 0:
+            raise Exception("No circuit selected.")
+        circuit = doc.GetElement(_idfrom(circuit_id))
+        if not isinstance(circuit, DBE.ElectricalSystem):
+            raise Exception("The selected circuit no longer exists in the active document.")
+        return circuit_id, circuit
 
     def Execute(self, application):  # noqa: N802
         pending = self._gateway._consume_pending()
@@ -176,32 +217,24 @@ class _AlertsBrowserExternalEventHandler(IExternalEventHandler):
             if op_name == "refresh":
                 result = build_snapshot(doc, ALERT_DATA_PARAM, _idval, _LOCK_REPOSITORY)
             elif op_name == "recalculate":
-                if doc is None:
-                    raise Exception("No active document.")
-                circuit_id = int(payload.get("circuit_id") or 0)
-                if circuit_id <= 0:
-                    raise Exception("No circuit selected.")
+                doc = self._require_bound_document(doc, payload)
+                circuit_id, unused_circuit = self._require_circuit(doc, payload)
                 result = recalculate_and_snapshot(doc, circuit_id, ALERT_DATA_PARAM, _idval, _LOCK_REPOSITORY)
             elif op_name == "select":
                 if uidoc is None or doc is None:
                     raise Exception("No active document.")
+                doc = self._require_bound_document(doc, payload)
                 mode = str(payload.get("mode") or "").strip().lower()
-                circuit_id = int(payload.get("circuit_id") or 0)
                 if mode == "clear":
                     clear_revit_selection(uidoc=uidoc)
                 else:
-                    if circuit_id <= 0:
-                        raise Exception("No circuit selected.")
-                    circuit = doc.GetElement(_idfrom(circuit_id))
+                    circuit_id, circuit = self._require_circuit(doc, payload)
                     targets = collect_circuit_targets(circuit, mode)
                     set_revit_selection(targets, uidoc=uidoc)
                 result = {"selected": True}
             elif op_name == "set_hidden":
-                if doc is None:
-                    raise Exception("No active document.")
-                circuit_id = int(payload.get("circuit_id") or 0)
-                if circuit_id <= 0:
-                    raise Exception("No circuit selected.")
+                doc = self._require_bound_document(doc, payload)
+                circuit_id, unused_circuit = self._require_circuit(doc, payload)
                 hidden_definition_ids = list(payload.get("hidden_definition_ids") or [])
                 result = update_hidden_alert_types_and_snapshot(
                     doc,
@@ -213,6 +246,15 @@ class _AlertsBrowserExternalEventHandler(IExternalEventHandler):
                 )
             else:
                 raise Exception("Unknown operation: {}".format(op_name))
+        except _DocumentContextChanged as ex:
+            status = "invalid_context"
+            error = ex
+            try:
+                result = {
+                    "snapshot": build_snapshot(doc, ALERT_DATA_PARAM, _idval, _LOCK_REPOSITORY),
+                }
+            except Exception:
+                result = None
         except Exception as ex:
             status = "error"
             error = ex
@@ -237,6 +279,7 @@ class AlertsBrowserWindow(forms.WPFWindow):
         self._gateway = gateway
         self._items = []
         self._doc_title = "-"
+        self._doc_key = ""
         forms.WPFWindow.__init__(self, xaml)
         # Use CLR Tag for cross-runtime singleton detection.
         try:
@@ -461,6 +504,10 @@ class AlertsBrowserWindow(forms.WPFWindow):
         data = dict(snapshot or {})
         doc_title = str(data.get("doc_title") or "-")
         self._doc_title = doc_title
+        if "doc_key" in data:
+            self._doc_key = str(data.get("doc_key") or "")
+            if self._gateway is not None:
+                self._gateway.bind_document_key(self._doc_key)
         items = list(data.get("items") or [])
         self._items = items
         self._update_alert_count_text(items)
@@ -594,6 +641,13 @@ class AlertsBrowserWindow(forms.WPFWindow):
         self._sync_hide_unhide_state()
 
     def _handle_external_complete(self, status, op_name, result, error):
+        if status == "invalid_context":
+            snapshot = dict((result or {}).get("snapshot") or {})
+            if snapshot:
+                self._apply_snapshot(snapshot, preferred_circuit_id=None)
+            self._set_status("Active document changed. Review refreshed alerts and retry.")
+            forms.alert(str(error), title=TITLE)
+            return
         if status == "error":
             self._set_status("Operation failed")
             forms.alert("Alerts Manager operation failed:\n\n{}".format(error), title=TITLE)
@@ -845,7 +899,10 @@ def _show_or_focus_window():
         return
     theme_mode, accent_mode = _load_theme_state_from_config("light", "blue")
     snapshot = build_snapshot(_active_doc(), ALERT_DATA_PARAM, _idval, _LOCK_REPOSITORY)
-    gateway = AlertsBrowserExternalEventGateway(logger=_LOGGER)
+    gateway = AlertsBrowserExternalEventGateway(
+        document_key=snapshot.get("doc_key"),
+        logger=_LOGGER,
+    )
     window = AlertsBrowserWindow(
         theme_mode=theme_mode,
         accent_mode=accent_mode,
