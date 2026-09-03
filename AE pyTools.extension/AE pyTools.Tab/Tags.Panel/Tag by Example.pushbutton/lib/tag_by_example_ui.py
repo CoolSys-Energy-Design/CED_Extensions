@@ -31,6 +31,8 @@ class TagByExampleWindow(forms.WPFWindow):
         self.example_available = False
         self.selection_active = False
         self.target_count = 0
+        self.invalid_target_count = 0
+        self.selected_target_count = 0
         self._error_timer = None
         forms.WPFWindow.__init__(self, xaml_path)
         resource_loader.apply_theme(
@@ -54,8 +56,8 @@ class TagByExampleWindow(forms.WPFWindow):
         self.error_banner_text = self.FindName("ErrorBannerText")
         self.target_mode_combo = self.FindName("TargetModeCombo")
         self.new_targets_button = self.FindName("NewTargetsButton")
-        self.edit_targets_button = self.FindName("EditTargetsButton")
-        self.preview_selection_button = self.FindName("PreviewSelectionButton")
+        self.use_current_selection_button = self.FindName("UseCurrentSelectionButton")
+        self.clear_targets_button = self.FindName("ClearTargetsButton")
         self.target_count_text = self.FindName("TargetCountText")
         self.status_text = self.FindName("StatusText")
         self.create_button = self.FindName("CreateButton")
@@ -237,8 +239,8 @@ class TagByExampleWindow(forms.WPFWindow):
         self.replace_matching_radio.IsEnabled = active
         self.skip_matching_radio.IsEnabled = active
         self.new_targets_button.IsEnabled = active and manual_mode
-        self.edit_targets_button.IsEnabled = active and manual_mode and self.target_count > 0
-        self.preview_selection_button.IsEnabled = active and manual_mode and self.target_count > 0
+        self.use_current_selection_button.IsEnabled = active and manual_mode
+        self.clear_targets_button.IsEnabled = active and manual_mode
         self.create_button.IsEnabled = active and self.target_count > 0
 
     def _set_selection_state(self, active, message):
@@ -254,9 +256,22 @@ class TagByExampleWindow(forms.WPFWindow):
         )
         self._refresh_control_state()
 
-    def _set_target_count(self, count):
+    def _set_target_count(self, count, invalid_count=0, selected_count=None):
         self.target_count = int(count or 0)
-        self.target_count_text.Text = "Targets: {}".format(self.target_count)
+        self.invalid_target_count = int(invalid_count or 0)
+        if selected_count is None:
+            selected_count = self.target_count + self.invalid_target_count
+        self.selected_target_count = int(selected_count or 0)
+        if self._target_mode() == "manual":
+            self.target_count_text.Text = (
+                "Selected: {} | Valid: {} | Invalid: {}".format(
+                    self.selected_target_count,
+                    self.target_count,
+                    self.invalid_target_count,
+                )
+            )
+        else:
+            self.target_count_text.Text = "Targets: {}".format(self.target_count)
         self._refresh_control_state()
 
     def receive_result(self, status, action_name, result, error):
@@ -351,7 +366,11 @@ class TagByExampleWindow(forms.WPFWindow):
                 return
         if status == "cancelled":
             self._set_selection_state(False, "")
-            self._set_target_count(result.get("count", self.target_count))
+            self._set_target_count(
+                result.get("count", self.target_count),
+                result.get("invalid_count", self.invalid_target_count),
+                result.get("selected_count", self.selected_target_count),
+            )
             self._set_status("Selection cancelled. {} valid targets retained.".format(
                 self.target_count
             ))
@@ -402,20 +421,35 @@ class TagByExampleWindow(forms.WPFWindow):
                 self._queue_target_refresh()
             return
 
-        if action_name == "pick_targets":
+        if action_name in ("pick_targets", "use_current_selection"):
             self._set_selection_state(False, "")
-            self._set_target_count(result.get("count", 0))
-            self._set_status("{} valid manual targets selected.".format(
-                self.target_count
-            ))
+            self._set_target_count(
+                result.get("count", 0),
+                result.get("invalid_count", 0),
+                result.get("selected_count"),
+            )
+            if self.invalid_target_count:
+                self._set_status(
+                    "{} valid manual targets selected; {} invalid selection(s) excluded."
+                    .format(self.target_count, self.invalid_target_count)
+                )
+            else:
+                self._set_status("{} valid manual targets selected.".format(
+                    self.target_count
+                ))
             return
 
-        if action_name == "preview_selection":
-            self._set_status("Revit selection updated to the saved target set.")
+        if action_name == "clear_targets":
+            self._set_target_count(0, 0, 0)
+            self._set_status("Manual target selection cleared.")
             return
 
         if action_name == "refresh_targets":
-            self._set_target_count(result.get("count", 0))
+            self._set_target_count(
+                result.get("count", 0),
+                result.get("invalid_count", result.get("skipped_count", 0)),
+                result.get("selected_count"),
+            )
             if result.get("skipped_count", 0):
                 self._set_status("{} targets available; {} skipped.".format(
                     result.get("count", 0), result.get("skipped_count", 0)
@@ -473,6 +507,11 @@ class TagByExampleWindow(forms.WPFWindow):
         if not self.ready:
             return
         self._save_config()
+        self._set_target_count(
+            self.target_count,
+            self.invalid_target_count,
+            self.selected_target_count,
+        )
         self._refresh_control_state()
         if self.gateway.example_tag_ids and self.view_supported and not self.selection_active:
             self.gateway.raise_action("refresh_targets", self._payload())
@@ -493,26 +532,19 @@ class TagByExampleWindow(forms.WPFWindow):
             "Finish or cancel the selection to return here.",
         )
         payload = self._payload()
-        payload["selection_mode"] = "new"
         if not self.gateway.raise_action("pick_targets", payload):
             self._set_selection_state(False, "")
 
-    def edit_targets_clicked(self, sender, args):
-        self._set_selection_state(
-            True,
-            "Edit the saved target set in Revit. Add or remove compatible hosts, "
-            "then finish or cancel to return here.",
-        )
-        payload = self._payload()
-        payload["selection_mode"] = "edit"
-        if not self.gateway.raise_action("pick_targets", payload):
-            self._set_selection_state(False, "")
-
-    def preview_selection_clicked(self, sender, args):
+    def use_current_selection_clicked(self, sender, args):
         self._clear_error()
-        self._set_status("Updating the Revit selection...")
-        if not self.gateway.raise_action("preview_selection", self._payload()):
-            self._set_status("Could not update the Revit selection.")
+        self._set_status("Validating the current Revit selection...")
+        if not self.gateway.raise_action("use_current_selection", self._payload()):
+            self._set_status("Could not use the current Revit selection.")
+
+    def clear_targets_clicked(self, sender, args):
+        self._clear_error()
+        if not self.gateway.raise_action("clear_targets"):
+            self._set_status("Could not clear the manual target selection.")
 
     def create_clicked(self, sender, args):
         self._clear_error()

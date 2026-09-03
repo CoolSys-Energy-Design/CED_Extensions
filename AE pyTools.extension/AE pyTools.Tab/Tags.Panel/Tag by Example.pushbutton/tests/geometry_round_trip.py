@@ -6,14 +6,25 @@ command.  These tests do not create tags or modify the document.
 """
 
 import math
+import os
+import sys
 
 from pyrevit import DB
 
+from Snippets import revit_helpers
 from Snippets.tag_geometry import points_are_equal
 from Snippets.tag_geometry import snap_angle_radians
 from Snippets.tag_host_transform import HostPlacementFrame
 from Snippets.tag_host_transform import host_local_point_to_world
 from Snippets.tag_host_transform import world_point_to_host_local
+
+
+COMMAND_DIRECTORY = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+LIBRARY_DIRECTORY = os.path.join(COMMAND_DIRECTORY, "lib")
+if LIBRARY_DIRECTORY not in sys.path:
+    sys.path.append(LIBRARY_DIRECTORY)
+
+from tag_by_example_events import _unique_integer_values
 
 
 def _frame(origin, angle, mirrored=False):
@@ -66,5 +77,23 @@ def run_geometry_round_trip_tests():
     return True
 
 
+def run_element_id_boundary_tests():
+    """Verify DTO normalization for numeric and native ElementId inputs."""
+    numeric_value = 24680
+    native_id = revit_helpers.elementid_from_value(numeric_value)
+    normalized = _unique_integer_values([
+        numeric_value,
+        native_id,
+        numeric_value,
+        DB.ElementId.InvalidElementId,
+        None,
+    ])
+    assert normalized == [numeric_value], (
+        "Numeric and native ElementId normalization failed: {}".format(normalized)
+    )
+    return True
+
+
 if __name__ == "__main__":
     print("Tag by Example geometry tests: {}".format(run_geometry_round_trip_tests()))
+    print("Tag by Example ElementId tests: {}".format(run_element_id_boundary_tests()))

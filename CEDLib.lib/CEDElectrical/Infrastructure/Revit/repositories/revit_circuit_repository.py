@@ -23,7 +23,15 @@ class RevitCircuitRepository(object):
             return eu.get_circuits_by_ids(doc, circuit_ids)
         return eu.get_all_circuits(doc)
 
-    def partition_locked_elements(self, doc, circuits, settings, collect_all_device_owners=True):
+    def partition_locked_elements(
+            self,
+            doc,
+            circuits,
+            settings,
+            collect_all_device_owners=True,
+            connected_elements_by_circuit=None,
+            skip_device_traversal_ids=None,
+    ):
         """Split circuits into editable and locked subsets."""
         circuits = eu.filter_circuits(circuits)
         if not getattr(doc, 'IsWorkshared', False):
@@ -32,6 +40,24 @@ class RevitCircuitRepository(object):
         locked_ids = set()
         unlocked_circuits = []
         locked_records = {}
+        connected_elements_by_circuit = connected_elements_by_circuit
+        skip_device_traversal_ids = set(skip_device_traversal_ids or [])
+
+        def _connected_elements(circuit):
+            circuit_id = _elid_value(circuit.Id)
+            if circuit_id in skip_device_traversal_ids:
+                return []
+            if connected_elements_by_circuit is not None:
+                if circuit_id not in connected_elements_by_circuit:
+                    try:
+                        connected_elements_by_circuit[circuit_id] = list(circuit.Elements)
+                    except Exception:
+                        connected_elements_by_circuit[circuit_id] = []
+                return connected_elements_by_circuit.get(circuit_id) or []
+            try:
+                return list(circuit.Elements)
+            except Exception:
+                return []
 
         def _is_locked(eid):
             try:
@@ -84,7 +110,7 @@ class RevitCircuitRepository(object):
                 continue
 
             if write_equipment or write_fixtures:
-                for el in circuit.Elements:
+                for el in _connected_elements(circuit):
                     if not design_options.is_main_model_element(el):
                         continue
                     if not isinstance(el, DB.FamilyInstance):

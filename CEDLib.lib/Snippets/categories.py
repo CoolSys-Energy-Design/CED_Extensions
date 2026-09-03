@@ -45,6 +45,32 @@ def built_in_category_from_name(name):
         return None
 
 
+def get_built_in_category(element_or_category):
+    """Return the BuiltInCategory for an element or Category, when available."""
+    if element_or_category is None:
+        return None
+
+    category = element_or_category
+    try:
+        element_category = getattr(element_or_category, "Category", None)
+        if element_category is not None:
+            category = element_category
+    except Exception:
+        pass
+
+    try:
+        built_in_category = category.BuiltInCategory
+    except Exception:
+        return None
+
+    try:
+        if built_in_category == DB.BuiltInCategory.INVALID:
+            return None
+    except Exception:
+        pass
+    return built_in_category
+
+
 def category_id_from_bic(bic):
     """Return an ElementId for a BuiltInCategory enum value."""
     if bic is None:

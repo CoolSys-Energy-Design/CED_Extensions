@@ -14,6 +14,11 @@ for _wpf_asm in ("PresentationFramework", "PresentationCore", "WindowsBase"):
 
 from System.Windows import DependencyProperty, ResourceDictionary
 
+from UIClasses import theme_manager
+
+ThemeDescriptor = theme_manager.ThemeDescriptor
+
+
 DEFAULT_BASE_RESOURCE_RELATIVE_PATHS = (
     os.path.join("Themes", "CED.Sizes.xaml"),
     os.path.join("Themes", "CED.Colors.xaml"),
@@ -32,22 +37,15 @@ DEFAULT_BASE_RESOURCE_RELATIVE_PATHS = (
     os.path.join("Templates", "WindowChrome.xaml"),
     os.path.join("Templates", "ControlPrimitives.xaml"),
     os.path.join("Controls", "SearchBox.xaml"),
+    os.path.join("Controls", "FilterableComboBox.xaml"),
 )
 
-THEME_RELATIVE_PATHS = {
-    "light": (
-        os.path.join("Themes", "CEDTheme.Light.xaml"),
-    ),
-    "dark": (
-        os.path.join("Themes", "CEDTheme.Dark.xaml"),
-        os.path.join("Themes", "CEDTheme.Light.xaml"),
-    ),
-    "dark_alt": (
-        os.path.join("Themes", "CEDTheme.DarkAlt.xaml"),
-        os.path.join("Themes", "CEDTheme.Dark.xaml"),
-        os.path.join("Themes", "CEDTheme.Light.xaml"),
-    ),
-}
+THEME_DESCRIPTORS = theme_manager.ALL_THEME_DESCRIPTORS
+
+THEME_RELATIVE_PATHS = dict(
+    (descriptor.Mode, descriptor.RelativePaths)
+    for descriptor in THEME_DESCRIPTORS
+)
 
 ACCENT_BRUSH_KEY_MAP = {
     "blue": "CED.Brush.AccentBlue",
@@ -58,6 +56,43 @@ VALID_THEME_MODES = tuple(sorted(THEME_RELATIVE_PATHS.keys()))
 VALID_ACCENT_MODES = tuple(sorted(ACCENT_BRUSH_KEY_MAP.keys()))
 
 
+def theme_descriptors():
+    """Return selectable theme metadata consumed by existing tool selectors."""
+    return theme_manager.theme_descriptors()
+
+
+def all_theme_descriptors():
+    """Return loader metadata, including themes hidden behind unlock codes."""
+    return theme_manager.all_theme_descriptors()
+
+
+def theme_descriptor_value(descriptor, attribute, fallback=None):
+    """Read a descriptor attribute while tolerating simple mapping objects."""
+    value = getattr(descriptor, attribute, None)
+    if value is not None:
+        return value
+    key = attribute[:1].lower() + attribute[1:]
+    try:
+        return descriptor[key]
+    except Exception:
+        return fallback
+
+
+def theme_descriptor_mode(descriptor, fallback="light"):
+    return normalize_theme_mode(
+        theme_descriptor_value(descriptor, "Mode", fallback),
+        fallback,
+    )
+
+
+def theme_descriptor_label(mode, fallback=None):
+    normalized = normalize_theme_mode(mode, "light")
+    for descriptor in THEME_DESCRIPTORS:
+        if descriptor.Mode == normalized:
+            return descriptor.Label
+    return fallback if fallback is not None else normalized
+
+
 def normalize_theme_mode(value, fallback="light"):
     mode = str(value or fallback).strip().lower()
     if mode in THEME_RELATIVE_PATHS:
@@ -66,12 +101,12 @@ def normalize_theme_mode(value, fallback="light"):
     return fb if fb in THEME_RELATIVE_PATHS else "light"
 
 
-def normalize_accent_mode(value, fallback="blue"):
+def normalize_accent_mode(value, fallback=theme_manager.DEFAULT_ACCENT_MODE):
     mode = str(value or fallback).strip().lower()
     if mode in ACCENT_BRUSH_KEY_MAP:
         return mode
-    fb = str(fallback or "blue").strip().lower()
-    return fb if fb in ACCENT_BRUSH_KEY_MAP else "blue"
+    fb = str(fallback or theme_manager.DEFAULT_ACCENT_MODE).strip().lower()
+    return fb if fb in ACCENT_BRUSH_KEY_MAP else theme_manager.DEFAULT_ACCENT_MODE
 
 
 def _normalize_path(path):
@@ -102,10 +137,12 @@ def _resource_source_path(dictionary):
 
 def _is_theme_resource_dictionary(dictionary):
     source_text = _resource_source_path(dictionary)
-    return (
-        source_text.endswith("/cedtheme.light.xaml")
-        or source_text.endswith("/cedtheme.dark.xaml")
-        or source_text.endswith("/cedtheme.darkalt.xaml")
+    return any(
+        source_text.endswith(
+            "/{}".format(os.path.basename(path).lower())
+        )
+        for descriptor in THEME_DESCRIPTORS
+        for path in descriptor.RelativePaths
     )
 
 
@@ -196,11 +233,11 @@ def apply_accent(owner, accent_mode):
         resources = getattr(owner, "Resources", None)
         if resources is None:
             return False
-        mode = normalize_accent_mode(accent_mode, "blue")
-        key = ACCENT_BRUSH_KEY_MAP.get(mode) or ACCENT_BRUSH_KEY_MAP.get("blue")
+        mode = normalize_accent_mode(accent_mode, theme_manager.DEFAULT_ACCENT_MODE)
+        key = ACCENT_BRUSH_KEY_MAP.get(mode) or ACCENT_BRUSH_KEY_MAP.get(theme_manager.DEFAULT_ACCENT_MODE)
         brush = try_find_resource(owner, key)
         if brush is None:
-            brush = try_find_resource(owner, ACCENT_BRUSH_KEY_MAP.get("blue"))
+            brush = try_find_resource(owner, ACCENT_BRUSH_KEY_MAP.get(theme_manager.DEFAULT_ACCENT_MODE))
         if brush is None:
             return False
         resources["CED.Brush.Accent"] = brush
@@ -209,10 +246,11 @@ def apply_accent(owner, accent_mode):
         return False
 
 
-def apply_theme(owner, resources_root, theme_mode="light", accent_mode="blue", base_relative_paths=None):
+def apply_theme(owner, resources_root, theme_mode="light", accent_mode=theme_manager.DEFAULT_ACCENT_MODE, base_relative_paths=None):
     try:
         ensure_base_resources(owner, resources_root, base_relative_paths)
-        dictionary = _load_theme_dictionary(resources_root, normalize_theme_mode(theme_mode, "light"))
+        available_mode = theme_manager.available_theme_mode(theme_mode, "light")
+        dictionary = _load_theme_dictionary(resources_root, available_mode)
         if dictionary is None:
             return False
         resources = getattr(owner, "Resources", None)
@@ -233,7 +271,7 @@ def apply_theme(owner, resources_root, theme_mode="light", accent_mode="blue", b
                     pass
         merged.Add(dictionary)
         owner._ced_theme_dictionary = dictionary
-        apply_accent(owner, normalize_accent_mode(accent_mode, "blue"))
+        apply_accent(owner, normalize_accent_mode(accent_mode, theme_manager.DEFAULT_ACCENT_MODE))
         return True
     except Exception:
         return False

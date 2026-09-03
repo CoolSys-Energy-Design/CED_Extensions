@@ -433,11 +433,7 @@
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Grid.Column="0" Text="Theme" Style="{StaticResource SettingsLabel}"/>
-                                <ComboBox x:Name="theme_mode_cb" Grid.Column="1" Style="{StaticResource SettingsCombo}">
-                                    <ComboBoxItem Content="Light" Tag="light"/>
-                                    <ComboBoxItem Content="Dark" Tag="dark"/>
-                                    <ComboBoxItem Content="Dark Alt" Tag="dark_alt"/>
-                                </ComboBox>
+                                <ComboBox x:Name="theme_mode_cb" Grid.Column="1" Style="{StaticResource SettingsCombo}"/>
                                 <TextBlock x:Name="theme_mode_default" Grid.Column="2" Style="{StaticResource SettingsDefaultText}"/>
                             </Grid>
 

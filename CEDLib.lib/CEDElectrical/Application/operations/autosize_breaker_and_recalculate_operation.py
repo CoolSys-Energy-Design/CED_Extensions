@@ -23,6 +23,11 @@ def _calc_options_from_request(request):
     preview_decision = str(request.options.get('calc_preview_decision') or '').strip().lower()
     if preview_decision:
         options['calc_preview_decision'] = preview_decision
+    staged = request.options.get('staged_calculation')
+    if not isinstance(staged, dict):
+        staged = request.options.get('staged_result')
+    if isinstance(staged, dict):
+        options['staged_calculation'] = staged
     return options
 
 
@@ -37,15 +42,28 @@ class AutosizeBreakerAndRecalculateOperation(object):
         self._calculate_operation = calculate_operation
 
     def execute(self, request, doc):
+        staged = request.options.get('staged_calculation')
+        if not isinstance(staged, dict):
+            staged = request.options.get('staged_result')
+        if isinstance(staged, dict):
+            calc_options = dict(request.options or {})
+            calc_options['staged_calculation'] = staged
+            calc_request = OperationRequest(
+                operation_key='calculate_circuits',
+                circuit_ids=list(request.circuit_ids or []),
+                source=request.source,
+                options=calc_options,
+            )
+            return self._calculate_operation.execute(calc_request, doc)
+
         updates = list(request.options.get('updates') or [])
         if not updates:
             return {'status': 'cancelled', 'reason': 'no_updates'}
 
         by_id = {}
         for row in updates:
-            try:
-                cid = int(row.get('circuit_id'))
-            except Exception:
+            cid = revit_helpers.coerce_elementid_value(row.get('circuit_id'))
+            if cid <= 0:
                 continue
             by_id[cid] = row
 

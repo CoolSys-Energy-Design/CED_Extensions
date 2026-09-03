@@ -20,4 +20,24 @@
   <Geometry x:Key="CED.Icon.Alert.Success" PresentationOptions:Freeze="True">M12 2C6.5 2 2 6.5 2 12S6.5 22 12 22 22 17.5 22 12 17.5 2 12 2M12 20C7.59 20 4 16.41 4 12S7.59 4 12 4 20 7.59 20 12 16.41 20 12 20M16.59 7.58L10 14.17L7.41 11.59L6 13L10 17L18 9L16.59 7.58Z</Geometry>
   <Geometry x:Key="CED.Icon.Check" PresentationOptions:Freeze="True">M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z</Geometry>
   <Geometry x:Key="CED.Icon.SyncAlert" PresentationOptions:Freeze="True">M11,13H13V7H11M21,4H15V10L17.24,7.76C18.32,8.85 19,10.34 19,12C19,14.61 17.33,16.83 15,17.65V19.74C18.45,18.85 21,15.73 21,12C21,9.79 20.09,7.8 18.64,6.36M11,17H13V15H11M3,12C3,14.21 3.91,16.2 5.36,17.64L3,20H9V14L6.76,16.24C5.68,15.15 5,13.66 5,12C5,9.39 6.67,7.17 9,6.35V4.26C5.55,5.15 3,8.27 3,12Z</Geometry>
+
+  <!--
+    Directional chevrons for pager and reorder buttons.
+
+    These four are exact 90-degree rotations of one another about the centre of
+    the 24x24 box, so a Left/Right or Up/Down pair is mirror-symmetric and each
+    one is optically centred in its button.  Use them instead of the text
+    glyphs (U+25C0 / U+25B6 / U+25B2 / U+25BC): those carry font-specific side
+    bearings and their own baseline offset, which is why they always look
+    nudged off-centre and slightly squashed.
+
+    Render with:
+      <Path Data="{StaticResource CED.Icon.Chevron.Left}" Width="9" Height="9"
+            Stretch="Uniform" Fill="{Binding Foreground,
+            RelativeSource={RelativeSource AncestorType={x:Type Button}}}"/>
+  -->
+  <Geometry x:Key="CED.Icon.Chevron.Left" PresentationOptions:Freeze="True">M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z</Geometry>
+  <Geometry x:Key="CED.Icon.Chevron.Right" PresentationOptions:Freeze="True">M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z</Geometry>
+  <Geometry x:Key="CED.Icon.Chevron.Up" PresentationOptions:Freeze="True">M7.41,15.41L12,10.83L16.58,15.41L18,14L12,8L6,14L7.41,15.41Z</Geometry>
+  <Geometry x:Key="CED.Icon.Chevron.Down" PresentationOptions:Freeze="True">M7.41,8.59L12,13.17L16.58,8.59L18,10L12,16L6,10L7.41,8.59Z</Geometry>
 </ResourceDictionary>

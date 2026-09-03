@@ -74,7 +74,11 @@ class MoveSelectedCircuitsOperation(object):
                 "Target panel has no panel schedule view and the move was not confirmed."
             )
 
-        circuit_ids = [int(x) for x in list(getattr(request, "circuit_ids", None) or []) if int(x or 0) > 0]
+        circuit_ids = []
+        for raw_id in list(getattr(request, "circuit_ids", None) or []):
+            circuit_id = revit_helpers.coerce_elementid_value(raw_id)
+            if circuit_id > 0:
+                circuit_ids.append(circuit_id)
         circuits = eu.get_circuits_by_ids(doc, circuit_ids)
         pre_on_target_ids = set()
         for circuit in circuits:
@@ -100,7 +104,12 @@ class MoveSelectedCircuitsOperation(object):
                 continue
             if _elid_value(getattr(base_equipment, "Id", None)) == target_panel_id:
                 moved_ids.append(cid)
-        moved_ids = sorted(list(set([int(x) for x in list(moved_ids or []) if int(x) > 0])))
+        normalized_moved_ids = set()
+        for raw_id in list(moved_ids or []):
+            moved_id = revit_helpers.coerce_elementid_value(raw_id)
+            if moved_id > 0:
+                normalized_moved_ids.add(moved_id)
+        moved_ids = sorted(list(normalized_moved_ids))
 
         recalc_result = None
         recalc_error = None

@@ -7,7 +7,33 @@
   <SolidColorBrush x:Key="{x:Static sw:SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="{DynamicResource CED.Color.DataGridSelectionForeground}"/>
 
   <DataTemplate x:Key="CED.DataGrid.Header.WrapTemplate">
-    <TextBlock Text="{Binding}" TextWrapping="Wrap" TextAlignment="Center" VerticalAlignment="Center"/>
+    <Grid>
+      <TextBlock Text="{Binding}" TextWrapping="Wrap" TextAlignment="Center" VerticalAlignment="Center"/>
+      <TextBlock Text="&#9650;" FontSize="8" Margin="0,0,8,0" HorizontalAlignment="Right" VerticalAlignment="Center">
+        <TextBlock.Style>
+          <Style TargetType="TextBlock">
+            <Setter Property="Visibility" Value="Collapsed"/>
+            <Style.Triggers>
+              <DataTrigger Binding="{Binding SortDirection, RelativeSource={RelativeSource AncestorType={x:Type DataGridColumnHeader}}}" Value="Ascending">
+                <Setter Property="Visibility" Value="Visible"/>
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </TextBlock.Style>
+      </TextBlock>
+      <TextBlock Text="&#9660;" FontSize="8" Margin="0,0,8,0" HorizontalAlignment="Right" VerticalAlignment="Center">
+        <TextBlock.Style>
+          <Style TargetType="TextBlock">
+            <Setter Property="Visibility" Value="Collapsed"/>
+            <Style.Triggers>
+              <DataTrigger Binding="{Binding SortDirection, RelativeSource={RelativeSource AncestorType={x:Type DataGridColumnHeader}}}" Value="Descending">
+                <Setter Property="Visibility" Value="Visible"/>
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </TextBlock.Style>
+      </TextBlock>
+    </Grid>
   </DataTemplate>
 
   <Style x:Key="CED.DataGrid.Header.Wrap" TargetType="DataGridColumnHeader">
@@ -21,6 +47,12 @@
     <Setter Property="BorderThickness" Value="0,0,1,1"/>
     <Setter Property="ContentTemplate" Value="{StaticResource CED.DataGrid.Header.WrapTemplate}"/>
     <Style.Triggers>
+      <Trigger Property="SortDirection" Value="Ascending">
+        <Setter Property="Background" Value="{DynamicResource CED.Brush.DataGridHeaderPressedBackground}"/>
+      </Trigger>
+      <Trigger Property="SortDirection" Value="Descending">
+        <Setter Property="Background" Value="{DynamicResource CED.Brush.DataGridHeaderPressedBackground}"/>
+      </Trigger>
       <Trigger Property="IsMouseOver" Value="True">
         <Setter Property="Background" Value="{DynamicResource CED.Brush.DataGridHeaderHoverBackground}"/>
       </Trigger>

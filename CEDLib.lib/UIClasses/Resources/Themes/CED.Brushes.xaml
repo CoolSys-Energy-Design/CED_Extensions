@@ -121,6 +121,9 @@
 
   <SolidColorBrush x:Key="CED.Brush.InfoPanelBorder" Color="{DynamicResource CED.Color.InfoPanelBorder}"/>
   <SolidColorBrush x:Key="CED.Brush.InfoPanelBackground" Color="{DynamicResource CED.Color.InfoPanelBackground}"/>
+  <SolidColorBrush x:Key="CED.Brush.InputReadOnlyBackground" Color="{DynamicResource CED.Color.InfoPanelBackground}"/>
+  <SolidColorBrush x:Key="CED.Brush.InputReadOnlyBorder" Color="{DynamicResource CED.Color.InfoPanelBorder}"/>
+  <SolidColorBrush x:Key="CED.Brush.InputReadOnlyForeground" Color="{DynamicResource CED.Color.DataGridReadOnlyForeground}"/>
   <SolidColorBrush x:Key="CED.Brush.InfoAccentBorder" Color="{DynamicResource CED.Color.InfoAccentBorder}"/>
   <SolidColorBrush x:Key="CED.Brush.InfoAccentBackground" Color="{DynamicResource CED.Color.InfoAccentBackground}"/>
   <SolidColorBrush x:Key="CED.Brush.SectionDivider" Color="{DynamicResource CED.Color.SectionDivider}"/>

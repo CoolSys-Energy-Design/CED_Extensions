@@ -6,6 +6,9 @@ tooltip:
 
     Date    = 01.01.2025
     ________________________________________________________________
+    
+    (LEGACY TOOL. WILL BE REMOVED IN A FUTURE RELEASE)
+    
     Description:
 
     List all revision clouds that do not meet standard best practices. The tool checks for the following:

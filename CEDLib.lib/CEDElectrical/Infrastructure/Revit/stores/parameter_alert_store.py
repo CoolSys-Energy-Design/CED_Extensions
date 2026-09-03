@@ -4,6 +4,7 @@
 import json
 
 from CEDElectrical.Application.contracts.alert_store import IAlertStore
+from Snippets import revit_helpers
 
 
 class ParameterAlertStore(IAlertStore):
@@ -41,8 +42,7 @@ class ParameterAlertStore(IAlertStore):
             return False
         try:
             text = json.dumps(payload, indent=2, sort_keys=True)
-            param.Set(text)
-            return True
+            return revit_helpers.set_parameter_if_changed(param, text)
         except Exception:
             return False
 
@@ -52,7 +52,6 @@ class ParameterAlertStore(IAlertStore):
         if not param:
             return False
         try:
-            param.Set('')
-            return True
+            return revit_helpers.set_parameter_if_changed(param, '')
         except Exception:
             return False

@@ -1,0 +1,11 @@
+title:
+  en_us: Revision Manager
+tooltip:
+  en_us: >-
+    Review, filter, and navigate revision clouds in a modeless window. Update a
+    selected cloud comment and build revision reports with preview, Excel, PDF,
+    and Word-friendly clipboard exports.
+author: Anthony Evelina - CoolSys
+engine:
+  persistent: true
+  full_frame: false

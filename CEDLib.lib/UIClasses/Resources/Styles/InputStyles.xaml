@@ -19,7 +19,9 @@
                   Padding="{TemplateBinding Padding}"
                   SnapsToDevicePixels="True">
             <Grid>
-              <ScrollViewer x:Name="PART_ContentHost" Margin="0" VerticalAlignment="Center"/>
+              <ScrollViewer x:Name="PART_ContentHost"
+                            Margin="0"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
               <Border x:Name="InputStateOverlay"
                       Background="Transparent"
                       CornerRadius="4"
@@ -49,6 +51,48 @@
         </ControlTemplate>
       </Setter.Value>
     </Setter>
+  </Style>
+
+  <!--
+    Read-only display field. A read-only field must never draw MORE attention than
+    an editable one, and that is easy to get wrong per-theme:
+
+      CED.Brush.InputReadOnlyBorder aliases CED.Color.InfoPanelBorder, which is a
+      *lighter* neutral than CED.Color.Border. Against a light surface lighter means
+      lower contrast, so read-only correctly recedes (1.70 -> 1.52 against #FFFFFF).
+      Against a dark surface lighter means HIGHER contrast, so read-only started
+      shouting louder than editable (1.62 -> 1.99 against #1C2127).
+
+    So the border now uses the same token as the editable field and the recession
+    comes from Opacity plus the quieter background - a mechanism that points the
+    same way in every theme. Opacity dims border, background and text together,
+    so read-only always sits behind editable no matter what the theme defines.
+
+    Do not set Opacity inline on individual read-only boxes; a local value beats
+    this setter and removes the only cue that survives every theme.
+  -->
+  <Style x:Key="CED.Input.TextBox.ReadOnly" TargetType="TextBox" BasedOn="{StaticResource CED.Input.TextBox}">
+    <Setter Property="MinHeight" Value="28"/>
+    <Setter Property="Padding" Value="6,1"/>
+    <Setter Property="VerticalContentAlignment" Value="Center"/>
+    <Setter Property="Background" Value="{DynamicResource CED.Brush.InputReadOnlyBackground}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource CED.Brush.Border}"/>
+    <Setter Property="Foreground" Value="{DynamicResource CED.Brush.InputReadOnlyForeground}"/>
+    <Setter Property="Opacity" Value="0.72"/>
+  </Style>
+
+  <Style x:Key="CED.Input.TextBox.FilePath" TargetType="TextBox" BasedOn="{StaticResource CED.Input.TextBox}">
+    <Setter Property="Height" Value="22"/>
+    <Setter Property="MinHeight" Value="22"/>
+    <Setter Property="Padding" Value="6,1"/>
+    <Setter Property="VerticalContentAlignment" Value="Center"/>
+    <Style.Triggers>
+      <Trigger Property="IsReadOnly" Value="True">
+        <Setter Property="Background" Value="{DynamicResource CED.Brush.InputReadOnlyBackground}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource CED.Brush.InputReadOnlyBorder}"/>
+        <Setter Property="Foreground" Value="{DynamicResource CED.Brush.InputReadOnlyForeground}"/>
+      </Trigger>
+    </Style.Triggers>
   </Style>
 
   <Style x:Key="CED.Input.TextBox.PercentCompact" TargetType="TextBox" BasedOn="{StaticResource CED.Input.TextBox}">
@@ -236,6 +280,9 @@
     <Setter Property="MinHeight" Value="{DynamicResource CED.Size.ControlHeight}"/>
     <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
     <Setter Property="ItemContainerStyle" Value="{DynamicResource CED.Input.ComboBoxItem}"/>
+    <Setter Property="ScrollViewer.CanContentScroll" Value="True"/>
+    <Setter Property="VirtualizingPanel.IsVirtualizing" Value="True"/>
+    <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling"/>
   </Style>
 
   <Style x:Key="CED.Input.ComboBox.ToggleOverlay" TargetType="ToggleButton">
@@ -349,7 +396,10 @@
           <ScrollViewer MaxHeight="300"
                         CanContentScroll="True"
                         VerticalScrollBarVisibility="Auto">
-            <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained"/>
+            <VirtualizingStackPanel IsItemsHost="True"
+                                    VirtualizingPanel.IsVirtualizing="True"
+                                    VirtualizingPanel.VirtualizationMode="Recycling"
+                                    KeyboardNavigation.DirectionalNavigation="Contained"/>
           </ScrollViewer>
         </Border>
       </Popup>
@@ -553,7 +603,10 @@
             <ScrollViewer.Resources>
               <Style TargetType="ScrollBar" BasedOn="{StaticResource CED.ScrollBar.Combo}"/>
             </ScrollViewer.Resources>
-            <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained"/>
+            <VirtualizingStackPanel IsItemsHost="True"
+                                    VirtualizingPanel.IsVirtualizing="True"
+                                    VirtualizingPanel.VirtualizationMode="Recycling"
+                                    KeyboardNavigation.DirectionalNavigation="Contained"/>
           </ScrollViewer>
         </Border>
       </Popup>
@@ -644,7 +697,10 @@
             <ScrollViewer.Resources>
               <Style TargetType="ScrollBar" BasedOn="{StaticResource CED.ScrollBar.Combo}"/>
             </ScrollViewer.Resources>
-            <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained"/>
+            <VirtualizingStackPanel IsItemsHost="True"
+                                    VirtualizingPanel.IsVirtualizing="True"
+                                    VirtualizingPanel.VirtualizationMode="Recycling"
+                                    KeyboardNavigation.DirectionalNavigation="Contained"/>
           </ScrollViewer>
         </Border>
       </Popup>
@@ -690,51 +746,82 @@
     <Setter Property="Template" Value="{StaticResource CED.Input.ComboBox.Template.Flat.Compact.Editable}"/>
   </Style>
 
-  <!-- Reusable horizontal slider for CED-themed previews and tool UIs. -->
-  <Style x:Key="CED.Input.Slider.DecreaseButton" TargetType="RepeatButton">
+  <!--
+    ===================================================================
+    Horizontal sliders.  Three interchangeable looks share one anatomy:
+
+      * a pill rail spans the full width behind the Track
+      * the DecreaseRepeatButton paints the accent fill over that rail,
+        overhanging to the right by half a thumb so the fill always ends
+        under the knob's centre (that is what the negative right margin
+        is for - do not "fix" it)
+      * the IncreaseRepeatButton is transparent, so the rail shows
+        through as the unfilled remainder
+      * the Thumb is an uncoloured knob: input background, neutral
+        border, accent border on hover and while dragging
+
+    Every colour is a CED theme brush, so light / dark / alt themes
+    follow with no per-theme overrides.
+
+      CED.Input.Slider          Groove  - 6px rail, 16px disc  (default)
+      CED.Input.Slider.Pill     Pill    - 4px rail, 10x20 pill
+      CED.Input.Slider.Channel  Channel - 8px bordered channel, 18px disc
+
+    To switch a slider's look, set Style to one of the three keys.
+    ===================================================================
+  -->
+
+  <!-- Shared: unfilled remainder to the right of the knob. -->
+  <Style x:Key="CED.Input.Slider.IncreaseButton" TargetType="RepeatButton">
     <Setter Property="Focusable" Value="False"/>
+    <Setter Property="OverridesDefaultStyle" Value="True"/>
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="RepeatButton">
-          <Border Background="{DynamicResource CED.Brush.AccentBlue}"
-                  CornerRadius="3,0,0,3"/>
+          <!-- Transparent, but hit-testable so clicking the empty track still pages. -->
+          <Grid Background="Transparent"/>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
   </Style>
 
-  <Style x:Key="CED.Input.Slider.IncreaseButton" TargetType="RepeatButton">
+  <!-- ============================ A. Groove ============================ -->
+  <Style x:Key="CED.Input.Slider.DecreaseButton" TargetType="RepeatButton">
     <Setter Property="Focusable" Value="False"/>
+    <Setter Property="OverridesDefaultStyle" Value="True"/>
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="RepeatButton">
-          <Border Background="{DynamicResource CED.Brush.InputControlBackground}"
-                  BorderBrush="{DynamicResource CED.Brush.InputControlBorder}"
-                  BorderThickness="0,1,1,1"
-                  CornerRadius="0,3,3,0"/>
+          <Grid Background="Transparent">
+            <Border Height="6" CornerRadius="3" Margin="0,0,-8,0" VerticalAlignment="Center"
+                    SnapsToDevicePixels="True"
+                    Background="{DynamicResource CED.Brush.PrimaryBlue}"/>
+          </Grid>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
   </Style>
 
   <Style x:Key="CED.Input.Slider.Thumb" TargetType="Thumb">
-    <Setter Property="Width" Value="12"/>
+    <Setter Property="Width" Value="16"/>
     <Setter Property="Height" Value="16"/>
+    <Setter Property="Focusable" Value="False"/>
+    <Setter Property="OverridesDefaultStyle" Value="True"/>
+    <Setter Property="Cursor" Value="Hand"/>
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="Thumb">
-          <Border x:Name="ThumbRoot"
-                  Background="{DynamicResource CED.Brush.SearchBackground}"
+          <Border x:Name="ThumbRoot" CornerRadius="8" SnapsToDevicePixels="True"
+                  Background="{DynamicResource CED.Brush.InputControlBackground}"
                   BorderBrush="{DynamicResource CED.Brush.InputControlBorder}"
-                  BorderThickness="1"
-                  CornerRadius="3"/>
+                  BorderThickness="1"/>
           <ControlTemplate.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
               <Setter TargetName="ThumbRoot" Property="BorderBrush" Value="{DynamicResource CED.Brush.Accent}"/>
             </Trigger>
             <Trigger Property="IsDragging" Value="True">
-              <Setter TargetName="ThumbRoot" Property="Background" Value="{DynamicResource CED.Brush.CircuitItemHoverBackground}"/>
               <Setter TargetName="ThumbRoot" Property="BorderBrush" Value="{DynamicResource CED.Brush.Accent}"/>
+              <Setter TargetName="ThumbRoot" Property="Background" Value="{DynamicResource CED.Brush.ButtonHoverBackground}"/>
             </Trigger>
           </ControlTemplate.Triggers>
         </ControlTemplate>
@@ -746,11 +833,16 @@
     <Setter Property="Height" Value="20"/>
     <Setter Property="MinWidth" Value="90"/>
     <Setter Property="Focusable" Value="False"/>
+    <Setter Property="IsMoveToPointEnabled" Value="True"/>
+    <Setter Property="SnapsToDevicePixels" Value="True"/>
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="Slider">
-          <Grid Margin="0,2">
-            <Track x:Name="PART_Track" Height="8" VerticalAlignment="Center">
+          <Grid x:Name="SliderRoot" Background="Transparent">
+            <Border Height="6" CornerRadius="3" VerticalAlignment="Center"
+                    SnapsToDevicePixels="True"
+                    Background="{DynamicResource CED.Brush.InputControlBorder}"/>
+            <Track x:Name="PART_Track" Height="16" VerticalAlignment="Center">
               <Track.DecreaseRepeatButton>
                 <RepeatButton Style="{StaticResource CED.Input.Slider.DecreaseButton}"
                               Command="Slider.DecreaseLarge"/>
@@ -764,6 +856,177 @@
               </Track.IncreaseRepeatButton>
             </Track>
           </Grid>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter TargetName="SliderRoot" Property="Opacity" Value="0.6"/>
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- ============================= B. Pill ============================= -->
+  <Style x:Key="CED.Input.Slider.Pill.DecreaseButton" TargetType="RepeatButton">
+    <Setter Property="Focusable" Value="False"/>
+    <Setter Property="OverridesDefaultStyle" Value="True"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="RepeatButton">
+          <Grid Background="Transparent">
+            <Border Height="4" CornerRadius="2" Margin="0,0,-5,0" VerticalAlignment="Center"
+                    SnapsToDevicePixels="True"
+                    Background="{DynamicResource CED.Brush.PrimaryBlue}"/>
+          </Grid>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <Style x:Key="CED.Input.Slider.Pill.Thumb" TargetType="Thumb">
+    <Setter Property="Width" Value="10"/>
+    <Setter Property="Height" Value="20"/>
+    <Setter Property="Focusable" Value="False"/>
+    <Setter Property="OverridesDefaultStyle" Value="True"/>
+    <Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Thumb">
+          <Border x:Name="ThumbRoot" CornerRadius="5" SnapsToDevicePixels="True"
+                  Background="{DynamicResource CED.Brush.InputControlBackground}"
+                  BorderBrush="{DynamicResource CED.Brush.InputControlBorder}"
+                  BorderThickness="1"/>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="ThumbRoot" Property="BorderBrush" Value="{DynamicResource CED.Brush.Accent}"/>
+            </Trigger>
+            <Trigger Property="IsDragging" Value="True">
+              <Setter TargetName="ThumbRoot" Property="BorderBrush" Value="{DynamicResource CED.Brush.Accent}"/>
+              <Setter TargetName="ThumbRoot" Property="Background" Value="{DynamicResource CED.Brush.ButtonHoverBackground}"/>
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <Style x:Key="CED.Input.Slider.Pill" TargetType="Slider">
+    <Setter Property="Height" Value="22"/>
+    <Setter Property="MinWidth" Value="90"/>
+    <Setter Property="Focusable" Value="False"/>
+    <Setter Property="IsMoveToPointEnabled" Value="True"/>
+    <Setter Property="SnapsToDevicePixels" Value="True"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Slider">
+          <Grid x:Name="SliderRoot" Background="Transparent">
+            <Border Height="4" CornerRadius="2" VerticalAlignment="Center"
+                    SnapsToDevicePixels="True"
+                    Background="{DynamicResource CED.Brush.InputControlBorder}"/>
+            <Track x:Name="PART_Track" Height="20" VerticalAlignment="Center">
+              <Track.DecreaseRepeatButton>
+                <RepeatButton Style="{StaticResource CED.Input.Slider.Pill.DecreaseButton}"
+                              Command="Slider.DecreaseLarge"/>
+              </Track.DecreaseRepeatButton>
+              <Track.Thumb>
+                <Thumb Style="{StaticResource CED.Input.Slider.Pill.Thumb}"/>
+              </Track.Thumb>
+              <Track.IncreaseRepeatButton>
+                <RepeatButton Style="{StaticResource CED.Input.Slider.IncreaseButton}"
+                              Command="Slider.IncreaseLarge"/>
+              </Track.IncreaseRepeatButton>
+            </Track>
+          </Grid>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter TargetName="SliderRoot" Property="Opacity" Value="0.6"/>
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- =========================== C. Channel ============================ -->
+  <Style x:Key="CED.Input.Slider.Channel.DecreaseButton" TargetType="RepeatButton">
+    <Setter Property="Focusable" Value="False"/>
+    <Setter Property="OverridesDefaultStyle" Value="True"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="RepeatButton">
+          <Grid Background="Transparent">
+            <!-- Inset 1px on the left so the fill sits inside the channel's border. -->
+            <Border Height="6" CornerRadius="3" Margin="1,0,-9,0" VerticalAlignment="Center"
+                    SnapsToDevicePixels="True"
+                    Background="{DynamicResource CED.Brush.PrimaryBlue}"/>
+          </Grid>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <Style x:Key="CED.Input.Slider.Channel.Thumb" TargetType="Thumb">
+    <Setter Property="Width" Value="18"/>
+    <Setter Property="Height" Value="18"/>
+    <Setter Property="Focusable" Value="False"/>
+    <Setter Property="OverridesDefaultStyle" Value="True"/>
+    <Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Thumb">
+          <Border x:Name="ThumbRoot" CornerRadius="9" SnapsToDevicePixels="True"
+                  Background="{DynamicResource CED.Brush.InputControlBackground}"
+                  BorderBrush="{DynamicResource CED.Brush.InputControlBorder}"
+                  BorderThickness="1"/>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="ThumbRoot" Property="BorderBrush" Value="{DynamicResource CED.Brush.Accent}"/>
+            </Trigger>
+            <Trigger Property="IsDragging" Value="True">
+              <Setter TargetName="ThumbRoot" Property="BorderBrush" Value="{DynamicResource CED.Brush.Accent}"/>
+              <Setter TargetName="ThumbRoot" Property="Background" Value="{DynamicResource CED.Brush.ButtonHoverBackground}"/>
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <Style x:Key="CED.Input.Slider.Channel" TargetType="Slider">
+    <Setter Property="Height" Value="22"/>
+    <Setter Property="MinWidth" Value="90"/>
+    <Setter Property="Focusable" Value="False"/>
+    <Setter Property="IsMoveToPointEnabled" Value="True"/>
+    <Setter Property="SnapsToDevicePixels" Value="True"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Slider">
+          <Grid x:Name="SliderRoot" Background="Transparent">
+            <!-- Same 1px border and radius language as the text boxes and combos. -->
+            <Border Height="8" CornerRadius="4" VerticalAlignment="Center"
+                    SnapsToDevicePixels="True"
+                    Background="{DynamicResource CED.Brush.InfoPanelBackground}"
+                    BorderBrush="{DynamicResource CED.Brush.InputControlBorder}"
+                    BorderThickness="1"/>
+            <Track x:Name="PART_Track" Height="18" VerticalAlignment="Center">
+              <Track.DecreaseRepeatButton>
+                <RepeatButton Style="{StaticResource CED.Input.Slider.Channel.DecreaseButton}"
+                              Command="Slider.DecreaseLarge"/>
+              </Track.DecreaseRepeatButton>
+              <Track.Thumb>
+                <Thumb Style="{StaticResource CED.Input.Slider.Channel.Thumb}"/>
+              </Track.Thumb>
+              <Track.IncreaseRepeatButton>
+                <RepeatButton Style="{StaticResource CED.Input.Slider.IncreaseButton}"
+                              Command="Slider.IncreaseLarge"/>
+              </Track.IncreaseRepeatButton>
+            </Track>
+          </Grid>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter TargetName="SliderRoot" Property="Opacity" Value="0.6"/>
+            </Trigger>
+          </ControlTemplate.Triggers>
         </ControlTemplate>
       </Setter.Value>
     </Setter>

@@ -22,6 +22,28 @@ HIDABLE_ALERT_IDS = set([
 ])
 
 
+def get_document_key(doc):
+    """Return a plain-data identity token for the current open document instance."""
+    if doc is None:
+        return ""
+    parts = []
+    for attr in ("PathName", "Title"):
+        try:
+            parts.append(str(getattr(doc, attr, "") or ""))
+        except Exception:
+            parts.append("")
+    try:
+        info = getattr(doc, "ProjectInformation", None)
+        parts.append(str(getattr(info, "UniqueId", "") or ""))
+    except Exception:
+        parts.append("")
+    try:
+        parts.append(str(doc.GetHashCode()))
+    except Exception:
+        parts.append("")
+    return "|".join(parts)
+
+
 def _lookup_param_text(element, name):
     param = element.LookupParameter(name)
     if not param:
@@ -120,7 +142,7 @@ def _build_writeback_lock_map(doc, circuits, idval_fn, lock_repository):
 
 def build_snapshot(doc, alert_data_param, idval_fn, lock_repository):
     if doc is None:
-        return {"doc_title": "-", "items": []}
+        return {"doc_title": "-", "doc_key": "", "items": []}
     circuits = eu.get_all_circuits(doc)
     circuits.sort(
         key=lambda c: (
@@ -142,6 +164,7 @@ def build_snapshot(doc, alert_data_param, idval_fn, lock_repository):
         items.append(AlertCircuitItem(circuit, circuit_id, rows, blocked=blocked, block_reason=reason))
     return {
         "doc_title": getattr(doc, "Title", "-") or "-",
+        "doc_key": get_document_key(doc),
         "items": items,
     }
 

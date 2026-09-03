@@ -16,12 +16,12 @@ from System.Windows.Input import Keyboard, ModifierKeys, MouseButton
 from System.Windows.Media import VisualTreeHelper
 from pyrevit import forms, script
 
-from UIClasses import pathing
+from UIClasses import pathing, theme_manager
 from UIClasses import resource_loader
 
-THEME_CONFIG_SECTION = "AE-pyTools-Theme"
-THEME_CONFIG_THEME_KEY = "theme_mode"
-THEME_CONFIG_ACCENT_KEY = "accent_mode"
+THEME_CONFIG_SECTION = theme_manager.THEME_CONFIG_SECTION
+THEME_CONFIG_THEME_KEY = theme_manager.THEME_CONFIG_THEME_KEY
+THEME_CONFIG_ACCENT_KEY = theme_manager.THEME_CONFIG_ACCENT_KEY
 TEXTBOX_MODE_DEFAULT = "default"
 TEXTBOX_MODE_SELECT_ALL_ON_FIRST_CLICK = "select_all_on_first_click"
 
@@ -46,7 +46,7 @@ def _read_theme_state_from_config_file(
     default_accent,
 ):
     theme_mode = resource_loader.normalize_theme_mode(default_theme, "light")
-    accent_mode = resource_loader.normalize_accent_mode(default_accent, "blue")
+    accent_mode = resource_loader.normalize_accent_mode(default_accent, theme_manager.DEFAULT_ACCENT_MODE)
 
     cfg_path = None
     try:
@@ -80,6 +80,7 @@ def _read_theme_state_from_config_file(
             accent_mode = resource_loader.normalize_accent_mode(raw_accent, accent_mode)
     except Exception:
         pass
+    theme_mode = theme_manager.available_theme_mode(theme_mode, "light")
     return theme_mode, accent_mode
 
 
@@ -88,7 +89,7 @@ def load_theme_state_from_config(
     theme_key_name=None,
     accent_key_name=None,
     default_theme="light",
-    default_accent="blue",
+    default_accent=theme_manager.DEFAULT_ACCENT_MODE,
 ):
     """Return persisted CED theme/accent from pyRevit config."""
     return _load_theme_state_from_config(
@@ -253,10 +254,10 @@ def _load_theme_state_from_config(
     theme_key_name,
     accent_key_name,
     default_theme="light",
-    default_accent="blue",
+    default_accent=theme_manager.DEFAULT_ACCENT_MODE,
 ):
     theme_mode = resource_loader.normalize_theme_mode(default_theme, "light")
-    accent_mode = resource_loader.normalize_accent_mode(default_accent, "blue")
+    accent_mode = resource_loader.normalize_accent_mode(default_accent, theme_manager.DEFAULT_ACCENT_MODE)
     try:
         cfg = script.get_config(str(section_name or THEME_CONFIG_SECTION))
         if cfg is not None:
@@ -279,6 +280,7 @@ def _load_theme_state_from_config(
         default_theme=theme_mode,
         default_accent=accent_mode,
     )
+    theme_mode = theme_manager.available_theme_mode(theme_mode, "light")
     return theme_mode, accent_mode
 
 
@@ -338,12 +340,12 @@ def _init_ced_surface(
 
 def _resolve_theme_state_for_instance(instance, explicit_theme_mode=None, explicit_accent_mode=None):
     if not getattr(instance, "_theme_aware", False):
-        return "light", "blue"
+        return "light", theme_manager.DEFAULT_ACCENT_MODE
 
     default_theme_mode = getattr(instance, "default_theme_mode", "light")
-    default_accent_mode = getattr(instance, "default_accent_mode", "blue")
+    default_accent_mode = getattr(instance, "default_accent_mode", theme_manager.DEFAULT_ACCENT_MODE)
     theme_mode = resource_loader.normalize_theme_mode(default_theme_mode, "light")
-    accent_mode = resource_loader.normalize_accent_mode(default_accent_mode, "blue")
+    accent_mode = resource_loader.normalize_accent_mode(default_accent_mode, theme_manager.DEFAULT_ACCENT_MODE)
 
     if getattr(instance, "_use_config_theme", True):
         cfg_theme, cfg_accent = _load_theme_state_from_config(
@@ -373,7 +375,7 @@ def _apply_ced_theme_for_instance(instance, theme_mode=None, accent_mode=None):
         instance,
         resources_root=getattr(instance, "_ced_resources_root", None),
         theme_mode=getattr(instance, "_theme_mode", "light"),
-        accent_mode=getattr(instance, "_accent_mode", "blue"),
+        accent_mode=getattr(instance, "_accent_mode", theme_manager.DEFAULT_ACCENT_MODE),
         base_relative_paths=getattr(instance, "base_resource_relative_paths", None),
     )
 
@@ -381,14 +383,14 @@ def _apply_ced_theme_for_instance(instance, theme_mode=None, accent_mode=None):
 def _refresh_ced_theme_from_config_for_instance(instance):
     if not getattr(instance, "_theme_aware", False):
         instance._theme_mode = "light"
-        instance._accent_mode = "blue"
+        instance._accent_mode = theme_manager.DEFAULT_ACCENT_MODE
         return _apply_ced_theme_for_instance(instance)
     theme_mode, accent_mode = _load_theme_state_from_config(
         section_name=getattr(instance, "theme_config_section", THEME_CONFIG_SECTION),
         theme_key_name=getattr(instance, "theme_config_theme_key", THEME_CONFIG_THEME_KEY),
         accent_key_name=getattr(instance, "theme_config_accent_key", THEME_CONFIG_ACCENT_KEY),
         default_theme=getattr(instance, "default_theme_mode", "light"),
-        default_accent=getattr(instance, "default_accent_mode", "blue"),
+        default_accent=getattr(instance, "default_accent_mode", theme_manager.DEFAULT_ACCENT_MODE),
     )
     instance._theme_mode = theme_mode
     instance._accent_mode = accent_mode
@@ -630,7 +632,7 @@ class CEDWindowBase(forms.WPFWindow):
     theme_aware = False
     use_config_theme = True
     default_theme_mode = "light"
-    default_accent_mode = "blue"
+    default_accent_mode = theme_manager.DEFAULT_ACCENT_MODE
     theme_config_section = THEME_CONFIG_SECTION
     theme_config_theme_key = THEME_CONFIG_THEME_KEY
     theme_config_accent_key = THEME_CONFIG_ACCENT_KEY
@@ -763,7 +765,7 @@ class CEDPanelBase(forms.WPFPanel):
     theme_aware = False
     use_config_theme = True
     default_theme_mode = "light"
-    default_accent_mode = "blue"
+    default_accent_mode = theme_manager.DEFAULT_ACCENT_MODE
     theme_config_section = THEME_CONFIG_SECTION
     theme_config_theme_key = THEME_CONFIG_THEME_KEY
     theme_config_accent_key = THEME_CONFIG_ACCENT_KEY

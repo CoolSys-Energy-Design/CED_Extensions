@@ -6,6 +6,9 @@ tooltip:
 
     Date    = 01.01.2025
     ________________________________________________________________
+    
+    (LEGACY TOOL. WILL BE REMOVED IN A FUTURE RELEASE)
+    
     Description:
 
     Generate a formal revision narrative. Select one or more revisions to include, and the tool

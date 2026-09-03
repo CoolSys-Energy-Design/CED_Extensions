@@ -5,6 +5,7 @@ from pyrevit import DB
 
 from Snippets import categories as category_utils
 from Snippets import design_options
+from Snippets import revit_helpers
 
 
 class RevitCircuitWriter(object):
@@ -19,32 +20,20 @@ class RevitCircuitWriter(object):
             if not param:
                 continue
             try:
-                st = param.StorageType
-                if value is None:
-                    if st == DB.StorageType.String:
-                        param.Set('')
-                    elif st == DB.StorageType.Integer:
-                        param.Set(0)
-                    elif st == DB.StorageType.Double:
-                        param.Set(0.0)
-                    elif st == DB.StorageType.ElementId:
-                        param.Set(DB.ElementId.InvalidElementId)
-                    continue
-
-                if st == DB.StorageType.String:
-                    param.Set(str(value))
-                elif st == DB.StorageType.Integer:
-                    param.Set(int(value))
-                elif st == DB.StorageType.Double:
-                    param.Set(float(value))
-                elif st == DB.StorageType.ElementId and isinstance(value, DB.ElementId):
-                    param.Set(value)
+                revit_helpers.set_parameter_if_changed(param, value)
             except Exception:
                 continue
 
-    def write_connected_elements(self, branch, param_values, settings, locked_ids=None):
+    def write_connected_elements(
+            self,
+            branch,
+            param_values,
+            settings,
+            locked_ids=None,
+            connected_elements=None,
+    ):
         """Write calculated values to connected fixtures/devices and equipment."""
-        circuit = branch.circuit
+        circuit = getattr(branch, 'circuit', branch)
         fixture_count = 0
         equipment_count = 0
         locked_ids = locked_ids or set()
@@ -59,14 +48,20 @@ class RevitCircuitWriter(object):
             return fixture_count, equipment_count
 
         doc = getattr(circuit, 'Document', None)
-        fixture_category_values = set(
-            [int(bic) for bic in category_utils.get_fixture_device_categories(doc=doc)]
+        fixture_categories = set(
+            category_utils.get_fixture_device_categories(doc=doc)
         )
-        equipment_category_values = category_utils.category_id_values(
-            category_utils.get_equipment_category_ids()
-        )
+        equipment_category = DB.BuiltInCategory.OST_ElectricalEquipment
 
-        for el in circuit.Elements:
+        if connected_elements is None:
+            try:
+                elements = list(circuit.Elements)
+            except Exception:
+                elements = []
+        else:
+            elements = list(connected_elements or [])
+
+        for el in elements:
             if not design_options.is_main_model_element(el):
                 continue
             if not isinstance(el, DB.FamilyInstance):
@@ -78,9 +73,9 @@ class RevitCircuitWriter(object):
             if not cat:
                 continue
 
-            cat_id_value = category_utils.category_id_value(cat.Id)
-            is_fixture = cat_id_value in fixture_category_values
-            is_equipment = cat_id_value in equipment_category_values
+            built_in_category = category_utils.get_built_in_category(cat)
+            is_fixture = built_in_category in fixture_categories
+            is_equipment = built_in_category == equipment_category
 
             if not (is_fixture or is_equipment):
                 continue
@@ -96,12 +91,7 @@ class RevitCircuitWriter(object):
                 if not param:
                     continue
                 try:
-                    if param.StorageType == DB.StorageType.String:
-                        param.Set(str(value))
-                    elif param.StorageType == DB.StorageType.Integer:
-                        param.Set(int(value))
-                    elif param.StorageType == DB.StorageType.Double:
-                        param.Set(float(value))
+                    revit_helpers.set_parameter_if_changed(param, value)
                 except Exception:
                     continue
 

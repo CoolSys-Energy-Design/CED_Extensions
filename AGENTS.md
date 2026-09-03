@@ -35,3 +35,46 @@ For new Revit code and newly added imports, favor:
 These conventions are prospective. Do not revise, normalize, or reorganize
 existing codebase imports or other existing code solely to conform to them
 unless the user specifically requests a refactor.
+
+## Revit document and UI context lifetime — mandatory
+
+pyRevit Rocket Mode can reuse one IronPython engine for an extension. Shared
+module state can therefore outlive the command invocation and the document that
+was active when the module was first imported.
+
+- Do not capture or cache `revit.doc`, `revit.uidoc`,
+  `__revit__.ActiveUIDocument`, `DB.Document`, `UIDocument`, Revit elements, or
+  native `ElementId` objects in module-level variables inside model, domain,
+  application-service, repository, or other reusable library modules.
+- Do not use import-time defaults such as `def method(doc=revit.doc)` in new
+  shared or model-layer code.
+- Entry-point and UI composition code may read the active `doc`/`uidoc` at the
+  command boundary, but it must pass that context explicitly to lower layers.
+- A model object that already owns a Revit element should resolve its document
+  from that element (for example, `self.circuit.Document`) rather than from the
+  currently active UI document.
+- Deferred/modeless work must acquire the active UI context inside
+  `ExternalEvent.Execute`, validate it against the payload's captured document
+  identity, and only then resolve IDs or elements.
+- Tests for document-sensitive model logic must cover a circuit or element whose
+  owning document differs from the active UI document.
+
+Reference: pyRevit's Rocket Mode guidance warns that custom modules must not
+retain active-document or element information in module-level variables.
+
+## FamilySymbol/type-name access — mandatory for new Revit code
+
+- Do not rely on `element.Name` or `family_symbol.Name` in IronPython; the
+  CLR property binding is not reliable in Revit 2024.
+- Use the shared `revit_helpers.get_family_symbol_name()` helper for display
+  type names. Its first attempt must be `DB.Element.Name.__get__(family_symbol)`.
+- For a `FamilySymbol` fallback, read
+  `DB.BuiltInParameter.SYMBOL_NAME_PARAM` as `AsString()` or
+  `AsValueString()`. `SYMBOL_NAME_PARAM` is a type-name fallback only; it is
+  not the instance type-reference parameter.
+- For a `FamilyInstance`, resolve its FamilySymbol first. If that path fails,
+  use `DB.BuiltInParameter.ELEM_TYPE_PARAM` on the instance, preferring
+  `AsValueString()` and otherwise resolving its native `ElementId` through the
+  active document. `ELEM_TYPE_PARAM` is not available on a FamilySymbol.
+- Keep the `ElementId` native while resolving it through Revit. Convert it to
+  a numeric value only at serialization, logging, or other DTO boundaries.

@@ -5,7 +5,7 @@ import xml.etree.ElementTree as ET
 # CONFIG
 # -----------------------------
 
-ROOT = r"C:\Users\Aevelina\CED_Extensions\CEDLib.lib\UIClasses\Resources\Themes"
+ROOT = os.path.abspath(os.path.dirname(__file__))
 
 THEME_FILES = {
     "Base": "CED.Colors.xaml",

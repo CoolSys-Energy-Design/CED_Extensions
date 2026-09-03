@@ -74,14 +74,27 @@ def _get_global_param(doc):
     return None
 
 
+def _rollback_started_transaction(transaction):
+    """Best-effort cleanup that preserves the original Revit exception."""
+    try:
+        if transaction is not None and transaction.HasStarted():
+            transaction.RollBack()
+    except Exception:
+        pass
+
+
 def _create_global_param(doc):
     """Create a new global text parameter and return it."""
     spec = DB.SpecTypeId.String.Text  # text parameter spec
     t = DB.Transaction(doc, "Create {}".format(GP_NAME))
-    t.Start()
-    gp = DB.GlobalParameter.Create(doc, GP_NAME, spec)
-    t.Commit()
-    return gp
+    try:
+        t.Start()
+        gp = DB.GlobalParameter.Create(doc, GP_NAME, spec)
+        t.Commit()
+        return gp
+    except Exception:
+        _rollback_started_transaction(t)
+        raise
 
 
 def _get_or_create_global_param(doc):
@@ -138,9 +151,13 @@ def save_circuit_settings(doc, settings):
 
     spv = DB.StringParameterValue(json_text)
     t = DB.Transaction(doc, "Save {}".format(GP_NAME))
-    t.Start()
-    gp.SetValue(spv)
-    t.Commit()
+    try:
+        t.Start()
+        gp.SetValue(spv)
+        t.Commit()
+    except Exception:
+        _rollback_started_transaction(t)
+        raise
 
 
 def has_project_parameter_binding(doc, parameter_name):
@@ -610,19 +627,7 @@ def _create_binding(app, category_set, is_instance):
 
 
 def _clear_param(param):
-    try:
-        st = param.StorageType
-        if st == DB.StorageType.String:
-            param.Set("")
-        elif st == DB.StorageType.Integer:
-            param.Set(0)
-        elif st == DB.StorageType.Double:
-            param.Set(0.0)
-        elif st == DB.StorageType.ElementId:
-            param.Set(DB.ElementId.InvalidElementId)
-        return True
-    except Exception:
-        return False
+    return revit_helpers.set_parameter_if_changed(param, None)
 
 
 def clear_downstream_results(doc, clear_equipment=False, clear_fixtures=False, logger=None, check_ownership=True):

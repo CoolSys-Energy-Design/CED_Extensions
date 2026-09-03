@@ -66,9 +66,10 @@ all three flip conditions are handled by the host frame automatically.
   reference tag and loadable `FamilyInstance` hosts.
 - Multiple reference tags are allowed, but every reference must resolve to the
   same host. Each distinct reference tag type is copied to each target.
-- A multi-category reference permits manual selection of any visible,
-  independently referenceable `FamilyInstance`; Revit remains the final
-  compatibility check during creation.
+- **Use Current Selection** requires targets to match the reference host
+  category, including when the selected reference is a multi-category tag.
+  Other selected elements are retained as invalid diagnostics but are
+  excluded from tag creation. The existing **New** picker behavior is retained.
 - Reference tags are retained when the active view changes. Targets are
   cleared and recollected in the new floor plan, reflected ceiling plan, or
   drafting view.
@@ -105,7 +106,9 @@ all three flip conditions are handled by the host frame automatically.
    Example**, or use **Pick New Reference(s)**.
 3. Confirm the displayed type, host, owner view, leader, and orientation.
 4. Test same-type, same-family, same-category, and manual target modes. For
-   manual targets, test **New**, **Edit**, and **Preview selection**.
+   manual targets, test **New**, **Use Current Selection**, and **Clear**.
+   Include a mixed-category current selection and confirm that only elements
+   matching the reference host category are valid.
 5. Run the geometry debug routine `run_geometry_round_trip_tests()` from a
    pyRevit console.
 6. Create tags and verify the completion report.

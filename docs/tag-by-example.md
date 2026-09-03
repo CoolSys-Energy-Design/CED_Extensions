@@ -17,9 +17,14 @@ Choose a target mode:
 | **All visible elements of the same type** | Visible elements with the same Revit type as the reference host. | Exact equipment/fixture standardization. |
 | **All visible elements of the same family** | Visible elements in the same family, across types. | Applying one family-wide tagging convention. |
 | **All visible elements of the same category** | Visible elements in the same category. | Broad category tagging. |
-| **User selection** | Only targets selected in Revit. **New** creates a set, **Edit** modifies it, and **Preview Selection** highlights it. | Hand-picked or exception-based tagging. |
+| **User selection** | **New** creates a set, while **Use Current Selection** captures the active Revit selection. **Clear** resets the saved set. | Hand-picked or exception-based tagging. |
 
 Automatic targets are collected from the active view. The reference host, hidden elements, unsupported hosts, and incompatible elements are excluded. **Include nested family instances** adds nested family instances when they are visible and independently referenceable; some nested families cannot be tagged reliably.
+
+For **Use Current Selection**, only supported elements matching the reference
+host category are valid targets. Other selected elements are counted as
+invalid and excluded from tag creation. **Clear** resets the tool's saved
+manual targets without changing the active Revit selection.
 
 ## Placement options
 

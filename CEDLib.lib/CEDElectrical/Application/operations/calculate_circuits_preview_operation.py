@@ -4,6 +4,10 @@
 from CEDElectrical.Domain import settings_manager
 from CEDElectrical.Model.CircuitBranch import CircuitBranch
 from CEDElectrical.Model.circuit_settings import IsolatedGroundBehavior, NeutralBehavior
+from CEDElectrical.Application.operations.calculate_circuits_operation import (
+    SPECIAL_MODE_LEGACY,
+    get_special_processing_mode,
+)
 from Snippets import revit_helpers
 
 
@@ -28,7 +32,9 @@ class CalculateCircuitsPreviewOperation(object):
         for circuit in list(circuits or []):
             if circuit is None:
                 continue
-            cid = int(_elid_value(getattr(circuit, "Id", None)))
+            cid = _elid_value(getattr(circuit, "Id", None))
+            if get_special_processing_mode(doc, circuit) == SPECIAL_MODE_LEGACY:
+                continue
             preview_values = dict(overrides_by_circuit.get(cid, {}))
             branch = CircuitBranch(circuit, settings=settings, preview_values=preview_values)
 
@@ -57,13 +63,7 @@ class CalculateCircuitsPreviewOperation(object):
         normalized = {}
         source = dict(raw or {})
         for key, value in list(source.items()):
-            try:
-                cid = int(key)
-            except Exception:
-                try:
-                    cid = int(str(key or "").strip())
-                except Exception:
-                    cid = 0
+            cid = revit_helpers.coerce_elementid_value(key)
             if cid <= 0:
                 continue
             normalized[cid] = dict(value or {})

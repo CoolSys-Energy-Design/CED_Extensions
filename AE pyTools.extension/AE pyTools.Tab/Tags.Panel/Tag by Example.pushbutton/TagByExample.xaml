@@ -109,8 +109,8 @@
               </ComboBox>
               <StackPanel Orientation="Horizontal" Margin="0,7,0,0">
                 <Button Name="NewTargetsButton" Content="New" Width="62" Height="28" Margin="0,0,5,0" Style="{DynamicResource CED.Button.Base}" Click="new_targets_clicked" IsEnabled="False"/>
-                <Button Name="EditTargetsButton" Content="Edit" Width="62" Height="28" Margin="0,0,5,0" Style="{DynamicResource CED.Button.Base}" Click="edit_targets_clicked" IsEnabled="False"/>
-                <Button Name="PreviewSelectionButton" Content="Preview Selection" Width="124" Height="28" Style="{DynamicResource CED.Button.Base}" Click="preview_selection_clicked" IsEnabled="False"/>
+                <Button Name="UseCurrentSelectionButton" Content="Use Current Selection" Width="150" Height="28" Margin="0,0,5,0" Style="{DynamicResource CED.Button.Base}" Click="use_current_selection_clicked" IsEnabled="False"/>
+                <Button Name="ClearTargetsButton" Content="Clear" Width="62" Height="28" Style="{DynamicResource CED.Button.Base}" Click="clear_targets_clicked" IsEnabled="False"/>
               </StackPanel>
               <CheckBox Name="IncludeNestedToggle"
                         Content="Include nested family instances"
