@@ -165,28 +165,8 @@ class MarkExistingAndRecalculateOperation(object):
         )
         try:
             calc_result = self._calculate_operation.execute(calc_request, doc) or {}
-            if (
-                str(calc_result.get('status') or '').strip().lower() == 'cancelled'
-                and str(calc_result.get('reason') or '').strip().lower() == 'calc_preview_skipped'
-            ):
-                try:
-                    tg.RollBack()
-                except Exception:
-                    pass
-                if locked_rows:
-                    existing = list(calc_result.get('locked_rows') or [])
-                    calc_result['locked_rows'] = existing + locked_rows
-                return calc_result
-            if str(calc_result.get('status') or '').strip().lower() == 'preview_required':
-                try:
-                    tg.RollBack()
-                except Exception:
-                    pass
-                if locked_rows:
-                    existing = list(calc_result.get('locked_rows') or [])
-                    calc_result['locked_rows'] = existing + locked_rows
-                return calc_result
-            if str(calc_result.get('status') or '').strip().lower() == 'stale':
+            calc_status = str(calc_result.get('status') or '').strip().lower()
+            if calc_status != 'ok':
                 try:
                     tg.RollBack()
                 except Exception:
