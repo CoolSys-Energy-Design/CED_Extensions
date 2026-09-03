@@ -1,5 +1,7 @@
 # coding: utf8
 
+from __future__ import absolute_import
+
 # noinspection PyUnresolvedReferences
 import System
 from Autodesk.Revit.Exceptions import (
