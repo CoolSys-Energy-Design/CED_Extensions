@@ -4,7 +4,7 @@
 try:
     from System import Action
     from System.Windows import DataTemplate, DependencyProperty, FrameworkElementFactory
-    from System.Windows.Controls import ComboBox, ComboBoxItem, TextBlock, TextBox
+    from System.Windows.Controls import ComboBox, ComboBoxItem, ScrollViewer, TextBlock, TextBox
     from System.Windows.Data import Binding, CollectionViewSource
     from System.Windows.Documents import Run
     from System.Windows.Input import (
@@ -23,6 +23,7 @@ except Exception:
     Brushes = None
     ComboBox = None
     ComboBoxItem = None
+    ScrollViewer = None
     CollectionViewSource = None
     DataTemplate = None
     DependencyProperty = None
@@ -241,6 +242,11 @@ class FilterableComboBox(object):
         fallback=FALLBACK_LAST_VALID,
         fallback_item=None,
         on_value_committed=None,
+        navigation_requires_open=False,
+        clear_focus_on_commit=True,
+        commit_selection_while_open=False,
+        commit_programmatic_selection=True,
+        navigation_advances_implicit_candidate=False,
     ):
         if ComboBox is not None and not isinstance(combo, ComboBox):
             raise TypeError("FilterableComboBox requires a WPF ComboBox")
@@ -255,6 +261,13 @@ class FilterableComboBox(object):
         self.allow_custom_values = bool(allow_custom_values)
         self.fallback = fallback or FALLBACK_LAST_VALID
         self.fallback_item = fallback_item
+        self.navigation_requires_open = bool(navigation_requires_open)
+        self.clear_focus_on_commit = bool(clear_focus_on_commit)
+        self.commit_selection_while_open = bool(commit_selection_while_open)
+        self.commit_programmatic_selection = bool(commit_programmatic_selection)
+        self.navigation_advances_implicit_candidate = bool(
+            navigation_advances_implicit_candidate
+        )
 
         self._textbox = None
         self._query_text = ""
@@ -273,6 +286,7 @@ class FilterableComboBox(object):
         self._popup = None
         self._direct_items_snapshot = []
         self._attached = False
+        self._highlight_refresh_pending = False
 
         self._capture_items_snapshot()
         initial_text = self._read_text()
@@ -328,6 +342,7 @@ class FilterableComboBox(object):
             self.combo.LostKeyboardFocus -= self._on_combo_lost_focus
             self.combo.PreviewKeyDown -= self._on_key_down
             self.combo.PreviewMouseLeftButtonDown -= self._on_combo_mouse_down
+            self.combo.PreviewMouseWheel -= self._on_combo_mouse_wheel
         except Exception:
             pass
         self._detach_textbox()
@@ -347,6 +362,7 @@ class FilterableComboBox(object):
             # keys after focus enters those surfaces.
             self.combo.PreviewKeyDown += self._on_key_down
             self.combo.PreviewMouseLeftButtonDown += self._on_combo_mouse_down
+            self.combo.PreviewMouseWheel += self._on_combo_mouse_wheel
             self._attached = True
         except Exception:
             self._attached = False
@@ -355,7 +371,11 @@ class FilterableComboBox(object):
         self._install_item_template()
         self._attach_textbox()
         self._attach_popup()
-        self._queue_highlight_refresh()
+        # Recycled grid editors can load many times while the user scrolls.
+        # With no active query there are no highlights to rebuild, so avoid a
+        # full item-container walk on every virtualization cycle.
+        if self._query_text or bool(getattr(self.combo, "IsDropDownOpen", False)):
+            self._queue_highlight_refresh()
 
     def _on_got_keyboard_focus(self, sender, args):
         self._attach_textbox()
@@ -364,7 +384,10 @@ class FilterableComboBox(object):
         self._install_item_template()
         self._attach_textbox()
         self._attach_popup()
-        self._apply_filter(self._query_text if self._editing else "", False)
+        # TextChanged filters before it opens the popup. Do not refresh the
+        # same view a second time during that synchronous open event.
+        if not self._editing:
+            self._apply_filter("", False)
         if self.allow_custom_values:
             self._clear_candidate()
         else:
@@ -387,6 +410,8 @@ class FilterableComboBox(object):
             return
         selected = getattr(self.combo, "SelectedItem", None)
         if selected is None:
+            if not self.commit_programmatic_selection and not self._editing:
+                self._adopt_selected_item(None)
             return
         if (
             self._committed_item is not None
@@ -396,6 +421,9 @@ class FilterableComboBox(object):
             return
 
         if bool(getattr(self.combo, "IsDropDownOpen", False)):
+            if self.commit_selection_while_open:
+                self._commit_item(selected)
+                return
             index = self._visible_index(selected)
             if index >= 0:
                 self._set_candidate(
@@ -404,7 +432,30 @@ class FilterableComboBox(object):
                     engaged=True,
                 )
                 return
+        if not self.commit_programmatic_selection and not self._editing:
+            self._adopt_selected_item(selected)
+            return
         self._commit_item(selected)
+
+    def _adopt_selected_item(self, item):
+        """Synchronize a binding-driven selection without reporting a commit."""
+        self._clear_candidate()
+        self._committed_item = item
+        if item is not None:
+            self._last_valid_item = item
+        self._editing = False
+        self._query_text = ""
+        value = item_text(
+            item,
+            text_getter=self._text_getter,
+            display_member_path=self._display_member_path,
+        ) if item is not None else ""
+        self._suppress_events += 1
+        try:
+            self._write_text(value)
+            self._set_caret_end()
+        finally:
+            self._suppress_events -= 1
 
     def _editable_textbox(self, combo):
         if combo is None:
@@ -513,6 +564,7 @@ class FilterableComboBox(object):
         try:
             popup.PreviewKeyDown += self._on_key_down
             popup.PreviewMouseLeftButtonDown += self._on_popup_mouse_down
+            popup.PreviewMouseWheel += self._on_popup_mouse_wheel
             self._popup = popup
         except Exception:
             self._popup = None
@@ -523,6 +575,7 @@ class FilterableComboBox(object):
         try:
             self._popup.PreviewKeyDown -= self._on_key_down
             self._popup.PreviewMouseLeftButtonDown -= self._on_popup_mouse_down
+            self._popup.PreviewMouseWheel -= self._on_popup_mouse_wheel
         except Exception:
             pass
         self._popup = None
@@ -578,6 +631,11 @@ class FilterableComboBox(object):
     def _focus_textbox(self):
         if self._textbox is None:
             return
+        # Typing can open the dropdown synchronously. Refocusing the editor at
+        # that point raises GotKeyboardFocus again and can select the first
+        # character the user just entered.
+        if bool(getattr(self._textbox, "IsKeyboardFocused", False)):
+            return
         try:
             if Keyboard is not None:
                 Keyboard.Focus(self._textbox)
@@ -599,6 +657,21 @@ class FilterableComboBox(object):
 
     def _on_text_changed(self, sender, args):
         if self._suppress_events:
+            return
+        # DataGrid virtualization and binding refreshes can update the editor
+        # while it is off-screen or unfocused. Those are synchronization
+        # changes, not user queries, and must never open the Popup.
+        if not bool(getattr(self.combo, "IsKeyboardFocusWithin", False)) and not bool(
+            getattr(sender, "IsKeyboardFocused", False)
+        ):
+            selected = getattr(self.combo, "SelectedItem", None)
+            self._clear_candidate()
+            self._query_text = ""
+            self._editing = False
+            self._committed_item = selected
+            if selected is not None:
+                self._last_valid_item = selected
+            self._clear_filter(notify=False)
             return
         text = self._read_text()
         self._clear_candidate()
@@ -644,22 +717,57 @@ class FilterableComboBox(object):
     def _on_key_down(self, sender, args):
         if self._suppress_events:
             return
+        if self._key_is(args, "Escape"):
+            if bool(getattr(self.combo, "IsDropDownOpen", False)):
+                if self._commit_keyboard_value():
+                    args.Handled = True
+                return
+            if self._editing:
+                self._cancel_editing()
+                args.Handled = True
+            return
         if self._key_is(args, "Down"):
+            if self.navigation_requires_open and not bool(
+                getattr(self.combo, "IsDropDownOpen", False)
+            ):
+                args.Handled = True
+                return
             if self._move_candidate(1):
                 args.Handled = True
             return
         if self._key_is(args, "Up"):
+            if self.navigation_requires_open and not bool(
+                getattr(self.combo, "IsDropDownOpen", False)
+            ):
+                args.Handled = True
+                return
             if self._move_candidate(-1):
                 args.Handled = True
             return
         if self._key_is(args, "Enter") and self._commit_keyboard_value():
             args.Handled = True
 
+    def handle_host_preview_key_down(self, args):
+        """Let an ancestor control give an open picker first refusal on keys.
+
+        Controls such as DataGrid process preview arrow keys before descendant
+        editors receive them. Hosts can call this from their own preview route
+        without duplicating the picker state machine.
+        """
+        if not bool(getattr(self.combo, "IsDropDownOpen", False)):
+            return False
+        self._on_key_down(self.combo, args)
+        return bool(getattr(args, "Handled", False))
+
     def _move_candidate(self, direction):
         query = self._query_text
         previous_item = self._candidate_item
         previous_engaged = self._candidate_engaged
-        self._apply_filter(query, True)
+        # The current query was already applied by TextChanged. Re-filtering
+        # here made every arrow press rebuild the popup and could invalidate
+        # the candidate before navigation completed.
+        if not bool(getattr(self.combo, "IsDropDownOpen", False)):
+            self._apply_filter(query, True)
         visible = self._visible_items()
         if not visible:
             return False
@@ -667,7 +775,11 @@ class FilterableComboBox(object):
         current_index = -1
         if previous_item is not None:
             current_index = self._visible_index(previous_item, visible)
-        if previous_item is not None and not previous_engaged:
+        if (
+            previous_item is not None
+            and not previous_engaged
+            and not self.navigation_advances_implicit_candidate
+        ):
             target_index = current_index
         else:
             target_index = navigation_index(current_index, len(visible), direction)
@@ -759,6 +871,42 @@ class FilterableComboBox(object):
             self._commit_custom_text()
             return
         self._resolve_enforced_value()
+
+    def _cancel_editing(self):
+        """Close the Popup and restore the last committed list value."""
+        self._clear_candidate()
+        self._query_text = ""
+        self._editing = False
+        restore_item = self._last_valid_item
+        view = self._items_view()
+        self._suppress_events += 1
+        try:
+            if view is not None:
+                view.Filter = None
+                try:
+                    view.Refresh()
+                except Exception:
+                    pass
+            self._committed_item = restore_item
+            if restore_item is None:
+                self.combo.SelectedIndex = -1
+                self._write_text("")
+            else:
+                self.combo.SelectedItem = restore_item
+                self._write_text(
+                    item_text(
+                        restore_item,
+                        text_getter=self._text_getter,
+                        display_member_path=self._display_member_path,
+                    )
+                )
+            self.combo.IsDropDownOpen = False
+        finally:
+            self._suppress_events -= 1
+        if view is not None:
+            self._notify_filter_changed(view)
+        self._queue_highlight_refresh()
+        self._focus_textbox()
 
     def _commit_custom_text(self):
         value = self._read_text()
@@ -873,6 +1021,9 @@ class FilterableComboBox(object):
             self.combo.IsDropDownOpen = False
         except Exception:
             pass
+        if not self.clear_focus_on_commit:
+            self._focus_textbox()
+            return
         if Keyboard is not None:
             try:
                 Keyboard.ClearFocus()
@@ -1058,7 +1209,19 @@ class FilterableComboBox(object):
             self._set_container_highlight(self._candidate_index, True)
 
     def _queue_highlight_refresh(self):
-        self._begin_invoke(self._refresh_item_highlights, priority="Background")
+        # Fast typing can otherwise enqueue one layout/container walk per
+        # character. One pending pass always reads the latest query.
+        if self._highlight_refresh_pending:
+            return
+        self._highlight_refresh_pending = True
+
+        def refresh_latest():
+            self._highlight_refresh_pending = False
+            if not self._attached:
+                return
+            self._refresh_item_highlights()
+
+        self._begin_invoke(refresh_latest, priority="Background")
 
     def _set_item_highlight(self, text_block, value):
         if Run is None:
@@ -1168,6 +1331,91 @@ class FilterableComboBox(object):
             args.Handled = True
         except Exception:
             pass
+
+    def _parent_scroll_viewer(self):
+        if ScrollViewer is None or VisualTreeHelper is None:
+            return None
+        current = self.combo
+        while current is not None:
+            try:
+                current = VisualTreeHelper.GetParent(current)
+            except Exception:
+                return None
+            if isinstance(current, ScrollViewer):
+                return current
+        return None
+
+    def _on_combo_mouse_wheel(self, sender, args):
+        """Keep wheel input from changing a closed editor's value.
+
+        Popup content lives in a separate visual tree, so wheel events over
+        its list never reach this handler and retain native list scrolling.
+        Wheel events over the editor are redirected to the parent scroller.
+        """
+        if bool(getattr(self.combo, "IsDropDownOpen", False)):
+            self._on_popup_mouse_wheel(sender, args)
+            # Never let an open picker wheel fall through to the host grid,
+            # even if its ScrollViewer has not been realized yet.
+            try:
+                args.Handled = True
+            except Exception:
+                pass
+            return
+        scroll_viewer = self._parent_scroll_viewer()
+        if scroll_viewer is None:
+            return
+        try:
+            delta = int(getattr(args, "Delta", 0) or 0)
+            steps = max(1, int(abs(delta) // 120))
+            for _unused in range(steps):
+                if delta > 0:
+                    scroll_viewer.LineUp()
+                else:
+                    scroll_viewer.LineDown()
+            args.Handled = True
+        except Exception:
+            pass
+
+    def _popup_scroll_viewer(self, source=None):
+        if ScrollViewer is None or VisualTreeHelper is None:
+            return None
+        current = source
+        while current is not None:
+            if isinstance(current, ScrollViewer):
+                return current
+            if current is self._popup:
+                break
+            try:
+                current = VisualTreeHelper.GetParent(current)
+            except Exception:
+                break
+        for node in self._visual_descendants(self._popup, ScrollViewer):
+            return node
+        return None
+
+    def _on_popup_mouse_wheel(self, sender, args):
+        """Scroll the open popup list and stop the wheel reaching its host grid."""
+        scroll_viewer = self._popup_scroll_viewer(getattr(args, "OriginalSource", None))
+        if scroll_viewer is None:
+            return
+        try:
+            delta = int(getattr(args, "Delta", 0) or 0)
+            steps = max(1, int(abs(delta) // 120))
+            for _unused in range(steps):
+                if delta > 0:
+                    scroll_viewer.LineUp()
+                else:
+                    scroll_viewer.LineDown()
+            args.Handled = True
+        except Exception:
+            pass
+
+    def focus_editor(self, select_all=False):
+        """Focus the editable surface for host-controlled grid navigation."""
+        self._attach_textbox()
+        self._focus_textbox()
+        if select_all:
+            self._select_all()
 
     def _on_popup_mouse_down(self, sender, args):
         # Routed mouse events inside PART_Popup do not reach the ComboBox.

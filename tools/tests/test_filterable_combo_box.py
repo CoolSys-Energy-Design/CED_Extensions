@@ -18,6 +18,7 @@ RESOURCE_XAML_PATH = ROOT / (
     "CEDLib.lib/UIClasses/Resources/Controls/FilterableComboBox.xaml"
 )
 LOADER_PATH = ROOT / "CEDLib.lib" / "UIClasses" / "resource_loader.py"
+THEME_MANAGER_PATH = ROOT / "CEDLib.lib" / "UIClasses" / "theme_manager.py"
 CURSED_THEME_PATH = ROOT / "CEDLib.lib/UIClasses/Resources/Themes/CEDTheme.Cursed.xaml"
 SETTINGS_XAML_PATH = ROOT / (
     "CED ElecTools.extension/AE pyTools.tab/Electrical.panel/"
@@ -109,6 +110,19 @@ class FakePopup(object):
         self.IsKeyboardFocusWithin = False
         self.PreviewKeyDown = EventHook()
         self.PreviewMouseLeftButtonDown = EventHook()
+        self.PreviewMouseWheel = EventHook()
+
+
+class FakeScrollViewer(object):
+    def __init__(self):
+        self.up_count = 0
+        self.down_count = 0
+
+    def LineUp(self):
+        self.up_count += 1
+
+    def LineDown(self):
+        self.down_count += 1
 
 
 class FakeGenerator(object):
@@ -130,6 +144,7 @@ class FakeTextBox(object):
         self.combo = combo
         self._text = ""
         self.CaretIndex = 0
+        self.IsKeyboardFocused = False
         self.SelectionStart = 0
         self.SelectionLength = 0
         self.TextChanged = EventHook()
@@ -152,6 +167,7 @@ class FakeTextBox(object):
 
     def Focus(self):
         self.combo.IsKeyboardFocusWithin = True
+        self.IsKeyboardFocused = True
         return True
 
     def Select(self, start, length):
@@ -192,6 +208,7 @@ class FakeCombo(object):
         self.LostKeyboardFocus = EventHook()
         self.PreviewKeyDown = EventHook()
         self.PreviewMouseLeftButtonDown = EventHook()
+        self.PreviewMouseWheel = EventHook()
         self.popup = FakePopup()
         self.textbox = FakeTextBox(self)
         self.Template = FakeTemplate(self.textbox, self.popup)
@@ -251,9 +268,11 @@ class FakeCombo(object):
 
 class FakeKeyboard(object):
     active_textbox = None
+    focus_count = 0
 
     @classmethod
     def Focus(cls, textbox):
+        cls.focus_count += 1
         cls.active_textbox = textbox
         return textbox.Focus()
 
@@ -261,6 +280,7 @@ class FakeKeyboard(object):
     def ClearFocus(cls):
         if cls.active_textbox is not None:
             cls.active_textbox.combo.IsKeyboardFocusWithin = False
+            cls.active_textbox.IsKeyboardFocused = False
 
 
 class KeyArgs(object):
@@ -275,19 +295,31 @@ class MouseArgs(object):
         self.Handled = False
 
 
+class WheelArgs(object):
+    def __init__(self, delta, original_source=None):
+        self.Delta = delta
+        self.OriginalSource = original_source
+        self.Handled = False
+
+
 class FilterableComboBoxTests(unittest.TestCase):
     def setUp(self):
         self.original_keyboard = FILTERABLE.Keyboard
         self.original_combo_box_item = FILTERABLE.ComboBoxItem
         self.original_visual_tree_helper = FILTERABLE.VisualTreeHelper
+        self.original_scroll_viewer = FILTERABLE.ScrollViewer
         FILTERABLE.Keyboard = FakeKeyboard
         FILTERABLE.ComboBoxItem = FakeContainer
         FILTERABLE.VisualTreeHelper = FakeVisualTreeHelper
+        FILTERABLE.ScrollViewer = FakeScrollViewer
+        FakeKeyboard.active_textbox = None
+        FakeKeyboard.focus_count = 0
 
     def tearDown(self):
         FILTERABLE.Keyboard = self.original_keyboard
         FILTERABLE.ComboBoxItem = self.original_combo_box_item
         FILTERABLE.VisualTreeHelper = self.original_visual_tree_helper
+        FILTERABLE.ScrollViewer = self.original_scroll_viewer
 
     def _control(
         self,
@@ -358,6 +390,182 @@ class FilterableComboBoxTests(unittest.TestCase):
     def test_wpf_return_key_alias_is_treated_as_enter(self):
         behavior, _combo = self._control(False)
         self.assertTrue(behavior._key_is(KeyArgs("Return"), "Enter"))
+
+    def test_unfocused_binding_text_change_never_opens_popup(self):
+        behavior, combo = self._control(False)
+        combo.IsKeyboardFocusWithin = False
+        combo.textbox.IsKeyboardFocused = False
+        combo.textbox.Text = "Power - Floor Box"
+        self.assertFalse(combo.IsDropDownOpen)
+        self.assertFalse(behavior._editing)
+        self.assertEqual("", behavior.query)
+
+    def test_editor_mouse_wheel_scrolls_parent_not_combo(self):
+        behavior, combo = self._control(False)
+        parent = FakeScrollViewer()
+        combo.Parent = parent
+        args = WheelArgs(-240)
+        combo.PreviewMouseWheel.fire(combo, args)
+        self.assertTrue(args.Handled)
+        self.assertEqual(2, parent.down_count)
+        self.assertEqual(0, parent.up_count)
+        self.assertFalse(combo.IsDropDownOpen)
+
+    def test_escape_commits_filtered_popup_candidate(self):
+        behavior, combo = self._control(False)
+        behavior._commit_item("Lighting - Recessed")
+        combo.IsKeyboardFocusWithin = True
+        combo.textbox.IsKeyboardFocused = True
+        combo.open_dropdown()
+        combo.textbox.user_type("Power")
+        args = self._press(combo.textbox, "Escape")
+        self.assertTrue(args.Handled)
+        self.assertFalse(combo.IsDropDownOpen)
+        self.assertEqual("Power - Duplex Receptacle", combo.SelectedItem)
+        self.assertEqual("Power - Duplex Receptacle", combo.Text)
+
+    def test_escape_commits_active_popup_candidate(self):
+        committed = []
+        behavior, combo = self._control(False, callback=lambda _behavior, value, _item: committed.append(value))
+        combo.open_dropdown()
+        self._press(combo.textbox, "Down")
+        args = self._press(combo.textbox, "Escape")
+        self.assertTrue(args.Handled)
+        self.assertFalse(combo.IsDropDownOpen)
+        self.assertEqual("Lighting - Pendant", behavior.selected_item)
+        self.assertEqual(["Lighting - Pendant"], committed)
+
+    def test_popup_mouse_wheel_scrolls_popup_not_parent_grid(self):
+        _behavior, combo = self._control(False)
+        combo.open_dropdown()
+        popup_scroll = FakeScrollViewer()
+        popup_scroll.Parent = combo.popup
+        args = WheelArgs(-240, original_source=popup_scroll)
+        combo.popup.PreviewMouseWheel.fire(combo.popup, args)
+        self.assertTrue(args.Handled)
+        self.assertEqual(2, popup_scroll.down_count)
+        self.assertEqual(0, popup_scroll.up_count)
+
+    def test_open_editor_mouse_wheel_scrolls_popup_not_parent_grid(self):
+        _behavior, combo = self._control(False)
+        parent_grid_scroll = FakeScrollViewer()
+        combo.Parent = parent_grid_scroll
+        combo.open_dropdown()
+        popup_scroll = FakeScrollViewer()
+        popup_scroll.Parent = combo.popup
+        args = WheelArgs(-120, original_source=popup_scroll)
+        combo.PreviewMouseWheel.fire(combo, args)
+        self.assertTrue(args.Handled)
+        self.assertEqual(1, popup_scroll.down_count)
+        self.assertEqual(0, parent_grid_scroll.down_count)
+
+    def test_grid_mode_arrows_require_open_popup(self):
+        values = ["Alpha", "Beta"]
+        combo = FakeCombo(values)
+        behavior = FILTERABLE.FilterableComboBox(
+            combo,
+            allow_custom_values=False,
+            navigation_requires_open=True,
+        )
+        closed_down = self._press(combo.textbox, "Down")
+        self.assertTrue(closed_down.Handled)
+        self.assertFalse(combo.IsDropDownOpen)
+        combo.open_dropdown()
+        open_down = self._press(combo.textbox, "Down")
+        self.assertTrue(open_down.Handled)
+        self.assertTrue(combo.IsDropDownOpen)
+
+    def test_grid_mode_down_advances_visible_implicit_candidate(self):
+        values = ["Alpha", "Beta"]
+        combo = FakeCombo(values)
+        behavior = FILTERABLE.FilterableComboBox(
+            combo,
+            allow_custom_values=False,
+            navigation_requires_open=True,
+            navigation_advances_implicit_candidate=True,
+        )
+        combo.open_dropdown()
+        self._press(combo.textbox, "Down")
+        self.assertEqual("Beta", behavior.value)
+
+    def test_large_filtered_list_keeps_typing_focus_and_arrow_navigation(self):
+        values = ["Fixture Type {:03d}".format(index) for index in range(150)]
+        combo = FakeCombo(values)
+        behavior = FILTERABLE.FilterableComboBox(
+            combo,
+            allow_custom_values=False,
+            navigation_requires_open=True,
+            navigation_advances_implicit_candidate=True,
+        )
+        combo.textbox.Focus()
+        initial_focus_count = FakeKeyboard.focus_count
+        combo.textbox.user_type("Fixture Type 1")
+        self.assertTrue(combo.IsDropDownOpen)
+        self.assertEqual("Fixture Type 1", combo.textbox.Text)
+        self.assertEqual(initial_focus_count, FakeKeyboard.focus_count)
+        down = self._press(combo.textbox, "Down")
+        self.assertTrue(down.Handled)
+        self.assertEqual("Fixture Type 101", behavior.value)
+
+    def test_host_preview_can_give_open_picker_priority_over_grid(self):
+        values = ["Alpha", "Beta", "Gamma"]
+        combo = FakeCombo(values)
+        behavior = FILTERABLE.FilterableComboBox(
+            combo,
+            allow_custom_values=False,
+            navigation_requires_open=True,
+            navigation_advances_implicit_candidate=True,
+        )
+        combo.open_dropdown()
+        args = KeyArgs("Down")
+        self.assertTrue(behavior.handle_host_preview_key_down(args))
+        self.assertTrue(args.Handled)
+        self.assertEqual("Beta", behavior.value)
+
+    def test_grid_mode_commits_native_popup_selection_immediately(self):
+        committed = []
+        values = ["Alpha", "Beta"]
+        combo = FakeCombo(values)
+        behavior = FILTERABLE.FilterableComboBox(
+            combo,
+            allow_custom_values=False,
+            on_value_committed=lambda _behavior, value, _item: committed.append(value),
+            commit_selection_while_open=True,
+            commit_programmatic_selection=False,
+        )
+        combo.open_dropdown()
+        combo.SelectedItem = "Beta"
+        self.assertEqual(["Beta"], committed)
+        self.assertEqual("Beta", behavior.selected_item)
+        self.assertFalse(combo.IsDropDownOpen)
+
+    def test_grid_mode_adopts_binding_selection_without_commit_callback(self):
+        committed = []
+        values = ["Alpha", "Beta"]
+        combo = FakeCombo(values)
+        behavior = FILTERABLE.FilterableComboBox(
+            combo,
+            allow_custom_values=False,
+            on_value_committed=lambda _behavior, value, _item: committed.append(value),
+            commit_programmatic_selection=False,
+        )
+        combo.IsKeyboardFocusWithin = False
+        combo.textbox.IsKeyboardFocused = False
+        combo.SelectedItem = "Beta"
+        self.assertEqual([], committed)
+        self.assertEqual("Beta", behavior.selected_item)
+
+    def test_grid_mode_can_retain_editor_focus_after_commit(self):
+        values = ["Alpha", "Beta"]
+        combo = FakeCombo(values)
+        behavior = FILTERABLE.FilterableComboBox(
+            combo,
+            allow_custom_values=False,
+            clear_focus_on_commit=False,
+        )
+        behavior._commit_item("Beta")
+        self.assertTrue(combo.IsKeyboardFocusWithin)
+        self.assertTrue(combo.textbox.IsKeyboardFocused)
 
     def test_find_exact_item_is_case_insensitive(self):
         values = ["Lighting - Pendant", "Power - Floor Box"]
@@ -645,9 +853,12 @@ class FilterableComboBoxTests(unittest.TestCase):
 
     def test_theme_loader_exposes_descriptor_driven_modes(self):
         source = LOADER_PATH.read_text(encoding="utf-8")
+        manager_source = THEME_MANAGER_PATH.read_text(encoding="utf-8")
         self.assertIn("THEME_DESCRIPTORS", source)
-        self.assertIn("CEDTheme.Cursed.xaml", source)
         self.assertIn("def theme_descriptors", source)
+        self.assertIn("CEDTheme.Cursed.xaml", manager_source)
+        self.assertIn("CEDTheme.ChatGPT.xaml", manager_source)
+        self.assertIn("def theme_descriptors", manager_source)
 
     def test_all_theme_selectors_are_loader_driven(self):
         theme_window = THEME_XAML_PATH.read_text(encoding="utf-8")
