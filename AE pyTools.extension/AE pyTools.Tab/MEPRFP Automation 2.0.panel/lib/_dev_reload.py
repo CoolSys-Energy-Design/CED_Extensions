@@ -110,6 +110,14 @@ _LIB_MODULE_NAMES = frozenset({
     "space_led_details_window",
     "place_space_elements_window",
     "place_space_annotations_window",
+    # PFAI design import (Circuiting > Import PFAI Design). Neither module
+    # registers a .NET type, so both are safe to purge. Their absence from this
+    # list is what let a stale `pfai_import` keep running after the on-disk file
+    # gained the adopt pass: the button script is re-read every click, the lib
+    # is not, so a NEW script.py ran against an OLD lib and died reaching for
+    # `result.adopted`.
+    "pfai_import",
+    "pfai_xlsx",
     # ui infra
     "forms_compat",
     "wpf",

@@ -57,12 +57,30 @@ def _report(out, plan, result, path):
         out.print_md("Cleared **%d** elements from a previous PFAI import."
                      % result.swept)
 
+    n_adopt = len([d for d in plan.devices if d.get("action") == "adopt"])
+    n_new = c["devices"] - n_adopt
+    if n_adopt:
+        out.print_md(
+            "**%d of these devices already exist in the model** - matched by "
+            "their Element_Linker, not by guesswork. They are reused for their "
+            "identity, parameters and existing circuiting, and are MOVED and "
+            "ROTATED to the planned position. Only the other %d are created. "
+            "Reused elements are never given the PFAI stamp, so a later re-run "
+            "cannot delete them." % (n_adopt, n_new))
+
     rows = [
         ["Panels named / distribution systems set", result.panels_named,
          len(plan.panels)],
-        ["Devices placed", result.placed, c["devices"]],
+        ["Existing elements reused", result.adopted, n_adopt],
+        ["...moved into position", result.adopted_moved, result.adopted],
+        ["...rotated to the planned facing", result.adopted_turned,
+         result.adopted],
+        ["...Revit would not place (see below)", result.adopted_stuck, 0],
+        ["Devices placed", result.placed, n_new],
         ["Circuits assigned to a panel", result.circuits_ok, c["circuits"]],
-        ["Keynotes placed", result.keynotes, c["keynotes"]],
+        ["Keynotes placed or reused", result.keynotes, c["keynotes"]],
+        ["...of those, existing keynotes reused", result.keynotes_adopted,
+         len([k for k in plan.keynotes if k.get("action") == "adopt"])],
         ["Keynotes showing their number on the sheet",
          result.keynotes_printed, c["keynotes"]],
         ["Circuit tags placed", result.tags, result.placed],
@@ -123,6 +141,14 @@ def main():
     if not plan.devices:
         forms.alert("The Devices sheet is empty - nothing to import.",
                     title=TITLE)
+        return
+
+    # Guard BEFORE anything opens a transaction: adopting into the wrong
+    # document moves real elements one at a time and cannot be undone by
+    # inspecting the result afterwards.
+    ok, why = pfai_import.check_document(doc, plan)
+    if not ok:
+        forms.alert(why, title=TITLE)
         return
 
     c = plan.counts

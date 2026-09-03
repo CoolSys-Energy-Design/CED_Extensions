@@ -82,6 +82,13 @@ class ImportResult(object):
         self.keynotes_printed = 0
         self.tags = 0
         self.panels_named = 0
+        self.adopted = 0
+        self.adopted_moved = 0
+        self.adopted_turned = 0
+        # adopted elements that did not end up where we put them - Revit
+        # constrains hosted instances, so this is counted, not assumed
+        self.adopted_stuck = 0
+        self.keynotes_adopted = 0
         self.types_created = []
         self.swept = 0
         self.problems = []        # (stage, subject, reason)
@@ -137,6 +144,11 @@ def read_plan(path):
             "va": _int(r.get("va")),
             "room": _txt(r.get("room")),
             "confidence": _txt(r.get("confidence")),
+            # adopt = an element is already standing here; element_id says which.
+            # Older workbooks have neither column and default to create, which
+            # is the behaviour they were written for.
+            "action": (_txt(r.get("action")) or "create").lower(),
+            "element_id": _int(r.get("element_id"), 0),
         })
     circuits = []
     for r in pfai_xlsx.sheet_dicts(book, "Circuits"):
@@ -154,8 +166,23 @@ def read_plan(path):
             "description": _txt(r.get("description")),
             "family": _txt(r.get("family")) or KEYNOTE_FAMILY,
             "type": _txt(r.get("type")) or KEYNOTE_TYPE,
+            # adopt = a keynote symbol already in the view carries this number;
+            # element_id says which. Older workbooks default to create.
+            "action": (_txt(r.get("action")) or "create").lower(),
+            "element_id": _int(r.get("element_id"), 0),
         })
-    return PfaiPlan(panels, devices, circuits, keynotes, source=path)
+    meta = {}
+    try:
+        for r in pfai_xlsx.sheet_dicts(book, "Meta"):
+            k = _txt(r.get("key"))
+            if k:
+                meta.setdefault(k, []).append(_txt(r.get("value")))
+    except Exception:
+        pass                      # older workbooks have no Meta sheet
+    plan = PfaiPlan(panels, devices, circuits, keynotes, source=path)
+    plan.meta = meta
+    plan.source_document = (meta.get("source_document") or [""])[0]
+    return plan
 
 
 def _family_name(symbol):
@@ -304,7 +331,11 @@ def sweep_previous(doc):
 
 def _pass_types_and_panels(doc, plan, result, fallback_types):
     symbols = _symbols_in_category(doc, DB.BuiltInCategory.OST_ElectricalFixtures)
-    wanted = set(d["type"] for d in plan.devices if d["type"])
+    # Only types we are actually going to CREATE. An adopted element keeps the
+    # type it already has, so duplicating a type on its behalf would add an
+    # unused type to the project.
+    wanted = set(d["type"] for d in plan.devices
+                 if d["type"] and d.get("action") != "adopt")
     for tn in sorted(wanted - set(symbols)):
         src = fallback_types.get(tn)
         base = symbols.get(src) if src else None
@@ -361,9 +392,149 @@ def _pass_types_and_panels(doc, plan, result, fallback_types):
     return symbols
 
 
+def check_document(doc, plan):
+    """Is this workbook allowed to adopt into this document?
+
+    Returns (ok, message). Called BEFORE any transaction opens, because the
+    damage from adopting into the wrong file is done element by element and
+    cannot be spotted by looking at the result.
+    """
+    want = getattr(plan, "source_document", "") or ""
+    n_adopt = len([d for d in plan.devices if d.get("action") == "adopt"])
+    if not n_adopt:
+        return True, ""                     # nothing adopted, nothing to guard
+    have = ""
+    try:
+        have = doc.Title or ""
+    except Exception:
+        pass
+    # Revit drops the extension and may append a detach/workshare suffix, so
+    # compare on the stem rather than demanding an exact string.
+    def stem(t):
+        t = (t or "").strip()
+        for suf in (".rvt", "_detached", " - detached"):
+            if t.lower().endswith(suf):
+                t = t[:-len(suf)]
+        return t.strip().lower()
+    if not want:
+        return False, (
+            "This workbook adopts %d existing elements but does not say which "
+            "document it was built against, so those element ids cannot be "
+            "trusted. Regenerate it from a run that captured this model."
+            % n_adopt)
+    if stem(want) != stem(have):
+        return False, (
+            "This workbook was reconciled against '%s' but the open document is "
+            "'%s'.\n\n%d rows would adopt elements BY ID. Ids do not carry "
+            "between files - in two copies of the same store many of them "
+            "resolve onto unrelated elements, and this button would move them.\n\n"
+            "Re-run the capture against this document and rebuild the workbook."
+            % (want, have, n_adopt))
+    return True, ""
+
+
+def _pass_adopt(doc, plan, result):
+    """Move the elements that already exist onto the planned positions.
+
+    Reused for identity, parameters and circuiting; MOVED and ROTATED to the
+    planned position, because plenty of them are in the wrong place or facing
+    the wrong way - 48 of Oceanside's 73 need turning, one by 180 degrees.
+
+    Nothing else is written. The element keeps its type, its panel, its
+    Element_Linker and its existing circuit, and it is never given the PFAI
+    comment stamp, so a later sweep cannot delete it.
+    """
+    adopted = {}
+    for d in plan.devices:
+        if d.get("action") != "adopt":
+            continue
+        eid = d.get("element_id") or 0
+        if not eid:
+            result.fail("adopt", "#%s %s" % (d["index"], d["load_name"]),
+                        "row says adopt but names no element_id")
+            continue
+        try:
+            el = doc.GetElement(DB.ElementId(eid))
+        except Exception as exc:
+            el = None
+            result.fail("adopt", "#%s id %s" % (d["index"], eid), exc)
+            continue
+        if el is None:
+            result.fail("adopt", "#%s %s" % (d["index"], d["load_name"]),
+                        "element %s is not in this model - the workbook was "
+                        "built against a different file. Refusing to create a "
+                        "duplicate on top of it." % eid)
+            continue
+        cat = None
+        try:
+            cat = el.Category.Name
+        except Exception:
+            pass
+        if cat != "Electrical Fixtures":
+            result.fail("adopt", "#%s id %s" % (d["index"], eid),
+                        "element is a %s, not an electrical fixture"
+                        % (cat or "unknown category"))
+            continue
+        try:
+            loc = el.Location
+            # ---- orientation first, about the element's own vertical axis ----
+            # Rotating about its current point keeps the position untouched, so
+            # the move below is still a straight delta.
+            want = float(d["rotation_deg"]) % 360.0
+            try:
+                cur = math.degrees(loc.Rotation) % 360.0
+            except Exception:
+                cur = None
+            if cur is not None:
+                turn = (want - cur + 180.0) % 360.0 - 180.0
+                if abs(turn) > 0.5:
+                    pt0 = el.Location.Point
+                    axis = DB.Line.CreateBound(
+                        pt0, DB.XYZ(pt0.X, pt0.Y, pt0.Z + 10.0))
+                    DB.ElementTransformUtils.RotateElement(
+                        doc, el.Id, axis, math.radians(turn))
+                    result.adopted_turned += 1
+
+            # ---- then position -----------------------------------------------
+            pt = el.Location.Point
+            dx, dy = d["x"] - pt.X, d["y"] - pt.Y
+            if abs(dx) > 0.005 or abs(dy) > 0.005:
+                DB.ElementTransformUtils.MoveElement(
+                    doc, el.Id, DB.XYZ(dx, dy, 0.0))
+                result.adopted_moved += 1
+
+            # ---- did it actually go there? -----------------------------------
+            stuck = []
+            end = el.Location.Point
+            off = math.hypot(d["x"] - end.X, d["y"] - end.Y)
+            if off > 0.02:
+                stuck.append("still %.2f ft from the planned position" % off)
+            try:
+                got = math.degrees(el.Location.Rotation) % 360.0
+                rd = min((got - want) % 360.0, (want - got) % 360.0)
+                if rd > 1.0:
+                    stuck.append("facing %.0f deg, wanted %.0f" % (got, want))
+            except Exception:
+                pass
+            if stuck:
+                result.adopted_stuck += 1
+                result.fail("adopt", "#%s %s (id %s)"
+                            % (d["index"], d["load_name"], eid),
+                            "reused but Revit would not place it: %s. A hosted "
+                            "instance can refuse a free move or rotation - check "
+                            "its host." % "; ".join(stuck))
+            adopted[d["index"]] = el
+            result.adopted += 1
+        except Exception as exc:
+            result.fail("adopt", "#%s id %s" % (d["index"], eid), exc)
+    return adopted
+
+
 def _pass_devices(doc, plan, level, symbols, result):
     placed = {}
     for d in plan.devices:
+        if d.get("action") == "adopt":
+            continue                 # already in the model; _pass_adopt has it
         tn = d["type"]
         sym = symbols.get(tn)
         if sym is None:
@@ -476,8 +647,31 @@ def _pass_annotations(doc, view, plan, placed, result):
                             "the family default - skipped")
                 continue
             try:
-                fi = doc.Create.NewFamilyInstance(
-                    DB.XYZ(k["x"], k["y"], 0.0), sym, view)
+                adopting = False
+                if k.get("action") == "adopt" and k.get("element_id"):
+                    fi = doc.GetElement(DB.ElementId(k["element_id"]))
+                    if fi is None:
+                        result.fail("keynotes", "#%s id %s"
+                                    % (num, k["element_id"]),
+                                    "this keynote is not in the model - the "
+                                    "workbook was built against another file. "
+                                    "Refusing to place a duplicate over it.")
+                        continue
+                    adopting = True
+                    try:
+                        pt = fi.Location.Point
+                        dx, dy = k["x"] - pt.X, k["y"] - pt.Y
+                        if abs(dx) > 0.005 or abs(dy) > 0.005:
+                            DB.ElementTransformUtils.MoveElement(
+                                doc, fi.Id, DB.XYZ(dx, dy, 0.0))
+                    except Exception as exc:
+                        result.fail("keynotes", "#%s id %s"
+                                    % (num, k["element_id"]),
+                                    "reused but could not be moved: %s" % exc)
+                    result.keynotes_adopted += 1
+                else:
+                    fi = doc.Create.NewFamilyInstance(
+                        DB.XYZ(k["x"], k["y"], 0.0), sym, view)
                 _set_named(fi, KEYNOTE_VALUE_PARAM, num)
                 wrote = _set_named(fi, KEYNOTE_SHEET_PARAM, num)
                 if k.get("description"):
@@ -497,7 +691,11 @@ def _pass_annotations(doc, view, plan, placed, result):
                                 % (KEYNOTE_SHEET_PARAM, shown or "<empty>", num))
                 else:
                     kn_printed += 1
-                placed_keynotes.append(fi.Id)
+                # NEVER register an adopted keynote: the sweep deletes what
+                # the registry lists, so recording a profile-placed symbol
+                # would destroy it on the next run.
+                if not adopting:
+                    placed_keynotes.append(fi.Id)
                 result.keynotes += 1
             except Exception as exc:
                 result.fail("keynotes", "#%s" % num, exc)
@@ -534,7 +732,12 @@ def _pass_annotations(doc, view, plan, placed, result):
 
 
 def run_import(doc, view, plan, sweep=True, fallback_types=None):
-    """Four transactions, one undo step. Returns an ImportResult."""
+    """Five transactions, one undo step. Returns an ImportResult.
+
+    Devices that already exist are moved rather than recreated; they keep their
+    type, panel and circuiting, and never receive the PFAI stamp, so the sweep
+    can never delete something that was in the model before we arrived.
+    """
     result = ImportResult()
     level = getattr(view, "GenLevel", None)
     if level is None:
@@ -559,10 +762,21 @@ def run_import(doc, view, plan, sweep=True, fallback_types=None):
         symbols = _pass_types_and_panels(doc, plan, result, fallback_types or {})
         t.Commit()
 
+        t = DB.Transaction(doc, "PFAI: adopt existing elements")
+        t.Start()
+        adopted = _pass_adopt(doc, plan, result)
+        t.Commit()
+
         t = DB.Transaction(doc, "PFAI: place devices")
         t.Start()
         placed = _pass_devices(doc, plan, level, symbols, result)
         t.Commit()
+        # Annotations key off device index, and a keynote may well point at an
+        # adopted element, so the two maps have to be merged before that pass.
+        # Created wins on a collision, but the workbook never emits both.
+        merged = dict(adopted)
+        merged.update(placed)
+        placed = merged
 
         t = DB.Transaction(doc, "PFAI: circuits")
         t.Start()
