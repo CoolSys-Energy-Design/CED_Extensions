@@ -39,6 +39,15 @@ Adding a tour to a tool takes two files in the tool's bundle folder.
        from UIClasses.tutorial import show_tour
        show_tour(__file__)
 
+A tool with a window of its own should also carry a Help button, which is the
+discoverable route - Shift+Click stays as the shortcut. Add a button named
+``TutorialHelpButton`` to the tool's XAML and one line to its script:
+
+       from UIClasses.tutorial import wire_help
+       wire_help(window, __file__)
+
+See ``help_button.py`` for the markup to paste.
+
 A step whose ``target`` cannot be resolved falls back to narration-only, so a
 tour still reads correctly with the tool closed. Content files are re-read when
 they change on disk, so rewording a step needs no pyRevit reload.
@@ -47,6 +56,7 @@ they change on disk, so rewording a step needs no pyRevit reload.
 import os
 
 from UIClasses.tutorial import engine
+from UIClasses.tutorial.help_button import wire_help
 from UIClasses.tutorial.engine import (
     DockablePanelHost,
     NoHost,
@@ -69,6 +79,7 @@ __all__ = [
     "run_tour",
     "show_tour",
     "show_tour_for",
+    "wire_help",
 ]
 
 DEFAULT_CONTENT_NAME = "tutorial_content.py"
@@ -81,7 +92,7 @@ def _module_name_for(path):
     return "ced_tour_content_" + safe
 
 
-def show_tour_for(content_path):
+def show_tour_for(content_path, modal=False):
     """Open the tour defined by an explicit tutorial_content.py path."""
     path = os.path.abspath(content_path)
     if not os.path.exists(path):
@@ -93,13 +104,13 @@ def show_tour_for(content_path):
         )
         return None
     content = load_module(_module_name_for(path), path)
-    return run_tour(content)
+    return run_tour(content, modal=modal)
 
 
-def show_tour(caller_file, content_name=DEFAULT_CONTENT_NAME):
+def show_tour(caller_file, content_name=DEFAULT_CONTENT_NAME, modal=False):
     """Open the tour whose content sits next to ``caller_file``.
 
     Call from a tool's config.py as ``show_tour(__file__)``.
     """
     directory = os.path.dirname(os.path.abspath(caller_file))
-    return show_tour_for(os.path.join(directory, content_name))
+    return show_tour_for(os.path.join(directory, content_name), modal=modal)

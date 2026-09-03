@@ -992,8 +992,13 @@ def _find_existing_window(tour_key):
     return None
 
 
-def run_tour(content):
-    """Open (or focus) the tour described by a loaded content module."""
+def run_tour(content, modal=False):
+    """Open (or focus) the tour described by a loaded content module.
+
+    ``modal`` is for hosts that are themselves modal dialogs: a modeless window
+    opened while a modal dialog is up cannot take input, so the tour has to be
+    modal too or it appears frozen.
+    """
     steps = list(getattr(content, "STEPS", []) or [])
     if not steps:
         forms.alert(
@@ -1021,6 +1026,12 @@ def run_tour(content):
         return existing
 
     window = TourWindow(content)
+    if modal:
+        try:
+            window.ShowDialog()
+            return window
+        except Exception as exc:
+            _LOGGER.debug("Modal tour failed, falling back to modeless: %s", exc)
     window.Show()
     try:
         window.Activate()

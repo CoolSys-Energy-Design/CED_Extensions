@@ -300,5 +300,21 @@
         <Button Style="{DynamicResource CED.Button.Base}" Content="Close" Width="84" Height="28" Margin="6,0,0,0" Click="close_clicked"/>
       </StackPanel>
     </Grid>
-  </Grid>
+      <!-- Guided tour: wired by UIClasses.tutorial.wire_help -->
+    <Button Name="TutorialHelpButton"
+            Style="{DynamicResource CED.Button.IconSmall}"
+            Width="20"
+            Height="20"
+            Padding="0"
+            Margin="0,1,0,0"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top"
+            ToolTip="Show me around">
+      <TextBlock Text="?"
+                 FontSize="12"
+                 FontWeight="SemiBold"
+                 HorizontalAlignment="Center"
+                 VerticalAlignment="Center"/>
+    </Button>
+</Grid>
 </Window>

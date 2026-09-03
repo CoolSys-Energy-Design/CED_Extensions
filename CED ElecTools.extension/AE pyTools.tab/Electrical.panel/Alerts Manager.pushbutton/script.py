@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import os
 
@@ -19,6 +19,7 @@ from pyrevit import forms, revit, script
 
 from Snippets import revit_helpers
 from UIClasses import pathing as ui_pathing
+from UIClasses.tutorial import wire_help
 
 TITLE = "Alerts Manager"
 ALERT_DATA_PARAM = "Circuit Data_CED"
@@ -909,6 +910,8 @@ def _show_or_focus_window():
         snapshot=snapshot,
         gateway=gateway,
     )
+    # Guided tour: the Help button in the window header opens it.
+    wire_help(window, __file__)
     window.Show()
     try:
         window.Activate()

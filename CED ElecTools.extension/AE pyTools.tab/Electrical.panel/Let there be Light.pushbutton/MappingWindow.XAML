@@ -476,5 +476,21 @@
                 Style="{DynamicResource CED.Button.Apply}"/>
       </Grid>
     </Border>
-  </Grid>
+      <!-- Guided tour: wired by UIClasses.tutorial.wire_help -->
+    <Button Name="TutorialHelpButton"
+            Style="{DynamicResource CED.Button.IconSmall}"
+            Width="20"
+            Height="20"
+            Padding="0"
+            Margin="0,1,0,0"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top"
+            ToolTip="Show me around">
+      <TextBlock Text="?"
+                 FontSize="12"
+                 FontWeight="SemiBold"
+                 HorizontalAlignment="Center"
+                 VerticalAlignment="Center"/>
+    </Button>
+</Grid>
 </Window>
