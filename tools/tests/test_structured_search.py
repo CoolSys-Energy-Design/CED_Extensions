@@ -225,10 +225,11 @@ class StructuredSearchStateTests(unittest.TestCase):
         self.state.set_active_token_value("3")
         self.state.commit_active_token()
         self.state.begin_command()
-        self.state.select_filter("panel")
+        selected = self.state.select_filter("panel")
         self.state.set_active_token_value("A")
 
         self.assertEqual(["panel", "poles"], [x.key for x in self.state.tokens])
+        self.assertIs(selected, self.state.tokens[0])
 
     def test_atomic_backspace_selects_then_removes_token(self):
         self.choose("panel")

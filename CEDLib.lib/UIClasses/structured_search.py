@@ -744,7 +744,7 @@ class StructuredSearchState(object):
         self._emit_command_changed()
         self._emit_interaction_changed("filter_selected")
         # An empty token is intentionally omitted from the query.
-        return self._tokens[-1]
+        return new_token
 
     def set_active_token_value(self, value):
         index = self._active_token_index
