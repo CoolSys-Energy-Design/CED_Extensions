@@ -5,7 +5,7 @@ import math
 
 import Autodesk.Revit.DB.Electrical as DBE
 from System import Guid
-from pyrevit import DB, script, revit
+from pyrevit import DB, script
 
 from CEDElectrical.Model.alerts import Alerts, NoticeCollector
 from CEDElectrical.Model.circuit_settings import (
@@ -1191,7 +1191,9 @@ class CircuitBranch(object):
 
     def _has_feeder_ln_voltage(self):
         """Returns Neutral qty if LN voltage is found on the downstream equipments distribution system """
-        doc = revit.doc
+        doc = getattr(self.circuit, "Document", None)
+        if doc is None:
+            return 0
         try:
             for el in self.connected_elements:
                 if not design_options.is_main_model_element(el):

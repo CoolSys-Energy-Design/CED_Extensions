@@ -36,6 +36,32 @@ These conventions are prospective. Do not revise, normalize, or reorganize
 existing codebase imports or other existing code solely to conform to them
 unless the user specifically requests a refactor.
 
+## Revit document and UI context lifetime — mandatory
+
+pyRevit Rocket Mode can reuse one IronPython engine for an extension. Shared
+module state can therefore outlive the command invocation and the document that
+was active when the module was first imported.
+
+- Do not capture or cache `revit.doc`, `revit.uidoc`,
+  `__revit__.ActiveUIDocument`, `DB.Document`, `UIDocument`, Revit elements, or
+  native `ElementId` objects in module-level variables inside model, domain,
+  application-service, repository, or other reusable library modules.
+- Do not use import-time defaults such as `def method(doc=revit.doc)` in new
+  shared or model-layer code.
+- Entry-point and UI composition code may read the active `doc`/`uidoc` at the
+  command boundary, but it must pass that context explicitly to lower layers.
+- A model object that already owns a Revit element should resolve its document
+  from that element (for example, `self.circuit.Document`) rather than from the
+  currently active UI document.
+- Deferred/modeless work must acquire the active UI context inside
+  `ExternalEvent.Execute`, validate it against the payload's captured document
+  identity, and only then resolve IDs or elements.
+- Tests for document-sensitive model logic must cover a circuit or element whose
+  owning document differs from the active UI document.
+
+Reference: pyRevit's Rocket Mode guidance warns that custom modules must not
+retain active-document or element information in module-level variables.
+
 ## FamilySymbol/type-name access — mandatory for new Revit code
 
 - Do not rely on `element.Name` or `family_symbol.Name` in IronPython; the
