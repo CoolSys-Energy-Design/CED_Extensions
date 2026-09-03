@@ -2698,15 +2698,8 @@ def _tag_bbox_points(bounding_box):
                 yield DB.XYZ(x_value, y_value, z_value)
 
 
-def _place_no_leader_tag(document, view, wire, open_connector, tag):
-    """Move a no-leader tag clear of the open wire endpoint.
-
-    The initial scale-aware offset is always applied.  After regeneration, the
-    tag bounding box is used to add any extra clearance needed to keep the
-    annotation body on the open-end side of the wire.  Bounding-box support is
-    not identical across older Revit versions, so the initial offset remains a
-    safe fallback when refinement is unavailable.
-    """
+def _place_no_leader_tag(view, wire, open_connector, tag):
+    """Apply the scale-aware base offset before batch regeneration."""
     open_point = open_connector.Origin
     direction = _wire_tag_outward_direction(wire, open_connector, view)
     base_distance = _tag_offset_distance(view)
@@ -2719,8 +2712,13 @@ def _place_no_leader_tag(document, view, wire, open_connector, tag):
         )
         return
 
+
+def _refine_no_leader_tag(view, wire, open_connector, tag):
+    """Use post-regeneration tag geometry to refine endpoint clearance."""
+    open_point = open_connector.Origin
+    direction = _wire_tag_outward_direction(wire, open_connector, view)
+    base_distance = _tag_offset_distance(view)
     try:
-        document.Regenerate()
         bounding_box = tag.get_BoundingBox(view)
         if bounding_box is None:
             return
@@ -2826,7 +2824,7 @@ def _wire_leader_head_point(wire, open_connector, view):
     return open_point.Add(direction.Multiply(_tag_offset_distance(view)))
 
 
-def _place_leader_tag(document, view, wire, open_connector, tag):
+def _place_leader_tag(view, wire, open_connector, tag):
     """Place a leader tag head perpendicular to the wire endpoint vector."""
     head_point = _wire_leader_head_point(wire, open_connector, view)
     try:
@@ -2835,10 +2833,6 @@ def _place_leader_tag(document, view, wire, open_connector, tag):
         script.get_logger().warning(
             "Leader wire tag head placement was unavailable: {}".format(error)
         )
-    try:
-        document.Regenerate()
-    except Exception:
-        pass
 
 
 def _create_wire_tag(document, view, wire, tag_type_id, add_leader):
@@ -2866,10 +2860,10 @@ def _create_wire_tag(document, view, wire, tag_type_id, add_leader):
             point,
         )
         if add_leader:
-            _place_leader_tag(document, view, wire, open_connector, created_tag)
+            _place_leader_tag(view, wire, open_connector, created_tag)
         else:
-            _place_no_leader_tag(document, view, wire, open_connector, created_tag)
-        return created_tag
+            _place_no_leader_tag(view, wire, open_connector, created_tag)
+        return created_tag, open_connector
     except Exception as error:
         errors.append(error)
     try:
@@ -2884,10 +2878,10 @@ def _create_wire_tag(document, view, wire, tag_type_id, add_leader):
         )
         created_tag.ChangeTypeId(tag_type_id)
         if add_leader:
-            _place_leader_tag(document, view, wire, open_connector, created_tag)
+            _place_leader_tag(view, wire, open_connector, created_tag)
         else:
-            _place_no_leader_tag(document, view, wire, open_connector, created_tag)
-        return created_tag
+            _place_no_leader_tag(view, wire, open_connector, created_tag)
+        return created_tag, open_connector
     except Exception as error:
         errors.append(error)
     raise RuntimeError(
@@ -2972,6 +2966,7 @@ def tag_homeruns(document, view, wire_ids, tag_type_id, add_leader,
     deleted_count = 0
     skipped = []
     failures = []
+    refinement_jobs = []
     existing_index = wire_tag_index(document, view)
     try:
         for wire_value in list(wire_ids or []):
@@ -3010,15 +3005,17 @@ def tag_homeruns(document, view, wire_ids, tag_type_id, add_leader,
                     for existing_tag in existing_tags:
                         document.Delete(existing_tag.Id)
                         deleted_count += 1
-                _create_wire_tag(
+                created_tag, open_connector = _create_wire_tag(
                     document,
                     view,
                     wire,
                     element_id_from(tag_type_id),
                     add_leader,
                 )
-                created_count += 1
                 subtransaction.Commit()
+                created_count += 1
+                if not add_leader:
+                    refinement_jobs.append((wire, open_connector, created_tag))
             except Exception as error:
                 subtransaction.RollBack()
                 failures.append({
@@ -3026,6 +3023,19 @@ def tag_homeruns(document, view, wire_ids, tag_type_id, add_leader,
                     "element": wire,
                     "reason": "Homerun tag creation failed: {}".format(error),
                 })
+        if created_count:
+            # Match Tag by Example's two-pass strategy: create the complete
+            # batch first, regenerate once, then read derived tag geometry.
+            # A regeneration failure invalidates the complete transaction and
+            # must reach the outer rollback instead of being suppressed.
+            document.Regenerate()
+        for wire, open_connector, created_tag in refinement_jobs:
+            _refine_no_leader_tag(
+                view,
+                wire,
+                open_connector,
+                created_tag,
+            )
         transaction.Commit()
     except Exception:
         if transaction.GetStatus() == DB.TransactionStatus.Started:
