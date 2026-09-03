@@ -151,6 +151,16 @@ def _screen_rect(element):
         return None
 
 
+def _default_accent():
+    """The house default accent, from the shared catalog when it exists."""
+    try:
+        from UIClasses import theme_manager
+
+        return getattr(theme_manager, "DEFAULT_ACCENT_MODE", "blue")
+    except Exception:
+        return "blue"
+
+
 def open_windows():
     """Every open WPF window in this process.
 
@@ -620,7 +630,7 @@ class TourWindow(forms.WPFWindow):
 
         if theme_mode is None or accent_mode is None:
             theme_mode, accent_mode = load_theme_state_from_config(
-                default_theme="light", default_accent="blue"
+                default_theme="light", default_accent=_default_accent()
             )
         self._theme_mode = resource_loader.normalize_theme_mode(theme_mode, "light")
         self._accent_mode = resource_loader.normalize_accent_mode(accent_mode, "blue")

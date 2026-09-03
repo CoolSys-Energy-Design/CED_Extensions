@@ -38,12 +38,11 @@ TARGET_LABELS = {
     "CheckAllButton": "Check All",
     "CircuitList": "the circuit list",
     "ClearSelectionButton": "the clear-selection button",
-    "ClearSearchButton": "the clear-search button",
     "DocumentNameText": "the document line",
     "FilterActiveMark": "the filter-active marker",
     "FilterButton": "the Filter button",
     "RefreshButton": "the Refresh button",
-    "SearchBox": "the search box",
+    "SearchHost": "the search box",
     "SelectCircuitsButton": "Select in Model - Circuit",
     "SelectDownstreamButton": "Select in Model - Device",
     "SelectEquipmentButton": "Select in Model - Panel",
@@ -108,15 +107,22 @@ STEPS = [
     },
     {
         "chapter": "Finding circuits",
-        "title": "Search across the whole row",
-        "target": "SearchBox",
+        "title": "Search free text, or add a typed filter",
+        "target": "SearchHost",
         "body": (
-            "Type to filter. Search matches panel name, circuit number, load name and the rest "
-            "of the row text, so a partial equipment tag or a panel name both work."
+            "Type to filter on text across panel, circuit number and load name. Or press "
+            "the / key to add a typed filter field and narrow by a specific property "
+            "instead of hoping the text happens to match."
         ),
         "bullets": [
+            "Press / inside the box to add a field - the placeholder tells you so.",
+            "Panel - an exact panel name. Add several to search across panels.",
+            "Poles - 1, 2 or 3. Several allowed.",
+            "Rating - 20 or 20A, for example. Several allowed.",
+            "Has Neutral and Has IG - yes or no.",
+            "Each filter becomes a coloured token you can remove on its own, so you can "
+            "peel back one condition at a time.",
             "Filtering is live - no Enter needed.",
-            "The X at the right clears the search and restores the full list.",
         ],
     },
     {
@@ -169,7 +175,8 @@ STEPS = [
             "sets them everywhere."
         ),
         "bullets": [
-            "Theme: Light, Dark, Dark Alt.",
+            "Theme: Light, Dark, Dark Alt - plus a couple of hidden ones that only "
+            "appear once you have found the key sequence that unlocks them.",
             "Accent Color: changes the highlight colour used across the tools.",
             "Display Mode: Compact or Card - same as the toggle we just looked at.",
             "Sort By: Circuit, Load Name, or Rating.",
