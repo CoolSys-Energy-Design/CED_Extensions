@@ -205,29 +205,58 @@ def _register_circuit_manager_panel():
         logger.warning("Failed to register Circuit Manager panel: %s", exc)
 
 
-def _install_circuit_manager_tutorial_menu():
-    """Wire the right-click "Tutorial" item onto the Circuit Manager button.
+def _electrical_panel_dir():
+    return os.path.abspath(
+        os.path.join(_extension_root(), "AE pyTools.tab", "Electrical.panel")
+    )
 
-    The ribbon does not exist yet at startup - pyRevit builds it after the
-    startup scripts run - so the hook attaches to the AdWindows RibbonControl
-    and resolves the button lazily on each right-click.
+
+def _tour_content(*parts):
+    return os.path.join(_electrical_panel_dir(), *(list(parts) + ["tutorial_content.py"]))
+
+
+def _register_tour_ribbon_gestures():
+    """Ribbon gestures pyRevit does not provide on its own.
+
+    Right-click "Tutorial" on Circuit Manager, and Shift+Click on the two
+    pulldowns (pyRevit only runs config.py for pushbuttons, never for a
+    pulldown container). The ribbon does not exist yet at startup - pyRevit
+    builds it after the startup scripts run - so the hook attaches to the
+    AdWindows RibbonControl and resolves items lazily on each click.
     """
     logger = script.get_logger()
-    module_path = os.path.join(_circuit_manager_button_dir(), "ribbon_context_menu.py")
-    if not os.path.exists(module_path):
-        logger.warning("Circuit Manager tutorial menu module not found: %s", module_path)
+    entries = [
+        {
+            "match": "circuit manager",
+            "gesture": "both",
+            "content": _tour_content("Circuit Manager.pushbutton"),
+        },
+        {
+            "match": "circuit tools",
+            "gesture": "shift_click",
+            "content": _tour_content("Circuits1.stack", "Circuit Tools.pulldown"),
+        },
+        {
+            "match": "qc check",
+            "gesture": "shift_click",
+            "content": _tour_content("Circuits1.stack", "QC Check.pulldown"),
+        },
+    ]
+    missing = [e["content"] for e in entries if not os.path.exists(e["content"])]
+    if missing:
+        logger.warning("Tour content missing, gestures skipped for: %s", missing)
+    entries = [e for e in entries if os.path.exists(e["content"])]
+    if not entries:
         return
     try:
-        menu_module = imp.load_source(
-            "ced_electools_circuit_manager_ribbon_menu",
-            module_path,
-        )
-        menu_module.install(_circuit_manager_button_dir())
-        logger.info("Circuit Manager tutorial right-click menu installed.")
+        from UIClasses.tutorial import ribbon_hooks
+
+        ribbon_hooks.register(entries)
+        logger.info("Tour ribbon gestures registered: %s", len(entries))
     except Exception as exc:
-        logger.warning("Circuit Manager tutorial right-click menu failed: %s", exc)
+        logger.warning("Tour ribbon gestures failed: %s", exc)
 
 
 _seed_runtime_paths()
 _register_circuit_manager_panel()
-_install_circuit_manager_tutorial_menu()
+_register_tour_ribbon_gestures()

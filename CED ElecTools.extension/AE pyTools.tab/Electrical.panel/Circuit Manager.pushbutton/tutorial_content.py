@@ -16,6 +16,41 @@ anyone who knows the tool but not the codebase.
 """
 
 TOUR_TITLE = "Circuit Manager - Show Me Around"
+TOUR_KEY = "circuit_manager"
+
+# The tour spotlights controls inside the live dockable pane.
+HOST = {
+    "kind": "dockable_panel",
+    "panel_module": "ced_electools_circuit_manager_panel",
+    "panel_id": "36c3fd8d-98c4-4cf4-92a4-4ac7f3f8c4f2",
+    "host_element": "DockFrameHost",
+}
+
+# Friendly phrases for the "Highlighted for you" note, keyed by the element
+# Name in CircuitBrowserPanel.xaml.
+TARGET_LABELS = {
+    "ActionsButton": "the Actions button",
+    "BrowserOptionsButton": "the options (...) button",
+    "CalcAllButton": "Calculate All",
+    "CalcPreviewToggle": "the calculation preview toggle",
+    "CalcSelectedButton": "Calculate Selected",
+    "CalcSettingsButton": "the calculate settings gear",
+    "CheckAllButton": "Check All",
+    "CircuitList": "the circuit list",
+    "ClearSelectionButton": "the clear-selection button",
+    "ClearSearchButton": "the clear-search button",
+    "DocumentNameText": "the document line",
+    "FilterActiveMark": "the filter-active marker",
+    "FilterButton": "the Filter button",
+    "RefreshButton": "the Refresh button",
+    "SearchBox": "the search box",
+    "SelectCircuitsButton": "Select in Model - Circuit",
+    "SelectDownstreamButton": "Select in Model - Device",
+    "SelectEquipmentButton": "Select in Model - Panel",
+    "StatusText": "the status line",
+    "ToggleViewButton": "the list/card toggle",
+    "UncheckAllButton": "Uncheck All",
+}
 
 STEPS = [
     {
@@ -171,7 +206,6 @@ STEPS = [
             "Show Devices in Model / Show Panel in Model.",
             "Edit Circuit Properties.",
             "Move Selected Circuits.",
-            "Inject Into Detail Item.",
             "Show Circuit Type Badges / Compress Item Width density toggles.",
         ],
     },
@@ -302,23 +336,6 @@ STEPS = [
         ],
     },
     {
-        "chapter": "The one line",
-        "title": "See the distribution as a tree",
-        "target": "ShowOneLineButton",
-        "body": (
-            "Opens an interactive one line diagram of the electrical distribution. It is the "
-            "fastest way to understand what feeds what - and you can re-feed a panel by "
-            "dragging its card onto a new source."
-        ),
-        "bullets": [
-            "Drag an equipment card onto another to re-feed that panel.",
-            "Zoom in / out / reset, and toggle card mode and loads mode.",
-            "Build a single branch or build the whole tree at once.",
-            "Refresh re-reads the distribution after model changes.",
-            "The button is unavailable in drafting views - open a model view first.",
-        ],
-    },
-    {
         "chapter": "When something is blocked",
         "title": "Why a button goes grey",
         "target": None,
@@ -352,12 +369,3 @@ STEPS = [
     },
 ]
 
-
-def chapters():
-    """Ordered chapter names paired with the index of their first step."""
-    found = []
-    for index, step in enumerate(STEPS):
-        name = step.get("chapter") or ""
-        if not found or found[-1][0] != name:
-            found.append((name, index))
-    return found

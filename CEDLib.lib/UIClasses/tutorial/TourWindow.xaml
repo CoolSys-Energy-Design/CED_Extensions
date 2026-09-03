@@ -1,9 +1,9 @@
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Circuit Manager Tutorial"
+        Title="AE pyTools Tour"
         Width="400"
-        MaxHeight="660"
-        SizeToContent="Height"
+        Height="544"
+        SizeToContent="Manual"
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
@@ -24,7 +24,7 @@
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto"/>
         <RowDefinition Height="Auto"/>
-        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="*"/>
         <RowDefinition Height="Auto"/>
         <RowDefinition Height="Auto"/>
       </Grid.RowDefinitions>
@@ -141,7 +141,6 @@
       <ScrollViewer Grid.Row="2"
                     Name="BulletScroller"
                     Margin="12,0,12,8"
-                    MaxHeight="230"
                     VerticalScrollBarVisibility="Auto"
                     HorizontalScrollBarVisibility="Disabled">
         <ItemsControl Name="BulletList">
