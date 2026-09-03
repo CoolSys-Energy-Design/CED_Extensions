@@ -78,7 +78,7 @@ from UIClasses import pathing as ui_pathing
 from UIClasses import resource_loader
 from UIClasses import SearchFilterDefinition, StructuredSearchBox
 from UIClasses.revit_theme_bridge import DOCK_PANE_FRAME_DARK, DOCK_PANE_FRAME_LIGHT, RevitThemeBridge
-from UIClasses.tutorial import wire_help
+from UIClasses.tutorial import wire_help_and_docs
 
 LIB_ROOT = ui_pathing.ensure_lib_root_on_syspath(_THIS_DIR)
 if not LIB_ROOT or not os.path.isdir(LIB_ROOT):
@@ -2624,7 +2624,7 @@ class CircuitBrowserPanel(forms.WPFPanel):
         self._toggle_card_icon = self.FindName("ToggleCardIcon")
         self._dock_frame_host = self.FindName("DockFrameHost")
         # Guided tour, opened by the Help button in the pane header.
-        wire_help(self, __file__)
+        wire_help_and_docs(self, __file__)
         self._actions_label = self.FindName("ActionsLabel")
         self._actions_bolt_icon = self.FindName("ActionsBoltIcon")
         self._select_equipment_button = self.FindName("SelectEquipmentButton")

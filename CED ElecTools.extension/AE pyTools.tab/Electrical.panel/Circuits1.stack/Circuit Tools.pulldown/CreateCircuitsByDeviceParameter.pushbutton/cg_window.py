@@ -68,7 +68,7 @@ if not LIB_ROOT or not os.path.isdir(LIB_ROOT):
     raise SystemExit
 
 from UIClasses.ui_bases import CEDWindowBase
-from UIClasses.tutorial import wire_help
+from UIClasses.tutorial import wire_help_and_docs
 
 _CONV = BrushConverter()
 
@@ -453,7 +453,7 @@ class CircuitGrouperWindow(CEDWindowBase):
         CEDWindowBase.__init__(self, xaml_source=_XAML, theme_aware=True,
                                handle_esc=False)
         # Guided tour, opened by the Help button in the window header.
-        wire_help(self, __file__)
+        wire_help_and_docs(self, __file__)
 
         self._status_brushes = {
             "ready": self._theme_resource("CED.Brush.AccentGreen", BRUSH_READY),

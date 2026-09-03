@@ -239,6 +239,17 @@
       </StackPanel>
     </Grid>
       <!-- Guided tour: wired by UIClasses.tutorial.wire_help -->
+    <Button Name="TutorialDocsButton"
+            Style="{DynamicResource CED.Button.IconSmall}"
+            Height="20"
+            MinWidth="44"
+            Padding="6,0,6,0"
+            Margin="0,1,26,0"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top"
+            ToolTip="Open this tool's documentation">
+      <TextBlock Text="Docs" FontSize="11" VerticalAlignment="Center"/>
+    </Button>
     <Button Name="TutorialHelpButton"
             Style="{DynamicResource CED.Button.IconSmall}"
             Width="20"

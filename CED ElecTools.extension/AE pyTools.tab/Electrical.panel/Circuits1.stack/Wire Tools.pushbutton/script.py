@@ -8,7 +8,7 @@ from pyrevit import revit, DB, UI, forms, script
 
 from UIClasses import load_theme_state_from_config
 from UIClasses import pathing as ui_pathing
-from UIClasses.tutorial import wire_help
+from UIClasses.tutorial import wire_help_and_docs
 
 
 def _load_command_modules(command_directory):
@@ -79,7 +79,7 @@ def main():
     gateway = gateway_class(window, document, ui_application)
     window.gateway = gateway
     # Guided tour: the Help button in the window header opens it.
-    wire_help(window, __file__)
+    wire_help_and_docs(window, __file__)
     window.Show()
     gateway.attach_lifecycle()
     if gateway.check_context():

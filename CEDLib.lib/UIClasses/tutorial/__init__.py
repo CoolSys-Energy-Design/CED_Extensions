@@ -46,7 +46,17 @@ discoverable route - Shift+Click stays as the shortcut. Add a button named
        from UIClasses.tutorial import wire_help
        wire_help(window, __file__)
 
-See ``help_button.py`` for the markup to paste.
+Two header buttons, wired in one call:
+
+       from UIClasses.tutorial import wire_help_and_docs
+       wire_help_and_docs(window, __file__)
+
+``TutorialHelpButton`` offers "Show me around" (the tour) and "Open
+documentation"; ``TutorialDocsButton`` goes straight to the documentation.
+Either button hides itself when there is nothing to show. See
+``help_button.py`` for the markup to paste, and ``docs.py`` for how the
+reference is built - it is rendered from this same content file, so the docs
+and the tour can never disagree.
 
 A step whose ``target`` cannot be resolved falls back to narration-only, so a
 tour still reads correctly with the tool closed. Content files are re-read when
@@ -56,7 +66,8 @@ they change on disk, so rewording a step needs no pyRevit reload.
 import os
 
 from UIClasses.tutorial import engine
-from UIClasses.tutorial.help_button import wire_help
+from UIClasses.tutorial import docs
+from UIClasses.tutorial.help_button import wire_docs, wire_help, wire_help_and_docs
 from UIClasses.tutorial.engine import (
     DockablePanelHost,
     NoHost,
@@ -79,7 +90,10 @@ __all__ = [
     "run_tour",
     "show_tour",
     "show_tour_for",
+    "docs",
+    "wire_docs",
     "wire_help",
+    "wire_help_and_docs",
 ]
 
 DEFAULT_CONTENT_NAME = "tutorial_content.py"

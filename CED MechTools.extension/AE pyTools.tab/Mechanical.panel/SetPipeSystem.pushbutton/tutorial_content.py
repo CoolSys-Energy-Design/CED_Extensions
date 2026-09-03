@@ -12,6 +12,9 @@ Reword freely; the tour re-reads this file when it changes on disk.
 TOUR_TITLE = "Set Piping System - Show Me Around"
 TOUR_KEY = "set_piping_system"
 
+# The folder name and the guide slug disagree here, so point at it explicitly.
+DOCS_PATH = "ced-mechtools/set-piping-system.md"
+
 # Narration-only: no persistent window of its own to spotlight.
 HOST = None
 

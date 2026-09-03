@@ -1,0 +1,538 @@
+# -*- coding: utf-8 -*-
+"""One reusable settings window, so a tool asks everything up front.
+
+Several CED tools were built as a chain of modal prompts - a CommandSwitchWindow
+for the mode, a SelectFromList for the type, an ask_for_string for a number -
+which means the user cannot see their choices together, cannot go back, and
+cannot tell how many questions are left. This replaces that chain with a single
+themed window built from a field spec.
+
+    from UIClasses import settings_form as sf
+
+    result = sf.prompt(
+        "Space Coils",
+        [
+            sf.choice("mode", "Placement", [("wall", "Along a wall"),
+                                            ("center", "Centred grid")]),
+            sf.number("offset", "Offset from wall (inches)", default=15,
+                      minimum=0),
+            sf.boolean("mixed", "Grid mixes coil sizes", default=False),
+        ],
+        caller_file=__file__,
+        subtitle="Coils must be selected before you run this.",
+    )
+    if result is None:
+        return              # cancelled - write nothing
+    mode = result["mode"]
+
+``prompt`` returns a dict of field key -> value, or None when cancelled. It
+never raises for user input: validation is reported in the window and blocks
+Continue instead.
+
+The window carries the shared Help and Docs buttons, so every tool converted to
+this shell gets its guided tour and its reference for free.
+"""
+
+import os
+
+import clr
+
+for _wpf_asm in ("PresentationFramework", "PresentationCore", "WindowsBase"):
+    try:
+        clr.AddReference(_wpf_asm)
+    except Exception:
+        pass
+
+from System.Windows import Thickness, Visibility
+from System.Windows.Controls import (
+    Border,
+    CheckBox,
+    ComboBox,
+    ComboBoxItem,
+    Grid,
+    Orientation,
+    ScrollViewer,
+    StackPanel,
+    TextBlock,
+    TextBox,
+)
+from System.Windows.Controls import Button as WpfButton
+from System.Windows.Controls import ColumnDefinition
+
+from pyrevit import forms, script
+
+from UIClasses import pathing as ui_pathing
+from UIClasses import resource_loader
+from UIClasses.ui_bases import CEDWindowBase, load_theme_state_from_config
+
+THIS_DIR = os.path.abspath(os.path.dirname(__file__))
+XAML_PATH = os.path.join(THIS_DIR, "SettingsForm.xaml")
+
+_LOGGER = script.get_logger()
+
+KIND_CHOICE = "choice"
+KIND_MULTICHOICE = "multichoice"
+KIND_TEXT = "text"
+KIND_MULTILINE = "multiline"
+KIND_INT = "int"
+KIND_FLOAT = "float"
+KIND_BOOL = "bool"
+KIND_OPEN_FILE = "open_file"
+KIND_SAVE_FILE = "save_file"
+KIND_INFO = "info"
+
+
+# ---------------------------------------------------------------------------
+# field spec
+# ---------------------------------------------------------------------------
+
+class Field(object):
+    """One input in a settings form. Prefer the helpers below."""
+
+    def __init__(self, key, label, kind, default=None, options=None, hint=None,
+                 required=True, minimum=None, maximum=None, file_filter=None,
+                 max_length=None, height=None):
+        self.key = key
+        self.label = label
+        self.kind = kind
+        self.default = default
+        self.options = list(options or [])
+        self.hint = hint
+        self.required = bool(required)
+        self.minimum = minimum
+        self.maximum = maximum
+        self.file_filter = file_filter
+        self.max_length = max_length
+        self.height = height
+        self.control = None          # set when the form is built
+        self._extra = None           # per-kind helper state
+
+
+def _normalize_options(options):
+    """Accept ['a','b'] or [('a','Label A'), ...] and return pairs."""
+    pairs = []
+    for option in list(options or []):
+        if isinstance(option, (tuple, list)) and len(option) >= 2:
+            pairs.append((option[0], str(option[1])))
+        else:
+            pairs.append((option, str(option)))
+    return pairs
+
+
+def choice(key, label, options, default=None, hint=None, required=True):
+    return Field(key, label, KIND_CHOICE, default=default,
+                 options=_normalize_options(options), hint=hint, required=required)
+
+
+def multichoice(key, label, options, default=None, hint=None, required=True):
+    """Checklist. ``default`` is a list of selected values (None = all)."""
+    return Field(key, label, KIND_MULTICHOICE, default=default,
+                 options=_normalize_options(options), hint=hint, required=required)
+
+
+def text(key, label, default="", hint=None, required=True, max_length=None):
+    return Field(key, label, KIND_TEXT, default=default, hint=hint,
+                 required=required, max_length=max_length)
+
+
+def multiline(key, label, default="", hint=None, required=True, height=120):
+    return Field(key, label, KIND_MULTILINE, default=default, hint=hint,
+                 required=required, height=height)
+
+
+def number(key, label, default=None, minimum=None, maximum=None, hint=None,
+           required=True, decimals=False):
+    return Field(key, label, KIND_FLOAT if decimals else KIND_INT,
+                 default=default, minimum=minimum, maximum=maximum,
+                 hint=hint, required=required)
+
+
+def boolean(key, label, default=False, hint=None):
+    return Field(key, label, KIND_BOOL, default=bool(default), hint=hint,
+                 required=False)
+
+
+def open_file(key, label, file_filter=None, default="", hint=None, required=True):
+    return Field(key, label, KIND_OPEN_FILE, default=default, hint=hint,
+                 required=required, file_filter=file_filter)
+
+
+def save_file(key, label, file_filter=None, default="", hint=None, required=True):
+    return Field(key, label, KIND_SAVE_FILE, default=default, hint=hint,
+                 required=required, file_filter=file_filter)
+
+
+def info(label, hint=None):
+    return Field(None, label, KIND_INFO, hint=hint, required=False)
+
+
+# ---------------------------------------------------------------------------
+# window
+# ---------------------------------------------------------------------------
+
+class SettingsFormWindow(CEDWindowBase):
+    theme_aware = True
+
+    def __init__(self, title, fields, subtitle=None, ok_label="Continue",
+                 caller_file=None, help_modal=True):
+        self._fields = [f for f in fields if f is not None]
+        self._caller_file = caller_file
+        self.result = None
+
+        theme_mode, accent_mode = load_theme_state_from_config(
+            default_theme="light", default_accent="neutral")
+        CEDWindowBase.__init__(self, xaml_source=XAML_PATH,
+                               theme_mode=theme_mode, accent_mode=accent_mode,
+                               theme_aware=True, handle_esc=True)
+        self.Title = str(title or "Settings")
+
+        self._title_text = self.FindName("FormTitleText")
+        self._subtitle_text = self.FindName("FormSubtitleText")
+        self._host = self.FindName("FieldHost")
+        self._validation_host = self.FindName("ValidationHost")
+        self._validation_text = self.FindName("ValidationText")
+        self._ok = self.FindName("OkButton")
+        self._cancel = self.FindName("CancelButton")
+        self._reset = self.FindName("ResetButton")
+
+        if self._title_text is not None:
+            self._title_text.Text = str(title or "Settings")
+        if subtitle and self._subtitle_text is not None:
+            self._subtitle_text.Text = str(subtitle)
+            self._subtitle_text.Visibility = Visibility.Visible
+        if self._ok is not None:
+            self._ok.Content = str(ok_label or "Continue")
+            self._ok.Click += self._ok_clicked
+        if self._cancel is not None:
+            self._cancel.Click += self._cancel_clicked
+        if self._reset is not None:
+            self._reset.Click += self._reset_clicked
+
+        self._build_fields()
+
+        # Help and Docs. This window is modal, so the tour has to be too.
+        if caller_file:
+            try:
+                from UIClasses.tutorial import wire_docs, wire_help
+
+                wire_help(self, caller_file, modal=help_modal)
+                wire_docs(self, caller_file)
+            except Exception as exc:
+                _LOGGER.debug("Settings form help/docs not wired: %s", exc)
+
+    # -- construction ------------------------------------------------------
+
+    def _style(self, key):
+        try:
+            return self.TryFindResource(key)
+        except Exception:
+            return None
+
+    def _label_block(self, field):
+        block = TextBlock()
+        block.Text = str(field.label or "")
+        style = self._style("CED.Text.CaptionStrong")
+        if style is not None:
+            block.Style = style
+        block.TextWrapping = 1  # Wrap
+        block.Margin = Thickness(0, 0, 0, 3)
+        return block
+
+    def _hint_block(self, field):
+        if not field.hint:
+            return None
+        block = TextBlock()
+        block.Text = str(field.hint)
+        style = self._style("CED.Text.Caption")
+        if style is not None:
+            block.Style = style
+        block.TextWrapping = 1
+        block.Margin = Thickness(0, 2, 0, 0)
+        return block
+
+    def _build_fields(self):
+        if self._host is None:
+            return
+        self._host.Children.Clear()
+        for field in self._fields:
+            container = StackPanel()
+            container.Orientation = Orientation.Vertical
+            container.Margin = Thickness(0, 0, 0, 12)
+
+            if field.kind == KIND_INFO:
+                border = Border()
+                border.Background = self._style("CED.Brush.InfoPanelBackground")
+                border.BorderBrush = self._style("CED.Brush.InfoPanelBorder")
+                border.BorderThickness = Thickness(1)
+                border.CornerRadius = self._style("CED.CornerRadius.Control") or None
+                border.Padding = Thickness(8, 6, 8, 6)
+                inner = TextBlock()
+                inner.Text = str(field.label or "")
+                inner.TextWrapping = 1
+                style = self._style("CED.Text.Secondary")
+                if style is not None:
+                    inner.Style = style
+                border.Child = inner
+                container.Children.Add(border)
+                self._host.Children.Add(container)
+                continue
+
+            if field.kind != KIND_BOOL:
+                container.Children.Add(self._label_block(field))
+
+            control = self._build_control(field)
+            if control is not None:
+                container.Children.Add(control)
+            hint = self._hint_block(field)
+            if hint is not None:
+                container.Children.Add(hint)
+            self._host.Children.Add(container)
+
+    def _build_control(self, field):
+        kind = field.kind
+        if kind == KIND_CHOICE:
+            combo = ComboBox()
+            combo.Height = 26
+            for value, label in field.options:
+                item = ComboBoxItem()
+                item.Content = label
+                item.Tag = value
+                combo.Items.Add(item)
+            combo.SelectedIndex = self._default_index(field)
+            field.control = combo
+            return combo
+
+        if kind == KIND_MULTICHOICE:
+            border = Border()
+            border.BorderBrush = self._style("CED.Brush.ListBorder")
+            border.BorderThickness = Thickness(1)
+            border.Background = self._style("CED.Brush.ListBackground")
+            border.Padding = Thickness(6, 4, 6, 4)
+            scroller = ScrollViewer()
+            scroller.MaxHeight = 150
+            scroller.VerticalScrollBarVisibility = 1  # Auto
+            panel = StackPanel()
+            selected = field.default
+            boxes = []
+            for value, label in field.options:
+                box = CheckBox()
+                box.Content = label
+                box.Tag = value
+                box.Margin = Thickness(0, 2, 0, 2)
+                box.IsChecked = True if selected is None else (value in selected)
+                panel.Children.Add(box)
+                boxes.append(box)
+            scroller.Content = panel
+            border.Child = scroller
+            field.control = border
+            field._extra = boxes
+            return border
+
+        if kind in (KIND_TEXT, KIND_INT, KIND_FLOAT, KIND_MULTILINE):
+            box = TextBox()
+            if kind == KIND_MULTILINE:
+                box.AcceptsReturn = True
+                box.TextWrapping = 1
+                box.Height = float(field.height or 120)
+                box.VerticalScrollBarVisibility = 1
+            else:
+                box.Height = 26
+            if field.max_length:
+                box.MaxLength = int(field.max_length)
+            box.Text = "" if field.default is None else str(field.default)
+            field.control = box
+            return box
+
+        if kind == KIND_BOOL:
+            box = CheckBox()
+            box.Content = str(field.label or "")
+            box.IsChecked = bool(field.default)
+            field.control = box
+            return box
+
+        if kind in (KIND_OPEN_FILE, KIND_SAVE_FILE):
+            grid = Grid()
+            grid.ColumnDefinitions.Add(ColumnDefinition())
+            auto = ColumnDefinition()
+            auto.Width = self._auto_length()
+            grid.ColumnDefinitions.Add(auto)
+            box = TextBox()
+            box.Height = 26
+            box.Text = "" if field.default is None else str(field.default)
+            Grid.SetColumn(box, 0)
+            browse = WpfButton()
+            browse.Content = "Browse..."
+            browse.Height = 26
+            browse.Width = 86
+            browse.Margin = Thickness(6, 0, 0, 0)
+            style = self._style("CED.Button.Base")
+            if style is not None:
+                browse.Style = style
+            Grid.SetColumn(browse, 1)
+
+            def _browse(sender, args, field=field, box=box):
+                self._pick_path(field, box)
+
+            browse.Click += _browse
+            grid.Children.Add(box)
+            grid.Children.Add(browse)
+            field.control = box
+            field._extra = browse
+            return grid
+
+        return None
+
+    @staticmethod
+    def _auto_length():
+        from System.Windows import GridLength, GridUnitType
+
+        return GridLength(1, GridUnitType.Auto)
+
+    def _default_index(self, field):
+        if not field.options:
+            return -1
+        if field.default is not None:
+            for index, (value, _label) in enumerate(field.options):
+                if value == field.default:
+                    return index
+        return 0
+
+    def _pick_path(self, field, box):
+        try:
+            if field.kind == KIND_OPEN_FILE:
+                picked = forms.pick_file(files_filter=field.file_filter or "")
+            else:
+                picked = forms.save_file(files_filter=field.file_filter or "")
+        except Exception as exc:
+            _LOGGER.debug("File picker failed: %s", exc)
+            picked = None
+        if picked:
+            box.Text = str(picked)
+
+    # -- values and validation --------------------------------------------
+
+    def _value_of(self, field):
+        control = field.control
+        kind = field.kind
+        if control is None:
+            return None
+        if kind == KIND_CHOICE:
+            item = control.SelectedItem
+            return None if item is None else item.Tag
+        if kind == KIND_MULTICHOICE:
+            return [b.Tag for b in (field._extra or []) if bool(b.IsChecked)]
+        if kind == KIND_BOOL:
+            return bool(control.IsChecked)
+        return control.Text
+
+    def _problems(self):
+        found = []
+        for field in self._fields:
+            if field.kind == KIND_INFO:
+                continue
+            value = self._value_of(field)
+
+            if field.kind in (KIND_INT, KIND_FLOAT):
+                raw = str(value or "").strip()
+                if not raw:
+                    if field.required:
+                        found.append("%s is required." % field.label)
+                    continue
+                try:
+                    parsed = float(raw) if field.kind == KIND_FLOAT else int(float(raw))
+                except Exception:
+                    found.append("%s must be a number." % field.label)
+                    continue
+                if field.minimum is not None and parsed < field.minimum:
+                    found.append("%s must be %s or more." % (field.label, field.minimum))
+                if field.maximum is not None and parsed > field.maximum:
+                    found.append("%s must be %s or less." % (field.label, field.maximum))
+                continue
+
+            if not field.required:
+                continue
+            if field.kind == KIND_MULTICHOICE:
+                if not value:
+                    found.append("Select at least one %s." % field.label.lower())
+            elif field.kind == KIND_CHOICE:
+                if value is None:
+                    found.append("%s is required." % field.label)
+            elif field.kind == KIND_BOOL:
+                pass
+            else:
+                if not str(value or "").strip():
+                    found.append("%s is required." % field.label)
+        return found
+
+    def _show_problems(self, problems):
+        if self._validation_host is None or self._validation_text is None:
+            return
+        if not problems:
+            self._validation_host.Visibility = Visibility.Collapsed
+            return
+        self._validation_text.Text = "\n".join(problems)
+        self._validation_host.Visibility = Visibility.Visible
+
+    def collect(self):
+        """Typed values for every field. Assumes validation passed."""
+        values = {}
+        for field in self._fields:
+            if field.kind == KIND_INFO or not field.key:
+                continue
+            value = self._value_of(field)
+            if field.kind == KIND_INT:
+                raw = str(value or "").strip()
+                values[field.key] = int(float(raw)) if raw else None
+            elif field.kind == KIND_FLOAT:
+                raw = str(value or "").strip()
+                values[field.key] = float(raw) if raw else None
+            elif field.kind in (KIND_TEXT, KIND_MULTILINE, KIND_OPEN_FILE, KIND_SAVE_FILE):
+                values[field.key] = str(value or "")
+            else:
+                values[field.key] = value
+        return values
+
+    # -- handlers ----------------------------------------------------------
+
+    def _ok_clicked(self, sender, args):
+        problems = self._problems()
+        if problems:
+            self._show_problems(problems)
+            return
+        self._show_problems([])
+        self.result = self.collect()
+        self.Close()
+
+    def _cancel_clicked(self, sender, args):
+        self.result = None
+        self.Close()
+
+    def _reset_clicked(self, sender, args):
+        for field in self._fields:
+            control = field.control
+            if control is None:
+                continue
+            if field.kind == KIND_CHOICE:
+                control.SelectedIndex = self._default_index(field)
+            elif field.kind == KIND_MULTICHOICE:
+                selected = field.default
+                for box in (field._extra or []):
+                    box.IsChecked = True if selected is None else (box.Tag in selected)
+            elif field.kind == KIND_BOOL:
+                control.IsChecked = bool(field.default)
+            else:
+                control.Text = "" if field.default is None else str(field.default)
+        self._show_problems([])
+
+
+def prompt(title, fields, subtitle=None, ok_label="Continue", caller_file=None):
+    """Show the form and return {key: value}, or None if cancelled."""
+    try:
+        window = SettingsFormWindow(
+            title, fields, subtitle=subtitle, ok_label=ok_label,
+            caller_file=caller_file)
+    except Exception as exc:
+        _LOGGER.warning("Settings form could not be built: %s", exc)
+        raise
+    window.ShowDialog()
+    return window.result

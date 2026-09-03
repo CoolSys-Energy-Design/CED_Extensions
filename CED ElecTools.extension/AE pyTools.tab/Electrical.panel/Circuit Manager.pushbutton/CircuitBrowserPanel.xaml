@@ -543,6 +543,18 @@
                 <TextBlock Grid.Row="0" Text="Circuit Manager" Style="{DynamicResource CED.Text.Title}" Margin="0,0,0,6"/>
     <!-- Guided tour: wired by UIClasses.tutorial.wire_help -->
     <Button Grid.Row="0"
+            Name="TutorialDocsButton"
+            Style="{DynamicResource CED.Button.IconSmall}"
+            Height="18"
+            MinWidth="40"
+            Padding="5,0,5,0"
+            Margin="0,0,24,0"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top"
+            ToolTip="Open this tool's documentation">
+      <TextBlock Text="Docs" FontSize="10" VerticalAlignment="Center"/>
+    </Button>
+    <Button Grid.Row="0"
             Name="TutorialHelpButton"
             Style="{DynamicResource CED.Button.IconSmall}"
             Width="18"

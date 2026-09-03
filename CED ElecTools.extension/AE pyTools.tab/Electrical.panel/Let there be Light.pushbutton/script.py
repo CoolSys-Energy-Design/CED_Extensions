@@ -47,7 +47,7 @@ from System.Windows.Controls import ComboBox, ComboBoxItem, TextBox
 from System.Windows.Media import VisualTreeHelper
 from System.Windows.Threading import DispatcherTimer
 from pyrevit import forms, revit, script
-from UIClasses.tutorial import wire_help
+from UIClasses.tutorial import wire_help_and_docs
 
 TITLE = "Let There Be Light"
 CSV_SOURCE_MODE = "csv"
@@ -2858,7 +2858,7 @@ def main():
     window = LightMappingWindow(doc)
     # Guided tour from the Help button. This window is modal, so the tour has
     # to be modal as well or it opens unable to take input.
-    wire_help(window, __file__, modal=True)
+    wire_help_and_docs(window, __file__, modal=True)
     window.ShowDialog()
 
 
