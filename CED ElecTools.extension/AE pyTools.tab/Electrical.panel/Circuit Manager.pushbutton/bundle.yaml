@@ -7,7 +7,7 @@ tooltip: >-
   Version 2.0 | Date 04.01.2026
   Dockable circuit manager for searching, filtering, selecting, and editing circuits.
   Use Refresh to sync with the model, then run actions from checked or selected circuits (including move, alerts, and recalculation workflows).
-  New here? Right-click this button and pick Tutorial for a guided walkthrough (Shift+Click does the same).
+  New here? Open the pane and use the Help and Docs buttons in its header.
 
 author: >-
   AEvelina

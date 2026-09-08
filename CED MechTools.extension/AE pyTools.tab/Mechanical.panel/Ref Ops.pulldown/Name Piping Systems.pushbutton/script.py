@@ -2323,6 +2323,28 @@ TAG_MODE_TAG_UNTAGGED = "Tag Untagged Pipes Only"
 TAG_MODE_REMOVE_AND_RETAG = "Remove Matching Tags and Retag"
 
 
+def _open_tour_from_form():
+    """Help button on the WinForms options dialog.
+
+    This dialog is WinForms, not WPF, so UIClasses.tutorial.wire_help cannot
+    attach to it - the handlers are wired by hand instead. The tour is opened
+    modal because this dialog is itself modal.
+    """
+    try:
+        from UIClasses.tutorial import show_tour
+        show_tour(__file__, modal=True)
+    except Exception as ex:
+        logger.warning("Could not open the tour: {}".format(ex))
+
+
+def _open_docs_from_form():
+    try:
+        from UIClasses.tutorial import docs
+        docs.show_docs(__file__)
+    except Exception as ex:
+        logger.warning("Could not open the documentation: {}".format(ex))
+
+
 def _prompt_naming_options():
     identity_modes = [
         IDENTITY_MODE_DO_NOT_UPDATE,
@@ -2452,6 +2474,22 @@ def _prompt_naming_options():
     chk_end.Size = Size(110, 24)
     chk_end.Checked = False
     form.Controls.Add(chk_end)
+
+    help_btn = Button()
+    help_btn.Text = "?"
+    help_btn.Location = Point(12, 335)
+    help_btn.Size = Size(30, 28)
+    help_btn.Anchor = AnchorStyles.Bottom | AnchorStyles.Left
+    help_btn.Click += lambda sender, args: _open_tour_from_form()
+    form.Controls.Add(help_btn)
+
+    docs_btn = Button()
+    docs_btn.Text = "Docs"
+    docs_btn.Location = Point(48, 335)
+    docs_btn.Size = Size(60, 28)
+    docs_btn.Anchor = AnchorStyles.Bottom | AnchorStyles.Left
+    docs_btn.Click += lambda sender, args: _open_docs_from_form()
+    form.Controls.Add(docs_btn)
 
     ok_btn = Button()
     ok_btn.Text = "OK"

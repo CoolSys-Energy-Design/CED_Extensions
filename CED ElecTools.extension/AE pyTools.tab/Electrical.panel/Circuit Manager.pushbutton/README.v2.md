@@ -1,7 +1,7 @@
 # Guided Tour ("Show Me Around")
 
-New to Circuit Manager? **Right-click the Circuit Manager button on the ribbon
-and choose Tutorial.** (Shift+Click the button does the same thing.)
+New to Circuit Manager? **Open the pane and click the ? button in its header**,
+then pick "Show me around". The **Docs** button beside it opens this guide.
 
 The Colonel walks you through the tool end to end in 23 steps, and each step
 puts a spotlight on the actual control in the live pane, so you are reading
@@ -15,7 +15,6 @@ Only two files live here:
 | File | Purpose |
 | --- | --- |
 | `tutorial_content.py` | The narration. Plain data - edit this to change what the tour says. |
-| `config.py` | Shift+Click entry point (two lines - it calls the shared engine). |
 
 To add or reword a step, edit `tutorial_content.py` only. `target` is the
 `Name` of an element in `CircuitBrowserPanel.xaml`; a name that does not

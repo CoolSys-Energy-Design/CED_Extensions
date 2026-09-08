@@ -34,7 +34,46 @@ ACTION_MODE_MARK_ONLY = "Identity Mark only"
 ACTION_MODE_TAG_ONLY = "Tag only"
 
 
-class _MechEquipmentSelectionFilter(ISelectionFilter):
+# Which equipment the picking loop will let you click, and which tag categories
+# suit it. Multi-category tags always apply, so they are added on top.
+CATEGORY_ORDER = ("mechanical", "electrical", "plumbing")
+EQUIPMENT_CATEGORIES = {
+    "mechanical": {
+        "label": "Mechanical equipment",
+        "equipment": ("OST_MechanicalEquipment",),
+        "tags": ("OST_MechanicalEquipmentTags", "OST_SpecialityEquipmentTags"),
+    },
+    "electrical": {
+        "label": "Electrical equipment",
+        "equipment": ("OST_ElectricalEquipment",),
+        "tags": ("OST_ElectricalEquipmentTags",),
+    },
+    "plumbing": {
+        "label": "Plumbing equipment",
+        "equipment": ("OST_PlumbingEquipment",),
+        "tags": ("OST_PlumbingEquipmentTags",),
+    },
+}
+ALWAYS_TAG_CATEGORIES = ("OST_MultiCategoryTags",)
+
+
+def _builtin_category_ids(names):
+    """Resolve BuiltInCategory names to ints, skipping any this Revit lacks."""
+    ids = []
+    for name in names or ():
+        try:
+            ids.append(int(getattr(DB.BuiltInCategory, name)))
+        except Exception:
+            continue
+    return ids
+
+
+class _CategorySelectionFilter(ISelectionFilter):
+    """Allow only elements in the given BuiltInCategory ids."""
+
+    def __init__(self, category_ids):
+        self._allowed = set(int(i) for i in category_ids or ())
+
     def AllowElement(self, elem):  # noqa: N802
         if elem is None:
             return False
@@ -45,15 +84,12 @@ class _MechEquipmentSelectionFilter(ISelectionFilter):
         if cat is None:
             return False
         try:
-            return _elid_value(cat.Id) == int(DB.BuiltInCategory.OST_MechanicalEquipment)
+            return _elid_value(cat.Id) in self._allowed
         except Exception:
             return False
 
     def AllowReference(self, reference, position):  # noqa: N802
         return False
-
-
-_MECH_FILTER = _MechEquipmentSelectionFilter()
 
 
 def _rgb(r, g, b):
@@ -305,38 +341,7 @@ def _update_preview_highlights(view, ogs, new_ids, prev_ids):
 
 
 
-class SystemIdPasteWindow(forms.WPFWindow):
-    def __init__(self, xaml_path):
-        forms.WPFWindow.__init__(self, xaml_path)
 
-    def OkButton_Click(self, sender, args):
-        self.DialogResult = True
-        self.Close()
-
-    def CancelButton_Click(self, sender, args):
-        self.DialogResult = False
-        self.Close()
-
-    def get_text(self):
-        try:
-            return (self.InputBox.Text or u"").strip()
-        except Exception:
-            return u""
-
-
-
-def _prompt_system_ids():
-    xaml = script.get_bundle_file("SystemIdPasteWindow.xaml")
-    if xaml:
-        window = SystemIdPasteWindow(xaml)
-        if window.show_dialog():
-            return window.get_text()
-        return None
-    return forms.ask_for_string(
-        prompt="Paste SYS NO. values from Excel (full block is OK).",
-        default="",
-        title="System Tagger"
-    )
 
 
 def _get_element_center(elem, view):
@@ -369,9 +374,14 @@ def _index_to_letters(index):
     return letters
 
 
-def _collect_tag_types():
+def _collect_tag_types(category_names=None):
+    """Tag family symbols for the given tag categories (all of them if None)."""
+    if category_names is None:
+        category_names = list(ALWAYS_TAG_CATEGORIES)
+        for spec in EQUIPMENT_CATEGORIES.values():
+            category_names.extend(spec["tags"])
     tag_types = []
-    for cat_name in ("OST_MultiCategoryTags", "OST_MechanicalEquipmentTags", "OST_SpecialityEquipmentTags"):
+    for cat_name in category_names:
         try:
             cat = getattr(DB.BuiltInCategory, cat_name)
         except Exception:
@@ -403,51 +413,98 @@ def _tag_type_label(tag_type):
     return "[{}] {} : {}".format(cat_name, fam_name or "?", type_name or "?")
 
 
-def _pick_tag_type():
+def _prompt_settings(prefill_ids="", resume_note=None):
+    """Ask for everything up front: IDs, category, action and tag type.
+
+    Replaces the old chain (CommandSwitchWindow for the mode, SelectFromList for
+    the tag, a paste window for the IDs) with one window, so the choices can be
+    seen and corrected together.
+    """
+    from UIClasses import settings_form as sf
+
     tag_types = _collect_tag_types()
-    if not tag_types:
-        return None
-
     label_to_type = {}
-    default_label = None
     for tag_type in tag_types:
-        try:
-            fam_name = tag_type.get_Parameter(DB.BuiltInParameter.SYMBOL_FAMILY_NAME_PARAM).AsString() or ""
-        except Exception:
-            fam_name = ""
-        try:
-            type_name = tag_type.get_Parameter(DB.BuiltInParameter.SYMBOL_NAME_PARAM).AsString() or ""
-        except Exception:
-            type_name = ""
-        label = _tag_type_label(tag_type)
-        if fam_name == "M_Mechanical Eqmt Tag" and type_name == "Identity":
-            label = "(default) " + label
-            default_label = label
-        label_to_type[label] = tag_type
+        label_to_type[_tag_type_label(tag_type)] = tag_type
+    tag_options = [(label, label) for label in sorted(label_to_type)]
 
-    options = sorted(label_to_type.keys())
-    if default_label and default_label in options:
-        options.remove(default_label)
-        options.insert(0, default_label)
+    fields = [
+        sf.multiline(
+            "ids", "System IDs (paste from Excel)", default=prefill_ids or "",
+            hint="Paste the SYS NO. column - the whole block is fine. "
+                 "The order you paste is the order you will be walked through.",
+            height=110),
+        sf.choice(
+            "category", "Equipment category",
+            [(key, EQUIPMENT_CATEGORIES[key]["label"]) for key in CATEGORY_ORDER],
+            default="mechanical",
+            hint="Only this category can be clicked during the picking loop."),
+        sf.choice(
+            "mode", "What should it write?",
+            [(ACTION_MODE_TAG_AND_MARK, ACTION_MODE_TAG_AND_MARK),
+             (ACTION_MODE_MARK_ONLY, ACTION_MODE_MARK_ONLY),
+             (ACTION_MODE_TAG_ONLY, ACTION_MODE_TAG_ONLY)],
+            default=ACTION_MODE_TAG_AND_MARK),
+        sf.choice(
+            "tag", "Tag type", tag_options, required=False,
+            hint="Not needed if you chose Identity Mark only."),
+    ]
+    if resume_note:
+        fields.insert(0, sf.info(resume_note))
 
-    picked = forms.SelectFromList.show(
-        options,
-        multiselect=False,
-        title="Select Tag Type",
+    def _validate(values):
+        problems = []
+        mode = values.get("mode")
+        picked_label = values.get("tag")
+        if mode != ACTION_MODE_MARK_ONLY:
+            if not picked_label:
+                if not tag_options:
+                    problems.append(
+                        "No tag types are loaded in this project, so only "
+                        "'Identity Mark only' can run.")
+                else:
+                    problems.append(
+                        "Pick a tag type, or switch to 'Identity Mark only'.")
+            else:
+                spec = EQUIPMENT_CATEGORIES.get(values.get("category")) or {}
+                allowed = set(_builtin_category_ids(
+                    tuple(ALWAYS_TAG_CATEGORIES) + tuple(spec.get("tags") or ())))
+                tag_type = label_to_type.get(picked_label)
+                try:
+                    tag_cat = _elid_value(tag_type.Category.Id)
+                except Exception:
+                    tag_cat = None
+                if tag_cat is not None and allowed and tag_cat not in allowed:
+                    problems.append(
+                        "That tag type does not suit {0}. Choose a multi-category "
+                        "tag or one made for that category.".format(
+                            spec.get("label", "the chosen category")))
+        if not _parse_system_ids(values.get("ids") or ""):
+            problems.append("No System IDs could be read from the pasted text.")
+        return problems
+
+    values = sf.prompt(
+        "System Tagger",
+        fields,
+        subtitle="Then you will click the equipment for each ID in turn - "
+                 "click again to unselect, Esc to move to the next ID.",
+        ok_label="Start picking",
+        caller_file=__file__,
+        validate=_validate,
     )
-    if not picked:
+    if values is None:
         return None
-    return label_to_type.get(picked)
-
-
-def _prompt_action_mode():
-    choice = forms.CommandSwitchWindow.show(
-        [ACTION_MODE_TAG_AND_MARK, ACTION_MODE_MARK_ONLY, ACTION_MODE_TAG_ONLY],
-        message="What should the System Tagger do for each picked element?",
-    )
-    if not choice:
-        return None
-    return choice
+    spec = EQUIPMENT_CATEGORIES[values["category"]]
+    return {
+        "raw_text": values["ids"],
+        "system_ids": _parse_system_ids(values["ids"]),
+        "action_mode": values["mode"],
+        "tag_type": label_to_type.get(values.get("tag") or ""),
+        "category_key": values["category"],
+        "pick_label": spec["label"],
+        "pick_filter": _CategorySelectionFilter(
+            _builtin_category_ids(spec["equipment"])),
+    }
 
 
 def _parse_system_ids(raw_text):
@@ -466,7 +523,7 @@ def _parse_system_ids(raw_text):
     return system_ids
 
 
-def _toggle_pick_cases(system_id, view, ogs):
+def _toggle_pick_cases(system_id, view, ogs, pick_filter, pick_label):
     selected_ids = []
     selected_set = set()
     preview_ids = []
@@ -476,14 +533,14 @@ def _toggle_pick_cases(system_id, view, ogs):
     try:
         while True:
             with forms.WarningBar(
-                title="System ID {}: pick Mechanical Equipment (ESC to finish)".format(system_id)
+                title="System ID {}: pick {} (ESC to finish)".format(system_id, pick_label)
             ):
                 while True:
                     try:
                         ref = uidoc.Selection.PickObject(
                             ObjectType.Element,
-                            _MECH_FILTER,
-                            "Pick Mechanical Equipment (click again to unselect). ESC when done."
+                            pick_filter,
+                            "Pick {} (click again to unselect). ESC when done.".format(pick_label)
                         )
                     except Exception:
                         break
@@ -608,23 +665,15 @@ def main():
     if active_view.IsTemplate:
         forms.alert("Active view is a template. Open a working view first.", exitscript=True)
 
-    action_mode = _prompt_action_mode()
-    if not action_mode:
-        script.exit()
-
-    tag_type = None
-    if action_mode != ACTION_MODE_MARK_ONLY:
-        tag_type = _pick_tag_type()
-        if tag_type is None:
-            forms.alert("No tag type selected.", exitscript=True)
-
     # One-time migration from legacy ProjectInformation storage to DataStorage.
     _migrate_from_project_info_if_needed()
 
+    # Decide about a paused run first, so the settings form can be pre-filled
+    # with the saved list.
     resume_path, resume_index = _load_resume_state()
-    system_ids = None
+    prefill_ids = ""
+    resume_note = None
     start_index = 0
-    raw_text = None
 
     if resume_path and resume_index is not None:
         resume_ids = _parse_system_ids(resume_path)
@@ -637,9 +686,12 @@ def main():
                 ),
             )
             if choice == "Resume":
-                raw_text = resume_path
-                system_ids = resume_ids
+                prefill_ids = resume_path
                 start_index = resume_index
+                resume_note = (
+                    "Resuming at '{0}' - ID {1} of {2}. The list below is the saved "
+                    "one; editing it starts again from the top."
+                ).format(next_id, resume_index + 1, len(resume_ids))
             elif choice == "Start Over":
                 _clear_resume_state()
             else:
@@ -647,13 +699,20 @@ def main():
         else:
             _clear_resume_state()
 
-    if system_ids is None:
-        raw_text = _prompt_system_ids()
-        if not raw_text:
-            script.exit()
-        system_ids = _parse_system_ids(raw_text)
-        if not system_ids:
-            forms.alert("No System IDs found in the pasted text.", exitscript=True)
+    settings = _prompt_settings(prefill_ids=prefill_ids, resume_note=resume_note)
+    if settings is None:
+        script.exit()
+
+    raw_text = settings["raw_text"]
+    system_ids = settings["system_ids"]
+    action_mode = settings["action_mode"]
+    tag_type = settings["tag_type"]
+    pick_filter = settings["pick_filter"]
+    pick_label = settings["pick_label"]
+
+    # If the saved list was edited, the saved position no longer means anything.
+    if prefill_ids and raw_text.strip() != prefill_ids.strip():
+        start_index = 0
 
     highlight_ogs = _build_highlight_ogs()
 
@@ -679,7 +738,8 @@ def main():
 
     for idx in range(start_index, len(system_ids)):
         system_id = system_ids[idx]
-        status, picked_ids = _toggle_pick_cases(system_id, active_view, highlight_ogs)
+        status, picked_ids = _toggle_pick_cases(system_id, active_view, highlight_ogs,
+                                                   pick_filter, pick_label)
         if status == "cancel":
             return
         try:

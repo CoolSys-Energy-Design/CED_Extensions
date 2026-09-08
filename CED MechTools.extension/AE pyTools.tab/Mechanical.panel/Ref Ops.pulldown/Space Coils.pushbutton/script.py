@@ -826,50 +826,57 @@ def _coil_bbox_data(coil):
     }
 
 
-def _prompt_wall_offset():
-    raw = forms.ask_for_string(
-        prompt="Offset from wall (inches):",
-        default=str(DEFAULT_WALL_OFFSET_IN),
-        title="Wall Offset",
+
+
+
+
+
+
+def _prompt_settings():
+    """Everything the old five-prompt chain asked, in one window."""
+    from UIClasses import settings_form as sf
+
+    grid_options = ["{0}x{1}".format(r, c) for r in range(1, 6) for c in range(1, 6)]
+    values = sf.prompt(
+        "Space Coils",
+        [
+            sf.choice("style", "How should the coils be placed?",
+                      [(STYLE_WALL, "Along a wall - evenly, with equal end gaps"),
+                       (STYLE_CENTER, "Centred grid in the space")],
+                      default=STYLE_WALL),
+            sf.choice("direction", "Wall direction to align to",
+                      ["North", "South", "East", "West"], default="North",
+                      hint="Coils face away from this wall, into the room.",
+                      visible_when=("style", [STYLE_WALL])),
+            sf.number("offset_in", "Offset from wall (inches)",
+                      default=DEFAULT_WALL_OFFSET_IN, minimum=0, decimals=True,
+                      visible_when=("style", [STYLE_WALL])),
+            sf.choice("grid", "Grid size (rows x columns)", grid_options,
+                      default="1x1", visible_when=("style", [STYLE_CENTER])),
+            sf.boolean("mixed", "The grid mixes different coil sizes",
+                       hint="You will then be asked to arrange the coils into the "
+                            "layout you want, so the tool learns which size belongs "
+                            "in which position.",
+                       visible_when=("style", [STYLE_CENTER])),
+        ],
+        subtitle="Coils must be selected before you run this.",
+        ok_label="Place coils",
+        caller_file=__file__,
     )
-    if raw is None:
-        script.exit()
-    try:
-        value = float(str(raw).strip())
-    except Exception:
-        forms.alert("Offset must be a number (inches).", exitscript=True)
-    if value < 0:
-        forms.alert("Offset must be zero or positive.", exitscript=True)
-    return value / 12.0
+    if values is None:
+        return None
+    if values.get("style") == STYLE_CENTER:
+        parts = str(values.get("grid") or "1x1").lower().split("x")
+        values["rows"], values["cols"] = int(parts[0]), int(parts[1])
+    return values
 
 
-def _prompt_grid_size():
-    options = ["{}x{}".format(r, c) for r in range(1, 6) for c in range(1, 6)]
-    picked = forms.CommandSwitchWindow.show(
-        options,
-        message="Select grid size (rows x columns):",
-    )
-    if not picked:
-        script.exit()
-    try:
-        parts = picked.lower().split("x")
-        rows = int(parts[0])
-        cols = int(parts[1])
-    except Exception:
-        forms.alert("Invalid grid selection.", exitscript=True)
-    return rows, cols
+def _confirm_grid_template(rows, cols):
+    """Mid-flow step, only when the grid mixes coil sizes.
 
-
-def _prompt_mixed_sizes(rows, cols):
-    choice = forms.CommandSwitchWindow.show(
-        ["No", "Yes"],
-        message="Does the {}x{} grid include different coil sizes?".format(rows, cols),
-    )
-    if not choice:
-        script.exit()
-    if choice != "Yes":
-        return False
-
+    The user rearranges the coils in the model and then confirms, so this stays
+    an in-the-moment prompt rather than part of the settings form.
+    """
     forms.alert(
         (
             "Arrange the selected coils into the desired {}x{} layout.\n"
@@ -888,15 +895,7 @@ def _prompt_mixed_sizes(rows, cols):
     return True
 
 
-def _place_wall_distribution(coils):
-    direction = forms.CommandSwitchWindow.show(
-        ["North", "South", "East", "West"],
-        message="Which wall direction should the coils align to?",
-    )
-    if not direction:
-        script.exit()
-
-    offset_ft = _prompt_wall_offset()
+def _place_wall_distribution(coils, direction, offset_ft):
 
     bounds = _resolve_bounds(coils, direction)
     if not bounds:
@@ -1123,18 +1122,17 @@ def main():
     if not coils:
         forms.alert("Select coil family instances before running Space Coils.", exitscript=True)
 
-    style = forms.CommandSwitchWindow.show(
-        [STYLE_WALL, STYLE_CENTER],
-        message="How should the coils be placed?",
-    )
-    if not style:
+    settings = _prompt_settings()
+    if settings is None:
         script.exit()
 
-    if style == STYLE_WALL:
-        _place_wall_distribution(coils)
+    if settings["style"] == STYLE_WALL:
+        _place_wall_distribution(
+            coils, settings["direction"], float(settings["offset_in"]) / 12.0)
     else:
-        rows, cols = _prompt_grid_size()
-        mixed_sizes = _prompt_mixed_sizes(rows, cols)
+        rows, cols = settings["rows"], settings["cols"]
+        mixed_sizes = (bool(settings.get("mixed"))
+                       and _confirm_grid_template(rows, cols))
         _place_center_distribution(
             coils,
             rows,

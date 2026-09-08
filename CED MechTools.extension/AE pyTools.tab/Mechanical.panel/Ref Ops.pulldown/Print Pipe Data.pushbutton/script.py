@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 __title__ = "Print Pipe Data"
 __doc__ = "Collect pipes by selected worksets, summarize PipeSegment totals, and export to Excel."
 
@@ -291,10 +291,6 @@ def _direct_identity_mark(pipe):
     return None
 
 
-class _SystemTypeOption(forms.TemplateListItem):
-    @property
-    def name(self):
-        return self.item or "<Unknown System Type>"
 
 
 def _get_pipe_system_type_name(pipe):
@@ -347,29 +343,31 @@ def _collect_system_type_names(pipe_elements):
 
 
 def _prompt_system_types(system_type_names):
-    options = [_SystemTypeOption(name, checked=True) for name in system_type_names]
-    selected = forms.SelectFromList.show(
-        options,
-        title="Select Pipe System Types",
-        button_name="Collect Pipe Data",
-        multiselect=True,
-        return_all=True,
-    )
-    if selected is None:
-        return None
+    """Which pipe system types to total up.
 
-    picked = []
-    for option in selected:
-        try:
-            is_checked = bool(option)
-        except Exception:
-            is_checked = False
-        if not is_checked:
-            continue
-        name = getattr(option, "item", None)
-        if name is not None:
-            picked.append(name)
-    return picked
+    One themed window with the Help and Docs buttons, replacing the bare
+    SelectFromList checklist.
+    """
+    from UIClasses import settings_form as sf
+
+    values = sf.prompt(
+        "Print Pipe Data",
+        [
+            sf.multichoice(
+                "types", "Pipe system types",
+                [(name, name) for name in system_type_names],
+                default=None,
+                hint="Everything is ticked to start with. Untick anything you do "
+                     "not want counted - this is the scope of the takeoff."),
+        ],
+        subtitle="Totals are grouped by System ID, read from each pipe's "
+                 "Identity Mark. You will choose where to save at the end.",
+        ok_label="Collect Pipe Data",
+        caller_file=__file__,
+    )
+    if values is None:
+        return None
+    return list(values.get("types") or [])
 
 
 def _filter_pipes_by_system_types(pipe_elements, selected_type_names):

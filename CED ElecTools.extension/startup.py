@@ -216,21 +216,20 @@ def _tour_content(*parts):
 
 
 def _register_tour_ribbon_gestures():
-    """Ribbon gestures pyRevit does not provide on its own.
+    """Shift+Click on the two pulldowns, which have no UI of their own.
 
-    Right-click "Tutorial" on Circuit Manager, and Shift+Click on the two
-    pulldowns (pyRevit only runs config.py for pushbuttons, never for a
-    pulldown container). The ribbon does not exist yet at startup - pyRevit
-    builds it after the startup scripts run - so the hook attaches to the
-    AdWindows RibbonControl and resolves items lazily on each click.
+    Every tool with a window reaches its tour and its guide from the Help and
+    Docs buttons inside that window, so no ribbon gesture is registered for
+    them. A pulldown is a container with nowhere to put a button, and pyRevit
+    only runs config.py for pushbuttons - so these two overviews would be
+    unreachable without this.
+
+    The ribbon does not exist yet at startup (pyRevit builds it after the
+    startup scripts run), so the hook attaches to the AdWindows RibbonControl
+    and resolves items lazily on each click.
     """
     logger = script.get_logger()
     entries = [
-        {
-            "match": "circuit manager",
-            "gesture": "both",
-            "content": _tour_content("Circuit Manager.pushbutton"),
-        },
         {
             "match": "circuit tools",
             "gesture": "shift_click",

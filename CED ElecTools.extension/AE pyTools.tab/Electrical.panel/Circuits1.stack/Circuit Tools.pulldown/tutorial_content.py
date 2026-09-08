@@ -29,7 +29,8 @@ STEPS = [
         "bullets": [
             "Most of these work off your current selection - devices or circuits.",
             "Anything that writes to the model shows you a review table first.",
-            "Shift+Click any individual button that has its own tour for more detail.",
+            "Tools with a window of their own have Help and Docs buttons in that "
+            "window - open the tool for the detail.",
         ],
     },
     {

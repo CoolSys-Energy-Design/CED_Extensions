@@ -43,7 +43,7 @@ for _wpf_asm in ("PresentationFramework", "PresentationCore", "WindowsBase"):
     except Exception:
         pass
 
-from System.Windows import Thickness, Visibility
+from System.Windows import TextWrapping, Thickness, Visibility
 from System.Windows.Controls import (
     Border,
     CheckBox,
@@ -51,6 +51,7 @@ from System.Windows.Controls import (
     ComboBoxItem,
     Grid,
     Orientation,
+    ScrollBarVisibility,
     ScrollViewer,
     StackPanel,
     TextBlock,
@@ -91,7 +92,7 @@ class Field(object):
 
     def __init__(self, key, label, kind, default=None, options=None, hint=None,
                  required=True, minimum=None, maximum=None, file_filter=None,
-                 max_length=None, height=None):
+                 max_length=None, height=None, visible_when=None):
         self.key = key
         self.label = label
         self.kind = kind
@@ -104,7 +105,11 @@ class Field(object):
         self.file_filter = file_filter
         self.max_length = max_length
         self.height = height
+        # ("other_field_key", [values]) - this field only shows while that
+        # field holds one of those values.
+        self.visible_when = visible_when
         self.control = None          # set when the form is built
+        self.container = None        # the row, so it can be shown/hidden
         self._extra = None           # per-kind helper state
 
 
@@ -119,45 +124,56 @@ def _normalize_options(options):
     return pairs
 
 
-def choice(key, label, options, default=None, hint=None, required=True):
+def choice(key, label, options, default=None, hint=None, required=True,
+                 visible_when=None):
     return Field(key, label, KIND_CHOICE, default=default,
-                 options=_normalize_options(options), hint=hint, required=required)
+                 options=_normalize_options(options), hint=hint, required=required,
+                 visible_when=visible_when)
 
 
-def multichoice(key, label, options, default=None, hint=None, required=True):
+def multichoice(key, label, options, default=None, hint=None, required=True,
+                      visible_when=None):
     """Checklist. ``default`` is a list of selected values (None = all)."""
     return Field(key, label, KIND_MULTICHOICE, default=default,
-                 options=_normalize_options(options), hint=hint, required=required)
+                 options=_normalize_options(options), hint=hint, required=required,
+                 visible_when=visible_when)
 
 
-def text(key, label, default="", hint=None, required=True, max_length=None):
+def text(key, label, default="", hint=None, required=True, max_length=None,
+         visible_when=None):
     return Field(key, label, KIND_TEXT, default=default, hint=hint,
-                 required=required, max_length=max_length)
+                 required=required, max_length=max_length,
+                 visible_when=visible_when)
 
 
-def multiline(key, label, default="", hint=None, required=True, height=120):
+def multiline(key, label, default="", hint=None, required=True, height=120,
+              visible_when=None):
     return Field(key, label, KIND_MULTILINE, default=default, hint=hint,
-                 required=required, height=height)
+                 required=required, height=height,
+                 visible_when=visible_when)
 
 
 def number(key, label, default=None, minimum=None, maximum=None, hint=None,
-           required=True, decimals=False):
+           required=True, decimals=False, visible_when=None):
     return Field(key, label, KIND_FLOAT if decimals else KIND_INT,
                  default=default, minimum=minimum, maximum=maximum,
-                 hint=hint, required=required)
+                 hint=hint, required=required, visible_when=visible_when)
 
 
-def boolean(key, label, default=False, hint=None):
+def boolean(key, label, default=False, hint=None, visible_when=None):
     return Field(key, label, KIND_BOOL, default=bool(default), hint=hint,
-                 required=False)
+                 required=False, visible_when=visible_when)
 
 
-def open_file(key, label, file_filter=None, default="", hint=None, required=True):
+def open_file(key, label, file_filter=None, default="", hint=None, required=True,
+                       visible_when=None):
     return Field(key, label, KIND_OPEN_FILE, default=default, hint=hint,
-                 required=required, file_filter=file_filter)
+                 required=required, file_filter=file_filter,
+                 visible_when=visible_when)
 
 
-def save_file(key, label, file_filter=None, default="", hint=None, required=True):
+def save_file(key, label, file_filter=None, default="", hint=None, required=True,
+                       visible_when=None):
     return Field(key, label, KIND_SAVE_FILE, default=default, hint=hint,
                  required=required, file_filter=file_filter)
 
@@ -174,9 +190,10 @@ class SettingsFormWindow(CEDWindowBase):
     theme_aware = True
 
     def __init__(self, title, fields, subtitle=None, ok_label="Continue",
-                 caller_file=None, help_modal=True):
+                 caller_file=None, help_modal=True, validate=None):
         self._fields = [f for f in fields if f is not None]
         self._caller_file = caller_file
+        self._validate = validate
         self.result = None
 
         theme_mode, accent_mode = load_theme_state_from_config(
@@ -209,6 +226,7 @@ class SettingsFormWindow(CEDWindowBase):
             self._reset.Click += self._reset_clicked
 
         self._build_fields()
+        self._apply_visibility()
 
         # Help and Docs. This window is modal, so the tour has to be too.
         if caller_file:
@@ -234,7 +252,7 @@ class SettingsFormWindow(CEDWindowBase):
         style = self._style("CED.Text.CaptionStrong")
         if style is not None:
             block.Style = style
-        block.TextWrapping = 1  # Wrap
+        block.TextWrapping = TextWrapping.Wrap
         block.Margin = Thickness(0, 0, 0, 3)
         return block
 
@@ -246,7 +264,7 @@ class SettingsFormWindow(CEDWindowBase):
         style = self._style("CED.Text.Caption")
         if style is not None:
             block.Style = style
-        block.TextWrapping = 1
+        block.TextWrapping = TextWrapping.Wrap
         block.Margin = Thickness(0, 2, 0, 0)
         return block
 
@@ -264,11 +282,13 @@ class SettingsFormWindow(CEDWindowBase):
                 border.Background = self._style("CED.Brush.InfoPanelBackground")
                 border.BorderBrush = self._style("CED.Brush.InfoPanelBorder")
                 border.BorderThickness = Thickness(1)
-                border.CornerRadius = self._style("CED.CornerRadius.Control") or None
+                radius = self._style("CED.CornerRadius.Control")
+                if radius is not None:
+                    border.CornerRadius = radius
                 border.Padding = Thickness(8, 6, 8, 6)
                 inner = TextBlock()
                 inner.Text = str(field.label or "")
-                inner.TextWrapping = 1
+                inner.TextWrapping = TextWrapping.Wrap
                 style = self._style("CED.Text.Secondary")
                 if style is not None:
                     inner.Style = style
@@ -283,9 +303,12 @@ class SettingsFormWindow(CEDWindowBase):
             control = self._build_control(field)
             if control is not None:
                 container.Children.Add(control)
+            if field.kind == KIND_CHOICE and control is not None:
+                control.SelectionChanged += self._choice_changed
             hint = self._hint_block(field)
             if hint is not None:
                 container.Children.Add(hint)
+            field.container = container
             self._host.Children.Add(container)
 
     def _build_control(self, field):
@@ -310,7 +333,7 @@ class SettingsFormWindow(CEDWindowBase):
             border.Padding = Thickness(6, 4, 6, 4)
             scroller = ScrollViewer()
             scroller.MaxHeight = 150
-            scroller.VerticalScrollBarVisibility = 1  # Auto
+            scroller.VerticalScrollBarVisibility = ScrollBarVisibility.Auto
             panel = StackPanel()
             selected = field.default
             boxes = []
@@ -332,9 +355,9 @@ class SettingsFormWindow(CEDWindowBase):
             box = TextBox()
             if kind == KIND_MULTILINE:
                 box.AcceptsReturn = True
-                box.TextWrapping = 1
+                box.TextWrapping = TextWrapping.Wrap
                 box.Height = float(field.height or 120)
-                box.VerticalScrollBarVisibility = 1
+                box.VerticalScrollBarVisibility = ScrollBarVisibility.Auto
             else:
                 box.Height = 26
             if field.max_length:
@@ -411,6 +434,36 @@ class SettingsFormWindow(CEDWindowBase):
 
     # -- values and validation --------------------------------------------
 
+    def _choice_changed(self, sender, args):
+        self._apply_visibility()
+
+    def _is_visible(self, field):
+        rule = field.visible_when
+        if not rule:
+            return True
+        try:
+            other_key, wanted = rule[0], rule[1]
+        except Exception:
+            return True
+        if not isinstance(wanted, (list, tuple, set)):
+            wanted = [wanted]
+        for other in self._fields:
+            if other.key == other_key:
+                return self._value_of(other) in wanted
+        return True
+
+    def _apply_visibility(self):
+        """Hide fields whose visible_when rule is not satisfied."""
+        for field in self._fields:
+            if field.container is None:
+                continue
+            try:
+                field.container.Visibility = (
+                    Visibility.Visible if self._is_visible(field)
+                    else Visibility.Collapsed)
+            except Exception:
+                pass
+
     def _value_of(self, field):
         control = field.control
         kind = field.kind
@@ -428,7 +481,7 @@ class SettingsFormWindow(CEDWindowBase):
     def _problems(self):
         found = []
         for field in self._fields:
-            if field.kind == KIND_INFO:
+            if field.kind == KIND_INFO or not self._is_visible(field):
                 continue
             value = self._value_of(field)
 
@@ -479,6 +532,9 @@ class SettingsFormWindow(CEDWindowBase):
         for field in self._fields:
             if field.kind == KIND_INFO or not field.key:
                 continue
+            if not self._is_visible(field):
+                values[field.key] = None
+                continue
             value = self._value_of(field)
             if field.kind == KIND_INT:
                 raw = str(value or "").strip()
@@ -499,8 +555,22 @@ class SettingsFormWindow(CEDWindowBase):
         if problems:
             self._show_problems(problems)
             return
+        values = self.collect()
+        # Cross-field rules the per-field checks cannot see, e.g. "this tag type
+        # does not suit that equipment category".
+        if self._validate is not None:
+            try:
+                extra = self._validate(values) or []
+            except Exception as exc:
+                _LOGGER.debug("Settings form validate callback failed: %s", exc)
+                extra = []
+            if isinstance(extra, str):
+                extra = [extra]
+            if extra:
+                self._show_problems(list(extra))
+                return
         self._show_problems([])
-        self.result = self.collect()
+        self.result = values
         self.Close()
 
     def _cancel_clicked(self, sender, args):
@@ -525,12 +595,17 @@ class SettingsFormWindow(CEDWindowBase):
         self._show_problems([])
 
 
-def prompt(title, fields, subtitle=None, ok_label="Continue", caller_file=None):
-    """Show the form and return {key: value}, or None if cancelled."""
+def prompt(title, fields, subtitle=None, ok_label="Continue", caller_file=None,
+           validate=None):
+    """Show the form and return {key: value}, or None if cancelled.
+
+    ``validate`` is an optional callable taking the collected values and
+    returning a problem string, a list of them, or nothing.
+    """
     try:
         window = SettingsFormWindow(
             title, fields, subtitle=subtitle, ok_label=ok_label,
-            caller_file=caller_file)
+            caller_file=caller_file, validate=validate)
     except Exception as exc:
         _LOGGER.warning("Settings form could not be built: %s", exc)
         raise

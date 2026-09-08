@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """Shared "Show Me Around" tour engine for the AE pyTools ribbon.
 
-One engine, many tours. A tool contributes only a ``tutorial_content.py`` next
-to its bundle and a two-line ``config.py``; everything below is shared.
+One engine, many tours. A tool contributes only a ``tutorial_content.py``
+next to its bundle plus Help and Docs buttons in its own window; everything
+below is shared.
 
 Content contract - see UIClasses/tutorial/__init__.py for the full docstring:
 

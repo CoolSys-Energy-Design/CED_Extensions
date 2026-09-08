@@ -3,14 +3,17 @@
 
 Two gestures that pyRevit does not provide on its own:
 
-* ``right_click`` - a "Tutorial" item on a ribbon button's context menu.
-  Revit owns the ribbon and exposes no API for this, so we attach handlers to
-  the AdWindows RibbonControl (an ordinary WPF Control), suppress Revit's own
-  quick-access menu when the click lands on a registered item, and show ours.
+* ``right_click`` - a "Tutorial" item on a ribbon button's context menu. Still
+  supported, but nothing registers it now that every tool with a window carries
+  its own Help button. Revit owns the ribbon and exposes no API for this, so we
+  attach handlers to the AdWindows RibbonControl (an ordinary WPF Control),
+  suppress Revit's own quick-access menu on a registered item, and show ours.
 
-* ``shift_click`` - for PULLDOWNS. pyRevit runs ``config.py`` on Shift+Click
-  for pushbuttons, but a pulldown is a container (``PullDownButtonGroup``) and
-  has no config script, so Shift+Click there is ours to implement.
+* ``shift_click`` - for PULLDOWNS only. A tool with a window of its own reaches
+  its tour from the Help button inside that window, so no gesture is registered
+  for it. A pulldown is a container (``PullDownButtonGroup``) with nowhere to
+  put a button, and pyRevit only runs config.py for pushbuttons - so without
+  this its overview would be unreachable.
 
 Registered items are matched at click time by walking up the visual tree to the
 first ``Autodesk.Windows.RibbonItem``, so nothing needs resolving while the

@@ -508,14 +508,11 @@ def _collect_linked_spaces_from_instance(link):
     return spaces
 
 
-def _pick_space_source():
-    """Prompt the user to pick where the mapping picker should pull spaces from:
-    either the host model or one specific RevitLinkInstance.
+def _space_source_choices():
+    """Where the mapping picker should pull spaces from.
 
-    Returns:
-      ("host", None)                - user picked the host model
-      ("linked", link_instance)     - user picked a specific link
-      None                          - user cancelled
+    Returns (labels, {label: ("host", None) | ("linked", link_instance)}). The
+    settings form turns this into a dropdown; the first label is the best guess.
     """
     label_to_choice = {}
     options = []
@@ -562,19 +559,7 @@ def _pick_space_source():
             options.remove(marked)
             options.insert(0, marked)
 
-    if len(options) == 1:
-        # Only host model is available; auto-pick to save a click.
-        return label_to_choice[options[0]]
-
-    picked = forms.SelectFromList.show(
-        options,
-        title="Select Source for Spaces / Rooms",
-        button_name="Use this source",
-        multiselect=False,
-    )
-    if not picked:
-        return None
-    return label_to_choice.get(picked)
+    return options, label_to_choice
 
 
 def _collect_spaces_from_source(source_kind, link_instance):
@@ -970,7 +955,7 @@ def _find_default_level(levels):
 
     Falls back to the lowest-elevation level when no name matches."""
     if not levels:
-        return None
+        return [], {}
     sorted_levels = sorted(levels, key=lambda l: l.Elevation)
     for tier in _DEFAULT_LEVEL_TIERS:
         compiled = [re.compile(p, re.IGNORECASE) for p in tier]
@@ -982,9 +967,12 @@ def _find_default_level(levels):
     return sorted_levels[0]
 
 
-def _pick_host_level():
-    """Prompt the user to pick a host-doc level. Defaults the selection to a
-    'Level 1'-ish level if any exists, otherwise the lowest-elevation level."""
+def _host_level_choices():
+    """Levels for coil placement, best guess first.
+
+    Returns (labels, {label: Level}). Defaults to a 'Level 1'-ish level if
+    there is one, otherwise the lowest elevation.
+    """
     levels = list(DB.FilteredElementCollector(doc).OfClass(DB.Level))
     if not levels:
         return None
@@ -1008,15 +996,7 @@ def _pick_host_level():
         options.remove(default_label)
         options.insert(0, default_label)
 
-    picked = forms.SelectFromList.show(
-        options,
-        title="Select Level for Coil Placement",
-        button_name="Use this level",
-        multiselect=False,
-    )
-    if not picked:
-        return None
-    return label_to_level.get(picked)
+    return options, label_to_level
 
 
 def _parse_models(raw):
@@ -1342,8 +1322,56 @@ def _place_instances(placements):
     return placed_ids, failures
 
 
+def _prompt_settings():
+    """Excel file, space source and placement level in one window.
+
+    Replaces the pick_file + two SelectFromList chain. All three lists are
+    resolved from the model before the window opens.
+    """
+    from UIClasses import settings_form as sf
+
+    source_labels, label_to_source = _space_source_choices()
+    level_labels, label_to_level = _host_level_choices()
+    if not source_labels:
+        forms.alert("No Spaces or Rooms source is available.", exitscript=True)
+    if not level_labels:
+        forms.alert("No levels found in this model.", exitscript=True)
+
+    values = sf.prompt(
+        "Place all Coils",
+        [
+            sf.open_file("excel", "Coil placement workbook", file_filter="*.xlsx",
+                         hint="Reads Description, coil count and Model # from the "
+                              "'{0}' sheet.".format(SHEET_NAME)),
+            sf.choice("source", "Spaces / Rooms come from",
+                      [(label, label) for label in source_labels],
+                      default=source_labels[0],
+                      hint="On most jobs the rooms live in the architectural "
+                           "link, not this model."),
+            sf.choice("level", "Place coils on",
+                      [(label, label) for label in level_labels],
+                      default=level_labels[0],
+                      hint="Coils are offset 2 ft vertically from the space point."),
+        ],
+        subtitle="Descriptions are matched to space names, and Model # to the "
+                 "closest Mechanical Equipment type.",
+        ok_label="Read workbook",
+        caller_file=__file__,
+    )
+    if values is None:
+        return None
+    return {
+        "path": values["excel"],
+        "source": label_to_source.get(values["source"]),
+        "level": label_to_level.get(values["level"]),
+    }
+
+
 def main():
-    path = forms.pick_file(file_ext="xlsx", title="Select Coil Placement Excel File")
+    settings = _prompt_settings()
+    if settings is None:
+        return
+    path = settings["path"]
     if not path:
         return
 
@@ -1357,7 +1385,7 @@ def main():
     if not rows:
         forms.alert("No readable rows found on '{}'.".format(SHEET_NAME), exitscript=True)
 
-    space_source = _pick_space_source()
+    space_source = settings["source"]
     if space_source is None:
         forms.alert("No source selected. Cancelled.", exitscript=True)
     source_kind, source_link = space_source
@@ -1386,7 +1414,7 @@ def main():
 
     mfr_symbols = _filter_required_mfr_symbols(all_symbols)
 
-    chosen_level = _pick_host_level()
+    chosen_level = settings["level"]
     if chosen_level is None:
         forms.alert("No level selected. Cancelled.", exitscript=True)
 

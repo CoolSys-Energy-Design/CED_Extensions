@@ -34,25 +34,15 @@ Adding a tour to a tool takes two files in the tool's bundle folder.
            },
        ]
 
-2. ``config.py`` - the Shift+Click entry point, two lines:
-
-       from UIClasses.tutorial import show_tour
-       show_tour(__file__)
-
-A tool with a window of its own should also carry a Help button, which is the
-discoverable route - Shift+Click stays as the shortcut. Add a button named
-``TutorialHelpButton`` to the tool's XAML and one line to its script:
-
-       from UIClasses.tutorial import wire_help
-       wire_help(window, __file__)
-
-Two header buttons, wired in one call:
+2. Two header buttons in the tool's own window, wired in one call:
 
        from UIClasses.tutorial import wire_help_and_docs
        wire_help_and_docs(window, __file__)
 
 ``TutorialHelpButton`` offers "Show me around" (the tour) and "Open
 documentation"; ``TutorialDocsButton`` goes straight to the documentation.
+This is the only route in - there is deliberately no ribbon gesture for a tool
+that has a window, so the tour lives where the tool does.
 Either button hides itself when there is nothing to show. See
 ``help_button.py`` for the markup to paste, and ``docs.py`` for how the
 reference is built - it is rendered from this same content file, so the docs
@@ -124,7 +114,7 @@ def show_tour_for(content_path, modal=False):
 def show_tour(caller_file, content_name=DEFAULT_CONTENT_NAME, modal=False):
     """Open the tour whose content sits next to ``caller_file``.
 
-    Call from a tool's config.py as ``show_tour(__file__)``.
+    Used by the Help button, and by ribbon_hooks for the pulldown overviews.
     """
     directory = os.path.dirname(os.path.abspath(caller_file))
     return show_tour_for(os.path.join(directory, content_name), modal=modal)

@@ -371,7 +371,8 @@ STEPS = [
             "Alerts Manager and BatchSwap are separate buttons on this panel and pick up where "
             "this pane leaves off.",
             "Longer written guides live in README.v2.md next to this tool.",
-            "Right-click the Circuit Manager button on the ribbon any time to bring me back.",
+            "The ? button in the pane header brings me back any time, and Docs beside "
+            "it opens the written guide.",
         ],
     },
 ]
