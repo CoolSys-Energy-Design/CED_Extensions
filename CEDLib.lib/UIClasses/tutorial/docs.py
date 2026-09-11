@@ -217,8 +217,23 @@ def build_markdown(caller_file):
             "docs/user-guide, and it has no guided tour to fall back on.")
 
 
-def show_docs(caller_file):
-    """Render the tool's user guide into the pyRevit output window."""
+def show_docs(caller_file, modal=False):
+    """Open the tool's user guide in the docs window.
+
+    Falls back to the pyRevit output pane only when there is no real guide to
+    open (no catalog match, so all we have is the tour rendered as markdown) or
+    when the window itself fails to build.
+    """
+    try:
+        from UIClasses.tutorial import docs_window
+
+        window = docs_window.show(caller_file, modal=modal)
+        if window is not None:
+            return True
+        _LOGGER.debug("No user guide file for this tool; using the output pane.")
+    except Exception as exc:
+        _LOGGER.warning("Docs window failed, falling back to the output pane: %s", exc)
+
     try:
         entry, _root, _bundle = resolve_document(caller_file)
         output = script.get_output()

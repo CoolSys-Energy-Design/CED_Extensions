@@ -1340,7 +1340,7 @@ def _prompt_settings():
     values = sf.prompt(
         "Place all Coils",
         [
-            sf.open_file("excel", "Coil placement workbook", file_filter="*.xlsx",
+            sf.open_file("excel", "Coil placement workbook", file_ext="xlsx",
                          hint="Reads Description, coil count and Model # from the "
                               "'{0}' sheet.".format(SHEET_NAME)),
             sf.choice("source", "Spaces / Rooms come from",

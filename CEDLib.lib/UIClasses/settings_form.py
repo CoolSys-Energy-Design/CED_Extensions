@@ -92,7 +92,8 @@ class Field(object):
 
     def __init__(self, key, label, kind, default=None, options=None, hint=None,
                  required=True, minimum=None, maximum=None, file_filter=None,
-                 max_length=None, height=None, visible_when=None):
+                 max_length=None, height=None, visible_when=None,
+                 file_ext=None, options_from=None):
         self.key = key
         self.label = label
         self.kind = kind
@@ -103,6 +104,13 @@ class Field(object):
         self.minimum = minimum
         self.maximum = maximum
         self.file_filter = file_filter
+        # pyRevit's pick_file/save_file want a bare extension ("xlsx") in
+        # file_ext; files_filter is a full "Description|*.ext" pair. Passing a
+        # glob as the filter silently gives you a dialog that will not open.
+        self.file_ext = file_ext
+        # ("other_field_key", provider) - provider(value) returns this field's
+        # options, recomputed whenever that other field changes.
+        self.options_from = options_from
         self.max_length = max_length
         self.height = height
         # ("other_field_key", [values]) - this field only shows while that
@@ -125,10 +133,12 @@ def _normalize_options(options):
 
 
 def choice(key, label, options, default=None, hint=None, required=True,
-                 visible_when=None):
+           visible_when=None, options_from=None):
+    """Dropdown. ``options_from=("other_key", fn)`` makes it depend on another
+    field: fn(that field's value) returns this one's options."""
     return Field(key, label, KIND_CHOICE, default=default,
                  options=_normalize_options(options), hint=hint, required=required,
-                 visible_when=visible_when)
+                 visible_when=visible_when, options_from=options_from)
 
 
 def multichoice(key, label, options, default=None, hint=None, required=True,
@@ -165,17 +175,20 @@ def boolean(key, label, default=False, hint=None, visible_when=None):
                  required=False, visible_when=visible_when)
 
 
-def open_file(key, label, file_filter=None, default="", hint=None, required=True,
-                       visible_when=None):
+def open_file(key, label, file_ext=None, file_filter=None, default="", hint=None,
+              required=True, visible_when=None):
+    """Browse-for-a-file row. ``file_ext`` is a bare extension, e.g. "xlsx"."""
     return Field(key, label, KIND_OPEN_FILE, default=default, hint=hint,
-                 required=required, file_filter=file_filter,
+                 required=required, file_filter=file_filter, file_ext=file_ext,
                  visible_when=visible_when)
 
 
-def save_file(key, label, file_filter=None, default="", hint=None, required=True,
-                       visible_when=None):
+def save_file(key, label, file_ext=None, file_filter=None, default="", hint=None,
+              required=True, visible_when=None):
+    """Save-as row. ``file_ext`` is a bare extension, e.g. "xlsx"."""
     return Field(key, label, KIND_SAVE_FILE, default=default, hint=hint,
-                 required=required, file_filter=file_filter)
+                 required=required, file_filter=file_filter, file_ext=file_ext,
+                 visible_when=visible_when)
 
 
 def info(label, hint=None):
@@ -225,7 +238,9 @@ class SettingsFormWindow(CEDWindowBase):
         if self._reset is not None:
             self._reset.Click += self._reset_clicked
 
+        self._suppress_dependents = False
         self._build_fields()
+        self._refresh_dependent_options()
         self._apply_visibility()
 
         # Help and Docs. This window is modal, so the tour has to be too.
@@ -421,13 +436,21 @@ class SettingsFormWindow(CEDWindowBase):
         return 0
 
     def _pick_path(self, field, box):
+        kwargs = {"title": str(field.label or "Select a file")}
+        if field.file_filter:
+            kwargs["files_filter"] = field.file_filter
+        elif field.file_ext:
+            kwargs["file_ext"] = str(field.file_ext).lstrip("*.")
         try:
             if field.kind == KIND_OPEN_FILE:
-                picked = forms.pick_file(files_filter=field.file_filter or "")
+                picked = forms.pick_file(**kwargs)
             else:
-                picked = forms.save_file(files_filter=field.file_filter or "")
+                current = str(box.Text or "").strip()
+                if current:
+                    kwargs["default_name"] = os.path.basename(current)
+                picked = forms.save_file(**kwargs)
         except Exception as exc:
-            _LOGGER.debug("File picker failed: %s", exc)
+            _LOGGER.warning("File picker failed: %s", exc)
             picked = None
         if picked:
             box.Text = str(picked)
@@ -435,7 +458,56 @@ class SettingsFormWindow(CEDWindowBase):
     # -- values and validation --------------------------------------------
 
     def _choice_changed(self, sender, args):
+        if getattr(self, "_suppress_dependents", False):
+            return
+        self._refresh_dependent_options()
         self._apply_visibility()
+
+    def _refresh_dependent_options(self):
+        """Rebuild any dropdown whose options depend on another field.
+
+        Keeps the current pick when it survives the new list, so changing the
+        source field does not silently reset a choice the user already made.
+        """
+        self._suppress_dependents = True
+        try:
+            for field in self._fields:
+                rule = getattr(field, "options_from", None)
+                if not rule or field.control is None:
+                    continue
+                try:
+                    source_key, provider = rule[0], rule[1]
+                except Exception:
+                    continue
+                source_value = None
+                for other in self._fields:
+                    if other.key == source_key:
+                        source_value = self._value_of(other)
+                        break
+                try:
+                    options = _normalize_options(provider(source_value))
+                except Exception as exc:
+                    _LOGGER.debug("Options provider failed for %s: %s", field.key, exc)
+                    options = []
+                previous = self._value_of(field)
+                field.options = options
+                combo = field.control
+                combo.Items.Clear()
+                for value, label in options:
+                    item = ComboBoxItem()
+                    item.Content = label
+                    item.Tag = value
+                    combo.Items.Add(item)
+                index = -1
+                for position, (value, _label) in enumerate(options):
+                    if value == previous:
+                        index = position
+                        break
+                if index < 0 and options:
+                    index = self._default_index(field)
+                combo.SelectedIndex = index
+        finally:
+            self._suppress_dependents = False
 
     def _is_visible(self, field):
         rule = field.visible_when

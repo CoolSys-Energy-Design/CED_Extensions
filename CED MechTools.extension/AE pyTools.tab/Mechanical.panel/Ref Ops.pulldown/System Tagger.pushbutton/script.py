@@ -422,11 +422,21 @@ def _prompt_settings(prefill_ids="", resume_note=None):
     """
     from UIClasses import settings_form as sf
 
-    tag_types = _collect_tag_types()
-    label_to_type = {}
-    for tag_type in tag_types:
-        label_to_type[_tag_type_label(tag_type)] = tag_type
-    tag_options = [(label, label) for label in sorted(label_to_type)]
+    # Tag types are looked up per equipment category and cached, so the Tag type
+    # dropdown only ever offers tags that can actually annotate the category you
+    # picked (plus multi-category tags, which suit anything).
+    label_maps = {}
+
+    def _tag_options_for(category_key):
+        key = category_key if category_key in EQUIPMENT_CATEGORIES else CATEGORY_ORDER[0]
+        if key not in label_maps:
+            spec = EQUIPMENT_CATEGORIES.get(key) or {}
+            names = tuple(ALWAYS_TAG_CATEGORIES) + tuple(spec.get("tags") or ())
+            mapping = {}
+            for tag_type in _collect_tag_types(names):
+                mapping[_tag_type_label(tag_type)] = tag_type
+            label_maps[key] = mapping
+        return [(label, label) for label in sorted(label_maps[key])]
 
     fields = [
         sf.multiline(
@@ -437,48 +447,36 @@ def _prompt_settings(prefill_ids="", resume_note=None):
         sf.choice(
             "category", "Equipment category",
             [(key, EQUIPMENT_CATEGORIES[key]["label"]) for key in CATEGORY_ORDER],
-            default="mechanical",
-            hint="Only this category can be clicked during the picking loop."),
+            default=CATEGORY_ORDER[0],
+            hint="Only this category can be clicked during the picking loop, "
+                 "and it filters the tag types below."),
         sf.choice(
             "mode", "What should it write?",
             [(ACTION_MODE_TAG_AND_MARK, ACTION_MODE_TAG_AND_MARK),
-             (ACTION_MODE_MARK_ONLY, ACTION_MODE_MARK_ONLY),
-             (ACTION_MODE_TAG_ONLY, ACTION_MODE_TAG_ONLY)],
+             (ACTION_MODE_MARK_ONLY, ACTION_MODE_MARK_ONLY)],
             default=ACTION_MODE_TAG_AND_MARK),
         sf.choice(
-            "tag", "Tag type", tag_options, required=False,
-            hint="Not needed if you chose Identity Mark only."),
+            "tag", "Tag type", [], required=False,
+            options_from=("category", _tag_options_for),
+            hint="Only tags valid for the chosen category, plus multi-category "
+                 "tags. Not needed if you chose Identity Mark only."),
     ]
     if resume_note:
         fields.insert(0, sf.info(resume_note))
 
     def _validate(values):
         problems = []
-        mode = values.get("mode")
-        picked_label = values.get("tag")
-        if mode != ACTION_MODE_MARK_ONLY:
-            if not picked_label:
-                if not tag_options:
-                    problems.append(
-                        "No tag types are loaded in this project, so only "
-                        "'Identity Mark only' can run.")
-                else:
-                    problems.append(
-                        "Pick a tag type, or switch to 'Identity Mark only'.")
-            else:
-                spec = EQUIPMENT_CATEGORIES.get(values.get("category")) or {}
-                allowed = set(_builtin_category_ids(
-                    tuple(ALWAYS_TAG_CATEGORIES) + tuple(spec.get("tags") or ())))
-                tag_type = label_to_type.get(picked_label)
-                try:
-                    tag_cat = _elid_value(tag_type.Category.Id)
-                except Exception:
-                    tag_cat = None
-                if tag_cat is not None and allowed and tag_cat not in allowed:
-                    problems.append(
-                        "That tag type does not suit {0}. Choose a multi-category "
-                        "tag or one made for that category.".format(
-                            spec.get("label", "the chosen category")))
+        category_key = values.get("category")
+        if values.get("mode") != ACTION_MODE_MARK_ONLY:
+            if not _tag_options_for(category_key):
+                spec = EQUIPMENT_CATEGORIES.get(category_key) or {}
+                problems.append(
+                    "No tag types for {0} are loaded in this project, so only "
+                    "'Identity Mark only' can run.".format(
+                        spec.get("label", "that category")))
+            elif not values.get("tag"):
+                problems.append(
+                    "Pick a tag type, or switch to 'Identity Mark only'.")
         if not _parse_system_ids(values.get("ids") or ""):
             problems.append("No System IDs could be read from the pasted text.")
         return problems
@@ -499,7 +497,7 @@ def _prompt_settings(prefill_ids="", resume_note=None):
         "raw_text": values["ids"],
         "system_ids": _parse_system_ids(values["ids"]),
         "action_mode": values["mode"],
-        "tag_type": label_to_type.get(values.get("tag") or ""),
+        "tag_type": label_maps.get(values["category"], {}).get(values.get("tag") or ""),
         "category_key": values["category"],
         "pick_label": spec["label"],
         "pick_filter": _CategorySelectionFilter(
